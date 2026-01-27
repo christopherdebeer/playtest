@@ -12,7 +12,7 @@ Emergency halt an active game session and clean up state files.
 ## Usage
 
 ```bash
-/game-playtester:stop-game [game-name]
+/playtest:stop-game [game-name]
 ```
 
 **Arguments**:
@@ -20,8 +20,8 @@ Emergency halt an active game session and clean up state files.
 
 **Examples**:
 ```bash
-/game-playtester:stop-game
-/game-playtester:stop-game uno
+/playtest:stop-game
+/playtest:stop-game uno
 ```
 
 ## Implementation Steps
@@ -178,5 +178,5 @@ The game has been stopped. No further agent coordination will occur.
 
 ## See Also
 
-- `/game-playtester:start-game` - Start a new game
-- `/game-playtester:view-results` - View partial results
+- `/playtest:start-game` - Start a new game
+- `/playtest:view-results` - View partial results

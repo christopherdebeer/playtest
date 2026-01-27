@@ -12,7 +12,7 @@ Analyze and display results from completed game playtesting sessions.
 ## Usage
 
 ```bash
-/game-playtester:view-results [game-name] [log-file]
+/playtest:view-results [game-name] [log-file]
 ```
 
 **Arguments**:
@@ -21,9 +21,9 @@ Analyze and display results from completed game playtesting sessions.
 
 **Examples**:
 ```bash
-/game-playtester:view-results
-/game-playtester:view-results uno
-/game-playtester:view-results uno logs/game-2024-01-27.json
+/playtest:view-results
+/playtest:view-results uno
+/playtest:view-results uno logs/game-2024-01-27.json
 ```
 
 ## Implementation Steps
@@ -139,7 +139,7 @@ If analyzing multiple games from same configuration:
 
 ```bash
 # Find all logs for a game
-/game-playtester:view-results uno --all
+/playtest:view-results uno --all
 ```
 
 Aggregate statistics across games:
@@ -165,5 +165,5 @@ Display results directly to user in readable markdown format. Include:
 
 ## See Also
 
-- `/game-playtester:start-game` - Start a new game session
+- `/playtest:start-game` - Start a new game session
 - Skills: game-coordination (for understanding game flow)

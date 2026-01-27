@@ -1,10 +1,10 @@
 {
-  "name": "game-playtester",
+  "name": "playtest",
   "version": "0.1.0",
   "description": "AI-driven game playtesting framework with gamemaster orchestration and parallel player agents",
   "author": {
-    "name": "Claude Code User",
-    "email": "user@example.com"
+    "name": "Christopher de Beer",
+    "email": "christopherdebeer@gmail.com"
   },
   "keywords": ["game-testing", "multi-agent", "card-games", "playtesting", "automation"]
 }

@@ -1,4 +1,4 @@
-# Game Playtester Plugin
+# Playtest Plugin
 
 AI-driven game playtesting framework for Claude Code that enables automated playtesting of card games using a gamemaster orchestration pattern with parallel player agents.
 
@@ -20,9 +20,9 @@ This plugin provides a generic framework for testing card game rules and balance
 ## Quick Start
 
 1. Create a game configuration in `games/<game-name>/RULES.md`
-2. Run `/game-playtester:start-game uno` to start a game session
+2. Run `/playtest:start-game uno` to start a game session
 3. Watch as the gamemaster and player agents play automatically
-4. View results with `/game-playtester:view-results`
+4. View results with `/playtest:view-results`
 
 ## Game Configuration
 
@@ -91,9 +91,9 @@ Hybrid hooks combine:
 
 ## Commands
 
-- `/game-playtester:start-game <game-name>`: Start a new game session
-- `/game-playtester:view-results`: Analyze completed game logs
-- `/game-playtester:stop-game`: Emergency halt current game
+- `/playtest:start-game <game-name>`: Start a new game session
+- `/playtest:view-results`: Analyze completed game logs
+- `/playtest:stop-game`: Emergency halt current game
 
 ## Example: UNO
 
