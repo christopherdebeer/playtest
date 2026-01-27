@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Player Action",
+  "description": "Player's decision communicated to gamemaster",
+  "type": "object",
+  "required": ["playerId", "turnNumber", "gameId", "action", "reasoning"],
+  "properties": {
+    "playerId": {
+      "type": "string",
+      "pattern": "^player-[0-9]+$",
+      "description": "Must match the player making this action"
+    },
+    "turnNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Must match current turn number"
+    },
+    "gameId": {
+      "type": "string",
+      "description": "Must match current game ID"
+    },
+    "action": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Action type (must be from availableActions in turn signal)",
+          "examples": ["play_card", "draw", "move", "pass", "challenge"]
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Action-specific parameters",
+          "examples": [
+            {"card": "Red 5"},
+            {"targetState": "A"},
+            {"targetPlayer": "player-2", "card": "Block"}
+          ]
+        }
+      },
+      "description": "The action being taken"
+    },
+    "reasoning": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Explanation of why this action was chosen (required for analysis)"
+    },
+    "alternativesConsidered": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Other actions that were evaluated but not chosen"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this action was decided (ISO 8601)"
+    }
+  }
+}

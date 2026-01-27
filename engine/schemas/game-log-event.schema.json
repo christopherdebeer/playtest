@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Game Log Event",
+  "description": "Single event in JSONL game log",
+  "type": "object",
+  "required": ["timestamp", "type"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this event occurred (ISO 8601)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "game_start",
+        "turn_start",
+        "player_action",
+        "gamemaster_validation",
+        "gamemaster_action",
+        "state_change",
+        "turn_end",
+        "game_end",
+        "error"
+      ],
+      "description": "Type of event being logged"
+    },
+    "gameId": {
+      "type": "string",
+      "description": "Game instance identifier"
+    },
+    "turnNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Turn number when event occurred"
+    },
+    "playerId": {
+      "type": "string",
+      "pattern": "^player-[0-9]+$",
+      "description": "Player involved in this event (if applicable)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"type": {"const": "game_start"}}
+      },
+      "then": {
+        "required": ["gameId", "gameName", "version", "players"],
+        "properties": {
+          "gameName": {"type": "string"},
+          "version": {"type": "string"},
+          "players": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "initialState": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"type": {"const": "player_action"}}
+      },
+      "then": {
+        "required": ["playerId", "turnNumber", "action", "reasoning"],
+        "properties": {
+          "action": {"type": "object"},
+          "reasoning": {"type": "string"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"type": {"const": "gamemaster_validation"}}
+      },
+      "then": {
+        "required": ["playerId", "turnNumber", "valid"],
+        "properties": {
+          "valid": {"type": "boolean"},
+          "reason": {"type": "string"},
+          "effect": {"type": "string"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"type": {"const": "state_change"}}
+      },
+      "then": {
+        "required": ["field", "newValue"],
+        "properties": {
+          "field": {"type": "string"},
+          "oldValue": {},
+          "newValue": {}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"type": {"const": "game_end"}}
+      },
+      "then": {
+        "required": ["gameId", "winner", "totalTurns"],
+        "properties": {
+          "winner": {"type": ["string", "null"]},
+          "totalTurns": {"type": "integer"},
+          "finalStates": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"type": {"const": "error"}}
+      },
+      "then": {
+        "required": ["message"],
+        "properties": {
+          "message": {"type": "string"},
+          "details": {"type": "object"}
+        }
+      }
+    }
+  ]
+}

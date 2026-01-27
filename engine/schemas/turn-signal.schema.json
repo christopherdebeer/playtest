@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Turn Signal",
+  "description": "Signal to player that it's their turn, with visible context",
+  "type": "object",
+  "required": ["currentPlayer", "turnNumber", "gameId", "availableActions", "visibleState"],
+  "properties": {
+    "currentPlayer": {
+      "type": "string",
+      "pattern": "^player-[0-9]+$",
+      "description": "Player ID whose turn it is"
+    },
+    "turnNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Current turn number"
+    },
+    "gameId": {
+      "type": "string",
+      "description": "Game instance identifier"
+    },
+    "availableActions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Action type identifier (e.g., 'play_card', 'draw', 'move', 'pass')"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of this action"
+          },
+          "constraints": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Constraints on this action (e.g., 'must match color or number')"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Required/optional parameters for this action"
+          }
+        }
+      },
+      "description": "List of legal actions for this turn"
+    },
+    "visibleState": {
+      "type": "object",
+      "required": ["yourHand", "opponents", "sharedState"],
+      "properties": {
+        "yourHand": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Your cards (private to you)"
+        },
+        "yourPosition": {
+          "type": "string",
+          "description": "Your position/state in the game"
+        },
+        "yourEffects": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Active effects on you"
+        },
+        "yourScore": {
+          "type": "integer",
+          "description": "Your current score"
+        },
+        "opponents": {
+          "type": "object",
+          "patternProperties": {
+            "^player-[0-9]+$": {
+              "type": "object",
+              "properties": {
+                "handSize": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Number of cards opponent has"
+                },
+                "position": {
+                  "type": "string",
+                  "description": "Opponent's position/state"
+                },
+                "effects": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "description": "Visible effects on opponent"
+                },
+                "score": {
+                  "type": "integer",
+                  "description": "Opponent's score"
+                }
+              }
+            }
+          },
+          "description": "Information about other players (PUBLIC only)"
+        },
+        "sharedState": {
+          "type": "object",
+          "description": "Game-specific shared/public state",
+          "examples": [
+            {"topCard": "Red 5", "direction": "clockwise", "deckSize": 42},
+            {"edgeWeights": {"A->Victory": 0.55}, "stateGraph": "..."}
+          ]
+        }
+      },
+      "description": "All information visible to current player"
+    },
+    "gameRules": {
+      "type": "string",
+      "description": "Brief reminder of key rules for this turn"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this turn signal was created (ISO 8601)"
+    }
+  }
+}
