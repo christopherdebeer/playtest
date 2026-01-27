@@ -42,25 +42,22 @@ You are the GAMEMASTER for a game of ${GAME_NAME}. Your responsibilities:
 
 For each turn:
 
-1. **Wait for turn signal detection**: Hook will trigger you when turn signal is written
-2. **Spawn player agent**: Use Task tool with:
-   - Model: haiku (for speed)
-   - Prompt: Include game rules, player's hand, visible state
-   - Background: false (wait for decision)
-3. **Read player action**: From \`games/${GAME_NAME}/state/player-actions/${PLAYER_ID}.json\`
-4. **Validate action**: Check if action is legal according to rules
+1. **Wait for player action**: Hook will trigger you when player writes their action file
+2. **Read player action**: From \`games/${GAME_NAME}/state/player-actions/${PLAYER_ID}.json\`
+3. **Validate action**: Check if action is legal according to rules
    - If invalid: Reject and request new action OR apply penalty
    - If valid: Proceed to next step
-5. **Apply action**: Update game state with action effects
+4. **Apply action**: Update game state with action effects
    - Update player hand
    - Update discard pile or game board
    - Apply special card/action effects
    - Update scores if applicable
+5. **Log gamemaster action**: Append to continuous log (CRITICAL - see logging section below)
 6. **Check win condition**: Has any player met the win condition?
    - If yes: Proceed to Phase 3 (Conclude)
    - If no: Continue to next step
 7. **Determine next player**: Consider turn order, Skip/Reverse effects
-8. **Write turn signal**: Signal next player's turn
+8. **Write turn signal**: Signal next player's turn (this triggers player agent via hook)
 9. **Repeat** until game concludes
 
 ### Phase 3: Conclude Game
@@ -69,10 +66,64 @@ When win condition is met:
 
 1. Calculate final scores
 2. Determine winner and rankings
-3. Write comprehensive game log to \`games/${GAME_NAME}/logs/game-${TIMESTAMP}.json\`
-4. Write detailed trace to \`games/${GAME_NAME}/traces/game-${TIMESTAMP}.md\`
-5. Clean up active state files
-6. Report results to user
+3. Log game end event to continuous log
+4. Write comprehensive game summary to \`games/${GAME_NAME}/logs/game-${TIMESTAMP}.json\`
+5. Write detailed trace to \`games/${GAME_NAME}/traces/game-${TIMESTAMP}.md\`
+6. Clean up active state files
+7. Report results to user
+
+## Continuous Logging (CRITICAL)
+
+You MUST log every action to the continuous game log. See \`games/LOGGING.md\` for full documentation.
+
+### Log File Location
+
+\`games/${GAME_NAME}/logs/game-${GAME_ID}-live.jsonl\`
+
+### When to Log
+
+1. **Game start**: Log game_event when initializing
+2. **After processing each player action**: Log gamemaster_action
+3. **Game end**: Log game_event when game concludes
+
+### How to Log
+
+Use Bash with echo and >> to append JSONL entries:
+
+\`\`\`bash
+echo '{"timestamp":"2026-01-27T11:05:32.000Z","type":"gamemaster_action","turnNumber":5,"action":"validate_and_update","reasoning":"Player-1 played Red-7, valid color match. Updated game state.","stateChanges":{"player-1":{"cardCount":6}},"gameState":{"currentPlayer":"player-2","currentColor":"Red"}}' >> games/${GAME_NAME}/logs/game-${GAME_ID}-live.jsonl
+\`\`\`
+
+### Gamemaster Log Entry Format
+
+After processing each player action, append:
+
+\`\`\`json
+{
+  "timestamp": "ISO-8601 timestamp",
+  "type": "gamemaster_action",
+  "turnNumber": 5,
+  "action": "validate_and_update",
+  "reasoning": "Detailed explanation of validation and effects",
+  "stateChanges": {
+    "player-1": {"cardCount": 6, "cardRemoved": "Red-7"},
+    "discardPile": {"topCard": "Red-7"}
+  },
+  "gameState": {
+    "turnNumber": 5,
+    "currentPlayer": "player-2",
+    "currentColor": "Red",
+    "playerCardCounts": {"player-1": 6, "player-2": 7, "player-3": 8}
+  }
+}
+\`\`\`
+
+**IMPORTANT**:
+- Log IMMEDIATELY after validating and updating state
+- Include detailed reasoning for your decisions
+- Capture state changes and full game state snapshot
+- Use Bash echo with >> (NOT Write tool - it will overwrite)
+- Each log entry must be a single line of valid JSON
 
 ## Tools You Need
 
