@@ -66,7 +66,7 @@ Use the **Write tool** to create the game state file:
   - discardPile array
   - gameSpecific object (state graph, probabilities)
   - winner: null
-  - gameStatus: "active"
+  - gameStatus: "in_progress"
 
 **Step 1.5**: Create JSONL log
 

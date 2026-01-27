@@ -1,0 +1,15 @@
+{
+  "name": "game-playtesting-engine",
+  "version": "2.0.0",
+  "description": "Multi-agent game playtesting framework with npm script interface",
+  "scripts": {
+    "wait-for-turn": "node scripts/wait-for-turn.js",
+    "submit-action": "node scripts/submit-action.js"
+  },
+  "keywords": ["game", "playtesting", "multi-agent", "claude"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

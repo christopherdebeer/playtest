@@ -37,7 +37,7 @@ const gameName = args[0]; // e.g., "markovs-chains"
 const numPlayersOverride = args[1] ? parseInt(args[1]) : null;
 
 // Read game rules
-const rulesPath = `games/${gameName}/RULES.md`;
+const rulesPath = "games/" + gameName + "/RULES.md";
 const rulesContent = await Read(rulesPath);
 
 // Parse YAML frontmatter
@@ -57,7 +57,7 @@ const config = {
   win_condition: extractYAMLField(frontmatter, 'win_condition')
 };
 
-console.log(`Initializing ${config.name} v${config.version} with ${config.players} players`);
+console.log("Initializing " + config.name + " v" + config.version + " with " + config.players + " players");
 ```
 
 ### Step 2: Create Game Directories
@@ -77,7 +77,7 @@ Load the coordinated templates and fill in variables:
 ```javascript
 // Load templates
 const gamemasterTemplatePath = 'engine/templates/gamemaster-coordinated.md';
-const playerTemplatePath = 'engine/templates/player-coordinated.md';
+const playerTemplatePath = 'engine/templates/player-npm-interface.md';
 
 const gamemasterTemplate = await Read(gamemasterTemplatePath);
 const playerTemplate = await Read(playerTemplatePath);
@@ -96,7 +96,7 @@ gamemasterPrompt = gamemasterPrompt.replace(/\{\{WIN_CONDITION\}\}/g, config.win
 // Build player prompts (one for each player)
 const playerPrompts = [];
 for (let i = 1; i <= config.players; i++) {
-  const playerId = `player-${i}`;
+  const playerId = "player-" + i;
   let playerPrompt = playerTemplate;
 
   playerPrompt = playerPrompt.replace(/\{\{GAME_NAME\}\}/g, gameName);
@@ -107,7 +107,7 @@ for (let i = 1; i <= config.players; i++) {
   playerPrompts.push(playerPrompt);
 }
 
-console.log(`Templates loaded and filled for ${config.players} players`);
+console.log("Templates loaded and filled for " + config.players + " players");
 ```
 
 ### Step 4: Spawn ALL Agents in Parallel
@@ -117,7 +117,7 @@ console.log(`Templates loaded and filled for ${config.players} players`);
 This is the key to the coordinated architecture - all agents must be spawned by the coordinator (not by the gamemaster).
 
 ```javascript
-console.log(`Spawning ${config.players + 1} agents (1 gamemaster + ${config.players} players)...`);
+console.log("Spawning " + (config.players + 1) + " agents (1 gamemaster + " + config.players + " players)...");
 
 // YOU MUST MAKE ALL THESE TASK CALLS IN A SINGLE MESSAGE
 
@@ -125,7 +125,7 @@ console.log(`Spawning ${config.players + 1} agents (1 gamemaster + ${config.play
 await Task({
   subagent_type: "general-purpose",
   model: "sonnet", // Gamemaster needs good reasoning
-  description: `Gamemaster for ${gameName}`,
+  description: "Gamemaster for " + gameName,
   prompt: gamemasterPrompt,
   run_in_background: true  // CRITICAL: Long-running
 });
@@ -134,7 +134,7 @@ await Task({
 await Task({
   subagent_type: "general-purpose",
   model: "haiku", // Players can use faster model
-  description: `player-1 for ${gameName}`,
+  description: "player-1 for " + gameName,
   prompt: playerPrompts[0],
   run_in_background: true  // CRITICAL: Long-running
 });
@@ -143,7 +143,7 @@ await Task({
 await Task({
   subagent_type: "general-purpose",
   model: "haiku",
-  description: `player-2 for ${gameName}`,
+  description: "player-2 for " + gameName,
   prompt: playerPrompts[1],
   run_in_background: true  // CRITICAL: Long-running
 });
@@ -152,7 +152,7 @@ await Task({
 await Task({
   subagent_type: "general-purpose",
   model: "haiku",
-  description: `player-3 for ${gameName}`,
+  description: "player-3 for " + gameName,
   prompt: playerPrompts[2],
   run_in_background: true  // CRITICAL: Long-running
 });
@@ -160,8 +160,8 @@ await Task({
 // If more than 3 players, spawn additional player agents...
 // (repeat pattern for player-4, player-5, etc.)
 
-console.log(`All ${config.players + 1} agents spawned successfully!`);
-console.log(`Check running agents with: /tasks`);
+console.log("All " + (config.players + 1) + " agents spawned successfully");
+console.log("Check running agents with: /tasks");
 ```
 
 **Why this works**:
@@ -175,12 +175,12 @@ console.log(`Check running agents with: /tasks`);
 Wait for the game to complete by polling the game state:
 
 ```javascript
-console.log(`\nGame session started for ${gameName}!`);
-console.log(`\nMonitoring game progress...`);
-console.log(`Game state: games/${gameName}/state/game-state.json`);
-console.log(`Turn signals: games/${gameName}/state/turn-signal.json`);
-console.log(`Player actions: games/${gameName}/state/player-actions/`);
-console.log(`\nWaiting for game to complete...\n`);
+console.log("\\nGame session started for " + gameName);
+console.log("\\nMonitoring game progress...");
+console.log("Game state: games/" + gameName + "/state/game-state.json");
+console.log("Turn signals: games/" + gameName + "/state/turn-signal.json");
+console.log("Player actions: games/" + gameName + "/state/player-actions/");
+console.log("\\nWaiting for game to complete...\\n");
 
 // Poll every 5 seconds
 let lastTurn = 0;
@@ -191,20 +191,20 @@ let iterations = 0;
 while (iterations < maxIterations) {
   try {
     // Read current game state
-    const stateContent = await Read(`games/${gameName}/state/game-state.json`);
+    const stateContent = await Read("games/" + gameName + "/state/game-state.json");
     const state = JSON.parse(stateContent);
 
     // Check if game complete
     if (state.gameStatus === "completed") {
-      console.log(`\n✓ Game complete!`);
-      console.log(`Winner: ${state.winner || 'No winner'}`);
-      console.log(`Total turns: ${state.turnNumber}`);
+      console.log("\\n✓ Game complete");
+      console.log("Winner: " + (state.winner || 'No winner'));
+      console.log("Total turns: " + state.turnNumber);
       break;
     }
 
     // Show progress if turn changed
     if (state.turnNumber > lastTurn) {
-      console.log(`Turn ${state.turnNumber}: ${state.currentPlayer}'s turn`);
+      console.log("Turn " + state.turnNumber + ": " + state.currentPlayer + "'s turn");
       lastTurn = state.turnNumber;
     }
   } catch (error) {
@@ -218,8 +218,8 @@ while (iterations < maxIterations) {
 }
 
 if (iterations >= maxIterations) {
-  console.log(`\n⚠ Game timed out after ${maxWaitMinutes} minutes`);
-  console.log(`Check game state manually: games/${gameName}/state/game-state.json`);
+  console.log("\\n⚠ Game timed out after " + maxWaitMinutes + " minutes");
+  console.log("Check game state manually: games/" + gameName + "/state/game-state.json");
 }
 ```
 
@@ -228,46 +228,46 @@ if (iterations >= maxIterations) {
 Read and display the final game results:
 
 ```javascript
-console.log(`\n--- Final Results ---\n`);
+console.log("\\n--- Final Results ---\\n");
 
 try {
   // Find the most recent game log
-  const logFiles = await Bash(`ls -t games/${gameName}/logs/game-*.json | head -1`);
+  const logFiles = await Bash("ls -t games/" + gameName + "/logs/game-*.json | head -1");
   const logPath = logFiles.trim();
 
   if (logPath) {
     const logContent = await Read(logPath);
     const results = JSON.parse(logContent);
 
-    console.log(`Game ID: ${results.gameId}`);
-    console.log(`Winner: ${results.winner}`);
-    console.log(`Total Turns: ${results.totalTurns}`);
+    console.log("Game ID: " + results.gameId);
+    console.log("Winner: " + results.winner);
+    console.log("Total Turns: " + results.totalTurns);
 
     if (results.statistics) {
-      console.log(`\nStatistics:`);
+      console.log("\\nStatistics:");
       console.log(JSON.stringify(results.statistics, null, 2));
     }
 
     if (results.balanceObservations) {
-      console.log(`\nBalance Observations:`);
+      console.log("\\nBalance Observations:");
       console.log(JSON.stringify(results.balanceObservations, null, 2));
     }
 
-    console.log(`\nFull logs:`);
-    console.log(`- Summary: ${logPath}`);
-    console.log(`- Live events: games/${gameName}/logs/game-*-live.jsonl`);
+    console.log("\\nFull logs:");
+    console.log("- Summary: " + logPath);
+    console.log("- Live events: games/" + gameName + "/logs/game-*-live.jsonl");
 
-    const traceFiles = await Bash(`ls games/${gameName}/traces/game-*.md 2>/dev/null | head -1`);
+    const traceFiles = await Bash("ls games/" + gameName + "/traces/game-*.md 2>/dev/null | head -1");
     if (traceFiles.trim()) {
-      console.log(`- Detailed trace: ${traceFiles.trim()}`);
+      console.log("- Detailed trace: " + traceFiles.trim());
     }
   }
 } catch (error) {
-  console.log(`Could not read final results: ${error.message}`);
-  console.log(`Check: games/${gameName}/logs/`);
+  console.log("Could not read final results: " + error.message);
+  console.log("Check: games/" + gameName + "/logs/");
 }
 
-console.log(`\n✓ Game session complete!`);
+console.log("\\n✓ Game session complete");
 ```
 
 ## How It Works
@@ -322,7 +322,7 @@ After running the command, verify:
 ## Troubleshooting
 
 **Agents don't spawn**:
-- Check templates exist: `engine/templates/gamemaster-coordinated.md` and `player-coordinated.md`
+- Check templates exist: `engine/templates/gamemaster-coordinated.md` and `player-npm-interface.md`
 - Verify Task calls have `run_in_background: true`
 - Check model availability (sonnet, haiku)
 
@@ -342,4 +342,4 @@ After running the command, verify:
 - `engine/COORDINATED-ARCHITECTURE.md` - Full architecture documentation
 - `engine/coordinator.md` - Coordinator specification
 - `engine/templates/gamemaster-coordinated.md` - Gamemaster template
-- `engine/templates/player-coordinated.md` - Player template
+- `engine/templates/player-npm-interface.md` - Player template with npm script interface
