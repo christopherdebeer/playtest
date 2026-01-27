@@ -1,9 +1,0 @@
-{
-  "playerId": "player-2",
-  "turnNumber": 2,
-  "action": {
-    "type": "play_card",
-    "card": "Momentum",
-    "reasoning": "Player-1 is already at state A, one move from victory. I need to catch up quickly. Use Momentum (+0.2) to boost my probability to 85% for advancing from Start."
-  }
-}

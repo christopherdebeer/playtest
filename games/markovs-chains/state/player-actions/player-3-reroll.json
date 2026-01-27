@@ -1,9 +1,0 @@
-{
-  "playerId": "player-3",
-  "turnNumber": 6,
-  "action": {
-    "type": "play_card",
-    "card": "Reroll",
-    "reasoning": "Failed the first roll (0.785 > 0.55). Using Reroll to attempt again!"
-  }
-}
