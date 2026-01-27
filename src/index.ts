@@ -17,6 +17,8 @@ export * from './rules/parser.js';
 export * from './engine/orchestrator.js';
 export * from './engine/explorer.js';
 export * from './engine/metrics.js';
+export * from './engine/game-server.js';
+export * from './engine/deterministic-rules.js';
 
 // Agents
 export * from './agents/base.js';

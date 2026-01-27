@@ -90,11 +90,26 @@ export function parseGameCommand(input: string): GameCommand | null {
   const args: Record<string, string> = {};
 
   if (argsStr) {
-    // Parse key=value pairs
-    const pairs = argsStr.match(/(\w+)=("[^"]*"|\S+)/g) || [];
-    for (const pair of pairs) {
-      const [key, value] = pair.split('=');
-      args[key] = value.replace(/^"|"$/g, '');
+    // Check if first token is an action type (not a key=value pair)
+    const actionTypes = ['play_creature', 'play_spell', 'attack', 'pass', 'draw'];
+    const tokens = argsStr.trim().split(/\s+/);
+
+    if (tokens.length > 0 && actionTypes.includes(tokens[0])) {
+      args.type = tokens[0];
+      // Parse remaining key=value pairs
+      const remaining = tokens.slice(1).join(' ');
+      const pairs = remaining.match(/(\w+)=("[^"]*"|\S+)/g) || [];
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        args[key] = value.replace(/^"|"$/g, '');
+      }
+    } else {
+      // Parse key=value pairs normally
+      const pairs = argsStr.match(/(\w+)=("[^"]*"|\S+)/g) || [];
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        args[key] = value.replace(/^"|"$/g, '');
+      }
     }
   }
 
