@@ -1,0 +1,13 @@
+# Game state files (temporary during gameplay)
+games/*/state/*.json
+games/*/state/*.lock
+
+# Local settings
+.claude/*.local.md
+
+# Node modules if we add any scripts
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

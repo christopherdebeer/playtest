@@ -1,0 +1,15 @@
+{
+  "gameId": "uno-1738023928000",
+  "gameName": "UNO",
+  "timestamp": "2026-01-27T11:20:00Z",
+  "players": ["player-1", "player-2", "player-3"],
+  "winner": "player-3",
+  "finalScores": {
+    "player-1": 38,
+    "player-2": 94,
+    "player-3": 0
+  },
+  "totalTurns": 42,
+  "duration": "28m 5s",
+  "summary": "Player-3 won after 42 turns in a hard-fought game! The game saw dramatic momentum swings, with Player-3 using a strategic WildDraw4 on turn 16 to devastate Player-2's position. Despite both Player-1 and Player-3 reaching 2-3 cards multiple times, Player-3 ultimately prevailed by playing Red-6 followed by Red-9 and finally Yellow-5 to win."
+}

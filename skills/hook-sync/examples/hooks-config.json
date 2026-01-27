@@ -1,0 +1,13 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "A file was written: {{tool_use.parameters.file_path}}\n\n## Game Coordination Hook\n\nAnalyze the file path to determine if this is a game coordination file:\n\n### Turn Signal Pattern\nIf path matches `games/*/state/turn-signal.json`:\n1. Read the turn signal file\n2. Extract currentPlayer, turnNumber, and game name\n3. Read game rules from `games/<game-name>/RULES.md`\n4. Read game state to get player's hand\n5. Spawn player agent using Task tool:\n   - model: \"haiku\" (for speed)\n   - subagent_type: \"general-purpose\"\n   - prompt: Include game rules, player hand, visible state, instructions to write action to player-actions/<player-id>.json\n   - run_in_background: false (wait for decision)\n\n### Player Action Pattern\nIf path matches `games/*/state/player-actions/*.json`:\n1. Read the action file to extract playerId and action\n2. Extract game name from path\n3. If you are the gamemaster agent:\n   - Validate action against game rules\n   - Update game state if valid\n   - Check win condition\n   - Write next turn signal if game continues\n   - Write game log if game ends\n4. If you are NOT the gamemaster:\n   - Note: Gamemaster should be processing this, no action needed\n\n### Game State Pattern\nIf path matches `games/*/state/game-state.json`:\n- Log state change for debugging\n- Check if gameActive is false (game ended)\n- If ended, no further action needed\n\n### Other Files\nNo action needed for other file writes.\n\n**Take appropriate action now based on the file path.**"
+        }
+      ]
+    }
+  ]
+}
