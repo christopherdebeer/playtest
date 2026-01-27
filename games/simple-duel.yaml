@@ -1,0 +1,312 @@
+# Simple Duel - A basic card game for testing the playtest framework
+# Two players battle with creatures and spells to reduce opponent's life to 0
+
+game:
+  name: "Simple Duel"
+  version: "0.1"
+  description: |
+    A streamlined dueling card game where players summon creatures
+    and cast spells to defeat their opponent.
+  players:
+    min: 2
+    max: 2
+
+zones:
+  - id: deck
+    per_player: true
+    visibility: hidden
+    ordered: true
+
+  - id: hand
+    per_player: true
+    visibility: private
+    max_size: 7  # See parameters.max_hand_size for exploration
+
+  - id: battlefield
+    per_player: true
+    visibility: public
+    max_size: 5
+
+  - id: discard
+    per_player: true
+    visibility: public
+
+resources:
+  - id: life
+    initial: 20  # See parameters.starting_life for exploration
+    min: 0
+
+  - id: mana
+    initial: 0
+    min: 0
+    max: 10
+    per_turn: 1  # See parameters.mana_per_turn for exploration
+
+turn_structure:
+  phases: [upkeep, main, combat, end]
+  actions_per_phase:
+    upkeep: [draw]
+    main: [play_creature, play_spell, pass]
+    combat: [attack, pass]
+    end: [discard_to_hand_size, pass]
+  auto_advance: true
+
+setup:
+  - each_player:
+      - create_deck:
+          zone: deck
+          cards: starter_deck
+      - shuffle: deck
+      - draw: 5  # See parameters.starting_hand_size for exploration
+  - set:
+      life: 20  # See parameters.starting_life for exploration
+      mana: 1
+
+actions:
+  draw:
+    name: "Draw a Card"
+    valid_when: "phase == 'upkeep' AND deck.length > 0"
+    effect: |
+      Draw the top card of your deck into your hand.
+      If your deck is empty, you lose the game instead.
+
+  play_creature:
+    name: "Play Creature"
+    valid_when: "phase == 'main' AND hand.has_creature AND player.mana >= card.cost"
+    effect: |
+      Pay the creature's mana cost.
+      Move the creature from your hand to your battlefield.
+      Creatures cannot attack the turn they are played (summoning sickness).
+    params:
+      card:
+        type: card
+        required: true
+        from_zone: hand
+        validation: "card.type == 'creature'"
+
+  play_spell:
+    name: "Play Spell"
+    valid_when: "phase == 'main' AND hand.has_spell AND player.mana >= card.cost"
+    effect: |
+      Pay the spell's mana cost.
+      Resolve the spell's effect as described on the card.
+      Move the spell to your discard pile.
+    params:
+      card:
+        type: card
+        required: true
+        from_zone: hand
+        validation: "card.type == 'spell'"
+      target:
+        type: choice
+        required: false
+        validation: "depends on spell"
+
+  attack:
+    name: "Attack"
+    valid_when: "phase == 'combat' AND battlefield.has_ready_creature"
+    effect: |
+      Choose a creature you control that doesn't have summoning sickness.
+      That creature attacks the opponent.
+      The opponent may block with one of their creatures.
+
+      Combat resolution:
+      - If blocked: Each creature deals damage equal to its power to the other.
+                   Creatures with damage >= toughness are destroyed.
+      - If unblocked: The attacker deals damage equal to its power to the opponent's life.
+
+      After combat, the attacking creature becomes tapped (cannot attack again this turn).
+    params:
+      attacker:
+        type: card
+        required: true
+        from_zone: battlefield
+        validation: "card.type == 'creature' AND NOT card.tapped AND NOT card.summoning_sickness"
+
+  block:
+    name: "Block"
+    valid_when: "phase == 'combat' AND pending.attack AND battlefield.has_ready_creature"
+    effect: |
+      Choose one of your untapped creatures to block the attacking creature.
+      Combat damage is dealt simultaneously.
+    params:
+      blocker:
+        type: card
+        required: true
+        from_zone: battlefield
+        validation: "card.type == 'creature' AND NOT card.tapped"
+
+  discard_to_hand_size:
+    name: "Discard"
+    valid_when: "phase == 'end' AND hand.length > max_hand_size"
+    effect: |
+      Discard cards from your hand until you have max_hand_size cards.
+    params:
+      cards:
+        type: card
+        required: true
+        from_zone: hand
+
+  pass:
+    name: "Pass"
+    valid_when: "true"
+    effect: "End your current phase and proceed to the next."
+
+win_conditions:
+  - condition: "opponent.life <= 0"
+    message: "You reduced your opponent's life to 0!"
+    priority: 1
+
+  - condition: "opponent.deck.empty AND opponent.cannot_draw"
+    message: "Your opponent cannot draw a card!"
+    priority: 2
+
+card_sets:
+  starter_deck:
+    # Basic creatures
+    - id: goblin
+      name: "Goblin Grunt"
+      type: creature
+      count: 4
+      properties:
+        cost: 1
+        power: 2
+        toughness: 1
+      text: "A simple aggressive creature."
+
+    - id: soldier
+      name: "Steadfast Soldier"
+      type: creature
+      count: 4
+      properties:
+        cost: 2
+        power: 2
+        toughness: 2
+      text: "A balanced fighter."
+
+    - id: knight
+      name: "Armored Knight"
+      type: creature
+      count: 3
+      properties:
+        cost: 3
+        power: 3
+        toughness: 3
+      text: "A sturdy warrior."
+
+    - id: dragon
+      name: "Young Dragon"
+      type: creature
+      count: 2
+      properties:
+        cost: 5
+        power: 4
+        toughness: 4
+      text: "A powerful flying creature."
+      keywords: [flying]
+
+    - id: giant
+      name: "Hill Giant"
+      type: creature
+      count: 2
+      properties:
+        cost: 4
+        power: 4
+        toughness: 3
+      text: "Raw power."
+
+    # Spells
+    - id: bolt
+      name: "Lightning Bolt"
+      type: spell
+      count: 4
+      properties:
+        cost: 1
+      text: "Deal 3 damage to any target creature or player."
+
+    - id: heal
+      name: "Healing Light"
+      type: spell
+      count: 3
+      properties:
+        cost: 2
+      text: "Gain 4 life."
+
+    - id: draw_spell
+      name: "Arcane Insight"
+      type: spell
+      count: 3
+      properties:
+        cost: 2
+      text: "Draw 2 cards."
+
+    - id: removal
+      name: "Destroy"
+      type: spell
+      count: 3
+      properties:
+        cost: 3
+      text: "Destroy target creature."
+
+    - id: buff
+      name: "Battle Rage"
+      type: spell
+      count: 2
+      properties:
+        cost: 2
+      text: "Target creature gets +3/+0 until end of turn."
+
+# Tunable parameters for exploration
+parameters:
+  starting_life:
+    type: number
+    default: 20
+    min: 10
+    max: 30
+    step: 5
+    description: "Initial life total for each player"
+
+  starting_hand_size:
+    type: number
+    default: 5
+    min: 3
+    max: 7
+    description: "Cards drawn at game start"
+
+  max_hand_size:
+    type: number
+    default: 7
+    min: 5
+    max: 10
+    description: "Maximum cards in hand at end of turn"
+
+  mana_per_turn:
+    type: number
+    default: 1
+    min: 1
+    max: 3
+    description: "Mana gained each upkeep"
+
+keywords:
+  flying: "This creature can only be blocked by other creatures with flying."
+  haste: "This creature can attack the turn it enters the battlefield."
+  lifelink: "Damage dealt by this creature also gains you that much life."
+
+rules_text: |
+  ## Additional Rules
+
+  ### Summoning Sickness
+  Creatures cannot attack the turn they enter the battlefield unless they have haste.
+
+  ### Combat
+  1. Attacking player declares which creatures are attacking
+  2. Defending player may assign blockers (one blocker per attacker)
+  3. Damage is dealt simultaneously
+  4. Creatures with damage >= toughness are destroyed
+
+  ### Flying
+  Creatures with flying can only be blocked by creatures with flying.
+
+  ### Mana
+  At the start of each turn, gain mana_per_turn mana (up to maximum of 10).
+  Mana does not carry over between turns - you start fresh each turn.
