@@ -1,6 +1,6 @@
 {
   "pluginDirectories": [
-    ".claude-plugin"
+    "."
   ],
   "enabledPlugins": {
     "playtest@inline": true
