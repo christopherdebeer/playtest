@@ -2,8 +2,9 @@
 games/*/state/*.json
 games/*/state/*.lock
 
-# Local settings
+# Local settings (user-specific, not committed)
 .claude/*.local.md
+.claude/*.local.json
 
 # Node modules if we add any scripts
 node_modules/

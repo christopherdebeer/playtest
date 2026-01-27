@@ -60,7 +60,25 @@ const config = {
 console.log("Initializing " + config.name + " v" + config.version + " with " + config.players + " players");
 ```
 
-### Step 2: Create Game Directories
+### Step 2: Clean Up Previous Game State
+
+**CRITICAL**: Remove any existing game state files to ensure a fresh start:
+
+```bash
+# Remove state files from previous games
+rm -f games/${gameName}/state/game-state.json
+rm -f games/${gameName}/state/turn-signal.json
+rm -f games/${gameName}/state/player-actions/*.json
+
+echo "Cleaned up previous game state files"
+```
+
+**Why this is important**:
+- The gamemaster might read an existing `game-state.json` with different player counts
+- Old `turn-signal.json` could confuse player agents
+- Stale `player-actions/*.json` files could be processed incorrectly
+
+### Step 3: Create Game Directories
 
 Set up the directory structure:
 
@@ -70,7 +88,7 @@ mkdir -p games/${gameName}/logs
 mkdir -p games/${gameName}/traces
 ```
 
-### Step 3: Load and Fill Agent Templates
+### Step 4: Load and Fill Agent Templates
 
 Load the coordinated templates and fill in variables:
 
@@ -110,7 +128,7 @@ for (let i = 1; i <= config.players; i++) {
 console.log("Templates loaded and filled for " + config.players + " players");
 ```
 
-### Step 4: Spawn ALL Agents in Parallel
+### Step 5: Spawn ALL Agents in Parallel
 
 **CRITICAL**: Spawn all agents in a SINGLE message with multiple Task calls.
 
@@ -170,7 +188,7 @@ console.log("Check running agents with: /tasks");
 - Gamemaster doesn't spawn players (coordinator does)
 - Agents coordinate via file-based protocol (polling)
 
-### Step 5: Monitor Game Completion
+### Step 6: Monitor Game Completion
 
 Wait for the game to complete by polling the game state:
 
@@ -223,7 +241,7 @@ if (iterations >= maxIterations) {
 }
 ```
 
-### Step 6: Report Final Results
+### Step 7: Report Final Results
 
 Read and display the final game results:
 
