@@ -27,6 +27,9 @@ export * from './agents/arbiter.js';
 export * from './agents/observer.js';
 export * from './agents/llm-provider.js';
 
+// File-based state for subagent coordination
+export * from './engine/file-state.js';
+
 // Hooks for Claude Code integration
 export * from './hooks/config.js';
 export * from './hooks/handler.js';

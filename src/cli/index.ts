@@ -294,6 +294,43 @@ program
     }
   });
 
+// Init-game command - initialize file-based game state for subagents
+program
+  .command('init-game')
+  .description('Initialize a new game with file-based state for subagent coordination')
+  .requiredOption('-r, --rules <path>', 'Path to game rules YAML file')
+  .option('-d, --dir <path>', 'Base directory for game state (default: current directory)')
+  .action(async (options) => {
+    try {
+      const { initializeGame, formatGameState } = await import('../engine/file-state.js');
+
+      console.log(chalk.blue('Initializing game state for subagent play...\n'));
+
+      const rulesPath = resolve(options.rules);
+      const baseDir = options.dir ? resolve(options.dir) : process.cwd();
+
+      const state = initializeGame(rulesPath, baseDir);
+
+      console.log(chalk.green('Game initialized successfully!\n'));
+      console.log(chalk.gray('Files created:'));
+      console.log(chalk.gray(`  ${baseDir}/game-state/board.json - Current board state`));
+      console.log(chalk.gray(`  ${baseDir}/game-state/rules.json - Game rules`));
+      console.log(chalk.gray(`  ${baseDir}/game-state/turn-history.jsonl - Action log`));
+      console.log(chalk.gray(`  ${baseDir}/game-state/pending-moves/*.json - Player move files\n`));
+
+      console.log(chalk.blue('Initial State:'));
+      console.log(formatGameState(state));
+
+      console.log(chalk.yellow('\nTo start playing with subagents:'));
+      console.log(chalk.gray('  1. Use the game-master agent to orchestrate'));
+      console.log(chalk.gray('  2. Or invoke player-1/player-2 agents directly'));
+      console.log(chalk.gray('  3. The arbiter validates moves automatically'));
+    } catch (error) {
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
 // Init command - set up hooks configuration
 program
   .command('init')

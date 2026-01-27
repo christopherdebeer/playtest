@@ -1,0 +1,20 @@
+{
+  "name": "playtest",
+  "description": "Card game playtesting framework with LLM-powered subagents for players, arbiter, and observers",
+  "version": "0.2.0",
+  "author": {
+    "name": "Playtest Framework"
+  },
+  "keywords": [
+    "game-design",
+    "card-games",
+    "playtesting",
+    "multi-agent",
+    "simulation"
+  ],
+  "capabilities": {
+    "agents": true,
+    "hooks": true,
+    "skills": true
+  }
+}

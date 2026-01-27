@@ -1,0 +1,92 @@
+{
+  "description": "Playtest game orchestration hooks for turn-based coordination between subagents",
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "player-1",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-player-start.sh player1"
+          }
+        ]
+      },
+      {
+        "matcher": "player-2",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-player-start.sh player2"
+          }
+        ]
+      },
+      {
+        "matcher": "arbiter",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-arbiter-start.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "game-master",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-game-master-start.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "player-1",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-player-stop.sh player1"
+          }
+        ]
+      },
+      {
+        "matcher": "player-2",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-player-stop.sh player2"
+          }
+        ]
+      },
+      {
+        "matcher": "arbiter",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-arbiter-stop.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "game-master",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/on-game-master-stop.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/validate-game-state.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
