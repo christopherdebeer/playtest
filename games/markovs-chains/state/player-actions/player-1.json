@@ -1,0 +1,9 @@
+{
+  "playerId": "player-1",
+  "turnNumber": 1,
+  "action": {
+    "type": "play_card",
+    "card": "Catalyst",
+    "reasoning": "Boost probability from 65% to 95% before first move attempt - maximize early advancement chance"
+  }
+}

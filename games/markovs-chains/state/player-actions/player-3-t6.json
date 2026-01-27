@@ -1,0 +1,9 @@
+{
+  "playerId": "player-3",
+  "turnNumber": 6,
+  "action": {
+    "type": "move",
+    "targetState": "Victory",
+    "reasoning": "At state C with 55% base probability. Player-2 just failed, so I'll try for victory. I have Reroll as backup if I fail."
+  }
+}

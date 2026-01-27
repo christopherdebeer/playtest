@@ -1,0 +1,24 @@
+{
+  "gameId": "markovs-chains-1738063532000",
+  "gameName": "Markov's Chains",
+  "timestamp": "2026-01-27T19:05:32.000Z",
+  "players": ["player-1", "player-2", "player-3"],
+  "winner": "player-3",
+  "finalStates": {
+    "player-1": "B",
+    "player-2": "C",
+    "player-3": "Victory"
+  },
+  "totalTurns": 6,
+  "duration": "~5 minutes",
+  "summary": "Player-3 won after 6 turns by using State Swap to steal player-2's position at state A, then using Momentum to guarantee a successful transition to Victory. The game featured strategic card play with Certainty, State Swap, Catalyst, and Momentum cards all being used effectively.",
+  "balanceObservations": [
+    "Game length was good at 6 turns - not too short or too long. The two-stage graph (Start -> Intermediate -> Victory) creates meaningful decisions.",
+    "State Swap proved to be a powerful card, allowing player-3 to steal player-2's hard-won position at state A. This card creates interesting counterplay opportunities.",
+    "Certainty card guarantees success but was immediately countered by State Swap, showing cards have appropriate counterplay.",
+    "Probability boosts (Catalyst +0.2, Momentum +0.3) are well-balanced. Combined with base 0.6-0.7 probabilities, they create meaningful risk management decisions without being overpowered.",
+    "All three players reached intermediate states (A, B, C) showing the initial 0.7 probability from Start is reasonable.",
+    "The 0.6 base probability for Victory transitions means players need card support to have high success rates, creating tension and strategic depth.",
+    "Random number generation worked correctly with proper success/failure outcomes based on thresholds."
+  ]
+}

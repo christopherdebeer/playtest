@@ -1,0 +1,9 @@
+{
+  "playerId": "player-3",
+  "turnNumber": 3,
+  "action": {
+    "type": "play_card",
+    "card": "Momentum",
+    "reasoning": "After blocking Player-1, use Momentum to boost my advancement probability and catch up"
+  }
+}

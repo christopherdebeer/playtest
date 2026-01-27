@@ -1,0 +1,9 @@
+{
+  "playerId": "player-1",
+  "turnNumber": 7,
+  "action": {
+    "type": "move",
+    "targetState": "Victory",
+    "reasoning": "At state A with 55% chance. Both opponents failed their victory attempts. Time to try for the win."
+  }
+}

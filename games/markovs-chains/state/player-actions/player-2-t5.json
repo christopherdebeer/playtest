@@ -1,0 +1,9 @@
+{
+  "playerId": "player-2",
+  "turnNumber": 5,
+  "action": {
+    "type": "play_card",
+    "card": "Certainty",
+    "reasoning": "At state B, I can reach Victory with 55% base + 15% Certainty = 70% chance. Go for the win!"
+  }
+}

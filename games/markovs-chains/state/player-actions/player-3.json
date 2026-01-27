@@ -1,0 +1,10 @@
+{
+  "playerId": "player-3",
+  "turnNumber": 3,
+  "action": {
+    "type": "play_card",
+    "card": "Block",
+    "target": "player-1",
+    "reasoning": "Player-1 is at state A and could win next turn with 55% chance. Block them to prevent movement AND card play, buying me time to catch up."
+  }
+}

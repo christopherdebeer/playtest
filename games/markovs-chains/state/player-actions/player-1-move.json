@@ -1,0 +1,9 @@
+{
+  "playerId": "player-1",
+  "turnNumber": 1,
+  "action": {
+    "type": "move",
+    "targetState": "A",
+    "reasoning": "With Catalyst active (95% chance), attempt to reach intermediate state A"
+  }
+}
