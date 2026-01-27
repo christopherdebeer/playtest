@@ -2,7 +2,7 @@
  * LLM Provider implementations
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { Anthropic } from '@anthropic-ai/sdk';
 import type { LLMProvider } from './base.js';
 
 export interface AnthropicConfig {
@@ -35,7 +35,7 @@ export class AnthropicProvider implements LLMProvider {
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const textContent = response.content.find((c) => c.type === 'text');
+    const textContent = response.content.find((c): c is Anthropic.TextBlock => c.type === 'text');
     return textContent ? textContent.text : '';
   }
 }
