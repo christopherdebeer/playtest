@@ -1,7 +1,0 @@
-{"event":"game_start","gameId":"markovs-chains-1769562135","timestamp":"2026-01-28T01:02:55Z","players":["player-1","player-2","player-3"],"maxTurns":15}
-{"event":"move","playerId":"player-1","turnNumber":1,"timestamp":"2026-01-28T01:04:08Z","action":"move","from":"Start","to":"A","probability":0.65,"roll":0.408673,"success":true}
-{"timestamp":"2026-01-28T01:11:20Z","turnNumber":2,"playerId":"player-2","action":"move","details":{"from":"Start","to":"A","cardPlayed":"Momentum","baseProb":0.65,"modifier":0.3,"totalProb":0.95,"roll":0.192,"success":true}}
-{"timestamp":"2026-01-28T01:12:54Z","turnNumber":3,"playerId":"player-3","action":"play_card","details":{"cardPlayed":"Certainty","effect":"Next move auto-succeeds","duration":1}}
-{"timestamp":"2026-01-28T01:14:05Z","turnNumber":4,"playerId":"player-1","action":"draw","details":{"cardDrawn":"Catalyst","handSize":5}}
-{"timestamp":"2026-01-28T01:15:42Z","turnNumber":5,"playerId":"player-2","action":"move","details":{"from":"A","to":"Victory","cardPlayed":"Certainty","baseProb":0.55,"modifier":"auto-success","success":true}}
-{"timestamp":"2026-01-28T01:15:42Z","event":"game_end","winner":"player-2","totalTurns":5,"reason":"player-2 reached Victory state"}

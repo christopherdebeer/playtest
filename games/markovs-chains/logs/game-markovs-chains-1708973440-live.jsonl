@@ -1,3 +1,0 @@
-{"event":"game_start","gameId":"markovs-chains-1708973440","timestamp":"2024-02-26T00:04:00Z","players":["player-1","player-2","player-3"],"config":{"base_transition_prob":0.65,"victory_transition_prob":0.55}}{"timestamp":"2026-01-28T14:48:55Z","event":"forced_pass","playerId":"player-1","turnNumber":1,"reason":"Player timeout"}
-{"timestamp":"2026-01-28T14:52:44Z","event":"forced_pass","playerId":"player-2","turnNumber":2,"reason":"Player timeout"}
-{"timestamp":"2026-01-28T15:02:48Z","event":"forced_pass","playerId":"player-1","turnNumber":4,"reason":"Player timeout"}
