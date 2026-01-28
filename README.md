@@ -1,122 +1,92 @@
-# Playtest Plugin
+# Playtest
 
-AI-driven game playtesting framework for Claude Code that enables automated playtesting of card games using a gamemaster orchestration pattern with parallel player agents.
+AI-driven game playtesting framework with TypeScript engine and multi-agent orchestration.
 
 ## Overview
 
-This plugin provides a generic framework for testing card game rules and balance by:
-- **Gamemaster agent**: Enforces rules impartially and orchestrates gameplay
-- **Player agents**: Act as competitive players trying to win (spawned dynamically as Haiku agents)
-- **File-based communication**: Agents coordinate via structured JSON files
-- **Hook synchronization**: Event-driven architecture triggers agents based on game state changes
-
-## Use Cases
-
-- **Game design iteration**: Rapidly test rule variations
-- **Balance analysis**: Identify dominant strategies or broken mechanics
-- **Rule clarity testing**: Find ambiguous or confusing rule interactions
-- **Automated QA**: Run hundreds of games to find edge cases
+Playtest enables automated testing of board/card games using:
+- **TypeScript Engine**: Manages state, randomization, turns, and deck operations
+- **Gamemaster Agent**: Interprets rules and validates player actions
+- **Player Agents**: Compete to win using strategic decision-making
 
 ## Quick Start
 
-1. Create a game configuration in `games/<game-name>/RULES.md`
-2. Run `/playtest:start-game uno` to start a game session
-3. Watch as the gamemaster and player agents play automatically
-4. View results with `/playtest:view-results`
+```bash
+# Initialize a game
+cd engine && npx playtest init markovs-chains --players 2
 
-## Game Configuration
-
-Games are defined in `games/<game-name>/RULES.md` using markdown with YAML frontmatter:
-
-```markdown
----
-name: "Game Name"
-players: 2-4
-cards_per_player: 7
-deck_size: 108
-special_mechanics:
-  - skip
-  - reverse
-  - draw
-win_condition: "First player to empty their hand"
----
-
-# Game Rules
-
-Detailed natural language rules here...
+# Or use the skill
+/start-game markovs-chains 2
 ```
 
 ## Directory Structure
 
 ```
-.claude-plugin/
-  plugin.json           # Plugin manifest
-commands/               # User commands
-skills/                 # Agent skills
-hooks/                  # Event synchronization
-games/                  # Game configurations
-  <game-name>/
-    RULES.md           # Game rules with frontmatter
-    logs/              # Game execution logs
-    traces/            # Detailed agent traces
-    state/             # Active game state files
+playtest/
+├── engine/                 # TypeScript game engine
+│   ├── src/               # Engine source code
+│   └── ARCHITECTURE.md    # v3 architecture docs
+├── games/                 # Game definitions
+│   ├── markovs-chains/    # Probability-based racing game
+│   │   └── RULES.md      # Game rules + structured config
+│   └── uno/              # Classic card game
+│       └── RULES.md
+├── .claude/
+│   └── agents/           # Game-agnostic agent definitions
+│       ├── gamemaster.md
+│       └── player.md
+└── skills/               # Claude Code skills
+    ├── start-game/
+    ├── stop-game/
+    └── view-results/
 ```
 
-## Architecture
+## Game Configuration
 
-### File-Based Communication
+Games are defined in `games/<game>/RULES.md` with YAML frontmatter:
 
-During gameplay, agents communicate through structured files in `games/<game-name>/state/`:
+```yaml
+---
+name: "Game Name"
+players: 2-4
+starting_cards: 7
+win_condition: "First to empty hand"
+max_turns: 100
 
-- `game-state.json`: Current game state (deck, discard pile, scores)
-- `turn-signal.json`: Current player and available actions
-- `player-actions/<player-id>.json`: Player decisions
-- `game-log.json`: Complete move history
+deck:
+  - { name: "Card A", count: 4, type: "action", effect: { type: "skip" } }
+  - { name: "Card B", count: 2, type: "wild", effect: { type: "wild" } }
 
-### Agent Flow
+board:  # optional
+  states: ["Start", "Middle", "End"]
+  edges:
+    - { from: "Start", to: "Middle", probability: 0.7 }
+---
 
-1. Gamemaster initializes game state
-2. Gamemaster writes turn signal → Hook detects change
-3. Hook spawns player agent (Haiku model) with game context
-4. Player agent writes action decision
-5. Hook triggers gamemaster to validate and process
-6. Gamemaster updates state and signals next player
-7. Repeat until win condition met
+# Game Rules
 
-### Hook System
+Natural language rules for gamemaster interpretation...
+```
 
-Hybrid hooks combine:
-- **Script validation**: Check file format and detect changes
-- **AI decision**: Determine appropriate agent to spawn and context to provide
+## Engine CLI
 
-## Commands
+```bash
+npx playtest init <game> -p <n>          # Initialize game
+npx playtest status <game>               # Check status
+npx playtest wait <game> -p <id>         # Wait for turn (blocking)
+npx playtest submit <game> -p <id> -a .. # Submit action
+npx playtest roll <game> --probability   # Probability roll
+npx playtest draw <game> -p <id>         # Draw cards
+npx playtest end <game> -w <id> -r ..    # End game
+```
 
-- `/playtest:start-game <game-name>`: Start a new game session
-- `/playtest:view-results`: Analyze completed game logs
-- `/playtest:stop-game`: Emergency halt current game
+## Available Games
 
-## Example: UNO
+- **markovs-chains**: Probability-based racing game with card effects
+- **uno**: Classic card matching game
 
-See `games/uno/RULES.md` for a complete example configuration demonstrating:
-- Structured game parameters in YAML frontmatter
-- Natural language rule descriptions
-- Special card effects (Skip, Reverse, Draw Two, Wild)
-- Win conditions and scoring
+## Skills
 
-## Development
-
-This plugin demonstrates:
-- Dynamic agent spawning via Task tool
-- Multi-agent coordination patterns
-- File-based inter-agent communication
-- Event-driven hook architecture
-- Generic game engine with specific rule configs
-
-## Future Enhancements
-
-- Statistical analysis across multiple games
-- Player strategy profiling
-- Rule conflict detection
-- Tournament mode (round-robin, elimination)
-- Visual game replay
-- Custom player personalities
+- `/start-game <game> [players]` - Start a playtest
+- `/stop-game [game]` - Emergency halt
+- `/view-results [game]` - Analyze logs
