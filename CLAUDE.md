@@ -33,19 +33,26 @@ These skills provide implementation guidance and Claude loads them automatically
 ```
 games/<game-name>/           # Game definitions and runtime
 ├── RULES.md                # Game rules (YAML frontmatter + markdown)
-├── state/                  # Active game state files
+├── state/                  # Active game state files (gitignored)
 │   ├── game-state.json    # Authoritative state
 │   ├── turn-signal.json   # Turn notifications
 │   └── player-actions/    # Player decisions
-└── logs/                   # Game logs (JSONL)
+└── logs/                   # Game logs (tracked in git)
+    ├── game-*-live.jsonl  # Live event stream
+    └── debug/             # Debug captures with timing analysis
 
 engine/                      # Core engine
-├── templates/              # Agent prompt templates
+├── templates/              # Game-agnostic agent prompt templates
 ├── schemas/                # JSON schemas
 └── *.md                    # Architecture docs
 
+scripts/actions/             # Encapsulated action scripts
+├── gamemaster/             # wait-for-action, signal-turn, end-game
+├── player/                 # wait-for-turn, submit-action
+└── common/                 # send-message, read-messages
+
 .claude/skills/             # Native Claude Code skills
-skills/                     # Plugin skills (reference)
+.claude/hooks/              # Agent lifecycle hooks (debug capture)
 ```
 
 ## Quick Start
