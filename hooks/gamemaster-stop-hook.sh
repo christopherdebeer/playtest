@@ -78,7 +78,8 @@ if [ "$GAME_STATUS" = "completed" ]; then
   # Collect task outputs before they're cleaned up
   TASK_OUTPUTS="[]"
   if [ -d "$TASK_OUTPUT_DIR" ]; then
-    for output_file in "$TASK_OUTPUT_DIR"/*.output 2>/dev/null; do
+    shopt -s nullglob  # Make non-matching globs expand to nothing
+    for output_file in "$TASK_OUTPUT_DIR"/*.output; do
       if [ -f "$output_file" ]; then
         AGENT_FILE_ID=$(basename "$output_file" .output)
         # Get last 100 lines to keep size reasonable
@@ -86,6 +87,7 @@ if [ "$GAME_STATUS" = "completed" ]; then
         TASK_OUTPUTS=$(echo "$TASK_OUTPUTS" | jq --arg id "$AGENT_FILE_ID" --argjson content "$CONTENT" '. + [{agentId: $id, output: $content}]')
       fi
     done
+    shopt -u nullglob  # Restore default behavior
   fi
 
   # ============================================================
