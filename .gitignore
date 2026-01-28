@@ -1,22 +1,44 @@
-# Game state files (temporary during gameplay)
-games/*/state/*.json
-games/*/state/*.lock
+# ===========================================
+# RUNTIME STATE (ignored - regenerated each game)
+# ===========================================
+
+# Active game state (recreated each playtest)
+games/*/state/game-state.json
+games/*/state/turn-signal.json
+games/*/state/player-actions/*.json
+games/*/state/messages/
+
+# Lock files
+*.lock
+
+# ===========================================
+# TRACKED: Logs and Debug Captures
+# ===========================================
+# These are NOT ignored - we want to retain historical results
+# - games/*/logs/*.jsonl (live event logs)
+# - games/*/logs/*.json (game summaries)
+# - games/*/logs/debug/ (debug captures with timing analysis)
+# - games/*/traces/ (game traces)
+
+# ===========================================
+# LOCAL/USER-SPECIFIC
+# ===========================================
 
 # Local settings (user-specific, not committed)
 .claude/*.local.md
 .claude/*.local.json
 
-# Node modules if we add any scripts
+# ===========================================
+# DEPENDENCIES
+# ===========================================
+
 node_modules/
 
-# OS files
+# ===========================================
+# OS FILES
+# ===========================================
+
 .DS_Store
 Thumbs.db
-games/**/state/*
-# Game runtime data
-games/*/logs/*.jsonl
-games/*/state/*.json
-games/*/state/player-actions/*.json
-
-# Game log summary files
-games/*/logs/*.json
+*~
+*.swp

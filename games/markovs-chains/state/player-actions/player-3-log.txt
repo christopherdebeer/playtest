@@ -1,4 +1,0 @@
-Markovs Chains Player-3 Agent Log
-=================================
-Agent initialized: Claude 3.5 Haiku
-Logging strategy, decisions, and game progression.
