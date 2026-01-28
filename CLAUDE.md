@@ -1,68 +1,55 @@
 # Playtest - AI Game Playtesting Framework
 
-This project is an AI-driven game playtesting framework with gamemaster orchestration and parallel player agents.
+AI-driven game playtesting framework with gamemaster orchestration and parallel player agents.
 
-## Available Commands
+## Available Skills
 
-When the user requests any of these commands, follow the instructions in the referenced file:
+These skills are available via `/skill-name` or Claude will use them when contextually relevant:
 
-### `/playtest:start-game <game-name> [num-players]`
-Initialize and run a game with coordinated multi-agent architecture.
-**Instructions**: Read and follow `commands/start-game.md`
+| Skill | Description |
+|-------|-------------|
+| `/start-game <game> [players]` | Initialize and run a multi-agent game playtest |
+| `/stop-game [game]` | Emergency halt of active game session |
+| `/view-results [game]` | Analyze completed game logs and display results |
 
-### `/playtest:stop-game [game-name]`
-Emergency halt of active game session.
-**Instructions**: Read and follow `commands/stop-game.md`
+### Examples
 
-### `/playtest:view-results [game-name] [log-file]`
-Analyze completed game logs and display results.
-**Instructions**: Read and follow `commands/view-results.md`
+```
+/start-game markovs-chains 3
+/stop-game
+/view-results markovs-chains
+```
 
-## Skills (Auto-Invoked)
+## Background Skills (Auto-Invoked)
 
-These skills provide implementation guidance and should be referenced when relevant:
+These skills provide implementation guidance and Claude loads them automatically when relevant:
 
-- **File Protocol** (`skills/file-protocol/SKILL.md`): Use when implementing file-based agent communication, JSON state management, atomic writes, or race condition handling.
-
-- **Game Coordination** (`skills/game-coordination/SKILL.md`): Use when implementing gamemaster agents, spawning player agents, or coordinating multiple agents in parallel.
-
-- **Hook Sync** (`skills/hook-sync/SKILL.md`): Use when implementing hook-based coordination or event-driven agent triggering.
+- **File Protocol** (`skills/file-protocol/SKILL.md`): File-based agent communication, JSON state management, atomic writes
+- **Game Coordination** (`skills/game-coordination/SKILL.md`): Gamemaster agents, player spawning, multi-agent orchestration
+- **Hook Sync** (`skills/hook-sync/SKILL.md`): Event-driven agent triggering, file change detection
 
 ## Project Structure
 
 ```
-games/                    # Game definitions and runtime state
-├── <game-name>/
-│   ├── RULES.md         # Game rules with YAML frontmatter
-│   ├── state/           # Active game state files
-│   └── logs/            # Game logs (JSONL)
+games/<game-name>/           # Game definitions and runtime
+├── RULES.md                # Game rules (YAML frontmatter + markdown)
+├── state/                  # Active game state files
+│   ├── game-state.json    # Authoritative state
+│   ├── turn-signal.json   # Turn notifications
+│   └── player-actions/    # Player decisions
+└── logs/                   # Game logs (JSONL)
 
-engine/                   # Core engine components
-├── templates/           # Agent prompt templates
-├── schemas/             # JSON schemas for validation
-└── *.md                 # Architecture documentation
+engine/                      # Core engine
+├── templates/              # Agent prompt templates
+├── schemas/                # JSON schemas
+└── *.md                    # Architecture docs
 
-commands/                 # Slash command implementations
-skills/                   # Skill definitions
-hooks/                    # Hook configurations
+.claude/skills/             # Native Claude Code skills
+skills/                     # Plugin skills (reference)
 ```
 
 ## Quick Start
 
-To start a game:
-```
-/playtest:start-game markovs-chains 3
-```
-
-To view results after a game:
-```
-/playtest:view-results markovs-chains
-```
-
-## How Commands Work
-
-When you invoke a `/playtest:*` command:
-1. Read the corresponding `commands/*.md` file
-2. Follow the implementation steps exactly
-3. Use the allowed tools specified in the command's frontmatter
-4. Reference skills as needed for implementation details
+1. Start a game: `/start-game markovs-chains 3`
+2. Monitor progress in `games/markovs-chains/state/`
+3. View results: `/view-results markovs-chains`
