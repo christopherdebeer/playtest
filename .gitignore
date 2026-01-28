@@ -17,3 +17,6 @@ games/**/state/*
 games/*/logs/*.jsonl
 games/*/state/*.json
 games/*/state/player-actions/*.json
+
+# Game log summary files
+games/*/logs/*.json
