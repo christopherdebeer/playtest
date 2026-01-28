@@ -4,14 +4,23 @@
 # This hook runs when a player agent completes an action
 # It checks if the game is still in progress and prompts the agent to wait
 
-AGENT_ID="${CLAUDE_AGENT_ID}"
-GAME_NAME="${GAME_NAME:-markovs-chains}"
-GAME_STATE_FILE="games/$GAME_NAME/state/game-state.json"
+# Context guards
+AGENT_ID="${CLAUDE_AGENT_ID:-unknown}"
+TASK_ID="${CLAUDE_TASK_ID:-}"
+
+# Only run in subagent context (not main session)
+if [ -z "$TASK_ID" ]; then
+  exit 0  # Main session, skip
+fi
 
 # Only run for player agents
 if [[ ! "$AGENT_ID" =~ player- ]]; then
-  exit 0
+  exit 0  # Not a player agent, skip
 fi
+
+# Game state detection
+GAME_NAME="${GAME_NAME:-markovs-chains}"
+GAME_STATE_FILE="games/$GAME_NAME/state/game-state.json"
 
 # Check if game state exists
 if [ ! -f "$GAME_STATE_FILE" ]; then
