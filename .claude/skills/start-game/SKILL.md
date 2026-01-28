@@ -19,11 +19,12 @@ Coordinator (this skill)
 ├─> Spawns Player-2 (background, long-running)
 └─> Spawns Player-3 (background, long-running)
 
-All agents run in parallel, coordinate via files:
-- Gamemaster writes turn-signal.json
-- Players poll for turn-signal.json
-- Players write player-actions/*.json
-- Gamemaster polls for player-actions/*.json
+All agents run in parallel, coordinate via files + hooks:
+- Gamemaster writes turn-signal.json → Stop hook guides to wait
+- Players use inotifywait (blocking) for turn-signal.json
+- Players write player-actions/*.json → Stop hook guides to wait
+- Gamemaster uses inotifywait (blocking) for player actions
+- Zero polling overhead - all coordination via event-driven hooks
 ```
 
 ## Arguments
@@ -70,10 +71,12 @@ mkdir -p games/${gameName}/traces
 ### Step 4: Load and Fill Agent Templates
 
 Load templates from `engine/templates/`:
-- `gamemaster-coordinated.md` for gamemaster
-- `player-npm-interface.md` for players
+- `gamemaster-hook-orchestrated.md` for gamemaster (uses stop hooks)
+- `player-hook-orchestrated.md` for players (uses stop hooks)
 
 Fill template variables: `{{GAME_NAME}}`, `{{NUM_PLAYERS}}`, `{{RULES_CONTENT}}`, etc.
+
+**IMPORTANT**: These templates work with stop hooks in `.claude/hooks/` to orchestrate coordination without polling.
 
 ### Step 5: Spawn ALL Agents in Parallel
 
@@ -112,8 +115,9 @@ Display winner, total turns, and point to log files.
 ## Reference Files
 
 For detailed templates and schemas, see:
-- `engine/templates/gamemaster-coordinated.md`
-- `engine/templates/player-npm-interface.md`
-- `engine/schemas/` - JSON schemas for validation
-- `skills/game-coordination/SKILL.md` - Coordination patterns
-- `skills/file-protocol/SKILL.md` - File-based communication
+- `engine/templates/gamemaster-hook-orchestrated.md` - Hook-based gamemaster
+- `engine/templates/player-hook-orchestrated.md` - Hook-based player
+- `engine/HOOKS-INTEGRATION-GUIDE.md` - Complete hook orchestration guide
+- `engine/ARCHITECTURE-V2.md` - Blocking waits architecture
+- `.claude/hooks/agent-stop-hook.sh` - Player stop hook
+- `.claude/hooks/gamemaster-stop-hook.sh` - Gamemaster stop hook
