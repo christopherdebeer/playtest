@@ -44,6 +44,11 @@ npx playtest roll {GAME} --probability 0.65 -c "movement roll"
 # Draw cards for player
 npx playtest draw {GAME} -p <player-id> -n 1
 
+# Play a card from player's hand (for card games)
+npx playtest play {GAME} -p <player-id> -c "Card Name"
+# For wild cards, specify the declared color:
+npx playtest play {GAME} -p <player-id> -c "Wild" --color Red
+
 # Advance to next player's turn (call AFTER resolving action)
 npx playtest advance {GAME}
 
@@ -76,8 +81,10 @@ When `npx playtest pending {GAME}` returns an action:
    - Is target valid?
 4. Resolve the action:
    - For moves: `npx playtest roll {GAME} --probability <p>`
-   - For cards: Apply effect, update state
-5. Update player state: `npx playtest update {GAME} -p <id> -s '...'`
+   - For card plays: `npx playtest play {GAME} -p <id> -c "Card Name"`
+   - For wild cards: Include `--color <Color>` from action's `new_color` field
+   - For draws: `npx playtest draw {GAME} -p <id> -n 1`
+5. Update player state if needed: `npx playtest update {GAME} -p <id> -s '...'`
 6. Check win condition - if met: `npx playtest end {GAME} -w <winner> -r "reason"`
 7. Advance turn: `npx playtest advance {GAME}`
 

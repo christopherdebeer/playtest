@@ -24,6 +24,8 @@ import {
 } from './game.js';
 import type { PendingAction } from './types.js';
 import { waitForTurn } from './turns.js';
+import { getCardDefinition, parseRules } from './rules.js';
+import { getRulesPath } from './game.js';
 
 const program = new Command();
 
@@ -131,6 +133,9 @@ program
 
       if (result.status === 'timeout') {
         process.exit(124); // Standard timeout exit code
+      }
+      if (result.status === 'game_not_found') {
+        process.exit(1); // Game was reset or doesn't exist
       }
     } catch (e) {
       console.log(JSON.stringify({
@@ -377,6 +382,11 @@ program
         throw new Error(`Card "${options.card}" not found in ${options.player}'s hand`);
       }
 
+      // Get card definition from rules to help gamemaster resolve effects
+      const rulesPath = getRulesPath(game);
+      const { config } = parseRules(rulesPath);
+      const cardDef = getCardDefinition(config, card.name);
+
       logEvent(state, {
         event: 'play_card',
         turn: state.turn,
@@ -392,6 +402,7 @@ program
       console.log(JSON.stringify({
         success: true,
         played: card,
+        cardDefinition: cardDef?.effect,  // Effect info for gamemaster
         handSize: state.players[options.player].hand.length,
         topCard: state.shared.topCard,
         currentColor: state.shared.currentColor

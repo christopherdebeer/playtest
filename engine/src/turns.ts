@@ -1,6 +1,6 @@
 // Turn management - handles blocking waits for player turns
 
-import { watch } from 'fs';
+import { watch, existsSync, type FSWatcher } from 'fs';
 import { loadState, getStateFile, getPlayerView } from './game.js';
 import type { WaitResult, GameState } from './types.js';
 
@@ -17,10 +17,28 @@ export async function waitForTurn(
   return new Promise((resolve) => {
     const stateFile = getStateFile(gameName);
 
-    // Set up file watcher
-    const watcher = watch(stateFile, () => {
-      checkState();
-    });
+    // Check if game exists before setting up watcher
+    if (!existsSync(stateFile)) {
+      resolve({
+        status: 'game_not_found',
+        error: `No active game found for ${gameName}`
+      });
+      return;
+    }
+
+    // Set up file watcher (may fail if file is deleted between check and watch)
+    let watcher: FSWatcher;
+    try {
+      watcher = watch(stateFile, () => {
+        checkState();
+      });
+    } catch (e) {
+      resolve({
+        status: 'game_not_found',
+        error: (e as Error).message
+      });
+      return;
+    }
 
     // Timeout handler
     const timeout = setTimeout(() => {
@@ -68,7 +86,17 @@ export async function waitForTurn(
 
         // Not our turn, keep waiting
       } catch (e) {
-        // State file might be mid-write, ignore and retry
+        const errorMsg = (e as Error).message;
+        // Permanent error - game was reset or doesn't exist
+        if (errorMsg.includes('No active game') || errorMsg.includes('not found')) {
+          cleanup();
+          resolve({
+            status: 'game_not_found',
+            error: errorMsg
+          } as WaitResult);
+          return;
+        }
+        // Transient error (file mid-write), ignore and retry
       }
     }
 

@@ -91,7 +91,7 @@ export interface GameState {
 }
 
 export interface WaitResult {
-  status: 'your_turn' | 'game_over' | 'timeout' | 'error';
+  status: 'your_turn' | 'game_over' | 'timeout' | 'error' | 'game_not_found';
   gameState?: PlayerView;
   winner?: string;
   reason?: string;

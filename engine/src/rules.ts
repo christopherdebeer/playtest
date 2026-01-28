@@ -71,3 +71,9 @@ export function getPlayerCount(config: GameConfig): { min: number; max: number }
   }
   return config.players;
 }
+
+// Look up card definition from config by name
+export function getCardDefinition(config: GameConfig, cardName: string): DeckConfig | null {
+  if (!config.deck) return null;
+  return config.deck.find(c => c.name === cardName) ?? null;
+}
