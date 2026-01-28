@@ -15,19 +15,17 @@
     ]
   },
   "hooks": {
-    "SubagentStop": [
+    "SubagentStart": [
       {
+        "matcher": "test-player",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/agent-stop-hook.sh"
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/gamemaster-stop-hook.sh"
+            "command": "hooks/test/test-player-start-hook.sh"
           }
         ]
       }
-    ]
+    ],
+    "SubagentStop": []
   }
 }

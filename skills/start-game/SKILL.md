@@ -106,29 +106,29 @@ for (let i = 1; i <= NUM_PLAYERS; i++) {
 
 **CRITICAL**: Use a SINGLE message with multiple Task calls to spawn all agents simultaneously.
 
+**IMPORTANT**: Use the properly defined agent types (`gamemaster` and `player`) instead of `general-purpose`. This ensures that SubagentStop hooks receive proper context and can control agent lifecycle.
+
 ```javascript
-// Spawn gamemaster (Sonnet for complex reasoning)
+// Spawn gamemaster (uses .claude/agents/gamemaster.md)
 Task({
-  subagent_type: "general-purpose",
-  model: "sonnet",
+  subagent_type: "gamemaster",
   description: `Gamemaster for ${GAME_NAME}`,
   prompt: gamemasterPrompt,
-  allowed_tools: ["Read", "Write", "Bash"],
   run_in_background: true
 });
 
-// Spawn all players (Haiku for speed/cost)
+// Spawn all players (uses .claude/agents/player.md)
 for (let i = 1; i <= NUM_PLAYERS; i++) {
   Task({
-    subagent_type: "general-purpose",
-    model: "haiku",
+    subagent_type: "player",
     description: `player-${i} for ${GAME_NAME}`,
     prompt: playerPrompts[i-1],
-    allowed_tools: ["Read", "Write", "Bash"],
     run_in_background: true
   });
 }
 ```
+
+**Why this matters**: Agent definitions in `.claude/agents/` have SubagentStop hooks configured that receive JSON input with `agent_id`, `agent_type`, and `session_id`. These hooks can check game state and prevent premature exits.
 
 ### Step 6: Report Launch Status
 

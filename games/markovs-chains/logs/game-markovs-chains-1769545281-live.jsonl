@@ -1,0 +1,10 @@
+{"timestamp":"2026-01-27T20:21:40Z","type":"game_start","gameId":"markovs-chains-1769545281","players":["player-1","player-2","player-3"],"initialState":"All players at Start state","deckSize":18,"startingCards":4}
+{"timestamp":"2026-01-27T20:21:58Z","type":"player_action","playerId":"player-1","turnNumber":1,"action":{"type":"play_card","card":"catalyst-1"},"reasoning":"Using Catalyst to boost transition probability from 65% to 85% before attempting move from Start state"}
+{"timestamp":"2026-01-27T20:22:41Z","type":"player_action","playerId":"player-2","turnNumber":2,"action":{"type":"move","targetState":"A"},"reasoning":"Moving to state A with base 65% probability"}
+{"timestamp":"2026-01-27T20:22:42Z","type":"gamemaster_action","playerId":"player-2","action":"move","from":"Start","to":"A","roll":0.509036,"probability":0.65,"success":true}
+{"timestamp":"2026-01-27T20:23:47Z","type":"player_action","playerId":"player-3","turnNumber":3,"action":{"type":"draw"},"reasoning":"Drawing card to improve hand","cardDrawn":"catalyst-3"}
+{"timestamp":"2026-01-27T20:22:32Z","type":"player_action","playerId":"player-1","turnNumber":4,"action":{"type":"move","targetState":"A"},"reasoning":"Moving to state A with boosted probability"}
+{"timestamp":"2026-01-27T20:22:33Z","type":"gamemaster_action","playerId":"player-1","action":"move","from":"Start","to":"A","roll":0.696097,"probability":0.85,"success":true,"effectsApplied":["Catalyst +0.2"],"effectsExpired":["Catalyst"]}
+{"timestamp":"2026-01-27T20:31:06Z","type":"player_action","playerId":"player-2","turnNumber":5,"action":{"type":"move","targetState":"Victory"},"reasoning":"Attempting Victory with 55% probability"}
+{"timestamp":"2026-01-27T20:31:07Z","type":"gamemaster_action","playerId":"player-2","action":"move","from":"A","to":"Victory","roll":0.974959,"probability":0.55,"success":false}
+{"timestamp":"2026-01-27T20:31:56Z","type":"player_action","playerId":"player-3","turnNumber":6,"action":{"type":"draw"},"reasoning":"Drawing card to improve hand","cardDrawn":"momentum-3"}

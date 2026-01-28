@@ -1,0 +1,4 @@
+{"event":"game_start","gameId":"markovs-chains-1769611501","timestamp":"2026-01-28T00:00:00Z","players":["player-1","player-2","player-3"],"config":{"players":3,"states":6,"starting_cards":4,"cards_to_draw":1,"base_transition_prob":0.65,"victory_transition_prob":0.55,"card_boost_strength":0.2,"friction_strength":0.25,"block_duration":1,"max_turns":15}}
+{"event":"action","playerId":"player-1","turnNumber":1,"timestamp":"2026-01-28T14:48:55Z","action":{"type":"pass","forced":true},"result":{"success":true,"message":"Player passed turn (forced timeout)"}}
+{"event":"action","playerId":"player-2","turnNumber":2,"timestamp":"2026-01-28T14:52:44Z","action":{"type":"pass","forced":true},"result":{"success":true,"message":"Player passed turn (forced timeout)"}}
+{"event":"action","playerId":"player-3","turnNumber":3,"timestamp":"2026-01-28T14:53:06Z","action":{"type":"draw"},"result":{"success":true,"card_drawn":"catalyst","message":"Drew 1 card from deck"}}
