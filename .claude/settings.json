@@ -4,5 +4,14 @@
   ],
   "enabledPlugins": {
     "playtest@inline": true
+  },
+  "hooks": {
+    "stop": {
+      "enabled": true,
+      "scripts": [
+        ".claude/hooks/agent-stop-hook.sh",
+        ".claude/hooks/gamemaster-stop-hook.sh"
+      ]
+    }
   }
 }

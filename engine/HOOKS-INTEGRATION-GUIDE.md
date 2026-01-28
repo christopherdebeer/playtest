@@ -124,7 +124,27 @@ exit 1  # Prevent exit, gamemaster should continue
 chmod +x .claude/hooks/*.sh
 ```
 
-### 3. Environment Variables
+### 3. Enable Hooks in Settings
+
+Add hook configuration to `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "stop": {
+      "enabled": true,
+      "scripts": [
+        ".claude/hooks/agent-stop-hook.sh",
+        ".claude/hooks/gamemaster-stop-hook.sh"
+      ]
+    }
+  }
+}
+```
+
+**CRITICAL**: Without this configuration, hooks won't run!
+
+### 4. Environment Variables
 
 Hooks receive these environment variables from Claude Code:
 
