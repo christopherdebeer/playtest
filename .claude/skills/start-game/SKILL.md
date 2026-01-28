@@ -77,22 +77,28 @@ mkdir -p games/${GAME_NAME}/state/messages
 mkdir -p games/${GAME_NAME}/logs/debug
 ```
 
-### Step 4: Load Agent Prompts
+### Step 4: Load and Prepare Agent Prompts
 
-Load pre-built prompts from the game directory:
+Load game-agnostic templates from engine and substitute placeholders:
 
 ```javascript
-// Gamemaster prompt (ready to use)
-const gamemasterPrompt = await Read(`games/${GAME_NAME}/prompts/gamemaster-prompt.md`);
+// Load engine templates
+const gamemasterTemplate = await Read(`engine/templates/gamemaster.md`);
+const playerTemplate = await Read(`engine/templates/player.md`);
 
-// Player prompt (needs {{PLAYER_ID}} replacement)
-const playerPromptTemplate = await Read(`games/${GAME_NAME}/prompts/player-prompt.md`);
+// Prepare gamemaster prompt
+const gamemasterPrompt = gamemasterTemplate
+  .replace(/\{\{GAME_NAME\}\}/g, GAME_NAME)
+  .replace(/\{\{NUM_PLAYERS\}\}/g, NUM_PLAYERS)
+  .replace(/\{\{MAX_TURNS\}\}/g, '50');
 
 // Create player prompts
 const playerPrompts = [];
 for (let i = 1; i <= NUM_PLAYERS; i++) {
   playerPrompts.push(
-    playerPromptTemplate.replace(/\{\{PLAYER_ID\}\}/g, `player-${i}`)
+    playerTemplate
+      .replace(/\{\{PLAYER_ID\}\}/g, `player-${i}`)
+      .replace(/\{\{GAME_NAME\}\}/g, GAME_NAME)
   );
 }
 ```
@@ -183,8 +189,8 @@ Agents use these scripts (they don't need to know internals):
 
 ## Reference Files
 
-- `games/{game}/prompts/gamemaster-prompt.md` - Gamemaster prompt
-- `games/{game}/prompts/player-prompt.md` - Player prompt template
-- `games/{game}/rules/` - Game rules for reference
+- `engine/templates/gamemaster.md` - Gamemaster prompt template (game-agnostic)
+- `engine/templates/player.md` - Player prompt template (game-agnostic)
+- `games/{game}/RULES.md` - Game rules (loaded by agents at runtime)
 - `scripts/actions/README.md` - Action scripts documentation
 - `.claude/hooks/gamemaster-stop-hook.sh` - Debug capture hook
