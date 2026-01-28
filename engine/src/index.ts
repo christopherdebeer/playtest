@@ -3,6 +3,7 @@
 // Playtest Engine CLI
 
 import { Command } from 'commander';
+import { rmSync, existsSync } from 'fs';
 import {
   initGame,
   loadState,
@@ -17,7 +18,9 @@ import {
   logEvent,
   getPlayerView,
   gameExists,
-  stateExists
+  stateExists,
+  getStatePath,
+  getGamePath
 } from './game.js';
 import type { PendingAction } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -553,6 +556,63 @@ program
         rules: state.rulesMarkdown,
         config: state.config
       }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('reset <game>')
+  .description('Reset game state (clean up and optionally reinitialize)')
+  .option('-p, --players <n>', 'Reinitialize with this many players')
+  .option('--keep-logs', 'Keep existing log files')
+  .action((game, options) => {
+    try {
+      // Check if game exists
+      if (!gameExists(game)) {
+        throw new Error(`Game '${game}' not found`);
+      }
+
+      const stateDir = getStatePath(game);
+
+      // Clean up state directory
+      if (existsSync(stateDir)) {
+        rmSync(stateDir, { recursive: true, force: true });
+      }
+
+      let result: Record<string, unknown> = {
+        success: true,
+        game,
+        stateCleared: true
+      };
+
+      // Reinitialize if players specified
+      if (options.players) {
+        const playerCount = parseInt(options.players, 10);
+        const state = initGame(game, playerCount);
+
+        // Auto-start the game
+        state.status = 'in_progress';
+        state.turn = 1;
+        state.currentPlayer = state.turnOrder[0];
+        saveState(state);
+
+        result = {
+          ...result,
+          reinitialized: true,
+          gameId: state.gameId,
+          status: state.status,
+          players: state.turnOrder,
+          topCard: state.shared.topCard,
+          currentColor: state.shared.currentColor
+        };
+      }
+
+      console.log(JSON.stringify(result));
     } catch (e) {
       console.log(JSON.stringify({
         success: false,
