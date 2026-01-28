@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # Stop Game - Emergency Halt
 
-Emergency halt an active game session and clean up state files.
+Emergency halt an active game session, trigger debug capture, and clean up state files.
 
 ## Arguments
 
@@ -18,85 +18,133 @@ Emergency halt an active game session and clean up state files.
 
 ### 1. Find Active Game
 
-```javascript
-let gameName = "$0";
+```bash
+GAME_NAME="$0"
 
-if (!gameName) {
-  // Find active game by checking for active game-state files
-  const stateFiles = await Glob("games/*/state/game-state.json");
+if [ -z "$GAME_NAME" ]; then
+  # Find active game by checking for in-progress game-state files
+  for state_file in games/*/state/game-state.json; do
+    if [ -f "$state_file" ]; then
+      STATUS=$(jq -r '.gameStatus // "unknown"' "$state_file" 2>/dev/null)
+      if [ "$STATUS" = "in_progress" ]; then
+        GAME_NAME=$(echo "$state_file" | cut -d'/' -f2)
+        break
+      fi
+    fi
+  done
 
-  for (const stateFile of stateFiles) {
-    const state = JSON.parse(await Read(stateFile));
-    if (state.gameActive) {
-      gameName = stateFile.split('/')[1];
-      break;
-    }
-  }
+  if [ -z "$GAME_NAME" ]; then
+    echo "No active games found"
+    exit 0
+  fi
+fi
 
-  if (!gameName) {
-    console.log("No active games found");
-    return;
-  }
-}
+STATE_FILE="games/$GAME_NAME/state/game-state.json"
 ```
 
 ### 2. Read Current State
 
-```javascript
-const statePath = `games/${gameName}/state/game-state.json`;
-const gameState = JSON.parse(await Read(statePath));
+```bash
+if [ ! -f "$STATE_FILE" ]; then
+  echo "Game state not found: $STATE_FILE"
+  exit 1
+fi
 
-if (!gameState.gameActive) {
-  console.log(`Game ${gameName} is not active`);
-  return;
-}
+GAME_ID=$(jq -r '.gameId // "unknown"' "$STATE_FILE")
+TURN_NUMBER=$(jq -r '.turnNumber // 0' "$STATE_FILE")
+GAME_STATUS=$(jq -r '.gameStatus // "unknown"' "$STATE_FILE")
+
+if [ "$GAME_STATUS" != "in_progress" ]; then
+  echo "Game $GAME_NAME is not active (status: $GAME_STATUS)"
+  exit 0
+fi
 ```
 
-### 3. Mark Game as Stopped
-
-```javascript
-gameState.gameActive = false;
-gameState.gameStatus = "stopped";
-gameState.stoppedAt = new Date().toISOString();
-gameState.stoppedReason = "Manual stop by user";
-
-await Write(statePath, JSON.stringify(gameState, null, 2));
-```
-
-### 4. Write Partial Log
-
-Save incomplete game log for analysis:
-
-```javascript
-const logTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-const partialLog = {
-  fileType: "game-log",
-  status: "stopped",
-  game: gameName,
-  gameId: gameState.gameId,
-  stoppedAt: gameState.stoppedAt,
-  completedTurns: gameState.turnNumber,
-  finalState: gameState
-};
-
-await Write(
-  `games/${gameName}/logs/game-stopped-${logTimestamp}.json`,
-  JSON.stringify(partialLog, null, 2)
-);
-```
-
-### 5. Clean Up State Files
+### 3. Use end-game Script to Stop Gracefully
 
 ```bash
-rm -f games/${gameName}/state/turn-signal.json
-rm -f games/${gameName}/state/player-actions/*.json
-rm -rf games/${gameName}/state/.locks/*
+# Use the action script to end the game properly
+./scripts/actions/gamemaster/end-game.sh "none" "Manual stop by user" "$GAME_NAME"
+```
+
+This will:
+- Update game state to "completed"
+- Log the game_end event
+- Notify all players via message bus
+- Trigger debug capture via gamemaster stop hook
+
+### 4. Force Cleanup (if end-game fails)
+
+If the action script isn't available or fails:
+
+```bash
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Update game state directly
+jq --arg status "stopped" --arg ts "$TIMESTAMP" \
+  '.gameStatus = $status | .stoppedAt = $ts | .stoppedReason = "Manual stop"' \
+  "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+
+# Write stop event to log
+LIVE_LOG="games/$GAME_NAME/logs/game-$GAME_ID-live.jsonl"
+if [ -f "$LIVE_LOG" ]; then
+  echo "{\"event\":\"game_stopped\",\"timestamp\":\"$TIMESTAMP\",\"reason\":\"Manual stop\",\"turnNumber\":$TURN_NUMBER}" >> "$LIVE_LOG"
+fi
+
+# Clean up state files
+rm -f "games/$GAME_NAME/state/turn-signal.json"
+rm -f "games/$GAME_NAME/state/player-actions"/*.json
+rm -rf "games/$GAME_NAME/state/messages"
+```
+
+### 5. Save Partial Log
+
+```bash
+LOG_TIMESTAMP=$(date +%s)
+PARTIAL_LOG="games/$GAME_NAME/logs/game-stopped-$LOG_TIMESTAMP.json"
+
+jq -n \
+  --arg status "stopped" \
+  --arg game "$GAME_NAME" \
+  --arg gameId "$GAME_ID" \
+  --arg stoppedAt "$TIMESTAMP" \
+  --argjson turns "$TURN_NUMBER" \
+  --slurpfile state "$STATE_FILE" \
+  '{
+    fileType: "game-log",
+    status: $status,
+    game: $game,
+    gameId: $gameId,
+    stoppedAt: $stoppedAt,
+    completedTurns: $turns,
+    finalState: $state[0]
+  }' > "$PARTIAL_LOG"
 ```
 
 ### 6. Report to User
 
-Display:
-- Game name and ID
-- Turn number when stopped
-- Final player states
-- Location of partial log
+```markdown
+## Game Stopped: {GAME_NAME}
+
+**Game ID**: {GAME_ID}
+**Stopped at turn**: {TURN_NUMBER}
+**Status**: stopped
+
+**Final player positions**:
+- player-1: {state}
+- player-2: {state}
+- player-3: {state}
+
+**Files**:
+- Partial log: `{PARTIAL_LOG}`
+- Debug capture: `games/{GAME_NAME}/logs/debug/`
+- Live events: `games/{GAME_NAME}/logs/game-{GAME_ID}-live.jsonl`
+
+Use `/view-results {GAME_NAME}` to analyze the partial game.
+```
+
+## Reference Files
+
+- `scripts/actions/gamemaster/end-game.sh` - Graceful game termination
+- `games/{game}/state/game-state.json` - Current game state
+- `games/{game}/logs/debug/` - Debug captures
