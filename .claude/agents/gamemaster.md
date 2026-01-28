@@ -32,6 +32,9 @@ npx playtest status {GAME}
 # Get full game state (you see everything)
 npx playtest state {GAME}
 
+# CRITICAL: Wait for player action (blocking - use this in your loop!)
+npx playtest pending {GAME}
+
 # Update player state after validating action
 npx playtest update {GAME} -p <player-id> -s '{"state": "new-position"}'
 
@@ -41,7 +44,7 @@ npx playtest roll {GAME} --probability 0.65 -c "movement roll"
 # Draw cards for player
 npx playtest draw {GAME} -p <player-id> -n 1
 
-# Advance to next player's turn
+# Advance to next player's turn (call AFTER resolving action)
 npx playtest advance {GAME}
 
 # End game with winner
@@ -50,28 +53,36 @@ npx playtest end {GAME} -w <player-id> -r "Reached victory condition"
 
 ## Game Loop
 
-1. **Wait for action** - Monitor for player action submissions
-2. **Validate** - Check action against rules
-3. **Resolve** - Use engine to roll dice, update state
-4. **Check win** - See if game should end
-5. **Advance** - Signal next player's turn
+```bash
+while game not over:
+  1. pending_action = npx playtest pending {GAME}  # BLOCKS until action received
+  2. Validate action against rules
+  3. If valid:
+     - Roll dice if needed: npx playtest roll ...
+     - Update state: npx playtest update ...
+     - Check win condition
+  4. npx playtest advance {GAME}  # Move to next player
+```
 
-## Action Validation
+## Processing Actions
 
-When a player submits an action:
+When `npx playtest pending {GAME}` returns an action:
 
-1. Read the full game state: `npx playtest state {GAME}`
-2. Check if the action is legal per the rules
-3. If **valid**:
-   - Execute using engine commands (roll, update, draw, etc.)
-   - Log the result
-   - Call `npx playtest advance {GAME}`
-4. If **invalid**:
-   - Reject with explanation
-   - Player must resubmit
+1. Parse the action JSON
+2. Get full state: `npx playtest state {GAME}`
+3. Validate against rules:
+   - Is move/play legal?
+   - Does player have the card?
+   - Is target valid?
+4. Resolve the action:
+   - For moves: `npx playtest roll {GAME} --probability <p>`
+   - For cards: Apply effect, update state
+5. Update player state: `npx playtest update {GAME} -p <id> -s '...'`
+6. Check win condition - if met: `npx playtest end {GAME} -w <winner> -r "reason"`
+7. Advance turn: `npx playtest advance {GAME}`
 
 ## BEGIN
 
-1. First, read the game rules to understand the game
-2. Then check game status: `npx playtest status {GAME}`
-3. Begin monitoring for player actions and processing turns
+1. Read the game rules: `cat games/{GAME}/RULES.md`
+2. Check game status: `npx playtest status {GAME}`
+3. Start your game loop - call `npx playtest pending {GAME}` to wait for first action

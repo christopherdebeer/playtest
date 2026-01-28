@@ -12,12 +12,14 @@ import {
   roll,
   drawCards,
   discardCard,
+  playCardByName,
   advanceTurn,
   logEvent,
   getPlayerView,
   gameExists,
   stateExists
 } from './game.js';
+import type { PendingAction } from './types.js';
 import { waitForTurn } from './turns.js';
 
 const program = new Command();
@@ -138,7 +140,7 @@ program
 
 program
   .command('submit <game>')
-  .description('Submit player action')
+  .description('Submit player action (queues for gamemaster validation)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-a, --action <json>', 'Action JSON')
   .action((game, options) => {
@@ -156,6 +158,15 @@ program
 
       const action = JSON.parse(options.action);
 
+      // Queue the action for gamemaster validation (don't advance yet)
+      state.shared.pendingAction = {
+        player: options.player,
+        turn: state.turn,
+        action,
+        submittedAt: new Date().toISOString()
+      };
+      saveState(state);
+
       // Log the action
       logEvent(state, {
         event: 'action_submitted',
@@ -164,19 +175,70 @@ program
         data: action
       });
 
-      // For now, just accept and advance turn
-      // In full implementation, gamemaster validates
-      advanceTurn(state);
-
       console.log(JSON.stringify({
         accepted: true,
         action,
-        nextPlayer: state.currentPlayer,
-        turn: state.turn
+        message: 'Action queued for gamemaster validation'
       }));
     } catch (e) {
       console.log(JSON.stringify({
         accepted: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('pending <game>')
+  .description('Wait for and get pending player action (gamemaster use)')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds', '120000')
+  .action(async (game, options) => {
+    try {
+      const timeout = parseInt(options.timeout, 10);
+      const startTime = Date.now();
+      const pollInterval = 500;
+
+      // Poll for pending action
+      while (Date.now() - startTime < timeout) {
+        const state = loadState(game);
+
+        if (state.status === 'completed') {
+          console.log(JSON.stringify({
+            status: 'game_over',
+            winner: state.shared.winner
+          }));
+          return;
+        }
+
+        if (state.shared.pendingAction) {
+          const pending = state.shared.pendingAction as PendingAction;
+          // Clear the pending action
+          delete state.shared.pendingAction;
+          saveState(state);
+
+          console.log(JSON.stringify({
+            status: 'action_received',
+            player: pending.player,
+            turn: pending.turn,
+            action: pending.action,
+            submittedAt: pending.submittedAt
+          }));
+          return;
+        }
+
+        // Wait before polling again
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+
+      console.log(JSON.stringify({
+        status: 'timeout',
+        message: 'No action received within timeout'
+      }));
+      process.exit(124);
+    } catch (e) {
+      console.log(JSON.stringify({
+        status: 'error',
         error: (e as Error).message
       }));
       process.exit(1);
@@ -287,6 +349,49 @@ program
       console.log(JSON.stringify({
         success: true,
         discarded: card
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('play <game>')
+  .description('Play a card by name (removes from hand, adds to discard)')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .requiredOption('-c, --card <name>', 'Card name to play')
+  .option('--color <color>', 'Declared color for wild cards')
+  .action((game, options) => {
+    try {
+      const state = loadState(game);
+      const card = playCardByName(state, options.player, options.card, options.color);
+
+      if (!card) {
+        throw new Error(`Card "${options.card}" not found in ${options.player}'s hand`);
+      }
+
+      logEvent(state, {
+        event: 'play_card',
+        turn: state.turn,
+        player: options.player,
+        data: {
+          card: card.name,
+          declaredColor: options.color,
+          newTopCard: state.shared.topCard,
+          currentColor: state.shared.currentColor
+        }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        played: card,
+        handSize: state.players[options.player].hand.length,
+        topCard: state.shared.topCard,
+        currentColor: state.shared.currentColor
       }));
     } catch (e) {
       console.log(JSON.stringify({

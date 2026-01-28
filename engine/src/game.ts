@@ -121,6 +121,17 @@ export function initGame(gameName: string, playerCount: number): GameState {
     }
   }
 
+  // Initialize discard pile for card games (flip top card from deck)
+  let discardPile: Card[] = [];
+  const shared: Record<string, unknown> = {};
+
+  if (deck.length > 0 && startingCards > 0) {
+    const topCard = deck.shift()!;
+    discardPile = [topCard];
+    shared.topCard = topCard;
+    shared.currentColor = topCard.effect?.color ?? null;
+  }
+
   const logPath = getLogPath(gameName, gameId);
 
   const state: GameState = {
@@ -131,9 +142,9 @@ export function initGame(gameName: string, playerCount: number): GameState {
     currentPlayer: null,
     turnOrder,
     players,
-    shared: {},
+    shared,
     deck,
-    discardPile: [],
+    discardPile,
     config,
     rulesMarkdown: markdown,
     log: logPath
@@ -345,6 +356,43 @@ export function discardCard(state: GameState, playerId: string, cardIndex: numbe
 
   const [card] = player.hand.splice(cardIndex, 1);
   state.discardPile.push(card);
+
+  // Update top card tracking
+  state.shared.topCard = card;
+  if (card.effect?.color) {
+    state.shared.currentColor = card.effect.color;
+  }
+
+  saveState(state);
+
+  return card;
+}
+
+export function playCardByName(state: GameState, playerId: string, cardName: string, declaredColor?: string): Card | null {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+
+  // Find card in hand by name
+  const cardIndex = player.hand.findIndex(c => c.name === cardName);
+  if (cardIndex === -1) {
+    return null;
+  }
+
+  const [card] = player.hand.splice(cardIndex, 1);
+  state.discardPile.push(card);
+
+  // Update top card tracking
+  state.shared.topCard = card;
+
+  // Handle wild cards - use declared color
+  if (card.type === 'wild' && declaredColor) {
+    state.shared.currentColor = declaredColor;
+  } else if (card.effect?.color) {
+    state.shared.currentColor = card.effect.color;
+  }
+
   saveState(state);
 
   return card;

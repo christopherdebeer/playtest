@@ -11,6 +11,7 @@ export interface Card {
     value?: number;
     duration?: number;
     target?: string;
+    color?: string;  // For card games like UNO
   };
 }
 
@@ -49,6 +50,7 @@ export interface DeckConfig {
     type: string;
     value?: number;
     duration?: number;
+    color?: string;  // For card games like UNO
   };
 }
 
@@ -63,6 +65,13 @@ export interface EdgeConfig {
   to: string | string[];
   probability?: number;
   cost?: number;
+}
+
+export interface PendingAction {
+  player: string;
+  turn: number;
+  action: Record<string, unknown>;
+  submittedAt: string;
 }
 
 export interface GameState {
