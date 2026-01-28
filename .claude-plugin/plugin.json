@@ -1,10 +1,13 @@
 {
   "name": "playtest",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "AI-driven game playtesting framework with gamemaster orchestration and parallel player agents",
   "author": {
-    "name": "Christopher de Beer",
-    "email": "christopherdebeer@gmail.com"
+    "name": "christopherdebeer"
   },
-  "keywords": ["game-testing", "multi-agent", "card-games", "playtesting", "automation"]
+  "repository": "https://github.com/christopherdebeer/playtest",
+  "license": "MIT",
+  "keywords": ["game", "playtesting", "multi-agent", "claude", "gamemaster"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
 }

@@ -3,7 +3,6 @@ name: start-game
 description: Initialize and run a game with coordinated multi-agent architecture. Use when user wants to start a playtest, run a game, test game rules, or launch multi-agent game simulation.
 argument-hint: <game-name> [num-players]
 allowed-tools: Read, Write, Task, Bash, Glob
-disable-model-invocation: true
 ---
 
 # Start Game - Coordinated Multi-Agent Architecture
