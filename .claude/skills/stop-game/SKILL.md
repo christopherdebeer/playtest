@@ -3,7 +3,6 @@ name: stop-game
 description: Emergency halt of active game session. Use when user wants to stop a running game, halt playtest, cancel game simulation, or clean up game state.
 argument-hint: [game-name]
 allowed-tools: Read, Write, Bash, Glob
-disable-model-invocation: true
 ---
 
 # Stop Game - Emergency Halt

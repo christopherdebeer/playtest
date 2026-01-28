@@ -1,9 +1,18 @@
 {
-  "pluginDirectories": [
-    "."
-  ],
-  "enabledPlugins": {
-    "playtest@inline": true
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "30000"
+  },
+  "permissions": {
+    "allow": [
+      "Skill(start-game *)",
+      "Skill(view-results *)",
+      "Skill(game-coordination)",
+      "Skill(file-protocol)",
+      "Skill(hook-sync)"
+    ],
+    "deny": [
+      "Skill(stop-game *)"
+    ]
   },
   "hooks": {
     "stop": {

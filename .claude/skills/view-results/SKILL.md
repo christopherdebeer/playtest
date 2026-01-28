@@ -3,7 +3,6 @@ name: view-results
 description: Analyze completed game logs and display results. Use when user wants to see game results, check playtest outcomes, analyze game logs, review timing analysis, or check debug captures.
 argument-hint: [game-name] [--timing] [--debug]
 allowed-tools: Read, Glob, Bash
-disable-model-invocation: true
 ---
 
 # View Results - Game Analysis
