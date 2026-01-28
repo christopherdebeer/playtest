@@ -7,13 +7,20 @@ AGENT_ID="${CLAUDE_AGENT_ID:-unknown}"
 TASK_ID="${CLAUDE_TASK_ID:-}"
 SESSION_ID="${CLAUDE_SESSION_ID:-unknown}"
 
+# Debug logging to file (observable by coordinator)
+HOOK_LOG="hooks/debug/gamemaster-stop-hook.log"
+mkdir -p "$(dirname "$HOOK_LOG")"
+echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] HOOK FIRED: gamemaster-stop-hook.sh | Agent: $AGENT_ID | Task: $TASK_ID" >> "$HOOK_LOG"
+
 # Only run in subagent context (not main session)
 if [ -z "$TASK_ID" ]; then
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] SKIP: Main session context" >> "$HOOK_LOG"
   exit 0  # Main session, skip
 fi
 
 # Only run for gamemaster agent
 if [[ ! "$AGENT_ID" =~ gamemaster ]]; then
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] SKIP: Not gamemaster ($AGENT_ID)" >> "$HOOK_LOG"
   exit 0  # Not gamemaster, skip
 fi
 
@@ -24,6 +31,7 @@ TASK_OUTPUT_DIR="/tmp/claude/-home-user-playtest/tasks"
 
 # Check if game state exists
 if [ ! -f "$GAME_STATE_FILE" ]; then
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] ALLOW EXIT: Game state not found" >> "$HOOK_LOG"
   echo "[gamemaster-stop-hook] Game state not found, allowing exit"
   exit 0
 fi
@@ -32,8 +40,10 @@ fi
 GAME_STATUS=$(jq -r '.gameStatus // "in_progress"' "$GAME_STATE_FILE" 2>/dev/null)
 GAME_ID=$(jq -r '.gameId // "unknown"' "$GAME_STATE_FILE" 2>/dev/null)
 CURRENT_PLAYER=$(jq -r '.currentPlayer' "$GAME_STATE_FILE" 2>/dev/null)
+echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Game status: $GAME_STATUS | ID: $GAME_ID | Current: $CURRENT_PLAYER" >> "$HOOK_LOG"
 
 if [ "$GAME_STATUS" = "completed" ]; then
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] ALLOW EXIT: Game completed, capturing debug data" >> "$HOOK_LOG"
   echo "[gamemaster-stop-hook] Game completed - capturing debug data and analysis"
 
   # ============================================================
@@ -260,6 +270,7 @@ PYEOF
   fi
 
   echo "[gamemaster-stop-hook] Allowing gamemaster to exit"
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] EXIT: Debug capture complete" >> "$HOOK_LOG"
   exit 0
 fi
 
@@ -267,17 +278,22 @@ fi
 # GAME STILL IN PROGRESS - PROMPT TO WAIT
 # ============================================================
 
+echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] BLOCKING EXIT: Game in progress, waiting for $CURRENT_PLAYER action" >> "$HOOK_LOG"
+echo "========================================" >&2
+echo "🚫 STOP HOOK TRIGGERED: Game still active!" >&2
+echo "========================================" >&2
 echo "[gamemaster-stop-hook] Game in progress - waiting for $CURRENT_PLAYER action"
 echo ""
 echo "IMPORTANT: Turn signal written, now waiting for player action."
-echo "You should now:"
-echo "1. Use 'inotifywait' to BLOCK until player action file appears"
-echo "2. Process the action when you wake up"
-echo "3. Update game state and write next turn signal"
+echo "You should continue the turn loop:"
+echo "1. Call ./scripts/actions/gamemaster/wait-for-action.sh to BLOCK until player submits action"
+echo "2. Process the action according to game rules when it returns"
+echo "3. Update game state and signal next turn"
 echo "4. Loop back to step 1"
 echo ""
-echo "Example blocking wait:"
-echo "  inotifywait -e create,close_write -t 120 -q games/$GAME_NAME/state/player-actions/$CURRENT_PLAYER.json"
+echo "Example:"
+echo "  result=\$(./scripts/actions/gamemaster/wait-for-action.sh $GAME_NAME)"
+echo "  status=\$(echo \"\$result\" | jq -r '.status')"
 echo ""
 
 # Return non-zero to indicate gamemaster should continue

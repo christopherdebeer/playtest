@@ -15,12 +15,19 @@
     ]
   },
   "hooks": {
-    "stop": {
-      "enabled": true,
-      "scripts": [
-        ".claude/hooks/agent-stop-hook.sh",
-        ".claude/hooks/gamemaster-stop-hook.sh"
-      ]
-    }
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/agent-stop-hook.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/gamemaster-stop-hook.sh"
+          }
+        ]
+      }
+    ]
   }
 }
