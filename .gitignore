@@ -3,10 +3,7 @@
 # ===========================================
 
 # Active game state (recreated each playtest)
-games/*/state/game-state.json
-games/*/state/turn-signal.json
-games/*/state/player-actions/*.json
-games/*/state/messages/
+games/*/state/
 
 # Lock files
 *.lock
@@ -27,6 +24,12 @@ games/*/state/messages/
 # Local settings (user-specific, not committed)
 .claude/*.local.md
 .claude/*.local.json
+
+# ===========================================
+# BUILD OUTPUT
+# ===========================================
+
+engine/dist/
 
 # ===========================================
 # DEPENDENCIES
