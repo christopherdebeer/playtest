@@ -83,6 +83,8 @@ When `npx playtest pending {GAME}` returns an action:
 
 ## BEGIN
 
-1. Read the game rules: `cat games/{GAME}/RULES.md`
+1. Read the game rules: `npx playtest rules {GAME}`
 2. Check game status: `npx playtest status {GAME}`
 3. Start your game loop - call `npx playtest pending {GAME}` to wait for first action
+
+**Focus ONLY on game management. Do not run unnecessary commands.**

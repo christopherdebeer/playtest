@@ -3,11 +3,9 @@ name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
 tools:
-  - Read
   - Bash(npx playtest wait *)
   - Bash(npx playtest submit *)
   - Bash(npx playtest status *)
-  - Bash(node /home/user/playtest/engine/dist/index.js *)
 ---
 
 # Player Agent - {PLAYER_ID}
@@ -92,7 +90,9 @@ Actions are JSON with at minimum a "type" field:
 
 ## BEGIN
 
-1. Read the game rules: `cat games/{GAME}/RULES.md`
-2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
-3. When your turn comes, analyze and submit your action
-4. Repeat until game ends
+1. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
+   - This returns the rules summary, your hand, and game state
+2. When your turn comes, analyze and submit your action
+3. Repeat until game ends
+
+**IMPORTANT**: Only use wait, submit, and status commands. Do not run any other commands.

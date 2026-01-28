@@ -73,59 +73,31 @@ const playerDef = await Read('.claude/agents/player.md');
 
 **CRITICAL**: Use a SINGLE message with multiple Task calls.
 
-**Model Selection**:
-- Gamemaster: `sonnet` - needs rule interpretation and validation
-- Players: `haiku` - fast pattern matching for gameplay decisions
-
-**Tool Restrictions**:
-- Gamemaster: Full Bash access for all `npx playtest` commands
-- Players: Limited to `Bash(npx playtest wait *)`, `Bash(npx playtest submit *)`, `Bash(npx playtest status *)`
+Agent definitions are in `.claude/agents/`:
+- `gamemaster.md` - sonnet model, full playtest CLI access
+- `player.md` - haiku model, limited to wait/submit/status
 
 ```javascript
-// Spawn gamemaster (sonnet for rule interpretation)
+// Spawn gamemaster agent (uses .claude/agents/gamemaster.md definition)
 Task({
   subagent_type: "gamemaster",
-  model: "sonnet",
   description: `Gamemaster for ${GAME_NAME}`,
-  prompt: `You are the gamemaster for ${GAME_NAME}.
-
-GAME: ${GAME_NAME}
+  prompt: `GAME: ${GAME_NAME}
 PLAYERS: ${NUM_PLAYERS}
 
-Read the rules: npx playtest rules ${GAME_NAME}
-
-Then monitor the game using:
-- npx playtest pending ${GAME_NAME}  # Wait for player actions
-- npx playtest state ${GAME_NAME}    # Check full state
-
-Process player actions, validate against rules, and use:
-- npx playtest roll ... for probability checks
-- npx playtest update ... to update player state
-- npx playtest advance ... to advance turns
-- npx playtest end ... when someone wins
-
-Focus ONLY on game management. Do not run unnecessary commands.`,
+Begin your gamemaster duties now.`,
   run_in_background: true
 });
 
-// Spawn players (haiku for fast decisions)
+// Spawn player agents (uses .claude/agents/player.md definition)
 for (let i = 1; i <= NUM_PLAYERS; i++) {
   Task({
     subagent_type: "player",
-    model: "haiku",
-    allowed_tools: ["Bash(npx playtest wait *)", "Bash(npx playtest submit *)", "Bash(npx playtest status *)"],
     description: `player-${i} for ${GAME_NAME}`,
-    prompt: `You are player-${i} in ${GAME_NAME}. Play to WIN!
-
-GAME: ${GAME_NAME}
+    prompt: `GAME: ${GAME_NAME}
 YOUR ID: player-${i}
 
-Game loop:
-1. npx playtest wait ${GAME_NAME} -p player-${i}   # Wait for turn (returns your hand and game state)
-2. Choose best action from your hand
-3. npx playtest submit ${GAME_NAME} -p player-${i} -a '{"type":"...","card":"..."}'
-
-Repeat until game_over. Do NOT run any commands besides wait and submit.`,
+Begin playing now. Play to WIN!`,
     run_in_background: true
   });
 }
