@@ -17,11 +17,20 @@
   "hooks": {
     "SubagentStart": [
       {
-        "matcher": "test-player",
+        "matcher": "player",
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/test/test-player-start-hook.sh"
+            "command": "hooks/player-start-hook.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "gamemaster",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/gamemaster-start-hook.sh"
           }
         ]
       }

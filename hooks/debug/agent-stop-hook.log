@@ -1,4 +1,0 @@
-[2026-01-28T17:13:27Z] HOOK FIRED: agent-stop-hook.sh | Agent: aae5fa2 | Task: aae5fa2
-[2026-01-28T17:13:27Z] SKIP: Not a player agent (type=unknown, id=aae5fa2)
-[2026-01-28T17:13:32Z] HOOK FIRED: agent-stop-hook.sh | Agent: a54543b | Task: a54543b
-[2026-01-28T17:13:32Z] SKIP: Not a player agent (type=unknown, id=a54543b)

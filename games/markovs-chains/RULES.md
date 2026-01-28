@@ -1,18 +1,35 @@
 ---
 name: "Markov's Chains"
 version: "2.0"
-players: 3
-states: 6
+players: 2-4
 starting_cards: 4
-cards_to_draw: 1
-base_transition_prob: 0.65
-victory_transition_prob: 0.55
-card_boost_strength: 0.2
-friction_strength: 0.25
-block_duration: 1
 win_condition: "First player to reach the Victory state"
 max_turns: 15
-estimated_turns: 8-12
+
+# Structured config for engine
+board:
+  states: ["Start", "A", "B", "C", "Victory"]
+  start: "Start"
+  edges:
+    - { from: "Start", to: ["A", "B", "C"], probability: 0.65 }
+    - { from: ["A", "B", "C"], to: "Victory", probability: 0.55 }
+    - { from: "A", to: ["B", "C"], probability: 0.4 }
+    - { from: "B", to: ["A", "C"], probability: 0.4 }
+    - { from: "C", to: ["A", "B"], probability: 0.4 }
+
+deck:
+  # Boost cards (10 total)
+  - { name: "Catalyst", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
+  - { name: "Momentum", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
+  - { name: "Certainty", count: 4, type: "boost", effect: { type: "auto_success" } }
+  # Interference cards (12 total)
+  - { name: "Friction", count: 5, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
+  - { name: "Block", count: 4, type: "interference", effect: { type: "block_turn", duration: 1 } }
+  - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
+  # Utility cards (8 total)
+  - { name: "Redirect", count: 3, type: "utility", effect: { type: "force_retarget" } }
+  - { name: "State Swap", count: 2, type: "utility", effect: { type: "swap_positions" } }
+  - { name: "Reroll", count: 3, type: "utility", effect: { type: "reroll_failed" } }
 ---
 
 # Markov's Chains - Game Rules

@@ -1,10 +1,8 @@
 # Playtest - AI Game Playtesting Framework
 
-AI-driven game playtesting framework with gamemaster orchestration and parallel player agents.
+AI-driven game playtesting framework with TypeScript engine orchestration and parallel player agents.
 
 ## Available Skills
-
-These skills are available via `/skill-name` or Claude will use them when contextually relevant:
 
 | Skill | Description |
 |-------|-------------|
@@ -15,48 +13,91 @@ These skills are available via `/skill-name` or Claude will use them when contex
 ### Examples
 
 ```
-/start-game markovs-chains 3
+/start-game uno 3
 /stop-game
-/view-results markovs-chains
+/view-results uno
 ```
 
-## Background Skills (Auto-Invoked)
+## Architecture (v3 Engine-Driven)
 
-These skills provide implementation guidance and Claude loads them automatically when relevant:
-
-- **File Protocol** (`skills/file-protocol/SKILL.md`): File-based agent communication, JSON state management, atomic writes
-- **Game Coordination** (`skills/game-coordination/SKILL.md`): Gamemaster agents, player spawning, multi-agent orchestration
-- **Hook Sync** (`skills/hook-sync/SKILL.md`): Event-driven agent triggering, file change detection
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Coordinator (skill)                     │
+│  1. npx playtest init <game> --players <n>                  │
+│  2. Spawn gamemaster (sonnet) + player agents (haiku)       │
+└─────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    TypeScript Engine                         │
+│  - State management (games/<game>/state/game.json)          │
+│  - Turn blocking (npx playtest wait)                        │
+│  - Randomization (npx playtest roll)                        │
+│  - Deck operations (npx playtest draw/play/discard)         │
+└─────────────────────────────────────────────────────────────┘
+          │                    │                    │
+          ▼                    ▼                    ▼
+    ┌───────────┐        ┌───────────┐        ┌───────────┐
+    │Gamemaster │        │ Player 1  │        │ Player 2  │
+    │  (Sonnet) │        │  (Haiku)  │        │  (Haiku)  │
+    │ Validates │        │ Decides   │        │ Decides   │
+    └───────────┘        └───────────┘        └───────────┘
+```
 
 ## Project Structure
 
 ```
 games/<game-name>/           # Game definitions and runtime
 ├── RULES.md                # Game rules (YAML frontmatter + markdown)
-├── state/                  # Active game state files (gitignored)
-│   ├── game-state.json    # Authoritative state
-│   ├── turn-signal.json   # Turn notifications
-│   └── player-actions/    # Player decisions
-└── logs/                   # Game logs (tracked in git)
-    ├── game-*-live.jsonl  # Live event stream
-    └── debug/             # Debug captures with timing analysis
+├── state/                  # Active game state (gitignored)
+│   └── game.json          # Authoritative state managed by engine
+└── logs/                   # Game logs
+    └── <gameId>.jsonl     # Event stream
 
-engine/                      # Core engine
-├── templates/              # Game-agnostic agent prompt templates
-├── schemas/                # JSON schemas
-└── *.md                    # Architecture docs
+engine/                      # TypeScript game engine
+├── src/                    # Source code
+│   ├── index.ts           # CLI entry point
+│   ├── game.ts            # State management
+│   ├── rules.ts           # YAML/markdown parsing
+│   └── types.ts           # Type definitions
+├── dist/                   # Compiled output
+└── ARCHITECTURE.md        # Detailed architecture docs
 
-scripts/actions/             # Encapsulated action scripts
-├── gamemaster/             # wait-for-action, signal-turn, end-game
-├── player/                 # wait-for-turn, submit-action
-└── common/                 # send-message, read-messages
+skills/                      # Claude Code skills
+├── start-game/            # Launch multi-agent playtest
+├── stop-game/             # Emergency halt and cleanup
+└── view-results/          # Analyze game logs
+```
 
-.claude/skills/             # Native Claude Code skills
-.claude/hooks/              # Agent lifecycle hooks (debug capture)
+## Engine CLI Reference
+
+```bash
+# Game lifecycle
+npx playtest init <game> -p <n>              # Initialize game
+npx playtest reset <game> [-p <n>]           # Reset (optionally reinit)
+npx playtest end <game> -w <id> -r '<why>'   # End game with winner
+
+# Player commands (agents use these)
+npx playtest wait <game> -p <id>             # Block until your turn
+npx playtest submit <game> -p <id> -a '{}'   # Submit action
+
+# Gamemaster commands
+npx playtest pending <game>                  # Wait for player action
+npx playtest advance <game>                  # Next player's turn
+npx playtest state <game>                    # Full game state
+
+# Game mechanics
+npx playtest roll <game> --probability <p>   # Probability check
+npx playtest draw <game> -p <id> -n <count>  # Draw cards
+npx playtest play <game> -p <id> -c '<name>' # Play card by name
+
+# Info
+npx playtest status <game>                   # Game status
+npx playtest rules <game>                    # Get rules markdown
 ```
 
 ## Quick Start
 
-1. Start a game: `/start-game markovs-chains 3`
-2. Monitor progress in `games/markovs-chains/state/`
-3. View results: `/view-results markovs-chains`
+1. Start a game: `/start-game uno 3`
+2. Monitor progress: `npx playtest status uno`
+3. View results: `/view-results uno`

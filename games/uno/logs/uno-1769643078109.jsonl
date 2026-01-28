@@ -1,0 +1,21 @@
+{"timestamp":"2026-01-28T23:31:18.110Z","event":"game_init","data":{"gameId":"uno-1769643078109","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-01-28T23:32:09.646Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"draw","reasoning":"No playable cards matching Blue 2. Must draw a card."}}
+{"timestamp":"2026-01-28T23:32:44.216Z","event":"draw","turn":1,"player":"player-1","data":{"count":1,"cards":["Wild Draw Four"]}}
+{"timestamp":"2026-01-28T23:33:16.963Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Green 2","reasoning":"Matches number on top card, saves wild cards for critical moments"}}
+{"timestamp":"2026-01-28T23:33:34.914Z","event":"play_card","turn":1,"player":"player-2","data":{"card":"Green 2","newTopCard":{"name":"Green 2","type":"number","effect":{"type":"none","color":"Green","value":2}},"currentColor":"Green"}}
+{"timestamp":"2026-01-28T23:34:02.810Z","event":"action_submitted","turn":2,"player":"player-1","data":{"type":"play_card","card":"Green Reverse","reasoning":"In 2-player game, Reverse acts as Skip. This skips player-2 and gives me another turn."}}
+{"timestamp":"2026-01-28T23:34:20.254Z","event":"play_card","turn":2,"player":"player-1","data":{"card":"Green Reverse","newTopCard":{"name":"Green Reverse","type":"action","effect":{"type":"reverse","color":"Green"}},"currentColor":"Green"}}
+{"timestamp":"2026-01-28T23:35:07.131Z","event":"action_submitted","turn":3,"player":"player-1","data":{"type":"play_card","card":"Green 9","reasoning":"Matches Green color. Advancing the game."}}
+{"timestamp":"2026-01-28T23:35:21.712Z","event":"play_card","turn":3,"player":"player-1","data":{"card":"Green 9","newTopCard":{"name":"Green 9","type":"number","effect":{"type":"none","color":"Green","value":9}},"currentColor":"Green"}}
+{"timestamp":"2026-01-28T23:35:49.138Z","event":"action_submitted","turn":3,"player":"player-2","data":{"type":"draw","reasoning":"No Green cards or 9s in hand, must draw"}}
+{"timestamp":"2026-01-28T23:36:02.074Z","event":"draw","turn":3,"player":"player-2","data":{"count":1,"cards":["Blue 7"]}}
+{"timestamp":"2026-01-28T23:36:28.423Z","event":"action_submitted","turn":4,"player":"player-1","data":{"type":"play_card","card":"Green 4","reasoning":"Matches Green 9. Reducing hand toward victory."}}
+{"timestamp":"2026-01-28T23:36:42.416Z","event":"play_card","turn":4,"player":"player-1","data":{"card":"Green 4","newTopCard":{"name":"Green 4","type":"number","effect":{"type":"none","color":"Green","value":4}},"currentColor":"Green"}}
+{"timestamp":"2026-01-28T23:37:24.000Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"draw","reasoning":"No playable cards, opponent at 5 cards so need to build hand"}}
+{"timestamp":"2026-01-28T23:37:40.238Z","event":"draw","turn":4,"player":"player-2","data":{"count":1,"cards":["Yellow 1"]}}
+{"timestamp":"2026-01-28T23:38:07.768Z","event":"action_submitted","turn":5,"player":"player-1","data":{"type":"draw","reasoning":"No playable cards matching Green 4. Must draw."}}
+{"timestamp":"2026-01-28T23:38:21.364Z","event":"draw","turn":5,"player":"player-1","data":{"count":1,"cards":["Red 3"]}}
+{"timestamp":"2026-01-28T23:38:50.242Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Wild Draw Four","new_color":"Yellow","reasoning":"Force opponent to 10 cards and switch to Yellow where I have 5 cards for advantage"}}
+{"timestamp":"2026-01-28T23:39:08.534Z","event":"play_card","turn":5,"player":"player-2","data":{"card":"Wild Draw Four","newTopCard":{"name":"Wild Draw Four","type":"wild","effect":{"type":"wild_draw","value":4}},"currentColor":"Green"}}
+{"timestamp":"2026-01-28T23:39:25.883Z","event":"draw","turn":5,"player":"player-1","data":{"count":4,"cards":["Blue 5","Green 1","Yellow Skip","Red 4"]}}
+{"timestamp":"2026-01-28T23:39:42.746Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Yellow 2","reasoning":"Safe number card play, preserves action cards"}}

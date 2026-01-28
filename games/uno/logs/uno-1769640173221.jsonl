@@ -1,0 +1,6 @@
+{"timestamp":"2026-01-28T22:42:53.223Z","event":"game_init","data":{"gameId":"uno-1769640173221","playerCount":3,"config":"UNO"}}
+{"timestamp":"2026-01-28T22:45:50.184Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"play_card","card":"Green 4","reasoning":"Opening with a number card"}}
+{"timestamp":"2026-01-28T22:46:48.379Z","event":"discard","turn":1,"player":"player-1","data":{"card":"Green 4"}}
+{"timestamp":"2026-01-28T22:47:37.574Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Red 4","reasoning":"Matches the number 4 on the discard pile"}}
+{"timestamp":"2026-01-28T22:48:08.666Z","event":"discard","turn":1,"player":"player-2","data":{"card":"Red 4"}}
+{"timestamp":"2026-01-28T22:48:55.256Z","event":"action_submitted","turn":1,"player":"player-3","data":{"type":"play_card","card":"Green Draw Two","reasoning":"Force next player to draw 2 cards and skip turn to build card advantage"}}

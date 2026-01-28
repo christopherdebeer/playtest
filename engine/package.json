@@ -1,0 +1,27 @@
+{
+  "name": "playtest",
+  "version": "3.0.0",
+  "description": "Game-agnostic AI playtesting engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "playtest": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "yaml": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

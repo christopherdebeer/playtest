@@ -2,12 +2,12 @@
 name: stop-game
 description: Emergency halt of active game session. Use when user wants to stop a running game, halt playtest, cancel game simulation, or clean up game state.
 argument-hint: [game-name]
-allowed-tools: Read, Write, Bash, Glob
+allowed-tools: Read, Bash, Glob
 ---
 
 # Stop Game - Emergency Halt
 
-Emergency halt an active game session, trigger debug capture, and clean up state files.
+Emergency halt an active game session and clean up resources.
 
 ## Arguments
 
@@ -21,129 +21,74 @@ Emergency halt an active game session, trigger debug capture, and clean up state
 GAME_NAME="$0"
 
 if [ -z "$GAME_NAME" ]; then
-  # Find active game by checking for in-progress game-state files
-  for state_file in games/*/state/game-state.json; do
-    if [ -f "$state_file" ]; then
-      STATUS=$(jq -r '.gameStatus // "unknown"' "$state_file" 2>/dev/null)
-      if [ "$STATUS" = "in_progress" ]; then
-        GAME_NAME=$(echo "$state_file" | cut -d'/' -f2)
-        break
-      fi
+  # Find active game by checking status
+  for game_dir in games/*/; do
+    game=$(basename "$game_dir")
+    status=$(cd /home/user/playtest/engine && npx playtest status "$game" 2>/dev/null | jq -r '.status // "none"')
+    if [ "$status" = "in_progress" ] || [ "$status" = "waiting_for_players" ]; then
+      GAME_NAME="$game"
+      break
     fi
   done
-
-  if [ -z "$GAME_NAME" ]; then
-    echo "No active games found"
-    exit 0
-  fi
 fi
 
-STATE_FILE="games/$GAME_NAME/state/game-state.json"
-```
-
-### 2. Read Current State
-
-```bash
-if [ ! -f "$STATE_FILE" ]; then
-  echo "Game state not found: $STATE_FILE"
-  exit 1
-fi
-
-GAME_ID=$(jq -r '.gameId // "unknown"' "$STATE_FILE")
-TURN_NUMBER=$(jq -r '.turnNumber // 0' "$STATE_FILE")
-GAME_STATUS=$(jq -r '.gameStatus // "unknown"' "$STATE_FILE")
-
-if [ "$GAME_STATUS" != "in_progress" ]; then
-  echo "Game $GAME_NAME is not active (status: $GAME_STATUS)"
+if [ -z "$GAME_NAME" ]; then
+  echo "No active games found"
   exit 0
 fi
 ```
 
-### 3. Use end-game Script to Stop Gracefully
+### 2. End Game via Engine
 
 ```bash
-# Use the action script to end the game properly
-./scripts/actions/gamemaster/end-game.sh "none" "Manual stop by user" "$GAME_NAME"
+cd /home/user/playtest/engine
+npx playtest end "$GAME_NAME" -w "none" -r "Manual stop by user"
 ```
 
-This will:
-- Update game state to "completed"
-- Log the game_end event
-- Notify all players via message bus
-- Trigger debug capture via gamemaster stop hook
-
-### 4. Force Cleanup (if end-game fails)
-
-If the action script isn't available or fails:
+### 3. Reset Game State
 
 ```bash
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-# Update game state directly
-jq --arg status "stopped" --arg ts "$TIMESTAMP" \
-  '.gameStatus = $status | .stoppedAt = $ts | .stoppedReason = "Manual stop"' \
-  "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
-
-# Write stop event to log
-LIVE_LOG="games/$GAME_NAME/logs/game-$GAME_ID-live.jsonl"
-if [ -f "$LIVE_LOG" ]; then
-  echo "{\"event\":\"game_stopped\",\"timestamp\":\"$TIMESTAMP\",\"reason\":\"Manual stop\",\"turnNumber\":$TURN_NUMBER}" >> "$LIVE_LOG"
-fi
-
 # Clean up state files
-rm -f "games/$GAME_NAME/state/turn-signal.json"
-rm -f "games/$GAME_NAME/state/player-actions"/*.json
-rm -rf "games/$GAME_NAME/state/messages"
+cd /home/user/playtest/engine
+npx playtest reset "$GAME_NAME"
 ```
 
-### 5. Save Partial Log
+### 4. Note About Running Agents
 
-```bash
-LOG_TIMESTAMP=$(date +%s)
-PARTIAL_LOG="games/$GAME_NAME/logs/game-stopped-$LOG_TIMESTAMP.json"
+**Important**: Background agents spawned via Task tool will continue running until they:
+- Timeout waiting for turns
+- Encounter game_over status
+- Complete their max turns
 
-jq -n \
-  --arg status "stopped" \
-  --arg game "$GAME_NAME" \
-  --arg gameId "$GAME_ID" \
-  --arg stoppedAt "$TIMESTAMP" \
-  --argjson turns "$TURN_NUMBER" \
-  --slurpfile state "$STATE_FILE" \
-  '{
-    fileType: "game-log",
-    status: $status,
-    game: $game,
-    gameId: $gameId,
-    stoppedAt: $stoppedAt,
-    completedTurns: $turns,
-    finalState: $state[0]
-  }' > "$PARTIAL_LOG"
-```
+The engine's `reset` command clears state, causing agents to fail gracefully on their next engine call.
 
-### 6. Report to User
+For immediate agent termination, agents check game status periodically and exit when:
+- `npx playtest status` returns error (no state)
+- `npx playtest wait` returns game_over
+
+### 5. Report to User
 
 ```markdown
 ## Game Stopped: {GAME_NAME}
 
-**Game ID**: {GAME_ID}
-**Stopped at turn**: {TURN_NUMBER}
 **Status**: stopped
 
-**Final player positions**:
-- player-1: {state}
-- player-2: {state}
-- player-3: {state}
+State files cleaned up. Running agents will terminate on next engine call.
 
-**Files**:
-- Partial log: `{PARTIAL_LOG}`
-- Debug capture: `games/{GAME_NAME}/logs/debug/`
-- Live events: `games/{GAME_NAME}/logs/game-{GAME_ID}-live.jsonl`
+Check logs: `games/{GAME_NAME}/logs/{gameId}.jsonl`
 
 Use `/view-results {GAME_NAME}` to analyze the partial game.
 ```
 
-## Reference Files
+## CLI Reference
 
-- `scripts/actions/gamemaster/end-game.sh` - Graceful game termination
-- `games/{game}/state/game-state.json` - Current game state
-- `games/{game}/logs/debug/` - Debug captures
+```bash
+# End game with reason
+npx playtest end <game> -w "none" -r "Manual stop"
+
+# Reset and clean state
+npx playtest reset <game>
+
+# Reset and reinitialize with new players
+npx playtest reset <game> -p <n>
+```
