@@ -13,3 +13,10 @@ node_modules/
 .DS_Store
 Thumbs.db
 games/**/state/*
+# Game runtime data
+games/*/logs/*.jsonl
+games/*/state/*.json
+games/*/state/player-actions/*.json
+
+# Game log summary files
+games/*/logs/*.json
