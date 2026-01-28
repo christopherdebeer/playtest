@@ -5,191 +5,167 @@ argument-hint: <game-name> [num-players]
 allowed-tools: Read, Write, Task, Bash, Glob
 ---
 
-# Start Game - Coordinated Multi-Agent Architecture
+# Start Game - Engine-Driven Architecture (v3)
 
-This skill spawns ALL agents (gamemaster + players) upfront. Agents use encapsulated action scripts that handle blocking and coordination internally.
+This skill uses the TypeScript engine to manage game state, with agents for decision-making only.
 
 ## Architecture Overview
 
 ```
-Coordinator (this skill)
-├─> Spawns Gamemaster (background)
-├─> Spawns Player-1 (background)
-├─> Spawns Player-2 (background)
-└─> Spawns Player-3 (background)
-
-Agent Coordination (via action scripts):
-┌─────────────┐     signal-turn.sh      ┌─────────────┐
-│ Gamemaster  │ ──────────────────────> │   Players   │
-│             │                         │             │
-│ wait-for-   │ <────────────────────── │ submit-     │
-│ action.sh   │     (action file)       │ action.sh   │
-└─────────────┘                         └─────────────┘
-
-- Built-in circuit breakers prevent infinite waits
-- Message bus for gamemaster→player communication
-- Debug capture on game completion
+┌─────────────────────────────────────────────────────────────┐
+│                     Coordinator (this skill)                 │
+│  1. npx playtest init <game> --players <n>                  │
+│  2. Spawn gamemaster + player agents                        │
+└─────────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    TypeScript Engine                         │
+│  - State management (games/<game>/state/game.json)          │
+│  - Turn blocking (npx playtest wait)                        │
+│  - Randomization (npx playtest roll)                        │
+│  - Deck operations (npx playtest draw/discard)              │
+└─────────────────────────────────────────────────────────────┘
+          │                    │                    │
+          ▼                    ▼                    ▼
+    ┌───────────┐        ┌───────────┐        ┌───────────┐
+    │Gamemaster │        │ Player 1  │        │ Player 2  │
+    │  (Sonnet) │        │  (Haiku)  │        │  (Haiku)  │
+    │           │        │           │        │           │
+    │ Validates │        │ Decides   │        │ Decides   │
+    │ rules     │        │ actions   │        │ actions   │
+    └───────────┘        └───────────┘        └───────────┘
 ```
 
 ## Arguments
 
-- `$0` or `$ARGUMENTS[0]`: Game name (e.g., "markovs-chains")
-- `$1` or `$ARGUMENTS[1]`: Number of players (optional, default: 3)
+- `$0`: Game name (e.g., "markovs-chains")
+- `$1`: Number of players (optional, default: 2)
 
 ## Implementation Steps
 
-### Step 1: Validate Game Exists
+### Step 1: Initialize Game via Engine
 
 ```bash
-GAME_NAME="$0"  # e.g., "markovs-chains"
-NUM_PLAYERS="${1:-3}"
+GAME_NAME="$0"
+NUM_PLAYERS="${1:-2}"
 
-# Check game directory exists
-if [ ! -d "games/$GAME_NAME" ]; then
-  echo "Error: Game '$GAME_NAME' not found"
-  exit 1
-fi
-
-# Check prompts exist
-if [ ! -f "games/$GAME_NAME/prompts/gamemaster-prompt.md" ]; then
-  echo "Error: Gamemaster prompt not found"
-  exit 1
-fi
+# Initialize game state via engine
+cd /home/user/playtest/engine
+npx playtest init "$GAME_NAME" --players "$NUM_PLAYERS"
 ```
 
-### Step 2: Clean Up Previous Game State
+This creates `games/{GAME_NAME}/state/game.json` with:
+- Shuffled deck
+- Dealt hands
+- Turn order
+- Initial positions
 
-**CRITICAL**: Remove stale state files to prevent conflicts:
-
-```bash
-rm -f games/${GAME_NAME}/state/game-state.json
-rm -f games/${GAME_NAME}/state/turn-signal.json
-rm -f games/${GAME_NAME}/state/player-actions/*.json
-rm -rf games/${GAME_NAME}/state/messages/
-```
-
-### Step 3: Create Game Directories
-
-```bash
-mkdir -p games/${GAME_NAME}/state/player-actions
-mkdir -p games/${GAME_NAME}/state/messages
-mkdir -p games/${GAME_NAME}/logs/debug
-```
-
-### Step 4: Load and Prepare Agent Prompts
-
-Load game-agnostic templates from engine and substitute placeholders:
+### Step 2: Read Agent Templates
 
 ```javascript
-// Load engine templates
-const gamemasterTemplate = await Read(`engine/templates/gamemaster.md`);
-const playerTemplate = await Read(`engine/templates/player.md`);
-
-// Prepare gamemaster prompt
-const gamemasterPrompt = gamemasterTemplate
-  .replace(/\{\{GAME_NAME\}\}/g, GAME_NAME)
-  .replace(/\{\{NUM_PLAYERS\}\}/g, NUM_PLAYERS)
-  .replace(/\{\{MAX_TURNS\}\}/g, '50');
-
-// Create player prompts
-const playerPrompts = [];
-for (let i = 1; i <= NUM_PLAYERS; i++) {
-  playerPrompts.push(
-    playerTemplate
-      .replace(/\{\{PLAYER_ID\}\}/g, `player-${i}`)
-      .replace(/\{\{GAME_NAME\}\}/g, GAME_NAME)
-  );
-}
+// Read game-agnostic agent templates
+const gamemasterDef = await Read('.claude/agents/gamemaster.md');
+const playerDef = await Read('.claude/agents/player.md');
 ```
 
-### Step 5: Spawn ALL Agents in Parallel
+### Step 3: Spawn Agents in Parallel
 
-**CRITICAL**: Use a SINGLE message with multiple Task calls to spawn all agents simultaneously.
-
-**IMPORTANT**: Use the properly defined agent types (`gamemaster` and `player`) instead of `general-purpose`. This ensures that SubagentStop hooks receive proper context and can control agent lifecycle.
+**CRITICAL**: Use a SINGLE message with multiple Task calls.
 
 ```javascript
-// Spawn gamemaster (uses .claude/agents/gamemaster.md)
+// Spawn gamemaster
 Task({
   subagent_type: "gamemaster",
   description: `Gamemaster for ${GAME_NAME}`,
-  prompt: gamemasterPrompt,
+  prompt: `You are the gamemaster for ${GAME_NAME}.
+
+GAME: ${GAME_NAME}
+PLAYERS: ${NUM_PLAYERS}
+
+Read the rules: cat games/${GAME_NAME}/RULES.md
+
+Then monitor the game using:
+- npx playtest status ${GAME_NAME}
+- npx playtest state ${GAME_NAME}
+
+Process player actions, validate against rules, and use:
+- npx playtest roll ... for probability checks
+- npx playtest update ... to update player state
+- npx playtest advance ... to advance turns
+- npx playtest end ... when someone wins`,
   run_in_background: true
 });
 
-// Spawn all players (uses .claude/agents/player.md)
+// Spawn players
 for (let i = 1; i <= NUM_PLAYERS; i++) {
   Task({
     subagent_type: "player",
     description: `player-${i} for ${GAME_NAME}`,
-    prompt: playerPrompts[i-1],
+    prompt: `You are player-${i} in ${GAME_NAME}.
+
+GAME: ${GAME_NAME}
+YOUR ID: player-${i}
+
+Read the rules: cat games/${GAME_NAME}/RULES.md
+
+Then play using:
+1. npx playtest wait ${GAME_NAME} -p player-${i}   # Wait for turn
+2. Analyze the state returned
+3. npx playtest submit ${GAME_NAME} -p player-${i} -a '<action-json>'
+
+Repeat until game ends. Play to WIN!`,
     run_in_background: true
   });
 }
 ```
 
-**Why this matters**: Agent definitions in `.claude/agents/` have SubagentStop hooks configured that receive JSON input with `agent_id`, `agent_type`, and `session_id`. These hooks can check game state and prevent premature exits.
-
-### Step 6: Report Launch Status
+### Step 4: Report Status
 
 ```markdown
 ## Game Launched: {GAME_NAME}
 
+**Engine initialized** with {NUM_PLAYERS} players
+
 **Agents spawned:**
-- Gamemaster (Sonnet)
-- player-1, player-2, player-3 (Haiku)
+- Gamemaster (validates rules, resolves actions)
+- player-1 through player-{NUM_PLAYERS} (compete to win)
 
-**Monitor progress:**
-- Game state: `games/{GAME_NAME}/state/game-state.json`
-- Live log: `games/{GAME_NAME}/logs/game-*-live.jsonl`
-
-**When complete:**
-- Debug capture: `games/{GAME_NAME}/logs/debug/`
-- Use `/view-results {GAME_NAME}` to see analysis
+**Monitor:**
+- Status: `npx playtest status {GAME_NAME}`
+- State: `cat games/{GAME_NAME}/state/game.json`
+- Logs: `games/{GAME_NAME}/logs/{gameId}.jsonl`
 ```
 
-### Step 7: (Optional) Monitor Until Completion
+## Engine CLI Reference
 
-Poll game state every 10 seconds until completion:
+**Initialization:**
+- `npx playtest init <game> -p <n>` - Create game
 
-```bash
-while true; do
-  sleep 10
-  STATUS=$(jq -r '.gameStatus // "pending"' games/${GAME_NAME}/state/game-state.json 2>/dev/null)
-  TURN=$(jq -r '.turnNumber // 0' games/${GAME_NAME}/state/game-state.json 2>/dev/null)
+**Turn Management:**
+- `npx playtest wait <game> -p <id>` - Block until turn (player)
+- `npx playtest submit <game> -p <id> -a '<json>'` - Submit action
+- `npx playtest advance <game>` - Next turn (gamemaster)
 
-  echo "Turn $TURN - Status: $STATUS"
+**Game Mechanics:**
+- `npx playtest roll <game> --probability <p>` - Dice/probability
+- `npx playtest draw <game> -p <id> -n <count>` - Draw cards
+- `npx playtest update <game> -p <id> -s '<json>'` - Update state
 
-  if [ "$STATUS" = "completed" ]; then
-    WINNER=$(jq -r '.winner' games/${GAME_NAME}/state/game-state.json)
-    echo "Game complete! Winner: $WINNER"
-    break
-  fi
-done
-```
+**State:**
+- `npx playtest status <game>` - Game status
+- `npx playtest state <game>` - Full state (gamemaster)
+- `npx playtest state <game> -p <id>` - Player view
 
-## Action Scripts Reference
+**End:**
+- `npx playtest end <game> -w <id> -r '<reason>'` - End game
 
-Agents use these scripts (they don't need to know internals):
+## Key Differences from v2
 
-**Gamemaster:**
-- `scripts/actions/gamemaster/wait-for-action.sh` - Block until player acts
-- `scripts/actions/gamemaster/signal-turn.sh` - Signal next player
-- `scripts/actions/gamemaster/force-pass.sh` - Handle timeouts
-- `scripts/actions/gamemaster/end-game.sh` - End and declare winner
-
-**Players:**
-- `scripts/actions/player/wait-for-turn.sh` - Block until your turn
-- `scripts/actions/player/submit-action.sh` - Submit action
-
-**Common:**
-- `scripts/actions/common/send-message.sh` - Inter-agent messages
-- `scripts/actions/common/read-messages.sh` - Read messages
-
-## Reference Files
-
-- `engine/templates/gamemaster.md` - Gamemaster prompt template (game-agnostic)
-- `engine/templates/player.md` - Player prompt template (game-agnostic)
-- `games/{game}/RULES.md` - Game rules (loaded by agents at runtime)
-- `scripts/actions/README.md` - Action scripts documentation
-- `.claude/hooks/gamemaster-stop-hook.sh` - Debug capture hook
+| v2 | v3 |
+|----|-----|
+| Bash scripts for everything | TypeScript engine |
+| Agents manage state | Engine manages state |
+| Agents do randomization | Engine does randomization |
+| inotifywait polling | Engine blocking waits |
+| Manual info hiding | Automatic info hiding |
