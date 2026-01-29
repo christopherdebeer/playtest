@@ -1,8 +1,13 @@
 // Rules parser - extracts YAML frontmatter and markdown from RULES.md
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { parse as parseYAML } from 'yaml';
-import type { GameConfig, DeckConfig, Card } from './types.js';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import type { GameConfig, DeckConfig, Card, MechanicDef, MechanicsIndex } from './types.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const MECHANICS_DIR = join(__dirname, '../../mechanics');
 
 export interface ParsedRules {
   config: GameConfig;
@@ -76,4 +81,82 @@ export function getPlayerCount(config: GameConfig): { min: number; max: number }
 export function getCardDefinition(config: GameConfig, cardName: string): DeckConfig | null {
   if (!config.deck) return null;
   return config.deck.find(c => c.name === cardName) ?? null;
+}
+
+// ============ Mechanics Functions ============
+
+let mechanicsIndexCache: MechanicsIndex | null = null;
+
+export function loadMechanicsIndex(): MechanicsIndex {
+  if (mechanicsIndexCache) return mechanicsIndexCache;
+
+  const indexPath = join(MECHANICS_DIR, 'index.json');
+  if (!existsSync(indexPath)) {
+    throw new Error(`Mechanics index not found at ${indexPath}`);
+  }
+
+  mechanicsIndexCache = JSON.parse(readFileSync(indexPath, 'utf-8'));
+  return mechanicsIndexCache!;
+}
+
+export function getMechanicBySlug(slug: string): MechanicDef | null {
+  const index = loadMechanicsIndex();
+  return index.mechanics.find(m => m.slug === slug) ?? null;
+}
+
+export function getMechanicById(id: string): MechanicDef | null {
+  const index = loadMechanicsIndex();
+  return index.mechanics.find(m => m.id === id) ?? null;
+}
+
+export function getMechanicByName(name: string): MechanicDef | null {
+  const index = loadMechanicsIndex();
+  const lower = name.toLowerCase();
+  return index.mechanics.find(m => m.name.toLowerCase() === lower) ?? null;
+}
+
+export function searchMechanics(query: string): MechanicDef[] {
+  const index = loadMechanicsIndex();
+  const lower = query.toLowerCase();
+  return index.mechanics.filter(m =>
+    m.name.toLowerCase().includes(lower) ||
+    m.slug.includes(lower) ||
+    m.category.includes(lower)
+  );
+}
+
+export function getMechanicsByCategory(category: string): MechanicDef[] {
+  const index = loadMechanicsIndex();
+  return index.mechanics.filter(m => m.category === category);
+}
+
+export function getMechanicMarkdown(slug: string): string | null {
+  const mechanic = getMechanicBySlug(slug);
+  if (!mechanic) return null;
+
+  const mdPath = join(MECHANICS_DIR, mechanic.path);
+  if (!existsSync(mdPath)) return null;
+
+  return readFileSync(mdPath, 'utf-8');
+}
+
+export function resolveMechanics(slugs: string[]): { resolved: MechanicDef[]; unknown: string[] } {
+  const resolved: MechanicDef[] = [];
+  const unknown: string[] = [];
+
+  for (const slug of slugs) {
+    const mech = getMechanicBySlug(slug);
+    if (mech) {
+      resolved.push(mech);
+    } else {
+      unknown.push(slug);
+    }
+  }
+
+  return { resolved, unknown };
+}
+
+export function listCategories(): string[] {
+  const index = loadMechanicsIndex();
+  return index.categories;
 }

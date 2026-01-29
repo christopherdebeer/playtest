@@ -58,10 +58,21 @@ engine/                      # TypeScript game engine
 ├── src/                    # Source code
 │   ├── index.ts           # CLI entry point
 │   ├── game.ts            # State management
-│   ├── rules.ts           # YAML/markdown parsing
+│   ├── rules.ts           # YAML/markdown parsing + mechanics
 │   └── types.ts           # Type definitions
 ├── dist/                   # Compiled output
 └── ARCHITECTURE.md        # Detailed architecture docs
+
+mechanics/                   # BGG game mechanics database (192 mechanics)
+├── index.json             # Master index with all mechanics
+├── README.md              # Mechanics documentation
+├── action/                # Action-related mechanics
+├── auction/               # Auction and bidding variants
+├── cards/                 # Card game mechanics (hand-management, etc.)
+├── cooperative/           # Co-op and team mechanics
+├── dice/                  # Dice and randomness
+├── movement/              # Movement mechanics
+└── .../                   # 17 categories total
 
 skills/                      # Claude Code skills
 ├── start-game/            # Launch multi-agent playtest
@@ -94,6 +105,13 @@ npx playtest play <game> -p <id> -c '<name>' # Play card by name
 # Info
 npx playtest status <game>                   # Game status
 npx playtest rules <game>                    # Get rules markdown
+
+# Mechanics reference (from mechanics/ folder)
+npx playtest mechanic --list                 # List all categories
+npx playtest mechanic -c <category>          # List mechanics in category
+npx playtest mechanic <slug|id|name>         # Look up mechanic
+npx playtest mechanic <query>                # Search mechanics
+npx playtest mechanic <slug> --markdown      # Full description
 ```
 
 ## Quick Start

@@ -39,7 +39,25 @@ export interface GameConfig {
   starting_cards?: number;
   deck?: DeckConfig[];
   board?: BoardConfig;
+  mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
   [key: string]: unknown;  // game-specific config
+}
+
+// Mechanic definition from mechanics/ folder
+export interface MechanicDef {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  path: string;
+}
+
+export interface MechanicsIndex {
+  generated: string;
+  source: string;
+  count: number;
+  categories: string[];
+  mechanics: MechanicDef[];
 }
 
 export interface DeckConfig {

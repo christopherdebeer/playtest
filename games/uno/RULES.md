@@ -5,6 +5,13 @@ starting_cards: 7
 win_condition: "First player to empty their hand wins the round"
 max_turns: 200
 
+# Game mechanics (from mechanics/ folder)
+mechanics:
+  - hand-management
+  - set-collection
+  - take-that
+  - lose-a-turn
+
 # Structured config for engine
 deck:
   # Number cards (0-9 in four colors) - 76 total
