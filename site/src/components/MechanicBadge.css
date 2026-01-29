@@ -1,0 +1,56 @@
+.mechanic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--badge-color, #6b7280) 15%, transparent);
+  color: var(--badge-color, #6b7280);
+  border: 1px solid color-mix(in srgb, var(--badge-color, #6b7280) 30%, transparent);
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.mechanic-badge.unknown {
+  --badge-color: #6b7280;
+  font-style: italic;
+}
+
+.mechanic-badge.with-category {
+  padding-right: 0.25rem;
+}
+
+.badge-category {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.35rem;
+  background: color-mix(in srgb, var(--badge-color, #6b7280) 25%, transparent);
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mechanic-link {
+  text-decoration: none;
+}
+
+.mechanic-link:hover .mechanic-badge {
+  background: color-mix(in srgb, var(--badge-color, #6b7280) 25%, transparent);
+  border-color: color-mix(in srgb, var(--badge-color, #6b7280) 50%, transparent);
+}
+
+/* Mechanics list container */
+.mechanics-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mechanics-badges.compact {
+  gap: 0.35rem;
+}
+
+.mechanics-badges.compact .mechanic-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+}

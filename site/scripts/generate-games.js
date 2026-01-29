@@ -3,11 +3,18 @@ import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { parse as parseYaml } from 'yaml'
+import { marked } from 'marked'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const GAMES_DIR = join(__dirname, '..', '..', 'games')
 const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'games.json')
+
+// Configure marked for safe HTML output
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+})
 
 async function parseRulesFile(content) {
   // Extract YAML frontmatter
@@ -21,6 +28,9 @@ async function parseRulesFile(content) {
 
   const config = parseYaml(yamlContent)
 
+  // Convert markdown to HTML at build time
+  const rulesHtml = await marked.parse(markdownContent)
+
   return {
     config: {
       name: config.name,
@@ -30,10 +40,12 @@ async function parseRulesFile(content) {
       startingCards: config.starting_cards,
       deck: config.deck,
       board: config.board,
+      mechanics: config.mechanics || [],  // Include mechanics references
       deckSize: config.deck?.reduce((acc, c) => acc + c.count, 0),
       boardStates: config.board?.states,
     },
     rulesMarkdown: markdownContent,
+    rulesHtml: rulesHtml,
     rulesPreview: markdownContent.split('\n').slice(0, 5).join('\n') + '...',
   }
 }

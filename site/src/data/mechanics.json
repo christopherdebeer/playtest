@@ -1,0 +1,1946 @@
+{
+  "generated": "2026-01-29T14:25:45.516Z",
+  "source": "https://boardgamegeek.com/browse/boardgamemechanic",
+  "count": 192,
+  "categories": [
+    "action",
+    "auction",
+    "building",
+    "cards",
+    "conflict",
+    "cooperative",
+    "dice",
+    "economic",
+    "ending",
+    "information",
+    "movement",
+    "other",
+    "physical",
+    "social",
+    "turn-order",
+    "victory",
+    "worker-placement"
+  ],
+  "mechanics": [
+    {
+      "id": 2073,
+      "name": "Acting",
+      "slug": "acting",
+      "category": "social",
+      "summary": "Players physically act out clues",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2073/acting",
+      "description": "Players physically act out clues for other players to guess. This often involves charades-like gameplay where verbal communication is restricted.",
+      "contentHtml": "<h1>Acting</h1>\n<p>Players physically act out clues for other players to guess. This often involves charades-like gameplay where verbal communication is restricted.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2073</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2073/acting\">Acting</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - acting\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2840,
+      "name": "Action / Event",
+      "slug": "action-event",
+      "category": "action",
+      "summary": "Cards trigger immediate or delayed effects",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2840/action-event",
+      "description": "Cards or other game elements can trigger either immediate actions or events that occur at specific times during the game.",
+      "contentHtml": "<h1>Action / Event</h1>\n<p>Cards or other game elements can trigger either immediate actions or events that occur at specific times during the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2840</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2840/action-event\">Action / Event</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-event\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2838,
+      "name": "Action Drafting",
+      "slug": "action-drafting",
+      "category": "action",
+      "summary": "Players select actions from a shared pool",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2838/action-drafting",
+      "description": "Players take turns selecting actions from a common pool, with each chosen action becoming unavailable to others until refreshed.",
+      "contentHtml": "<h1>Action Drafting</h1>\n<p>Players take turns selecting actions from a common pool, with each chosen action becoming unavailable to others until refreshed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2838</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2838/action-drafting\">Action Drafting</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-drafting\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2001,
+      "name": "Action Points",
+      "slug": "action-points",
+      "category": "action",
+      "summary": "Spend points to perform various actions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2001/action-points",
+      "description": "A player receives a number of Action Points on their turn, which they may spend on a variety of actions. Different actions may cost different amounts of points.",
+      "contentHtml": "<h1>Action Points</h1>\n<p>A player receives a number of Action Points on their turn, which they may spend on a variety of actions. Different actions may cost different amounts of points.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2001</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2001/action-points\">Action Points</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-points\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2689,
+      "name": "Action Queue",
+      "slug": "action-queue",
+      "category": "action",
+      "summary": "Actions are programmed in sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2689/action-queue",
+      "description": "Players queue up a sequence of actions that will be executed in order. Planning ahead is crucial as actions resolve based on their position in the queue.",
+      "contentHtml": "<h1>Action Queue</h1>\n<p>Players queue up a sequence of actions that will be executed in order. Planning ahead is crucial as actions resolve based on their position in the queue.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2689</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2689/action-queue\">Action Queue</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-queue\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2839,
+      "name": "Action Retrieval",
+      "slug": "action-retrieval",
+      "category": "action",
+      "summary": "Recover previously used actions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2839/action-retrieval",
+      "description": "Players can retrieve or refresh actions that were previously used, allowing them to be used again.",
+      "contentHtml": "<h1>Action Retrieval</h1>\n<p>Players can retrieve or refresh actions that were previously used, allowing them to be used again.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2839</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2839/action-retrieval\">Action Retrieval</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-retrieval\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2834,
+      "name": "Action Timer",
+      "slug": "action-timer",
+      "category": "action",
+      "summary": "Actions limited by real-time constraints",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2834/action-timer",
+      "description": "Actions must be performed within a real-time limit, adding pressure and urgency to decision-making.",
+      "contentHtml": "<h1>Action Timer</h1>\n<p>Actions must be performed within a real-time limit, adding pressure and urgency to decision-making.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2834</li>\n<li><strong>Category</strong>: action</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2834/action-timer\">Action Timer</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - action-timer\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2847,
+      "name": "Advantage Token",
+      "slug": "advantage-token",
+      "category": "other",
+      "summary": "Tokens provide special advantages",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2847/advantage-token",
+      "description": "Tokens that grant their holder special advantages or abilities during gameplay.",
+      "contentHtml": "<h1>Advantage Token</h1>\n<p>Tokens that grant their holder special advantages or abilities during gameplay.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2847</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2847/advantage-token\">Advantage Token</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - advantage-token\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2916,
+      "name": "Alliances",
+      "slug": "alliances",
+      "category": "cooperative",
+      "summary": "Form temporary partnerships",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2916/alliances",
+      "description": "Players can form temporary alliances with other players for mutual benefit, though these partnerships may shift throughout the game.",
+      "contentHtml": "<h1>Alliances</h1>\n<p>Players can form temporary alliances with other players for mutual benefit, though these partnerships may shift throughout the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2916</li>\n<li><strong>Category</strong>: cooperative</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2916/alliances\">Alliances</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - alliances\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2080,
+      "name": "Area Majority / Influence",
+      "slug": "area-majority-influence",
+      "category": "other",
+      "summary": "Control areas through presence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2080/area-majority-influence",
+      "description": "Players compete to have the most pieces or influence in various areas of the board. The player with majority presence typically gains benefits or points.",
+      "contentHtml": "<h1>Area Majority / Influence</h1>\n<p>Players compete to have the most pieces or influence in various areas of the board. The player with majority presence typically gains benefits or points.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2080</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2080/area-majority-influence\">Area Majority / Influence</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - area-majority-influence\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2046,
+      "name": "Area Movement",
+      "slug": "area-movement",
+      "category": "movement",
+      "summary": "Move between defined areas",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2046/area-movement",
+      "description": "The board is divided into areas, and pieces move from one area to an adjacent area. Movement is not restricted to a grid pattern.",
+      "contentHtml": "<h1>Area Movement</h1>\n<p>The board is divided into areas, and pieces move from one area to an adjacent area. Movement is not restricted to a grid pattern.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2046</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2046/area-movement\">Area Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - area-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2021,
+      "name": "Area-Impulse",
+      "slug": "area-impulse",
+      "category": "conflict",
+      "summary": "Activate areas in sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2021/area-impulse",
+      "description": "A wargame system where players activate areas in a specific sequence, with units in activated areas able to move and fight.",
+      "contentHtml": "<h1>Area-Impulse</h1>\n<p>A wargame system where players activate areas in a specific sequence, with units in activated areas able to move and fight.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2021</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2021/area-impulse\">Area-Impulse</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - area-impulse\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2012,
+      "name": "Auction / Bidding",
+      "slug": "auction-bidding",
+      "category": "auction",
+      "summary": "Bid resources to win items",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2012/auction-bidding",
+      "description": "Players bid resources (money, cards, etc.) to acquire items, with the highest bidder winning the auction.",
+      "contentHtml": "<h1>Auction / Bidding</h1>\n<p>Players bid resources (money, cards, etc.) to acquire items, with the highest bidder winning the auction.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2012</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2012/auction-bidding\">Auction / Bidding</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-bidding\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3098,
+      "name": "Auction Compensation",
+      "slug": "auction-compensation",
+      "category": "auction",
+      "summary": "Losing bidders receive compensation",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3098/auction-compensation",
+      "description": "In this auction variant, players who lose the auction receive some form of compensation for their participation.",
+      "contentHtml": "<h1>Auction Compensation</h1>\n<p>In this auction variant, players who lose the auction receive some form of compensation for their participation.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3098</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3098/auction-compensation\">Auction Compensation</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-compensation\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2930,
+      "name": "Auction: Dexterity",
+      "slug": "auction-dexterity",
+      "category": "auction",
+      "summary": "Physical skill affects bidding",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2930/auction-dexterity",
+      "description": "Auction outcomes are influenced by physical dexterity or skill rather than purely by bid amounts.",
+      "contentHtml": "<h1>Auction: Dexterity</h1>\n<p>Auction outcomes are influenced by physical dexterity or skill rather than purely by bid amounts.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2930</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2930/auction-dexterity\">Auction: Dexterity</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-dexterity\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2924,
+      "name": "Auction: Dutch",
+      "slug": "auction-dutch",
+      "category": "auction",
+      "summary": "Price decreases until someone buys",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2924/auction-dutch",
+      "description": "The price starts high and decreases until a player agrees to pay the current price, winning the auction.",
+      "contentHtml": "<h1>Auction: Dutch</h1>\n<p>The price starts high and decreases until a player agrees to pay the current price, winning the auction.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2924</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2924/auction-dutch\">Auction: Dutch</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-dutch\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2932,
+      "name": "Auction: Dutch Priority",
+      "slug": "auction-dutch-priority",
+      "category": "auction",
+      "summary": "Dutch auction with priority rules",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2932/auction-dutch-priority",
+      "description": "A Dutch auction where certain players have priority in claiming items at specific price points.",
+      "contentHtml": "<h1>Auction: Dutch Priority</h1>\n<p>A Dutch auction where certain players have priority in claiming items at specific price points.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2932</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2932/auction-dutch-priority\">Auction: Dutch Priority</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-dutch-priority\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2918,
+      "name": "Auction: English",
+      "slug": "auction-english",
+      "category": "auction",
+      "summary": "Open ascending bid auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2918/auction-english",
+      "description": "Players openly bid increasing amounts, with the highest bidder winning. Classic auction format with visible bids.",
+      "contentHtml": "<h1>Auction: English</h1>\n<p>Players openly bid increasing amounts, with the highest bidder winning. Classic auction format with visible bids.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2918</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2918/auction-english\">Auction: English</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-english\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2931,
+      "name": "Auction: Fixed Placement",
+      "slug": "auction-fixed-placement",
+      "category": "auction",
+      "summary": "Bids placed on fixed positions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2931/auction-fixed-placement",
+      "description": "Players place bids on fixed positions or slots, with specific rules about placement and resolution.",
+      "contentHtml": "<h1>Auction: Fixed Placement</h1>\n<p>Players place bids on fixed positions or slots, with specific rules about placement and resolution.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2931</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2931/auction-fixed-placement\">Auction: Fixed Placement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-fixed-placement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2927,
+      "name": "Auction: Multiple Lot",
+      "slug": "auction-multiple-lot",
+      "category": "auction",
+      "summary": "Multiple items auctioned together",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2927/auction-multiple-lot",
+      "description": "Multiple items are auctioned simultaneously, with players bidding on combinations or sets.",
+      "contentHtml": "<h1>Auction: Multiple Lot</h1>\n<p>Multiple items are auctioned simultaneously, with players bidding on combinations or sets.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2927</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2927/auction-multiple-lot\">Auction: Multiple Lot</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-multiple-lot\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2923,
+      "name": "Auction: Once Around",
+      "slug": "auction-once-around",
+      "category": "auction",
+      "summary": "Single bid per player per round",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2923/auction-once-around",
+      "description": "Each player gets exactly one opportunity to bid in sequence before the auction resolves.",
+      "contentHtml": "<h1>Auction: Once Around</h1>\n<p>Each player gets exactly one opportunity to bid in sequence before the auction resolves.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2923</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2923/auction-once-around\">Auction: Once Around</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-once-around\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2920,
+      "name": "Auction: Sealed Bid",
+      "slug": "auction-sealed-bid",
+      "category": "auction",
+      "summary": "Secret simultaneous bidding",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2920/auction-sealed-bid",
+      "description": "All players submit bids secretly and simultaneously, with bids revealed together to determine the winner.",
+      "contentHtml": "<h1>Auction: Sealed Bid</h1>\n<p>All players submit bids secretly and simultaneously, with bids revealed together to determine the winner.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2920</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2920/auction-sealed-bid\">Auction: Sealed Bid</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-sealed-bid\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2919,
+      "name": "Auction: Turn Order Until Pass",
+      "slug": "auction-turn-order-until-pass",
+      "category": "auction",
+      "summary": "Bid in turn order until passing",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2919/auction-turn-order-until-pass",
+      "description": "Players bid in turn order, with each player either raising the bid or passing. Passed players cannot re-enter.",
+      "contentHtml": "<h1>Auction: Turn Order Until Pass</h1>\n<p>Players bid in turn order, with each player either raising the bid or passing. Passed players cannot re-enter.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2919</li>\n<li><strong>Category</strong>: auction</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2919/auction-turn-order-until-pass\">Auction: Turn Order Until Pass</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - auction-turn-order-until-pass\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2903,
+      "name": "Automatic Resource Growth",
+      "slug": "automatic-resource-growth",
+      "category": "other",
+      "summary": "Resources increase automatically",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2903/automatic-resource-growth",
+      "description": "Resources grow or accumulate automatically without player action, often at the start of each turn or round.",
+      "contentHtml": "<h1>Automatic Resource Growth</h1>\n<p>Resources grow or accumulate automatically without player action, often at the start of each turn or round.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2903</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2903/automatic-resource-growth\">Automatic Resource Growth</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - automatic-resource-growth\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2014,
+      "name": "Betting and Bluffing",
+      "slug": "betting-and-bluffing",
+      "category": "social",
+      "summary": "Wager and deceive opponents",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2014/betting-and-bluffing",
+      "description": "Players make bets and may bluff about their hand strength or intentions to manipulate opponents.",
+      "contentHtml": "<h1>Betting and Bluffing</h1>\n<p>Players make bets and may bluff about their hand strength or intentions to manipulate opponents.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2014</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2014/betting-and-bluffing\">Betting and Bluffing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - betting-and-bluffing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2957,
+      "name": "Bias",
+      "slug": "bias",
+      "category": "other",
+      "summary": "Asymmetric starting conditions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2957/bias",
+      "description": "Players begin with different starting conditions or advantages, creating asymmetric gameplay from the start.",
+      "contentHtml": "<h1>Bias</h1>\n<p>Players begin with different starting conditions or advantages, creating asymmetric gameplay from the start.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2957</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2957/bias\">Bias</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - bias\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3097,
+      "name": "Bids As Wagers",
+      "slug": "bids-as-wagers",
+      "category": "other",
+      "summary": "Bids represent risk stakes",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3097/bids-as-wagers",
+      "description": "Bids serve as wagers where players risk losing their bid if certain conditions are not met.",
+      "contentHtml": "<h1>Bids As Wagers</h1>\n<p>Bids serve as wagers where players risk losing their bid if certain conditions are not met.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3097</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3097/bids-as-wagers\">Bids As Wagers</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - bids-as-wagers\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2999,
+      "name": "Bingo",
+      "slug": "bingo",
+      "category": "other",
+      "summary": "Mark matching items on a grid",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2999/bingo",
+      "description": "Players mark items on a personal grid as they are called or revealed, trying to complete patterns.",
+      "contentHtml": "<h1>Bingo</h1>\n<p>Players mark items on a personal grid as they are called or revealed, trying to complete patterns.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2999</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2999/bingo\">Bingo</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - bingo\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2913,
+      "name": "Bribery",
+      "slug": "bribery",
+      "category": "economic",
+      "summary": "Pay others for favors",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2913/bribery",
+      "description": "Players can pay other players (in game resources) to influence their decisions or gain advantages.",
+      "contentHtml": "<h1>Bribery</h1>\n<p>Players can pay other players (in game resources) to influence their decisions or gain advantages.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2913</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2913/bribery\">Bribery</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - bribery\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2018,
+      "name": "Campaign / Battle Card Driven",
+      "slug": "campaign-battle-card-driven",
+      "category": "cards",
+      "summary": "Cards drive military campaigns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2018/campaign-battle-card-driven",
+      "description": "Military or campaign games where cards determine available actions, events, and combat outcomes.",
+      "contentHtml": "<h1>Campaign / Battle Card Driven</h1>\n<p>Military or campaign games where cards determine available actions, events, and combat outcomes.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2018</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2018/campaign-battle-card-driven\">Campaign / Battle Card Driven</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - campaign-battle-card-driven\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2857,
+      "name": "Card Play Conflict Resolution",
+      "slug": "card-play-conflict-resolution",
+      "category": "cards",
+      "summary": "Cards determine conflict outcomes",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2857/card-play-conflict-resolution",
+      "description": "Conflicts between players are resolved by playing cards, with card values or types determining the winner.",
+      "contentHtml": "<h1>Card Play Conflict Resolution</h1>\n<p>Conflicts between players are resolved by playing cards, with card values or types determining the winner.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2857</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2857/card-play-conflict-resolution\">Card Play Conflict Resolution</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - card-play-conflict-resolution\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2887,
+      "name": "Catch the Leader",
+      "slug": "catch-the-leader",
+      "category": "victory",
+      "summary": "Mechanics target leading player",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2887/catch-the-leader",
+      "description": "Game mechanisms that specifically target or disadvantage the player who is currently winning.",
+      "contentHtml": "<h1>Catch the Leader</h1>\n<p>Game mechanisms that specifically target or disadvantage the player who is currently winning.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2887</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2887/catch-the-leader\">Catch the Leader</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - catch-the-leader\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2956,
+      "name": "Chaining",
+      "slug": "chaining",
+      "category": "other",
+      "summary": "Link actions in sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2956/chaining",
+      "description": "Actions can trigger additional actions in a chain, creating combos or extended turns.",
+      "contentHtml": "<h1>Chaining</h1>\n<p>Actions can trigger additional actions in a chain, creating combos or extended turns.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2956</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2956/chaining\">Chaining</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - chaining\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2057,
+      "name": "Chit-Pull System",
+      "slug": "chit-pull-system",
+      "category": "conflict",
+      "summary": "Draw tokens to activate units",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2057/chit-pull-system",
+      "description": "Tokens are drawn randomly to determine which units or factions can act, adding uncertainty to turn order.",
+      "contentHtml": "<h1>Chit-Pull System</h1>\n<p>Tokens are drawn randomly to determine which units or factions can act, adding uncertainty to turn order.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2057</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2057/chit-pull-system\">Chit-Pull System</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - chit-pull-system\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2984,
+      "name": "Closed Drafting",
+      "slug": "closed-drafting",
+      "category": "cards",
+      "summary": "Draft from hidden selection",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2984/closed-drafting",
+      "description": "Players draft cards or items from a hand that is passed around, keeping selections hidden until revealed.",
+      "contentHtml": "<h1>Closed Drafting</h1>\n<p>Players draft cards or items from a hand that is passed around, keeping selections hidden until revealed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2984</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2984/closed-drafting\">Closed Drafting</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - closed-drafting\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2928,
+      "name": "Closed Economy Auction",
+      "slug": "closed-economy-auction",
+      "category": "other",
+      "summary": "Auction with fixed money supply",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2928/closed-economy-auction",
+      "description": "An auction system where money paid goes to other players rather than the bank, keeping total money constant.",
+      "contentHtml": "<h1>Closed Economy Auction</h1>\n<p>An auction system where money paid goes to other players rather than the bank, keeping total money constant.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2928</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2928/closed-economy-auction\">Closed Economy Auction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - closed-economy-auction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2841,
+      "name": "Command Cards",
+      "slug": "command-cards",
+      "category": "cards",
+      "summary": "Cards issue orders to units",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2841/command-cards",
+      "description": "Special cards that allow players to give commands to their units, determining what actions they can take.",
+      "contentHtml": "<h1>Command Cards</h1>\n<p>Special cards that allow players to give commands to their units, determining what actions they can take.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2841</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2841/command-cards\">Command Cards</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - command-cards\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2013,
+      "name": "Commodity Speculation",
+      "slug": "commodity-speculation",
+      "category": "economic",
+      "summary": "Trade goods for profit",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2013/commodity-speculation",
+      "description": "Players buy and sell commodities, trying to profit from price changes and market fluctuations.",
+      "contentHtml": "<h1>Commodity Speculation</h1>\n<p>Players buy and sell commodities, trying to profit from price changes and market fluctuations.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2013</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2013/commodity-speculation\">Commodity Speculation</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - commodity-speculation\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2893,
+      "name": "Communication Limits",
+      "slug": "communication-limits",
+      "category": "social",
+      "summary": "Restricted player communication",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2893/communication-limits",
+      "description": "Rules limit how players can communicate, requiring creative or restricted information sharing.",
+      "contentHtml": "<h1>Communication Limits</h1>\n<p>Rules limit how players can communicate, requiring creative or restricted information sharing.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2893</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2893/communication-limits\">Communication Limits</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - communication-limits\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2883,
+      "name": "Connections",
+      "slug": "connections",
+      "category": "building",
+      "summary": "Build links between points",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2883/connections",
+      "description": "Players create connections or links between points on the board, often for scoring or network effects.",
+      "contentHtml": "<h1>Connections</h1>\n<p>Players create connections or links between points on the board, often for scoring or network effects.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2883</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2883/connections\">Connections</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - connections\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2922,
+      "name": "Constrained Bidding",
+      "slug": "constrained-bidding",
+      "category": "other",
+      "summary": "Bidding with restrictions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2922/constrained-bidding",
+      "description": "Auctions where bids are constrained by specific rules, such as bid increments or resource limitations.",
+      "contentHtml": "<h1>Constrained Bidding</h1>\n<p>Auctions where bids are constrained by specific rules, such as bid increments or resource limitations.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2922</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2922/constrained-bidding\">Constrained Bidding</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - constrained-bidding\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2912,
+      "name": "Contracts",
+      "slug": "contracts",
+      "category": "economic",
+      "summary": "Fulfill agreements for rewards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2912/contracts",
+      "description": "Players take on contracts that specify conditions for completion and rewards upon fulfillment.",
+      "contentHtml": "<h1>Contracts</h1>\n<p>Players take on contracts that specify conditions for completion and rewards upon fulfillment.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2912</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2912/contracts\">Contracts</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - contracts\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2023,
+      "name": "Cooperative Game",
+      "slug": "cooperative-game",
+      "category": "cooperative",
+      "summary": "Players work together",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2023/cooperative-game",
+      "description": "All players work together against the game system rather than competing against each other. Either everyone wins or everyone loses.",
+      "contentHtml": "<h1>Cooperative Game</h1>\n<p>All players work together against the game system rather than competing against each other. Either everyone wins or everyone loses.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2023</li>\n<li><strong>Category</strong>: cooperative</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2023/cooperative-game\">Cooperative Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - cooperative-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2010,
+      "name": "Crayon Rail System",
+      "slug": "crayon-rail-system",
+      "category": "building",
+      "summary": "Draw routes on the board",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2010/crayon-rail-system",
+      "description": "Players literally draw on the board (usually with crayons) to create rail or route networks.",
+      "contentHtml": "<h1>Crayon Rail System</h1>\n<p>Players literally draw on the board (usually with crayons) to create rail or route networks.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2010</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2010/crayon-rail-system\">Crayon Rail System</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - crayon-rail-system\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2854,
+      "name": "Critical Hits and Failures",
+      "slug": "critical-hits-and-failures",
+      "category": "conflict",
+      "summary": "Extreme results on dice rolls",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2854/critical-hits-and-failures",
+      "description": "Certain dice results produce dramatically better or worse outcomes than normal rolls.",
+      "contentHtml": "<h1>Critical Hits and Failures</h1>\n<p>Certain dice results produce dramatically better or worse outcomes than normal rolls.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2854</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2854/critical-hits-and-failures\">Critical Hits and Failures</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - critical-hits-and-failures\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2990,
+      "name": "Cube Tower",
+      "slug": "cube-tower",
+      "category": "physical",
+      "summary": "Physical tower randomizes results",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2990/cube-tower",
+      "description": "A physical tower where cubes are dropped in, with the output determining game results.",
+      "contentHtml": "<h1>Cube Tower</h1>\n<p>A physical tower where cubes are dropped in, with the output determining game results.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2990</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2990/cube-tower\">Cube Tower</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - cube-tower\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3004,
+      "name": "Deck Construction",
+      "slug": "deck-construction",
+      "category": "cards",
+      "summary": "Build deck before playing",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3004/deck-construction",
+      "description": "Players construct their deck before the game begins, selecting cards to include based on strategy.",
+      "contentHtml": "<h1>Deck Construction</h1>\n<p>Players construct their deck before the game begins, selecting cards to include based on strategy.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3004</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3004/deck-construction\">Deck Construction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - deck-construction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2664,
+      "name": "Deck, Bag, and Pool Building",
+      "slug": "deck-bag-and-pool-building",
+      "category": "cards",
+      "summary": "Improve personal card collection",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2664/deck-bag-and-pool-building",
+      "description": "Players add cards to their personal deck, bag, or pool during the game, improving their options over time.",
+      "contentHtml": "<h1>Deck, Bag, and Pool Building</h1>\n<p>Players add cards to their personal deck, bag, or pool during the game, improving their options over time.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2664</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2664/deck-bag-and-pool-building\">Deck, Bag, and Pool Building</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - deck-bag-and-pool-building\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3002,
+      "name": "Deduction",
+      "slug": "deduction",
+      "category": "information",
+      "summary": "Logic to uncover hidden info",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3002/deduction",
+      "description": "Players use logic and reasoning to deduce hidden information, such as the identity of a culprit or location of items.",
+      "contentHtml": "<h1>Deduction</h1>\n<p>Players use logic and reasoning to deduce hidden information, such as the identity of a culprit or location of items.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3002</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3002/deduction\">Deduction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - deduction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2901,
+      "name": "Delayed Purchase",
+      "slug": "delayed-purchase",
+      "category": "other",
+      "summary": "Buy now, pay later",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2901/delayed-purchase",
+      "description": "Players can acquire items with payment deferred to a later time in the game.",
+      "contentHtml": "<h1>Delayed Purchase</h1>\n<p>Players can acquire items with payment deferred to a later time in the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2901</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2901/delayed-purchase\">Delayed Purchase</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - delayed-purchase\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2072,
+      "name": "Dice Rolling",
+      "slug": "dice-rolling",
+      "category": "dice",
+      "summary": "Roll dice for outcomes",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2072/dice-rolling",
+      "description": "Players roll dice to determine outcomes, introducing randomness into game decisions and actions.",
+      "contentHtml": "<h1>Dice Rolling</h1>\n<p>Players roll dice to determine outcomes, introducing randomness into game decisions and actions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2072</li>\n<li><strong>Category</strong>: dice</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2072/dice-rolling\">Dice Rolling</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - dice-rolling\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2856,
+      "name": "Die Icon Resolution",
+      "slug": "die-icon-resolution",
+      "category": "other",
+      "summary": "Dice symbols trigger effects",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2856/die-icon-resolution",
+      "description": "Dice faces show icons or symbols rather than numbers, with each symbol triggering specific effects.",
+      "contentHtml": "<h1>Die Icon Resolution</h1>\n<p>Dice faces show icons or symbols rather than numbers, with each symbol triggering specific effects.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2856</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2856/die-icon-resolution\">Die Icon Resolution</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - die-icon-resolution\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2950,
+      "name": "Different Dice Movement",
+      "slug": "different-dice-movement",
+      "category": "movement",
+      "summary": "Dice type affects movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2950/different-dice-movement",
+      "description": "Different types or colors of dice affect movement in different ways.",
+      "contentHtml": "<h1>Different Dice Movement</h1>\n<p>Different types or colors of dice affect movement in different ways.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2950</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2950/different-dice-movement\">Different Dice Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - different-dice-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3096,
+      "name": "Drawing",
+      "slug": "drawing",
+      "category": "other",
+      "summary": "Create pictures as gameplay",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3096/drawing",
+      "description": "Players draw pictures as part of the game, often for others to guess or interpret.",
+      "contentHtml": "<h1>Drawing</h1>\n<p>Players draw pictures as part of the game, often for others to guess or interpret.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3096</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3096/drawing\">Drawing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - drawing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2882,
+      "name": "Elapsed Real Time Ending",
+      "slug": "elapsed-real-time-ending",
+      "category": "ending",
+      "summary": "Game ends after set time",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2882/elapsed-real-time-ending",
+      "description": "The game ends after a predetermined amount of real time has elapsed.",
+      "contentHtml": "<h1>Elapsed Real Time Ending</h1>\n<p>The game ends after a predetermined amount of real time has elapsed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2882</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2882/elapsed-real-time-ending\">Elapsed Real Time Ending</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - elapsed-real-time-ending\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2043,
+      "name": "Enclosure",
+      "slug": "enclosure",
+      "category": "building",
+      "summary": "Surround areas to capture",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2043/enclosure",
+      "description": "Players surround or enclose areas to claim them, often for points or resources.",
+      "contentHtml": "<h1>Enclosure</h1>\n<p>Players surround or enclose areas to claim them, often for points or resources.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2043</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2043/enclosure\">Enclosure</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - enclosure\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2875,
+      "name": "End Game Bonuses",
+      "slug": "end-game-bonuses",
+      "category": "victory",
+      "summary": "Extra points at game end",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2875/end-game-bonuses",
+      "description": "Players receive bonus points at the end of the game based on achieving certain conditions.",
+      "contentHtml": "<h1>End Game Bonuses</h1>\n<p>Players receive bonus points at the end of the game based on achieving certain conditions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2875</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2875/end-game-bonuses\">End Game Bonuses</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - end-game-bonuses\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2850,
+      "name": "Events",
+      "slug": "events",
+      "category": "other",
+      "summary": "Triggered occurrences affect play",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2850/events",
+      "description": "Random or scripted events occur during the game that affect all or some players.",
+      "contentHtml": "<h1>Events</h1>\n<p>Random or scripted events occur during the game that affect all or some players.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2850</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2850/events\">Events</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - events\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2885,
+      "name": "Finale Ending",
+      "slug": "finale-ending",
+      "category": "ending",
+      "summary": "Special final round",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2885/finale-ending",
+      "description": "The game ends with a special finale round that differs from normal gameplay.",
+      "contentHtml": "<h1>Finale Ending</h1>\n<p>The game ends with a special finale round that differs from normal gameplay.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2885</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2885/finale-ending\">Finale Ending</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - finale-ending\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2860,
+      "name": "Flicking",
+      "slug": "flicking",
+      "category": "physical",
+      "summary": "Flick pieces for movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2860/flicking",
+      "description": "Players physically flick game pieces to move them, requiring dexterity and aim.",
+      "contentHtml": "<h1>Flicking</h1>\n<p>Players physically flick game pieces to move them, requiring dexterity and aim.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2860</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2860/flicking\">Flicking</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - flicking\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2843,
+      "name": "Follow",
+      "slug": "follow",
+      "category": "other",
+      "summary": "Copy another player action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2843/follow",
+      "description": "Players can copy or follow the action of another player, often the active player.",
+      "contentHtml": "<h1>Follow</h1>\n<p>Players can copy or follow the action of another player, often the active player.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2843</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2843/follow\">Follow</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - follow\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2864,
+      "name": "Force Commitment",
+      "slug": "force-commitment",
+      "category": "conflict",
+      "summary": "Allocate forces before revealing",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2864/force-commitment",
+      "description": "Players must commit their forces to actions before knowing opponent commitments.",
+      "contentHtml": "<h1>Force Commitment</h1>\n<p>Players must commit their forces to actions before knowing opponent commitments.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2864</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2864/force-commitment\">Force Commitment</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - force-commitment\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2978,
+      "name": "Grid Coverage",
+      "slug": "grid-coverage",
+      "category": "movement",
+      "summary": "Cover grid spaces",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2978/grid-coverage",
+      "description": "Players attempt to cover or control spaces on a grid pattern board.",
+      "contentHtml": "<h1>Grid Coverage</h1>\n<p>Players attempt to cover or control spaces on a grid pattern board.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2978</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2978/grid-coverage\">Grid Coverage</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - grid-coverage\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2676,
+      "name": "Grid Movement",
+      "slug": "grid-movement",
+      "category": "movement",
+      "summary": "Move on grid squares",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2676/grid-movement",
+      "description": "Pieces move on a grid of squares, with movement typically measured in squares.",
+      "contentHtml": "<h1>Grid Movement</h1>\n<p>Pieces move on a grid of squares, with movement typically measured in squares.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2676</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2676/grid-movement\">Grid Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - grid-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2040,
+      "name": "Hand Management",
+      "slug": "hand-management",
+      "category": "cards",
+      "summary": "Optimize card play timing",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2040/hand-management",
+      "description": "Players manage a hand of cards, deciding when to play each card for maximum effect. Timing and card selection are crucial.",
+      "contentHtml": "<h1>Hand Management</h1>\n<p>Players manage a hand of cards, deciding when to play each card for maximum effect. Timing and card selection are crucial.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2040</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2040/hand-management\">Hand Management</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hand-management\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2026,
+      "name": "Hexagon Grid",
+      "slug": "hexagon-grid",
+      "category": "movement",
+      "summary": "Hexagonal tile board",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2026/hexagon-grid",
+      "description": "The game board uses hexagonal tiles or spaces instead of squares, allowing six directions of movement.",
+      "contentHtml": "<h1>Hexagon Grid</h1>\n<p>The game board uses hexagonal tiles or spaces instead of squares, allowing six directions of movement.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2026</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2026/hexagon-grid\">Hexagon Grid</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hexagon-grid\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2967,
+      "name": "Hidden Movement",
+      "slug": "hidden-movement",
+      "category": "movement",
+      "summary": "Secret piece positions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2967/hidden-movement",
+      "description": "One or more players move pieces secretly, with their positions unknown to other players.",
+      "contentHtml": "<h1>Hidden Movement</h1>\n<p>One or more players move pieces secretly, with their positions unknown to other players.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2967</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2967/hidden-movement\">Hidden Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hidden-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2891,
+      "name": "Hidden Roles",
+      "slug": "hidden-roles",
+      "category": "information",
+      "summary": "Secret player identities",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2891/hidden-roles",
+      "description": "Players have secret roles that determine their objectives and allegiances, unknown to other players.",
+      "contentHtml": "<h1>Hidden Roles</h1>\n<p>Players have secret roles that determine their objectives and allegiances, unknown to other players.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2891</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2891/hidden-roles\">Hidden Roles</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hidden-roles\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2987,
+      "name": "Hidden Victory Points",
+      "slug": "hidden-victory-points",
+      "category": "victory",
+      "summary": "Secret scoring",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2987/hidden-victory-points",
+      "description": "Some or all victory points are hidden from other players until the end of the game.",
+      "contentHtml": "<h1>Hidden Victory Points</h1>\n<p>Some or all victory points are hidden from other players until the end of the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2987</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2987/hidden-victory-points\">Hidden Victory Points</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hidden-victory-points\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2889,
+      "name": "Highest-Lowest Scoring",
+      "slug": "highest-lowest-scoring",
+      "category": "victory",
+      "summary": "Extreme values score",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2889/highest-lowest-scoring",
+      "description": "Scoring is based on having the highest or lowest values in certain categories.",
+      "contentHtml": "<h1>Highest-Lowest Scoring</h1>\n<p>Scoring is based on having the highest or lowest values in certain categories.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2889</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2889/highest-lowest-scoring\">Highest-Lowest Scoring</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - highest-lowest-scoring\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3000,
+      "name": "Hot Potato",
+      "slug": "hot-potato",
+      "category": "other",
+      "summary": "Avoid holding item at end",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3000/hot-potato",
+      "description": "Players try to avoid being the one holding a particular item when a timer or round ends.",
+      "contentHtml": "<h1>Hot Potato</h1>\n<p>Players try to avoid being the one holding a particular item when a timer or round ends.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3000</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3000/hot-potato\">Hot Potato</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - hot-potato\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2906,
+      "name": "I Cut, You Choose",
+      "slug": "i-cut-you-choose",
+      "category": "social",
+      "summary": "One divides, other chooses",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2906/i-cut-you-choose",
+      "description": "One player divides resources into portions, and another player chooses which portion to take.",
+      "contentHtml": "<h1>I Cut, You Choose</h1>\n<p>One player divides resources into portions, and another player chooses which portion to take.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2906</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2906/i-cut-you-choose\">I Cut, You Choose</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - i-cut-you-choose\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2952,
+      "name": "Impulse Movement",
+      "slug": "impulse-movement",
+      "category": "movement",
+      "summary": "Sequential unit activation",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2952/impulse-movement",
+      "description": "Units are activated in impulses, with each impulse allowing movement or action for a subset of units.",
+      "contentHtml": "<h1>Impulse Movement</h1>\n<p>Units are activated in impulses, with each impulse allowing movement or action for a subset of units.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2952</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2952/impulse-movement\">Impulse Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - impulse-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2902,
+      "name": "Income",
+      "slug": "income",
+      "category": "economic",
+      "summary": "Regular resource generation",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2902/income",
+      "description": "Players receive regular income of resources, typically at the start of each round or turn.",
+      "contentHtml": "<h1>Income</h1>\n<p>Players receive regular income of resources, typically at the start of each round or turn.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2902</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2902/income\">Income</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - income\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2914,
+      "name": "Increase Value of Unchosen Resources",
+      "slug": "increase-value-of-unchosen-resources",
+      "category": "other",
+      "summary": "Unpicked options gain value",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2914/increase-value-of-unchosen-resources",
+      "description": "Resources that are not chosen accumulate additional value, making them more attractive over time.",
+      "contentHtml": "<h1>Increase Value of Unchosen Resources</h1>\n<p>Resources that are not chosen accumulate additional value, making them more attractive over time.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2914</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2914/increase-value-of-unchosen-resources\">Increase Value of Unchosen Resources</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - increase-value-of-unchosen-resources\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3003,
+      "name": "Induction",
+      "slug": "induction",
+      "category": "information",
+      "summary": "Pattern recognition from examples",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3003/induction",
+      "description": "Players must identify patterns or rules from examples provided during gameplay.",
+      "contentHtml": "<h1>Induction</h1>\n<p>Players must identify patterns or rules from examples provided during gameplay.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3003</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3003/induction\">Induction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - induction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2837,
+      "name": "Interrupts",
+      "slug": "interrupts",
+      "category": "other",
+      "summary": "Act during others turns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2837/interrupts",
+      "description": "Players can interrupt the normal flow of play to take actions during other players turns.",
+      "contentHtml": "<h1>Interrupts</h1>\n<p>Players can interrupt the normal flow of play to take actions during other players turns.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2837</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2837/interrupts\">Interrupts</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - interrupts\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2910,
+      "name": "Investment",
+      "slug": "investment",
+      "category": "economic",
+      "summary": "Spend now for future returns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2910/investment",
+      "description": "Players invest resources now to receive larger returns later in the game.",
+      "contentHtml": "<h1>Investment</h1>\n<p>Players invest resources now to receive larger returns later in the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2910</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2910/investment\">Investment</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - investment\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2871,
+      "name": "Kill Steal",
+      "slug": "kill-steal",
+      "category": "conflict",
+      "summary": "Claim others eliminations",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2871/kill-steal",
+      "description": "Players can claim credit for eliminations or achievements initiated by other players.",
+      "contentHtml": "<h1>Kill Steal</h1>\n<p>Players can claim credit for eliminations or achievements initiated by other players.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2871</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2871/kill-steal\">Kill Steal</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - kill-steal\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2886,
+      "name": "King of the Hill",
+      "slug": "king-of-the-hill",
+      "category": "victory",
+      "summary": "Control central position",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2886/king-of-the-hill",
+      "description": "Players compete to control a central position or area that provides ongoing benefits.",
+      "contentHtml": "<h1>King of the Hill</h1>\n<p>Players compete to control a central position or area that provides ongoing benefits.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2886</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2886/king-of-the-hill\">King of the Hill</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - king-of-the-hill\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2980,
+      "name": "Ladder Climbing",
+      "slug": "ladder-climbing",
+      "category": "cards",
+      "summary": "Play higher combinations",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2980/ladder-climbing",
+      "description": "Players must play card combinations that beat the previous play, with the round ending when all pass.",
+      "contentHtml": "<h1>Ladder Climbing</h1>\n<p>Players must play card combinations that beat the previous play, with the round ending when all pass.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2980</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2980/ladder-climbing\">Ladder Climbing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - ladder-climbing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3001,
+      "name": "Layering",
+      "slug": "layering",
+      "category": "other",
+      "summary": "Stack elements vertically",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3001/layering",
+      "description": "Game elements can be stacked or layered on top of each other, creating three-dimensional play.",
+      "contentHtml": "<h1>Layering</h1>\n<p>Game elements can be stacked or layered on top of each other, creating three-dimensional play.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3001</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3001/layering\">Layering</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - layering\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2824,
+      "name": "Legacy Game",
+      "slug": "legacy-game",
+      "category": "other",
+      "summary": "Permanent changes between games",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2824/legacy-game",
+      "description": "The game permanently changes between sessions, with stickers, destroyed components, and evolving rules.",
+      "contentHtml": "<h1>Legacy Game</h1>\n<p>The game permanently changes between sessions, with stickers, destroyed components, and evolving rules.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2824</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2824/legacy-game\">Legacy Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - legacy-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2039,
+      "name": "Line Drawing",
+      "slug": "line-drawing",
+      "category": "other",
+      "summary": "Draw lines on board",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2039/line-drawing",
+      "description": "Players draw lines on the game board as part of gameplay, creating paths or boundaries.",
+      "contentHtml": "<h1>Line Drawing</h1>\n<p>Players draw lines on the game board as part of gameplay, creating paths or boundaries.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2039</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2039/line-drawing\">Line Drawing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - line-drawing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2975,
+      "name": "Line of Sight",
+      "slug": "line-of-sight",
+      "category": "movement",
+      "summary": "Vision affects targeting",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2975/line-of-sight",
+      "description": "Units can only target or affect what they can see, with obstacles blocking line of sight.",
+      "contentHtml": "<h1>Line of Sight</h1>\n<p>Units can only target or affect what they can see, with obstacles blocking line of sight.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2975</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2975/line-of-sight\">Line of Sight</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - line-of-sight\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2904,
+      "name": "Loans",
+      "slug": "loans",
+      "category": "economic",
+      "summary": "Borrow resources with interest",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2904/loans",
+      "description": "Players can take loans of resources that must be repaid later, often with interest.",
+      "contentHtml": "<h1>Loans</h1>\n<p>Players can take loans of resources that must be repaid later, often with interest.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2904</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2904/loans\">Loans</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - loans\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2836,
+      "name": "Lose a Turn",
+      "slug": "lose-a-turn",
+      "category": "other",
+      "summary": "Skip turn as penalty",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2836/lose-a-turn",
+      "description": "Players may be forced to skip their turn as a penalty or game effect.",
+      "contentHtml": "<h1>Lose a Turn</h1>\n<p>Players may be forced to skip their turn as a penalty or game effect.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2836</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2836/lose-a-turn\">Lose a Turn</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - lose-a-turn\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2955,
+      "name": "Mancala",
+      "slug": "mancala",
+      "category": "other",
+      "summary": "Sow seeds around pits",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2955/mancala",
+      "description": "Players pick up pieces from a pit and distribute them one at a time around a circuit of pits.",
+      "contentHtml": "<h1>Mancala</h1>\n<p>Players pick up pieces from a pit and distribute them one at a time around a circuit of pits.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2955</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2955/mancala\">Mancala</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - mancala\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2959,
+      "name": "Map Addition",
+      "slug": "map-addition",
+      "category": "building",
+      "summary": "Expand the play area",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2959/map-addition",
+      "description": "New map sections or tiles are added to the play area during the game.",
+      "contentHtml": "<h1>Map Addition</h1>\n<p>New map sections or tiles are added to the play area during the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2959</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2959/map-addition\">Map Addition</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - map-addition\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2961,
+      "name": "Map Deformation",
+      "slug": "map-deformation",
+      "category": "other",
+      "summary": "Modify the map",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2961/map-deformation",
+      "description": "The map or board can be physically altered during play, changing geography or connections.",
+      "contentHtml": "<h1>Map Deformation</h1>\n<p>The map or board can be physically altered during play, changing geography or connections.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2961</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2961/map-deformation\">Map Deformation</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - map-deformation\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2960,
+      "name": "Map Reduction",
+      "slug": "map-reduction",
+      "category": "other",
+      "summary": "Shrink the play area",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2960/map-reduction",
+      "description": "The play area shrinks over time, forcing players into closer proximity.",
+      "contentHtml": "<h1>Map Reduction</h1>\n<p>The play area shrinks over time, forcing players into closer proximity.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2960</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2960/map-reduction\">Map Reduction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - map-reduction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2900,
+      "name": "Market",
+      "slug": "market",
+      "category": "economic",
+      "summary": "Buy and sell with variable prices",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2900/market",
+      "description": "A market system where prices fluctuate based on supply, demand, or other game factors.",
+      "contentHtml": "<h1>Market</h1>\n<p>A market system where prices fluctuate based on supply, demand, or other game factors.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2900</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2900/market\">Market</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - market\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3007,
+      "name": "Matching",
+      "slug": "matching",
+      "category": "other",
+      "summary": "Find identical pairs",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3007/matching",
+      "description": "Players try to match identical or related items, often from a set of face-down options.",
+      "contentHtml": "<h1>Matching</h1>\n<p>Players try to match identical or related items, often from a set of face-down options.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3007</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3007/matching\">Matching</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - matching\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2949,
+      "name": "Measurement Movement",
+      "slug": "measurement-movement",
+      "category": "movement",
+      "summary": "Measure distance for movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2949/measurement-movement",
+      "description": "Movement is determined by physically measuring distance rather than counting spaces.",
+      "contentHtml": "<h1>Measurement Movement</h1>\n<p>Movement is determined by physically measuring distance rather than counting spaces.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2949</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2949/measurement-movement\">Measurement Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - measurement-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2981,
+      "name": "Melding and Splaying",
+      "slug": "melding-and-splaying",
+      "category": "cards",
+      "summary": "Arrange cards in patterns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2981/melding-and-splaying",
+      "description": "Cards are arranged in overlapping patterns (melds) that can be spread (splayed) to reveal information.",
+      "contentHtml": "<h1>Melding and Splaying</h1>\n<p>Cards are arranged in overlapping patterns (melds) that can be spread (splayed) to reveal information.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2981</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2981/melding-and-splaying\">Melding and Splaying</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - melding-and-splaying\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2047,
+      "name": "Memory",
+      "slug": "memory",
+      "category": "information",
+      "summary": "Remember hidden information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2047/memory",
+      "description": "Players must remember hidden information, such as the locations of face-down tiles.",
+      "contentHtml": "<h1>Memory</h1>\n<p>Players must remember hidden information, such as the locations of face-down tiles.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2047</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2047/memory\">Memory</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - memory\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2863,
+      "name": "Minimap Resolution",
+      "slug": "minimap-resolution",
+      "category": "other",
+      "summary": "Resolve on smaller map",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2863/minimap-resolution",
+      "description": "Conflicts or actions are resolved on a separate smaller map or display.",
+      "contentHtml": "<h1>Minimap Resolution</h1>\n<p>Conflicts or actions are resolved on a separate smaller map or display.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2863</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2863/minimap-resolution\">Minimap Resolution</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - minimap-resolution\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2011,
+      "name": "Modular Board",
+      "slug": "modular-board",
+      "category": "other",
+      "summary": "Customizable board layout",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2011/modular-board",
+      "description": "The game board is made of interchangeable pieces, creating a different layout each game.",
+      "contentHtml": "<h1>Modular Board</h1>\n<p>The game board is made of interchangeable pieces, creating a different layout each game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2011</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2011/modular-board\">Modular Board</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - modular-board\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2962,
+      "name": "Move Through Deck",
+      "slug": "move-through-deck",
+      "category": "movement",
+      "summary": "Progress through card deck",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2962/move-through-deck",
+      "description": "Players move through a deck of cards, with position in the deck determining game progress.",
+      "contentHtml": "<h1>Move Through Deck</h1>\n<p>Players move through a deck of cards, with position in the deck determining game progress.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2962</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2962/move-through-deck\">Move Through Deck</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - move-through-deck\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2947,
+      "name": "Movement Points",
+      "slug": "movement-points",
+      "category": "movement",
+      "summary": "Spend points to move",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2947/movement-points",
+      "description": "Movement uses a pool of points, with different terrain or actions costing different amounts.",
+      "contentHtml": "<h1>Movement Points</h1>\n<p>Movement uses a pool of points, with different terrain or actions costing different amounts.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2947</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2947/movement-points\">Movement Points</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - movement-points\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2963,
+      "name": "Movement Template",
+      "slug": "movement-template",
+      "category": "movement",
+      "summary": "Physical template guides movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2963/movement-template",
+      "description": "Physical templates are used to determine movement paths and distances.",
+      "contentHtml": "<h1>Movement Template</h1>\n<p>Physical templates are used to determine movement paths and distances.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2963</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2963/movement-template\">Movement Template</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - movement-template\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2958,
+      "name": "Moving Multiple Units",
+      "slug": "moving-multiple-units",
+      "category": "other",
+      "summary": "Control several pieces at once",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2958/moving-multiple-units",
+      "description": "Players can move multiple units with a single action or command.",
+      "contentHtml": "<h1>Moving Multiple Units</h1>\n<p>Players can move multiple units with a single action or command.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2958</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2958/moving-multiple-units\">Moving Multiple Units</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - moving-multiple-units\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3099,
+      "name": "Multi-Use Cards",
+      "slug": "multi-use-cards",
+      "category": "cards",
+      "summary": "Cards have multiple functions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3099/multi-use-cards",
+      "description": "Cards can be used in multiple ways, forcing players to choose how to use each card.",
+      "contentHtml": "<h1>Multi-Use Cards</h1>\n<p>Cards can be used in multiple ways, forcing players to choose how to use each card.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3099</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3099/multi-use-cards\">Multi-Use Cards</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - multi-use-cards\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2965,
+      "name": "Multiple Maps",
+      "slug": "multiple-maps",
+      "category": "other",
+      "summary": "Play across several maps",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2965/multiple-maps",
+      "description": "The game uses multiple maps or boards that interact with each other.",
+      "contentHtml": "<h1>Multiple Maps</h1>\n<p>The game uses multiple maps or boards that interact with each other.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2965</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2965/multiple-maps\">Multiple Maps</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - multiple-maps\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2851,
+      "name": "Narrative Choice / Paragraph",
+      "slug": "narrative-choice-paragraph",
+      "category": "other",
+      "summary": "Story-driven decisions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2851/narrative-choice-paragraph",
+      "description": "Players read paragraphs and make choices that determine the story direction.",
+      "contentHtml": "<h1>Narrative Choice / Paragraph</h1>\n<p>Players read paragraphs and make choices that determine the story direction.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2851</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2851/narrative-choice-paragraph\">Narrative Choice / Paragraph</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - narrative-choice-paragraph\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2915,
+      "name": "Negotiation",
+      "slug": "negotiation",
+      "category": "social",
+      "summary": "Discuss deals with players",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2915/negotiation",
+      "description": "Players can negotiate, make deals, and trade with each other through discussion.",
+      "contentHtml": "<h1>Negotiation</h1>\n<p>Players can negotiate, make deals, and trade with each other through discussion.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2915</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2915/negotiation\">Negotiation</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - negotiation\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3104,
+      "name": "Neighbor Scope",
+      "slug": "neighbor-scope",
+      "category": "other",
+      "summary": "Affect adjacent players only",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3104/neighbor-scope",
+      "description": "Actions or effects only apply to players immediately adjacent in turn order or seating.",
+      "contentHtml": "<h1>Neighbor Scope</h1>\n<p>Actions or effects only apply to players immediately adjacent in turn order or seating.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3104</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3104/neighbor-scope\">Neighbor Scope</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - neighbor-scope\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2081,
+      "name": "Network and Route Building",
+      "slug": "network-and-route-building",
+      "category": "building",
+      "summary": "Create connected paths",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2081/network-and-route-building",
+      "description": "Players build networks of connected routes, often for transportation or scoring.",
+      "contentHtml": "<h1>Network and Route Building</h1>\n<p>Players build networks of connected routes, often for transportation or scoring.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2081</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2081/network-and-route-building\">Network and Route Building</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - network-and-route-building\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2846,
+      "name": "Once-Per-Game Abilities",
+      "slug": "once-per-game-abilities",
+      "category": "other",
+      "summary": "Single-use special powers",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2846/once-per-game-abilities",
+      "description": "Players have powerful abilities that can only be used once during the entire game.",
+      "contentHtml": "<h1>Once-Per-Game Abilities</h1>\n<p>Players have powerful abilities that can only be used once during the entire game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2846</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2846/once-per-game-abilities\">Once-Per-Game Abilities</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - once-per-game-abilities\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2041,
+      "name": "Open Drafting",
+      "slug": "open-drafting",
+      "category": "cards",
+      "summary": "Draft from visible options",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2041/open-drafting",
+      "description": "Players draft cards or items from a face-up display visible to all players.",
+      "contentHtml": "<h1>Open Drafting</h1>\n<p>Players draft cards or items from a face-up display visible to all players.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2041</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2041/open-drafting\">Open Drafting</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - open-drafting\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2844,
+      "name": "Order Counters",
+      "slug": "order-counters",
+      "category": "other",
+      "summary": "Tokens determine action sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2844/order-counters",
+      "description": "Counters or tokens are used to determine the order in which actions resolve.",
+      "contentHtml": "<h1>Order Counters</h1>\n<p>Counters or tokens are used to determine the order in which actions resolve.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2844</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2844/order-counters\">Order Counters</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - order-counters\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3101,
+      "name": "Ordering",
+      "slug": "ordering",
+      "category": "other",
+      "summary": "Arrange items in sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3101/ordering",
+      "description": "Players must arrange items in a specific order or sequence as part of gameplay.",
+      "contentHtml": "<h1>Ordering</h1>\n<p>Players must arrange items in a specific order or sequence as part of gameplay.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3101</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3101/ordering\">Ordering</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - ordering\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2911,
+      "name": "Ownership",
+      "slug": "ownership",
+      "category": "economic",
+      "summary": "Control over game elements",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2911/ownership",
+      "description": "Players can own or control various game elements, affecting how they can be used.",
+      "contentHtml": "<h1>Ownership</h1>\n<p>Players can own or control various game elements, affecting how they can be used.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2911</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2911/ownership\">Ownership</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - ownership\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2055,
+      "name": "Paper-and-Pencil",
+      "slug": "paper-and-pencil",
+      "category": "other",
+      "summary": "Write during gameplay",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2055/paper-and-pencil",
+      "description": "Players write on paper as part of the game, recording information or making marks.",
+      "contentHtml": "<h1>Paper-and-Pencil</h1>\n<p>Players write on paper as part of the game, recording information or making marks.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2055</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2055/paper-and-pencil\">Paper-and-Pencil</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - paper-and-pencil\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2835,
+      "name": "Passed Action Token",
+      "slug": "passed-action-token",
+      "category": "other",
+      "summary": "Token moves when passing",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2835/passed-action-token",
+      "description": "A token that passes to another player when someone passes their turn or action.",
+      "contentHtml": "<h1>Passed Action Token</h1>\n<p>A token that passes to another player when someone passes their turn or action.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2835</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2835/passed-action-token\">Passed Action Token</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - passed-action-token\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2048,
+      "name": "Pattern Building",
+      "slug": "pattern-building",
+      "category": "building",
+      "summary": "Create specific arrangements",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2048/pattern-building",
+      "description": "Players try to create specific patterns or arrangements with game components.",
+      "contentHtml": "<h1>Pattern Building</h1>\n<p>Players try to create specific patterns or arrangements with game components.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2048</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2048/pattern-building\">Pattern Building</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - pattern-building\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2946,
+      "name": "Pattern Movement",
+      "slug": "pattern-movement",
+      "category": "movement",
+      "summary": "Move in set patterns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2946/pattern-movement",
+      "description": "Pieces move in predetermined patterns, like chess pieces.",
+      "contentHtml": "<h1>Pattern Movement</h1>\n<p>Pieces move in predetermined patterns, like chess pieces.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2946</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2946/pattern-movement\">Pattern Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - pattern-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2060,
+      "name": "Pattern Recognition",
+      "slug": "pattern-recognition",
+      "category": "information",
+      "summary": "Identify visual patterns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2060/pattern-recognition",
+      "description": "Players must identify patterns in visual information presented during the game.",
+      "contentHtml": "<h1>Pattern Recognition</h1>\n<p>Players must identify patterns in visual information presented during the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2060</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2060/pattern-recognition\">Pattern Recognition</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - pattern-recognition\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2989,
+      "name": "Physical Removal",
+      "slug": "physical-removal",
+      "category": "physical",
+      "summary": "Remove pieces from play",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2989/physical-removal",
+      "description": "Game pieces can be physically removed from the game, often permanently.",
+      "contentHtml": "<h1>Physical Removal</h1>\n<p>Game pieces can be physically removed from the game, often permanently.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2989</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2989/physical-removal\">Physical Removal</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - physical-removal\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2007,
+      "name": "Pick-up and Deliver",
+      "slug": "pick-up-and-deliver",
+      "category": "other",
+      "summary": "Transport goods for rewards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2007/pick-up-and-deliver",
+      "description": "Players pick up goods from one location and deliver them to another for rewards.",
+      "contentHtml": "<h1>Pick-up and Deliver</h1>\n<p>Players pick up goods from one location and deliver them to another for rewards.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2007</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2007/pick-up-and-deliver\">Pick-up and Deliver</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - pick-up-and-deliver\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2964,
+      "name": "Pieces as Map",
+      "slug": "pieces-as-map",
+      "category": "other",
+      "summary": "Components form the board",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2964/pieces-as-map",
+      "description": "Game pieces themselves form the play area or map as they are placed.",
+      "contentHtml": "<h1>Pieces as Map</h1>\n<p>Game pieces themselves form the play area or map as they are placed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2964</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2964/pieces-as-map\">Pieces as Map</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - pieces-as-map\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2685,
+      "name": "Player Elimination",
+      "slug": "player-elimination",
+      "category": "ending",
+      "summary": "Players can be knocked out",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2685/player-elimination",
+      "description": "Players can be eliminated from the game before it ends, unable to continue playing.",
+      "contentHtml": "<h1>Player Elimination</h1>\n<p>Players can be eliminated from the game before it ends, unable to continue playing.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2685</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2685/player-elimination\">Player Elimination</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - player-elimination\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2865,
+      "name": "Player Judge",
+      "slug": "player-judge",
+      "category": "social",
+      "summary": "Players judge submissions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2865/player-judge",
+      "description": "One or more players act as judge, evaluating other players submissions or performances.",
+      "contentHtml": "<h1>Player Judge</h1>\n<p>One or more players act as judge, evaluating other players submissions or performances.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2865</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2865/player-judge\">Player Judge</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - player-judge\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2078,
+      "name": "Point to Point Movement",
+      "slug": "point-to-point-movement",
+      "category": "movement",
+      "summary": "Move between connected points",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2078/point-to-point-movement",
+      "description": "Movement occurs between specific points connected by lines or paths, not on a grid.",
+      "contentHtml": "<h1>Point to Point Movement</h1>\n<p>Movement occurs between specific points connected by lines or paths, not on a grid.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2078</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2078/point-to-point-movement\">Point to Point Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - point-to-point-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3006,
+      "name": "Predictive Bid",
+      "slug": "predictive-bid",
+      "category": "other",
+      "summary": "Bid on expected outcomes",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3006/predictive-bid",
+      "description": "Players bid on what they predict will happen, scoring based on accuracy.",
+      "contentHtml": "<h1>Predictive Bid</h1>\n<p>Players bid on what they predict will happen, scoring based on accuracy.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3006</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3006/predictive-bid\">Predictive Bid</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - predictive-bid\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2858,
+      "name": "Prisoner's Dilemma",
+      "slug": "prisoner's-dilemma",
+      "category": "social",
+      "summary": "Prisoner's Dilemma mechanic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2858/prisoner's-dilemma",
+      "description": "Prisoner's Dilemma is a board game mechanic that affects how players interact with the game.",
+      "contentHtml": "<h1>Prisoner&#39;s Dilemma</h1>\n<p>Prisoner&#39;s Dilemma is a board game mechanic that affects how players interact with the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2858</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2858/prisoner's-dilemma\">Prisoner&#39;s Dilemma</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - prisoner&#39;s-dilemma\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2953,
+      "name": "Programmed Movement",
+      "slug": "programmed-movement",
+      "category": "movement",
+      "summary": "Pre-plan movement sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2953/programmed-movement",
+      "description": "Players program their movement in advance, then execute the programmed moves simultaneously.",
+      "contentHtml": "<h1>Programmed Movement</h1>\n<p>Players program their movement in advance, then execute the programmed moves simultaneously.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2953</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2953/programmed-movement\">Programmed Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - programmed-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2661,
+      "name": "Push Your Luck",
+      "slug": "push-your-luck",
+      "category": "dice",
+      "summary": "Risk more for greater rewards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2661/push-your-luck",
+      "description": "Players repeatedly take risks, weighing potential rewards against the chance of losing everything gained.",
+      "contentHtml": "<h1>Push Your Luck</h1>\n<p>Players repeatedly take risks, weighing potential rewards against the chance of losing everything gained.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2661</li>\n<li><strong>Category</strong>: dice</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2661/push-your-luck\">Push Your Luck</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - push-your-luck\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3102,
+      "name": "Questions and Answers",
+      "slug": "questions-and-answers",
+      "category": "information",
+      "summary": "Q&A determines outcomes",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3102/questions-and-answers",
+      "description": "Gameplay involves asking and answering questions, with answers affecting game outcomes.",
+      "contentHtml": "<h1>Questions and Answers</h1>\n<p>Gameplay involves asking and answering questions, with answers affecting game outcomes.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3102</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3102/questions-and-answers\">Questions and Answers</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - questions-and-answers\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2876,
+      "name": "Race",
+      "slug": "race",
+      "category": "ending",
+      "summary": "First to goal wins",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2876/race",
+      "description": "Players race to be the first to reach a goal or complete an objective.",
+      "contentHtml": "<h1>Race</h1>\n<p>Players race to be the first to reach a goal or complete an objective.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2876</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2876/race\">Race</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - race\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2909,
+      "name": "Random Production",
+      "slug": "random-production",
+      "category": "other",
+      "summary": "Randomized resource generation",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2909/random-production",
+      "description": "Resources are produced randomly, adding uncertainty to economic planning.",
+      "contentHtml": "<h1>Random Production</h1>\n<p>Resources are produced randomly, adding uncertainty to economic planning.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2909</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2909/random-production\">Random Production</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - random-production\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2855,
+      "name": "Ratio / Combat Results Table",
+      "slug": "ratio-combat-results-table",
+      "category": "conflict",
+      "summary": "Combat odds from table",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2855/ratio-combat-results-table",
+      "description": "Combat results are determined by consulting a table based on the ratio of attacking to defending strength.",
+      "contentHtml": "<h1>Ratio / Combat Results Table</h1>\n<p>Combat results are determined by consulting a table based on the ratio of attacking to defending strength.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2855</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2855/ratio-combat-results-table\">Ratio / Combat Results Table</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - ratio-combat-results-table\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2870,
+      "name": "Re-rolling and Locking",
+      "slug": "re-rolling-and-locking",
+      "category": "dice",
+      "summary": "Reroll or keep dice",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2870/re-rolling-and-locking",
+      "description": "Players can reroll dice while choosing to lock certain results, as in Yahtzee.",
+      "contentHtml": "<h1>Re-rolling and Locking</h1>\n<p>Players can reroll dice while choosing to lock certain results, as in Yahtzee.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2870</li>\n<li><strong>Category</strong>: dice</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2870/re-rolling-and-locking\">Re-rolling and Locking</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - re-rolling-and-locking\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2831,
+      "name": "Real-Time",
+      "slug": "real-time",
+      "category": "physical",
+      "summary": "Continuous simultaneous play",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2831/real-time",
+      "description": "Players act simultaneously in real-time rather than taking turns.",
+      "contentHtml": "<h1>Real-Time</h1>\n<p>Players act simultaneously in real-time rather than taking turns.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2831</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2831/real-time\">Real-Time</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - real-time\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2954,
+      "name": "Relative Movement",
+      "slug": "relative-movement",
+      "category": "movement",
+      "summary": "Movement based on other pieces",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2954/relative-movement",
+      "description": "Movement is determined relative to other game pieces rather than absolute positions.",
+      "contentHtml": "<h1>Relative Movement</h1>\n<p>Movement is determined relative to other game pieces rather than absolute positions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2954</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2954/relative-movement\">Relative Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - relative-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3103,
+      "name": "Resource Queue",
+      "slug": "resource-queue",
+      "category": "other",
+      "summary": "Resources in ordered sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3103/resource-queue",
+      "description": "Resources are managed in a queue, with order affecting availability or value.",
+      "contentHtml": "<h1>Resource Queue</h1>\n<p>Resources are managed in a queue, with order affecting availability or value.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3103</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3103/resource-queue\">Resource Queue</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - resource-queue\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2948,
+      "name": "Resource to Move",
+      "slug": "resource-to-move",
+      "category": "movement",
+      "summary": "Spend resources for movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2948/resource-to-move",
+      "description": "Players must spend resources to move their pieces.",
+      "contentHtml": "<h1>Resource to Move</h1>\n<p>Players must spend resources to move their pieces.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2948</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2948/resource-to-move\">Resource to Move</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - resource-to-move\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2003,
+      "name": "Rock-Paper-Scissors",
+      "slug": "rock-paper-scissors",
+      "category": "other",
+      "summary": "Cyclic advantage system",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2003/rock-paper-scissors",
+      "description": "A system where options have cyclic advantages over each other (A beats B, B beats C, C beats A).",
+      "contentHtml": "<h1>Rock-Paper-Scissors</h1>\n<p>A system where options have cyclic advantages over each other (A beats B, B beats C, C beats A).</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2003</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2003/rock-paper-scissors\">Rock-Paper-Scissors</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - rock-paper-scissors\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2028,
+      "name": "Role Playing",
+      "slug": "role-playing",
+      "category": "social",
+      "summary": "Act as a character",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2028/role-playing",
+      "description": "Players take on the role of a character, making decisions as that character would.",
+      "contentHtml": "<h1>Role Playing</h1>\n<p>Players take on the role of a character, making decisions as that character would.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2028</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2028/role-playing\">Role Playing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - role-playing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2892,
+      "name": "Roles with Asymmetric Information",
+      "slug": "roles-with-asymmetric-information",
+      "category": "other",
+      "summary": "Different knowledge per role",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2892/roles-with-asymmetric-information",
+      "description": "Different roles have access to different information, creating information asymmetry.",
+      "contentHtml": "<h1>Roles with Asymmetric Information</h1>\n<p>Different roles have access to different information, creating information asymmetry.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2892</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2892/roles-with-asymmetric-information\">Roles with Asymmetric Information</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - roles-with-asymmetric-information\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2035,
+      "name": "Roll / Spin and Move",
+      "slug": "roll-spin-and-move",
+      "category": "movement",
+      "summary": "Random movement distance",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2035/roll-spin-and-move",
+      "description": "Players roll dice or spin a spinner to determine how far they move.",
+      "contentHtml": "<h1>Roll / Spin and Move</h1>\n<p>Players roll dice or spin a spinner to determine how far they move.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2035</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2035/roll-spin-and-move\">Roll / Spin and Move</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - roll-spin-and-move\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2813,
+      "name": "Rondel",
+      "slug": "rondel",
+      "category": "movement",
+      "summary": "Circular action selection",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2813/rondel",
+      "description": "Players move markers around a circular track to select actions, with movement cost increasing for distant actions.",
+      "contentHtml": "<h1>Rondel</h1>\n<p>Players move markers around a circular track to select actions, with movement cost increasing for distant actions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2813</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2813/rondel\">Rondel</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - rondel\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2822,
+      "name": "Scenario / Mission / Campaign Game",
+      "slug": "scenario-mission-campaign-game",
+      "category": "other",
+      "summary": "Linked scenarios tell story",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2822/scenario-mission-campaign-game",
+      "description": "Multiple scenarios or missions are linked together, often telling an ongoing story.",
+      "contentHtml": "<h1>Scenario / Mission / Campaign Game</h1>\n<p>Multiple scenarios or missions are linked together, often telling an ongoing story.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2822</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2822/scenario-mission-campaign-game\">Scenario / Mission / Campaign Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - scenario-mission-campaign-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2823,
+      "name": "Score-and-Reset Game",
+      "slug": "score-and-reset-game",
+      "category": "other",
+      "summary": "Score rounds then reset",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2823/score-and-reset-game",
+      "description": "The game consists of multiple rounds where scores are tallied and the game state resets.",
+      "contentHtml": "<h1>Score-and-Reset Game</h1>\n<p>The game consists of multiple rounds where scores are tallied and the game state resets.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2823</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2823/score-and-reset-game\">Score-and-Reset Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - score-and-reset-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2016,
+      "name": "Secret Unit Deployment",
+      "slug": "secret-unit-deployment",
+      "category": "conflict",
+      "summary": "Hidden unit placement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2016/secret-unit-deployment",
+      "description": "Players deploy units secretly, with positions hidden from opponents.",
+      "contentHtml": "<h1>Secret Unit Deployment</h1>\n<p>Players deploy units secretly, with positions hidden from opponents.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2016</li>\n<li><strong>Category</strong>: conflict</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2016/secret-unit-deployment\">Secret Unit Deployment</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - secret-unit-deployment\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2926,
+      "name": "Selection Order Bid",
+      "slug": "selection-order-bid",
+      "category": "other",
+      "summary": "Bid for selection priority",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2926/selection-order-bid",
+      "description": "Players bid to determine the order in which they make selections.",
+      "contentHtml": "<h1>Selection Order Bid</h1>\n<p>Players bid to determine the order in which they make selections.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2926</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2926/selection-order-bid\">Selection Order Bid</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - selection-order-bid\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2820,
+      "name": "Semi-Cooperative Game",
+      "slug": "semi-cooperative-game",
+      "category": "cooperative",
+      "summary": "Cooperate with individual goals",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2820/semi-cooperative-game",
+      "description": "Players must cooperate to some degree but also have individual victory conditions.",
+      "contentHtml": "<h1>Semi-Cooperative Game</h1>\n<p>Players must cooperate to some degree but also have individual victory conditions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2820</li>\n<li><strong>Category</strong>: cooperative</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2820/semi-cooperative-game\">Semi-Cooperative Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - semi-cooperative-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2004,
+      "name": "Set Collection",
+      "slug": "set-collection",
+      "category": "cards",
+      "summary": "Gather matching sets",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2004/set-collection",
+      "description": "Players collect sets of items (cards, tiles, etc.) to score points or achieve objectives.",
+      "contentHtml": "<h1>Set Collection</h1>\n<p>Players collect sets of items (cards, tiles, etc.) to score points or achieve objectives.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2004</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2004/set-collection\">Set Collection</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - set-collection\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2070,
+      "name": "Simulation",
+      "slug": "simulation",
+      "category": "other",
+      "summary": "Model real-world systems",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2070/simulation",
+      "description": "The game simulates real-world systems or situations with some degree of accuracy.",
+      "contentHtml": "<h1>Simulation</h1>\n<p>The game simulates real-world systems or situations with some degree of accuracy.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2070</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2070/simulation\">Simulation</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - simulation\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2020,
+      "name": "Simultaneous Action Selection",
+      "slug": "simultaneous-action-selection",
+      "category": "other",
+      "summary": "Choose actions together",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2020/simultaneous-action-selection",
+      "description": "All players choose their actions at the same time, then reveal them together for resolution.",
+      "contentHtml": "<h1>Simultaneous Action Selection</h1>\n<p>All players choose their actions at the same time, then reveal them together for resolution.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2020</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2020/simultaneous-action-selection\">Simultaneous Action Selection</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - simultaneous-action-selection\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2038,
+      "name": "Singing",
+      "slug": "singing",
+      "category": "physical",
+      "summary": "Sing as gameplay element",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2038/singing",
+      "description": "Players must sing as part of the game, often for others to guess songs.",
+      "contentHtml": "<h1>Singing</h1>\n<p>Players must sing as part of the game, often for others to guess songs.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2038</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2038/singing\">Singing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - singing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2821,
+      "name": "Single Loser Game",
+      "slug": "single-loser-game",
+      "category": "ending",
+      "summary": "Avoid being last",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2821/single-loser-game",
+      "description": "Instead of a winner, the game has a single loser - the last player standing loses.",
+      "contentHtml": "<h1>Single Loser Game</h1>\n<p>Instead of a winner, the game has a single loser - the last player standing loses.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2821</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2821/single-loser-game\">Single Loser Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - single-loser-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3005,
+      "name": "Slide / Push",
+      "slug": "slide-push",
+      "category": "other",
+      "summary": "Slide pieces to move",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3005/slide-push",
+      "description": "Pieces are moved by sliding them, often pushing other pieces in the process.",
+      "contentHtml": "<h1>Slide / Push</h1>\n<p>Pieces are moved by sliding them, often pushing other pieces in the process.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3005</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3005/slide-push\">Slide / Push</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - slide-push\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2819,
+      "name": "Solo / Solitaire Game",
+      "slug": "solo-solitaire-game",
+      "category": "other",
+      "summary": "Single player mode",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2819/solo-solitaire-game",
+      "description": "The game can be played solo, with the player competing against the game system.",
+      "contentHtml": "<h1>Solo / Solitaire Game</h1>\n<p>The game can be played solo, with the player competing against the game system.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2819</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2819/solo-solitaire-game\">Solo / Solitaire Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - solo-solitaire-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2991,
+      "name": "Speed Matching",
+      "slug": "speed-matching",
+      "category": "physical",
+      "summary": "Quick pattern matching",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2991/speed-matching",
+      "description": "Players race to match patterns as quickly as possible.",
+      "contentHtml": "<h1>Speed Matching</h1>\n<p>Players race to match patterns as quickly as possible.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2991</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2991/speed-matching\">Speed Matching</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - speed-matching\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3113,
+      "name": "Spelling",
+      "slug": "spelling",
+      "category": "other",
+      "summary": "Form words from letters",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3113/spelling",
+      "description": "Players form words from available letters, as in Scrabble.",
+      "contentHtml": "<h1>Spelling</h1>\n<p>Players form words from available letters, as in Scrabble.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3113</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3113/spelling\">Spelling</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - spelling\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2940,
+      "name": "Square Grid",
+      "slug": "square-grid",
+      "category": "movement",
+      "summary": "Square tile board",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2940/square-grid",
+      "description": "The game board uses a grid of square spaces.",
+      "contentHtml": "<h1>Square Grid</h1>\n<p>The game board uses a grid of square spaces.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2940</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2940/square-grid\">Square Grid</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - square-grid\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2988,
+      "name": "Stacking and Balancing",
+      "slug": "stacking-and-balancing",
+      "category": "physical",
+      "summary": "Stack pieces carefully",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2988/stacking-and-balancing",
+      "description": "Players must stack or balance pieces, with the structure potentially collapsing.",
+      "contentHtml": "<h1>Stacking and Balancing</h1>\n<p>Players must stack or balance pieces, with the structure potentially collapsing.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2988</li>\n<li><strong>Category</strong>: physical</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2988/stacking-and-balancing\">Stacking and Balancing</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - stacking-and-balancing\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2853,
+      "name": "Stat Check Resolution",
+      "slug": "stat-check-resolution",
+      "category": "other",
+      "summary": "Compare stats to resolve",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2853/stat-check-resolution",
+      "description": "Outcomes are determined by comparing character or unit statistics.",
+      "contentHtml": "<h1>Stat Check Resolution</h1>\n<p>Outcomes are determined by comparing character or unit statistics.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2853</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2853/stat-check-resolution\">Stat Check Resolution</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - stat-check-resolution\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2861,
+      "name": "Static Capture",
+      "slug": "static-capture",
+      "category": "other",
+      "summary": "Capture by occupying",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2861/static-capture",
+      "description": "Pieces are captured by moving to their space, as in chess.",
+      "contentHtml": "<h1>Static Capture</h1>\n<p>Pieces are captured by moving to their space, as in chess.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2861</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2861/static-capture\">Static Capture</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - static-capture\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2005,
+      "name": "Stock Holding",
+      "slug": "stock-holding",
+      "category": "economic",
+      "summary": "Own shares in companies",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2005/stock-holding",
+      "description": "Players buy and sell shares in companies, profiting from dividends and price changes.",
+      "contentHtml": "<h1>Stock Holding</h1>\n<p>Players buy and sell shares in companies, profiting from dividends and price changes.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2005</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2005/stock-holding\">Stock Holding</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - stock-holding\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2027,
+      "name": "Storytelling",
+      "slug": "storytelling",
+      "category": "social",
+      "summary": "Create narrative together",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2027/storytelling",
+      "description": "Players collaboratively create a story, with gameplay elements guiding the narrative.",
+      "contentHtml": "<h1>Storytelling</h1>\n<p>Players collaboratively create a story, with gameplay elements guiding the narrative.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2027</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2027/storytelling\">Storytelling</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - storytelling\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2884,
+      "name": "Sudden Death Ending",
+      "slug": "sudden-death-ending",
+      "category": "ending",
+      "summary": "Instant win condition",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2884/sudden-death-ending",
+      "description": "The game can end instantly when a specific condition is met.",
+      "contentHtml": "<h1>Sudden Death Ending</h1>\n<p>The game can end instantly when a specific condition is met.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2884</li>\n<li><strong>Category</strong>: ending</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2884/sudden-death-ending\">Sudden Death Ending</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - sudden-death-ending\n---\n</code></pre>\n"
+    },
+    {
+      "id": 3100,
+      "name": "Tags",
+      "slug": "tags",
+      "category": "other",
+      "summary": "Keywords categorize items",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3100/tags",
+      "description": "Game elements have tags or keywords that categorize them and determine interactions.",
+      "contentHtml": "<h1>Tags</h1>\n<p>Game elements have tags or keywords that categorize them and determine interactions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 3100</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/3100/tags\">Tags</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - tags\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2686,
+      "name": "Take That",
+      "slug": "take-that",
+      "category": "other",
+      "summary": "Direct attacks on opponents",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2686/take-that",
+      "description": "Players can directly attack or hinder other players, often through card play.",
+      "contentHtml": "<h1>Take That</h1>\n<p>Players can directly attack or hinder other players, often through card play.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2686</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2686/take-that\">Take That</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - take-that\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2866,
+      "name": "Targeted Clues",
+      "slug": "targeted-clues",
+      "category": "information",
+      "summary": "Clues for specific players",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2866/targeted-clues",
+      "description": "Clues are given to specific players, requiring deduction about why you received certain clues.",
+      "contentHtml": "<h1>Targeted Clues</h1>\n<p>Clues are given to specific players, requiring deduction about why you received certain clues.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2866</li>\n<li><strong>Category</strong>: information</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2866/targeted-clues\">Targeted Clues</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - targeted-clues\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2019,
+      "name": "Team-Based Game",
+      "slug": "team-based-game",
+      "category": "cooperative",
+      "summary": "Fixed teams compete",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2019/team-based-game",
+      "description": "Players are divided into fixed teams that compete against each other.",
+      "contentHtml": "<h1>Team-Based Game</h1>\n<p>Players are divided into fixed teams that compete against each other.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2019</li>\n<li><strong>Category</strong>: cooperative</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2019/team-based-game\">Team-Based Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - team-based-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2849,
+      "name": "Tech Trees / Tech Tracks",
+      "slug": "tech-trees-tech-tracks",
+      "category": "building",
+      "summary": "Unlock improvements in sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2849/tech-trees-tech-tracks",
+      "description": "Players progress along technology trees or tracks, unlocking new abilities and improvements.",
+      "contentHtml": "<h1>Tech Trees / Tech Tracks</h1>\n<p>Players progress along technology trees or tracks, unlocking new abilities and improvements.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2849</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2849/tech-trees-tech-tracks\">Tech Trees / Tech Tracks</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - tech-trees-tech-tracks\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2944,
+      "name": "Three Dimensional Movement",
+      "slug": "three-dimensional-movement",
+      "category": "movement",
+      "summary": "Move in 3D space",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2944/three-dimensional-movement",
+      "description": "Pieces can move in three dimensions, not just on a flat plane.",
+      "contentHtml": "<h1>Three Dimensional Movement</h1>\n<p>Pieces can move in three dimensions, not just on a flat plane.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2944</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2944/three-dimensional-movement\">Three Dimensional Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - three-dimensional-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2002,
+      "name": "Tile Placement",
+      "slug": "tile-placement",
+      "category": "building",
+      "summary": "Place tiles to build",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2002/tile-placement",
+      "description": "Players place tiles to build a shared or personal playing area, often with matching requirements.",
+      "contentHtml": "<h1>Tile Placement</h1>\n<p>Players place tiles to build a shared or personal playing area, often with matching requirements.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2002</li>\n<li><strong>Category</strong>: building</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2002/tile-placement\">Tile Placement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - tile-placement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2939,
+      "name": "Track Movement",
+      "slug": "track-movement",
+      "category": "movement",
+      "summary": "Move along fixed tracks",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2939/track-movement",
+      "description": "Pieces move along predetermined tracks rather than freely on a board.",
+      "contentHtml": "<h1>Track Movement</h1>\n<p>Pieces move along predetermined tracks rather than freely on a board.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2939</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2939/track-movement\">Track Movement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - track-movement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2008,
+      "name": "Trading",
+      "slug": "trading",
+      "category": "economic",
+      "summary": "Exchange items with players",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2008/trading",
+      "description": "Players exchange resources, cards, or other game elements with each other through trades.",
+      "contentHtml": "<h1>Trading</h1>\n<p>Players exchange resources, cards, or other game elements with each other through trades.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2008</li>\n<li><strong>Category</strong>: economic</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2008/trading\">Trading</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - trading\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2814,
+      "name": "Traitor Game",
+      "slug": "traitor-game",
+      "category": "cooperative",
+      "summary": "Hidden enemy among players",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2814/traitor-game",
+      "description": "One or more players secretly work against the group, trying to sabotage without being discovered.",
+      "contentHtml": "<h1>Traitor Game</h1>\n<p>One or more players secretly work against the group, trying to sabotage without being discovered.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2814</li>\n<li><strong>Category</strong>: cooperative</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2814/traitor-game\">Traitor Game</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - traitor-game\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2009,
+      "name": "Trick-taking",
+      "slug": "trick-taking",
+      "category": "cards",
+      "summary": "Win card rounds",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2009/trick-taking",
+      "description": "Players play cards in rounds (tricks), with the highest card of the led suit (or trump) winning the trick.",
+      "contentHtml": "<h1>Trick-taking</h1>\n<p>Players play cards in rounds (tricks), with the highest card of the led suit (or trump) winning the trick.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2009</li>\n<li><strong>Category</strong>: cards</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2009/trick-taking\">Trick-taking</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - trick-taking\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2888,
+      "name": "Tug of War",
+      "slug": "tug-of-war",
+      "category": "other",
+      "summary": "Push-pull between sides",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2888/tug-of-war",
+      "description": "A marker moves back and forth between opposing sides based on player actions.",
+      "contentHtml": "<h1>Tug of War</h1>\n<p>A marker moves back and forth between opposing sides based on player actions.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2888</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2888/tug-of-war\">Tug of War</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - tug-of-war\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2827,
+      "name": "Turn Order: Auction",
+      "slug": "turn-order-auction",
+      "category": "turn-order",
+      "summary": "Bid for turn position",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2827/turn-order-auction",
+      "description": "Players bid to determine their position in turn order.",
+      "contentHtml": "<h1>Turn Order: Auction</h1>\n<p>Players bid to determine their position in turn order.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2827</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2827/turn-order-auction\">Turn Order: Auction</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-auction\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2829,
+      "name": "Turn Order: Claim Action",
+      "slug": "turn-order-claim-action",
+      "category": "turn-order",
+      "summary": "Claiming sets turn order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2829/turn-order-claim-action",
+      "description": "Turn order for the next round is determined by which action spaces players claimed.",
+      "contentHtml": "<h1>Turn Order: Claim Action</h1>\n<p>Turn order for the next round is determined by which action spaces players claimed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2829</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2829/turn-order-claim-action\">Turn Order: Claim Action</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-claim-action\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2830,
+      "name": "Turn Order: Pass Order",
+      "slug": "turn-order-pass-order",
+      "category": "turn-order",
+      "summary": "Pass order sets turns",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2830/turn-order-pass-order",
+      "description": "The order in which players pass determines turn order for the next round.",
+      "contentHtml": "<h1>Turn Order: Pass Order</h1>\n<p>The order in which players pass determines turn order for the next round.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2830</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2830/turn-order-pass-order\">Turn Order: Pass Order</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-pass-order\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2828,
+      "name": "Turn Order: Progressive",
+      "slug": "turn-order-progressive",
+      "category": "turn-order",
+      "summary": "Turn order shifts regularly",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2828/turn-order-progressive",
+      "description": "Turn order changes in a regular pattern, often rotating or reversing.",
+      "contentHtml": "<h1>Turn Order: Progressive</h1>\n<p>Turn order changes in a regular pattern, often rotating or reversing.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2828</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2828/turn-order-progressive\">Turn Order: Progressive</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-progressive\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2985,
+      "name": "Turn Order: Random",
+      "slug": "turn-order-random",
+      "category": "turn-order",
+      "summary": "Random turn sequence",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2985/turn-order-random",
+      "description": "Turn order is determined randomly each round.",
+      "contentHtml": "<h1>Turn Order: Random</h1>\n<p>Turn order is determined randomly each round.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2985</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2985/turn-order-random\">Turn Order: Random</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-random\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2833,
+      "name": "Turn Order: Role Order",
+      "slug": "turn-order-role-order",
+      "category": "turn-order",
+      "summary": "Roles determine turn order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2833/turn-order-role-order",
+      "description": "Turn order is determined by players roles or positions in the game.",
+      "contentHtml": "<h1>Turn Order: Role Order</h1>\n<p>Turn order is determined by players roles or positions in the game.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2833</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2833/turn-order-role-order\">Turn Order: Role Order</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-role-order\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2826,
+      "name": "Turn Order: Stat-Based",
+      "slug": "turn-order-stat-based",
+      "category": "turn-order",
+      "summary": "Stats determine turn order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2826/turn-order-stat-based",
+      "description": "Turn order is determined by comparing player or unit statistics.",
+      "contentHtml": "<h1>Turn Order: Stat-Based</h1>\n<p>Turn order is determined by comparing player or unit statistics.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2826</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2826/turn-order-stat-based\">Turn Order: Stat-Based</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-stat-based\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2663,
+      "name": "Turn Order: Time Track",
+      "slug": "turn-order-time-track",
+      "category": "turn-order",
+      "summary": "Time track sets turn order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2663/turn-order-time-track",
+      "description": "Players take turns based on their position on a time track, with the furthest behind going next.",
+      "contentHtml": "<h1>Turn Order: Time Track</h1>\n<p>Players take turns based on their position on a time track, with the furthest behind going next.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2663</li>\n<li><strong>Category</strong>: turn-order</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2663/turn-order-time-track\">Turn Order: Time Track</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - turn-order-time-track\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2079,
+      "name": "Variable Phase Order",
+      "slug": "variable-phase-order",
+      "category": "other",
+      "summary": "Phase order can change",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2079/variable-phase-order",
+      "description": "The order of game phases can vary from round to round.",
+      "contentHtml": "<h1>Variable Phase Order</h1>\n<p>The order of game phases can vary from round to round.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2079</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2079/variable-phase-order\">Variable Phase Order</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - variable-phase-order\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2015,
+      "name": "Variable Player Powers",
+      "slug": "variable-player-powers",
+      "category": "other",
+      "summary": "Unique player abilities",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2015/variable-player-powers",
+      "description": "Each player has unique abilities or powers that create asymmetric gameplay.",
+      "contentHtml": "<h1>Variable Player Powers</h1>\n<p>Each player has unique abilities or powers that create asymmetric gameplay.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2015</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2015/variable-player-powers\">Variable Player Powers</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - variable-player-powers\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2897,
+      "name": "Variable Set-up",
+      "slug": "variable-set-up",
+      "category": "other",
+      "summary": "Different starting setups",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2897/variable-set-up",
+      "description": "The game can start with different configurations, adding variety to each play.",
+      "contentHtml": "<h1>Variable Set-up</h1>\n<p>The game can start with different configurations, adding variety to each play.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2897</li>\n<li><strong>Category</strong>: other</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2897/variable-set-up\">Variable Set-up</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - variable-set-up\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2874,
+      "name": "Victory Points as a Resource",
+      "slug": "victory-points-as-a-resource",
+      "category": "victory",
+      "summary": "Spend VPs for effects",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2874/victory-points-as-a-resource",
+      "description": "Victory points can be spent during the game for various effects, not just counted at the end.",
+      "contentHtml": "<h1>Victory Points as a Resource</h1>\n<p>Victory points can be spent during the game for various effects, not just counted at the end.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2874</li>\n<li><strong>Category</strong>: victory</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2874/victory-points-as-a-resource\">Victory Points as a Resource</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - victory-points-as-a-resource\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2017,
+      "name": "Voting",
+      "slug": "voting",
+      "category": "social",
+      "summary": "Decide by majority vote",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2017/voting",
+      "description": "Players vote to make collective decisions, with majority typically winning.",
+      "contentHtml": "<h1>Voting</h1>\n<p>Players vote to make collective decisions, with majority typically winning.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2017</li>\n<li><strong>Category</strong>: social</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2017/voting\">Voting</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - voting\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2082,
+      "name": "Worker Placement",
+      "slug": "worker-placement",
+      "category": "worker-placement",
+      "summary": "Place workers to claim actions",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2082/worker-placement",
+      "description": "Players place worker tokens on action spaces to perform actions, blocking others from using those spaces until workers are retrieved.",
+      "contentHtml": "<h1>Worker Placement</h1>\n<p>Players place worker tokens on action spaces to perform actions, blocking others from using those spaces until workers are retrieved.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2082</li>\n<li><strong>Category</strong>: worker-placement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2082/worker-placement\">Worker Placement</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - worker-placement\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2935,
+      "name": "Worker Placement with Dice Workers",
+      "slug": "worker-placement-with-dice-workers",
+      "category": "worker-placement",
+      "summary": "Dice serve as workers",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2935/worker-placement-with-dice-workers",
+      "description": "Dice are used as workers, with their values affecting what actions they can take or their effectiveness.",
+      "contentHtml": "<h1>Worker Placement with Dice Workers</h1>\n<p>Dice are used as workers, with their values affecting what actions they can take or their effectiveness.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2935</li>\n<li><strong>Category</strong>: worker-placement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2935/worker-placement-with-dice-workers\">Worker Placement with Dice Workers</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - worker-placement-with-dice-workers\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2933,
+      "name": "Worker Placement, Different Worker Types",
+      "slug": "worker-placement-different-worker-types",
+      "category": "worker-placement",
+      "summary": "Specialized worker types",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2933/worker-placement-different-worker-types",
+      "description": "Different types of workers have different capabilities or restrictions on where they can be placed.",
+      "contentHtml": "<h1>Worker Placement, Different Worker Types</h1>\n<p>Different types of workers have different capabilities or restrictions on where they can be placed.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2933</li>\n<li><strong>Category</strong>: worker-placement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2933/worker-placement-different-worker-types\">Worker Placement, Different Worker Types</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - worker-placement-different-worker-types\n---\n</code></pre>\n"
+    },
+    {
+      "id": 2974,
+      "name": "Zone of Control",
+      "slug": "zone-of-control",
+      "category": "movement",
+      "summary": "Units restrict enemy movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2974/zone-of-control",
+      "description": "Units exert control over adjacent spaces, restricting or affecting enemy movement through those areas.",
+      "contentHtml": "<h1>Zone of Control</h1>\n<p>Units exert control over adjacent spaces, restricting or affecting enemy movement through those areas.</p>\n<h2>Reference</h2>\n<ul>\n<li><strong>BGG ID</strong>: 2974</li>\n<li><strong>Category</strong>: movement</li>\n<li><strong>BGG URL</strong>: <a href=\"https://boardgamegeek.com/boardgamemechanic/2974/zone-of-control\">Zone of Control</a></li>\n</ul>\n<h2>Usage in RULES.md</h2>\n<pre><code class=\"language-yaml\">---\nname: &quot;My Game&quot;\nmechanics:\n  - zone-of-control\n---\n</code></pre>\n"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import gamesData from '../data/games.json'
+import MechanicBadge from '../components/MechanicBadge'
 import './GamePage.css'
 
 interface CardDef {
@@ -20,12 +21,14 @@ interface GameConfig {
     states: string[]
     start: string
   }
+  mechanics?: string[]
 }
 
 interface Game {
   id: string
   config: GameConfig
   rulesMarkdown: string
+  rulesHtml: string
 }
 
 function GamePage() {
@@ -81,6 +84,17 @@ function GamePage() {
           </div>
         </div>
 
+        {game.config.mechanics && game.config.mechanics.length > 0 && (
+          <div className="mechanics-section">
+            <h2>Game Mechanics</h2>
+            <div className="mechanics-badges">
+              {game.config.mechanics.map((slug) => (
+                <MechanicBadge key={slug} slug={slug} showCategory />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="quick-start">
           <h2>Quick Start</h2>
           <pre><code>npx playtest init {game.id} --players 3</code></pre>
@@ -123,9 +137,10 @@ function GamePage() {
 
         <div className="rules-section">
           <h2>Full Rules</h2>
-          <div className="rules-content">
-            <pre>{game.rulesMarkdown}</pre>
-          </div>
+          <div
+            className="rules-content markdown-body"
+            dangerouslySetInnerHTML={{ __html: game.rulesHtml }}
+          />
         </div>
       </div>
     </div>

@@ -31,7 +31,19 @@ import {
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
-import { getCardDefinition, parseRules } from './rules.js';
+import {
+  getCardDefinition,
+  parseRules,
+  loadMechanicsIndex,
+  getMechanicBySlug,
+  getMechanicById,
+  getMechanicByName,
+  searchMechanics,
+  getMechanicsByCategory,
+  getMechanicMarkdown,
+  resolveMechanics,
+  listCategories
+} from './rules.js';
 import { getRulesPath } from './game.js';
 
 const program = new Command();
@@ -877,6 +889,114 @@ program
       }
 
       console.log(JSON.stringify(result));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+// ============ Mechanics Commands ============
+
+program
+  .command('mechanic [query]')
+  .description('Look up game mechanic by slug, ID, name, or search')
+  .option('-c, --category <cat>', 'List mechanics in category')
+  .option('-l, --list', 'List all categories')
+  .option('--markdown', 'Output full markdown content')
+  .option('--json', 'Output as JSON')
+  .action((query: string | undefined, options: { category?: string; list?: boolean; markdown?: boolean; json?: boolean }) => {
+    try {
+      // List categories
+      if (options.list) {
+        const categories = listCategories();
+        if (options.json) {
+          console.log(JSON.stringify({ success: true, categories }));
+        } else {
+          console.log('Mechanic Categories:\n');
+          categories.forEach(c => console.log(`  - ${c}`));
+        }
+        return;
+      }
+
+      // List mechanics in category
+      if (options.category) {
+        const mechanics = getMechanicsByCategory(options.category);
+        if (mechanics.length === 0) {
+          console.log(JSON.stringify({
+            success: false,
+            error: `No mechanics found in category: ${options.category}`
+          }));
+          process.exit(1);
+        }
+
+        if (options.json) {
+          console.log(JSON.stringify({ success: true, category: options.category, mechanics }));
+        } else {
+          console.log(`\n${options.category.toUpperCase()} Mechanics:\n`);
+          mechanics.forEach(m => console.log(`  - ${m.name} (${m.slug})`));
+        }
+        return;
+      }
+
+      // Require query for lookup
+      if (!query) {
+        const index = loadMechanicsIndex();
+        console.log(JSON.stringify({
+          success: true,
+          totalMechanics: index.count,
+          categories: index.categories,
+          usage: 'npx playtest mechanic <slug|id|name|search-term>'
+        }));
+        return;
+      }
+
+      // Try exact lookups first
+      let mechanic = getMechanicBySlug(query);
+      if (!mechanic) mechanic = getMechanicById(query);
+      if (!mechanic) mechanic = getMechanicByName(query);
+
+      if (mechanic) {
+        if (options.markdown) {
+          const md = getMechanicMarkdown(mechanic.slug);
+          console.log(md || 'Markdown not found');
+        } else if (options.json) {
+          console.log(JSON.stringify({ success: true, mechanic }));
+        } else {
+          console.log(`\n${mechanic.name}`);
+          console.log(`${'='.repeat(mechanic.name.length)}\n`);
+          console.log(`ID:       ${mechanic.id}`);
+          console.log(`Slug:     ${mechanic.slug}`);
+          console.log(`Category: ${mechanic.category}`);
+          console.log(`Path:     mechanics/${mechanic.path}`);
+          console.log(`\nUse --markdown for full description`);
+        }
+        return;
+      }
+
+      // Fall back to search
+      const results = searchMechanics(query);
+      if (results.length === 0) {
+        console.log(JSON.stringify({
+          success: false,
+          error: `No mechanics found matching: ${query}`
+        }));
+        process.exit(1);
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify({ success: true, query, results }));
+      } else {
+        console.log(`\nMechanics matching "${query}":\n`);
+        results.slice(0, 20).forEach(m => {
+          console.log(`  - ${m.name} (${m.slug}) [${m.category}]`);
+        });
+        if (results.length > 20) {
+          console.log(`\n  ... and ${results.length - 20} more`);
+        }
+      }
     } catch (e) {
       console.log(JSON.stringify({
         success: false,
