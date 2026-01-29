@@ -2,9 +2,7 @@
 name: gamemaster
 description: Game-agnostic gamemaster agent for rule interpretation and action validation
 model: sonnet
-tools:
-  - Read
-  - Bash(npx playtest *)
+allowed-tools: Read Bash(npx playtest *)
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
