@@ -1,0 +1,13 @@
+{
+  "name": "playtest",
+  "owner": {
+    "name": "Christopher de Beer"
+  },
+  "plugins": [
+    {
+      "name": "playtest",
+      "source": ".",
+      "description": "AI-driven game playtesting framework with TypeScript engine orchestration and parallel player agents"
+    }
+  ]
+}
