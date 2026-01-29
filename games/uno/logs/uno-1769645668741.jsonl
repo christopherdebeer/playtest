@@ -1,0 +1,4 @@
+{"timestamp":"2026-01-29T00:14:28.743Z","event":"game_init","data":{"gameId":"uno-1769645668741","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-01-29T00:15:38.081Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"play_card","card":"Yellow 5","reasoning":"Safe opening play matching current color to maintain control"}}
+{"timestamp":"2026-01-29T00:16:36.164Z","event":"play_card","turn":1,"player":"player-1","data":{"card":"Yellow 5","newTopCard":{"name":"Yellow 5","type":"number","effect":{"type":"none","color":"Yellow","value":5}},"currentColor":"Yellow"}}
+{"timestamp":"2026-01-29T00:17:06.706Z","event":"game_end","turn":1,"data":{"winner":"none","reason":"Testing - restarting with corrected agents"}}

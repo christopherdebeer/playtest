@@ -1,0 +1,168 @@
+{"timestamp":"2026-01-29T00:17:26.613Z","event":"game_init","data":{"gameId":"uno-1769645846611","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-01-29T00:19:49.105Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"play_card","card":"Blue 7","reasoning":"Matches current color, preserves powerful action and wild cards for later"}}
+{"timestamp":"2026-01-29T00:20:03.735Z","event":"play_card","turn":1,"player":"player-1","data":{"card":"Blue 7","newTopCard":{"name":"Blue 7","type":"number","effect":{"type":"none","color":"Blue","value":7}},"currentColor":"Blue"}}
+{"timestamp":"2026-01-29T00:20:28.189Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Blue 1","reasoning":"Playing Blue 1 to match the current Blue color and maintain board control"}}
+{"timestamp":"2026-01-29T00:20:29.296Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Blue 1","reasoning":"Playing a card matching the current color (Blue). Blue 1 is a low-value card, preserving higher cards for strategic plays later."}}
+{"timestamp":"2026-01-29T00:20:41.129Z","event":"play_card","turn":1,"player":"player-2","data":{"card":"Blue 1","newTopCard":{"name":"Blue 1","type":"number","effect":{"type":"none","color":"Blue","value":1}},"currentColor":"Blue"}}
+{"timestamp":"2026-01-29T00:20:44.824Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:20:48.003Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:00.340Z","event":"action_submitted","turn":2,"player":"player-1","data":{"type":"pass","reasoning":"No matching color cards, drawing a new card"}}
+{"timestamp":"2026-01-29T00:21:21.837Z","event":"draw","turn":2,"player":"player-1","data":{"count":1,"cards":["Blue Draw Two"]}}
+{"timestamp":"2026-01-29T00:21:26.712Z","event":"action_submitted","turn":2,"player":"player-1","data":{"type":"play_card","card":"Wild Draw Four","new_color":"Red","reasoning":"Forcing opponent to draw 4 cards, declaring Red for next match"}}
+{"timestamp":"2026-01-29T00:21:36.850Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:40.266Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:43.765Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:46.790Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:49.983Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:53.168Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:54.859Z","event":"play_card","turn":2,"player":"player-2","data":{"card":"Blue 4","newTopCard":{"name":"Blue 4","type":"number","effect":{"type":"none","color":"Blue","value":4}},"currentColor":"Blue"}}
+{"timestamp":"2026-01-29T00:21:56.417Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Yellow 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:21:57.939Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Blue 4","reasoning":"Playing Blue 4 to match the current Blue color and continue advancing toward winning."}}
+{"timestamp":"2026-01-29T00:21:59.508Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Yellow 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:22:02.900Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Yellow 4","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:22:16.281Z","event":"action_submitted","turn":3,"player":"player-1","data":{"type":"play_card","card":"Blue Draw Two","reasoning":"Matches current color Blue 4, forces opponent to draw 2 cards"}}
+{"timestamp":"2026-01-29T00:22:29.105Z","event":"play_card","turn":3,"player":"player-1","data":{"card":"Blue Draw Two","newTopCard":{"name":"Blue Draw Two","type":"action","effect":{"type":"draw","color":"Blue","value":2}},"currentColor":"Blue"}}
+{"timestamp":"2026-01-29T00:22:39.387Z","event":"draw","turn":3,"player":"player-2","data":{"count":2,"cards":["Yellow 5","Green 5"]}}
+{"timestamp":"2026-01-29T00:22:49.792Z","event":"action_submitted","turn":3,"player":"player-1","data":{"type":"play_card","card":"Wild Draw Four","new_color":"Red","reasoning":"No Blue cards available, forcing opponent to draw 4 and declaring Red for my advantage with 3 Red cards"}}
+{"timestamp":"2026-01-29T00:22:54.021Z","event":"action_submitted","turn":3,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:22:57.284Z","event":"action_submitted","turn":3,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:23:00.590Z","event":"action_submitted","turn":3,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:23:03.842Z","event":"action_submitted","turn":3,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:23:37.425Z","event":"action_submitted","turn":4,"player":"player-1","data":{"type":"play_card","card":"Wild Draw Four","new_color":"Red","reasoning":"No matching cards, using wild to force 4 cards to opponent and declare Red color"}}
+{"timestamp":"2026-01-29T00:26:44.922Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:26:48.196Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:26:51.456Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:26:54.685Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:26:57.961Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:01.191Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:04.243Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:07.510Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:10.619Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:14.143Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:16.017Z","event":"draw","turn":4,"player":"player-2","data":{"count":1,"cards":["Green 6"]}}
+{"timestamp":"2026-01-29T00:27:17.234Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:20.478Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:23.765Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:27.300Z","event":"action_submitted","turn":4,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:27:48.995Z","event":"action_submitted","turn":5,"player":"player-1","data":{"type":"play_card","card":"Red Draw Two","reasoning":"Attempting to play action card to reduce hand size"}}
+{"timestamp":"2026-01-29T00:28:02.214Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:05.275Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:08.581Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:12.167Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:13.578Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No cards match Blue color or Blue Draw Two"}}
+{"timestamp":"2026-01-29T00:28:15.487Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:18.533Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:21.652Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:25.133Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:27.164Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"draw","reasoning":"Still no Blue cards in hand - must draw again."}}
+{"timestamp":"2026-01-29T00:28:28.569Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:29.689Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:28:30.119Z","event":"draw","turn":5,"player":"player-2","data":{"count":1,"cards":["Blue 7"]}}
+{"timestamp":"2026-01-29T00:28:31.629Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:32.779Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:34.777Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:35.892Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:37.774Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:39.054Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:41.174Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:28:42.413Z","event":"action_submitted","turn":5,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:03.687Z","event":"action_submitted","turn":6,"player":"player-1","data":{"type":"play_card","card":"Red 3","reasoning":"Playing Red 3 to reduce hand"}}
+{"timestamp":"2026-01-29T00:29:16.892Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:18.785Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:20.166Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:21.818Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:23.167Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:24.876Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:26.199Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:28.065Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:29.403Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:31.149Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:32.610Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:34.279Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:35.684Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:37.391Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:38.801Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:40.606Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:41.983Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:43.656Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:45.042Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:46.756Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:48.247Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:29:49.414Z","event":"play_card","turn":6,"player":"player-2","data":{"card":"Blue 7","newTopCard":{"name":"Blue 7","type":"number","effect":{"type":"none","color":"Blue","value":7}},"currentColor":"Blue"}}
+{"timestamp":"2026-01-29T00:29:50.023Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:51.667Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:53.354Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:54.267Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"play_card","card":"Blue 7","reasoning":"Playing Blue 7 to match the Blue color of top card."}}
+{"timestamp":"2026-01-29T00:29:54.775Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:56.415Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:57.801Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:29:59.739Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:01.156Z","event":"action_submitted","turn":6,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:22.870Z","event":"action_submitted","turn":7,"player":"player-1","data":{"type":"pass","reasoning":"Forced to draw due to no Blue cards matching current color"}}
+{"timestamp":"2026-01-29T00:30:33.226Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:34.008Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:36.361Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:37.144Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:39.411Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:40.242Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:42.584Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:43.601Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:45.897Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:46.816Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:49.125Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:50.002Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:52.164Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:53.056Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:55.670Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:56.655Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:58.827Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:30:59.752Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:01.856Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:02.810Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:05.065Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:06.071Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:06.088Z","event":"draw","turn":7,"player":"player-2","data":{"count":1,"cards":["Red Skip"]}}
+{"timestamp":"2026-01-29T00:31:08.141Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:09.287Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:11.530Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:12.570Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:14.085Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"draw","reasoning":"No cards match Blue color or 7 value - must draw."}}
+{"timestamp":"2026-01-29T00:31:14.673Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:15.767Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:17.873Z","event":"action_submitted","turn":7,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:45.134Z","event":"action_submitted","turn":8,"player":"player-1","data":{"type":"play_card","card":"Yellow 8","reasoning":"Testing if number-based matching is allowed (like a 7 or 8)"}}
+{"timestamp":"2026-01-29T00:31:58.770Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:31:59.798Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:01.989Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:03.064Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:05.059Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:06.317Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:08.517Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:09.706Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:11.629Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:12.813Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:14.660Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:16.054Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:17.878Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:19.303Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:21.197Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:22.616Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:24.380Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:25.761Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:27.680Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:29.036Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:30.843Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:32.456Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:34.341Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"pass","reasoning":"No playable cards available"}}
+{"timestamp":"2026-01-29T00:32:34.836Z","event":"draw","turn":8,"player":"player-2","data":{"count":1,"cards":["Blue 3"]}}
+{"timestamp":"2026-01-29T00:32:35.719Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:37.394Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:38.820Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:40.710Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:42.104Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:43.783Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:45.212Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:47.009Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:48.573Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:50.236Z","event":"action_submitted","turn":8,"player":"player-2","data":{"type":"play_card","card":"Blue 3","reasoning":"Playing to match board state"}}
+{"timestamp":"2026-01-29T00:32:59.241Z","event":"game_end","turn":9,"data":{"winner":"none","reason":"Playtest validation complete - contest-based system working"}}
