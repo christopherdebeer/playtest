@@ -1,0 +1,226 @@
+.logs-page {
+  padding: 2rem 0 4rem;
+  min-height: 100vh;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.logs-header {
+  margin-bottom: 2rem;
+}
+
+.logs-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.logs-description {
+  color: var(--text-secondary);
+}
+
+.logs-overview {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.overview-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.overview-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.logs-filters {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.filter-group select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.logs-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.logs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.log-card {
+  display: block;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s;
+  color: var(--text-primary);
+}
+
+.log-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  color: var(--text-primary);
+}
+
+.log-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.log-card-header h3 {
+  font-size: 1.15rem;
+  text-transform: capitalize;
+}
+
+.outcome-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.outcome-completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.outcome-ended {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.outcome-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.outcome-progress {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.outcome-unknown {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.log-card-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.log-card-stats {
+  display: flex;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.log-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-stat-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.log-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.log-winner {
+  font-size: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.log-winner strong {
+  color: var(--accent);
+}
+
+.log-reason {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.no-logs {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .logs-overview {
+    gap: 1.5rem;
+  }
+
+  .overview-value {
+    font-size: 1.5rem;
+  }
+
+  .logs-filters {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .logs-grid {
+    grid-template-columns: 1fr;
+  }
+}

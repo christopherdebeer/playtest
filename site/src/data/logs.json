@@ -1,0 +1,3655 @@
+{
+  "generatedAt": "2026-01-29T14:44:29.329Z",
+  "games": {
+    "markovs-chains": {
+      "totalLogs": 14,
+      "completedGames": 1,
+      "cancelledGames": 1,
+      "totalTurns": 16
+    },
+    "uno": {
+      "totalLogs": 11,
+      "completedGames": 3,
+      "cancelledGames": 0,
+      "totalTurns": 23
+    }
+  },
+  "logs": [
+    {
+      "gameId": "markovs-chains-1769695547760",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T14:05:47.762Z",
+      "endTime": "2026-01-29T14:05:54.500Z",
+      "duration": 7,
+      "totalTurns": 1,
+      "totalEvents": 3,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "game_cancelled": 1
+      },
+      "outcome": "cancelled",
+      "winner": null,
+      "endReason": "Testing cancel functionality",
+      "fileSize": 416,
+      "events": [
+        {
+          "timestamp": "2026-01-29T14:05:47.762Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769695547760",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T14:05:51.071Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T14:05:54.500Z",
+          "event": "game_cancelled",
+          "turn": 1,
+          "data": {
+            "reason": "Testing cancel functionality"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694901808",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T13:55:01.810Z",
+      "endTime": "2026-01-29T13:55:06.079Z",
+      "duration": 4,
+      "totalTurns": 1,
+      "totalEvents": 2,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 292,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:55:01.810Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694901808",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:55:06.079Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694869952",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:54:29.954Z",
+      "endTime": "2026-01-29T13:54:29.954Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:54:29.954Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694869952",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694851425",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:54:11.427Z",
+      "endTime": "2026-01-29T13:54:11.427Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:54:11.427Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694851425",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694825018",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:53:45.020Z",
+      "endTime": "2026-01-29T13:53:45.020Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:53:45.020Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694825018",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694805423",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:53:25.425Z",
+      "endTime": "2026-01-29T13:53:25.425Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:53:25.425Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694805423",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694784446",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T13:53:04.448Z",
+      "endTime": "2026-01-29T13:53:04.830Z",
+      "duration": 0,
+      "totalTurns": 1,
+      "totalEvents": 2,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 292,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:53:04.448Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694784446",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:53:04.830Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694767749",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:52:47.752Z",
+      "endTime": "2026-01-29T13:52:47.752Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:52:47.752Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694767749",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694745349",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:52:25.351Z",
+      "endTime": "2026-01-29T13:52:25.351Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:52:25.351Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694745349",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694707127",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:51:47.129Z",
+      "endTime": "2026-01-29T13:51:47.129Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:51:47.129Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694707127",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694603135",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:50:03.137Z",
+      "endTime": "2026-01-29T13:50:03.137Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:50:03.137Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694603135",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769694585876",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-29T13:49:45.878Z",
+      "endTime": "2026-01-29T13:49:45.878Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 153,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:49:45.878Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769694585876",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769693111270",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T13:25:11.271Z",
+      "endTime": "2026-01-29T13:33:38.455Z",
+      "duration": 507,
+      "totalTurns": 3,
+      "totalEvents": 10,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 3,
+        "game_start": 1,
+        "roll": 1,
+        "action_executed": 2,
+        "state_update": 1,
+        "game_end": 1
+      },
+      "outcome": "completed",
+      "winner": "player-2",
+      "endReason": "Reached Victory state",
+      "fileSize": 1736,
+      "events": [
+        {
+          "timestamp": "2026-01-29T13:25:11.271Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769693111270",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:29:13.027Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:29:47.746Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:29:52.129Z",
+          "event": "roll",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "probability": 0.65,
+            "roll": 0.8790419175674662,
+            "success": false,
+            "context": "probability check"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:30:19.683Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:30:41.238Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Certainty"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:31:10.098Z",
+          "event": "state_update",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "effects": [
+              {
+                "type": "auto_success",
+                "source": "Certainty",
+                "expiresAfter": "next_move"
+              }
+            ],
+            "hand": [
+              {
+                "name": "Catalyst",
+                "type": "boost",
+                "effect": {
+                  "type": "probability_boost",
+                  "value": 0.2
+                }
+              },
+              {
+                "name": "Block",
+                "type": "interference",
+                "effect": {
+                  "type": "block_turn",
+                  "duration": 1
+                }
+              },
+              {
+                "name": "Catalyst",
+                "type": "boost",
+                "effect": {
+                  "type": "probability_boost",
+                  "value": 0.2
+                }
+              }
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:31:12.785Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:32:15.187Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T13:33:38.455Z",
+          "event": "game_end",
+          "turn": 3,
+          "data": {
+            "winner": "player-2",
+            "reason": "Reached Victory state"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769645846611",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T00:17:26.613Z",
+      "endTime": "2026-01-29T00:32:59.241Z",
+      "duration": 933,
+      "totalTurns": 9,
+      "totalEvents": 168,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 155,
+        "play_card": 5,
+        "draw": 6,
+        "game_end": 1
+      },
+      "outcome": "ended",
+      "winner": null,
+      "endReason": "Playtest validation complete - contest-based system working",
+      "fileSize": 29431,
+      "events": [
+        {
+          "timestamp": "2026-01-29T00:17:26.613Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769645846611",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:19:49.105Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Matches current color, preserves powerful action and wild cards for later"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:03.735Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Blue 7",
+            "newTopCard": {
+              "name": "Blue 7",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Blue",
+                "value": 7
+              }
+            },
+            "currentColor": "Blue"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:28.189Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 1",
+            "reasoning": "Playing Blue 1 to match the current Blue color and maintain board control"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:29.296Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 1",
+            "reasoning": "Playing a card matching the current color (Blue). Blue 1 is a low-value card, preserving higher cards for strategic plays later."
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:41.129Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "card": "Blue 1",
+            "newTopCard": {
+              "name": "Blue 1",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Blue",
+                "value": 1
+              }
+            },
+            "currentColor": "Blue"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:44.824Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:20:48.003Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:00.340Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "pass",
+            "reasoning": "No matching color cards, drawing a new card"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:21.837Z",
+          "event": "draw",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Blue Draw Two"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:26.712Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Wild Draw Four",
+            "new_color": "Red",
+            "reasoning": "Forcing opponent to draw 4 cards, declaring Red for next match"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:36.850Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:40.266Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:43.765Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:46.790Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:49.983Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:53.168Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:54.859Z",
+          "event": "play_card",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "card": "Blue 4",
+            "newTopCard": {
+              "name": "Blue 4",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Blue",
+                "value": 4
+              }
+            },
+            "currentColor": "Blue"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:56.417Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:57.939Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 4",
+            "reasoning": "Playing Blue 4 to match the current Blue color and continue advancing toward winning."
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:21:59.508Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:02.900Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 4",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:16.281Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Blue Draw Two",
+            "reasoning": "Matches current color Blue 4, forces opponent to draw 2 cards"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:29.105Z",
+          "event": "play_card",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "card": "Blue Draw Two",
+            "newTopCard": {
+              "name": "Blue Draw Two",
+              "type": "action",
+              "effect": {
+                "type": "draw",
+                "color": "Blue",
+                "value": 2
+              }
+            },
+            "currentColor": "Blue"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:39.387Z",
+          "event": "draw",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "count": 2,
+            "cards": [
+              "Yellow 5",
+              "Green 5"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:49.792Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Wild Draw Four",
+            "new_color": "Red",
+            "reasoning": "No Blue cards available, forcing opponent to draw 4 and declaring Red for my advantage with 3 Red cards"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:54.021Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:22:57.284Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:23:00.590Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:23:03.842Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:23:37.425Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Wild Draw Four",
+            "new_color": "Red",
+            "reasoning": "No matching cards, using wild to force 4 cards to opponent and declare Red color"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:26:44.922Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:26:48.196Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:26:51.456Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:26:54.685Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:26:57.961Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:01.191Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:04.243Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:07.510Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:10.619Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:14.143Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:16.017Z",
+          "event": "draw",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Green 6"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:17.234Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:20.478Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:23.765Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:27.300Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:27:48.995Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Red Draw Two",
+            "reasoning": "Attempting to play action card to reduce hand size"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:02.214Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:05.275Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:08.581Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:12.167Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:13.578Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No cards match Blue color or Blue Draw Two"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:15.487Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:18.533Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:21.652Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:25.133Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:27.164Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "reasoning": "Still no Blue cards in hand - must draw again."
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:28.569Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:29.689Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:30.119Z",
+          "event": "draw",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Blue 7"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:31.629Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:32.779Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:34.777Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:35.892Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:37.774Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:39.054Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:41.174Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:28:42.413Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:03.687Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Red 3",
+            "reasoning": "Playing Red 3 to reduce hand"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:16.892Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:18.785Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:20.166Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:21.818Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:23.167Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:24.876Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:26.199Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:28.065Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:29.403Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:31.149Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:32.610Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:34.279Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:35.684Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:37.391Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:38.801Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:40.606Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:41.983Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:43.656Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:45.042Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:46.756Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:48.247Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:49.414Z",
+          "event": "play_card",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "card": "Blue 7",
+            "newTopCard": {
+              "name": "Blue 7",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Blue",
+                "value": 7
+              }
+            },
+            "currentColor": "Blue"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:50.023Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:51.667Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:53.354Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:54.267Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 7",
+            "reasoning": "Playing Blue 7 to match the Blue color of top card."
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:54.775Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:56.415Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:57.801Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:29:59.739Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:01.156Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:22.870Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "type": "pass",
+            "reasoning": "Forced to draw due to no Blue cards matching current color"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:33.226Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:34.008Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:36.361Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:37.144Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:39.411Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:40.242Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:42.584Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:43.601Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:45.897Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:46.816Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:49.125Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:50.002Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:52.164Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:53.056Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:55.670Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:56.655Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:58.827Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:30:59.752Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:01.856Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:02.810Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:05.065Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:06.071Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:06.088Z",
+          "event": "draw",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Red Skip"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:08.141Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:09.287Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:11.530Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:12.570Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:14.085Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "reasoning": "No cards match Blue color or 7 value - must draw."
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:14.673Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:15.767Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:17.873Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:45.134Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 8",
+            "reasoning": "Testing if number-based matching is allowed (like a 7 or 8)"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:58.770Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:31:59.798Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:01.989Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:03.064Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:05.059Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:06.317Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:08.517Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:09.706Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:11.629Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:12.813Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:14.660Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:16.054Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:17.878Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:19.303Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:21.197Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:22.616Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:24.380Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:25.761Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:27.680Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:29.036Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:30.843Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:32.456Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:34.341Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "No playable cards available"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:34.836Z",
+          "event": "draw",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Blue 3"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:35.719Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:37.394Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:38.820Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:40.710Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:42.104Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:43.783Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:45.212Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:47.009Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:48.573Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:50.236Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 3",
+            "reasoning": "Playing to match board state"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:32:59.241Z",
+          "event": "game_end",
+          "turn": 9,
+          "data": {
+            "winner": "none",
+            "reason": "Playtest validation complete - contest-based system working"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769645668741",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1"
+      ],
+      "startTime": "2026-01-29T00:14:28.743Z",
+      "endTime": "2026-01-29T00:17:06.706Z",
+      "duration": 158,
+      "totalTurns": 1,
+      "totalEvents": 4,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 1,
+        "play_card": 1,
+        "game_end": 1
+      },
+      "outcome": "ended",
+      "winner": null,
+      "endReason": "Testing - restarting with corrected agents",
+      "fileSize": 738,
+      "events": [
+        {
+          "timestamp": "2026-01-29T00:14:28.743Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769645668741",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:15:38.081Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 5",
+            "reasoning": "Safe opening play matching current color to maintain control"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:16:36.164Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Yellow 5",
+            "newTopCard": {
+              "name": "Yellow 5",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Yellow",
+                "value": 5
+              }
+            },
+            "currentColor": "Yellow"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:17:06.706Z",
+          "event": "game_end",
+          "turn": 1,
+          "data": {
+            "winner": "none",
+            "reason": "Testing - restarting with corrected agents"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769645618744",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T00:13:38.745Z",
+      "endTime": "2026-01-29T00:14:08.725Z",
+      "duration": 30,
+      "totalTurns": 2,
+      "totalEvents": 3,
+      "eventCounts": {
+        "game_init": 1,
+        "action_executed": 2
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 444,
+      "events": [
+        {
+          "timestamp": "2026-01-29T00:13:38.745Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769645618744",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:14:00.994Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Wild",
+            "effect": {
+              "type": "wild"
+            },
+            "declaredColor": "Red"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:14:08.725Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769645548149",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-29T00:12:28.151Z",
+      "endTime": "2026-01-29T00:13:31.627Z",
+      "duration": 63,
+      "totalTurns": 1,
+      "totalEvents": 7,
+      "eventCounts": {
+        "game_init": 1,
+        "action_executed": 1,
+        "contest_filed": 1,
+        "contest_adjudicated": 1,
+        "resignation_submitted": 1,
+        "game_end": 1,
+        "resignation_adjudicated": 1
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "Resignation accepted: Testing resignation functionality",
+      "fileSize": 1303,
+      "events": [
+        {
+          "timestamp": "2026-01-29T00:12:28.151Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769645548149",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:12:52.093Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Red 8",
+            "effect": {
+              "type": "none",
+              "color": "Red",
+              "value": 8
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:13:00.826Z",
+          "event": "contest_filed",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "reason": "Testing contest functionality",
+            "contestedAction": {
+              "type": "play_card",
+              "card": "Red 8"
+            },
+            "contestedPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:13:08.859Z",
+          "event": "contest_adjudicated",
+          "turn": 1,
+          "data": {
+            "ruling": "allowed",
+            "rulingReason": "Red 8 matches Green 8 by number, action is legal",
+            "reversed": false,
+            "contestedPlayer": "player-1",
+            "contestedBy": "player-2"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:13:16.599Z",
+          "event": "resignation_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "reason": "Testing resignation functionality"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:13:31.625Z",
+          "event": "game_end",
+          "turn": 1,
+          "data": {
+            "winner": "player-1",
+            "reason": "Resignation accepted: Testing resignation functionality",
+            "resignedPlayer": "player-2"
+          }
+        },
+        {
+          "timestamp": "2026-01-29T00:13:31.627Z",
+          "event": "resignation_adjudicated",
+          "turn": 1,
+          "data": {
+            "player": "player-2",
+            "accepted": true,
+            "rulingReason": "Valid resignation"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769644177930",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1"
+      ],
+      "startTime": "2026-01-28T23:49:37.931Z",
+      "endTime": "2026-01-28T23:50:15.404Z",
+      "duration": 37,
+      "totalTurns": 1,
+      "totalEvents": 2,
+      "eventCounts": {
+        "game_init": 1,
+        "play_card": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 368,
+      "events": [
+        {
+          "timestamp": "2026-01-28T23:49:37.931Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769644177930",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:50:15.404Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Yellow Skip",
+            "newTopCard": {
+              "name": "Yellow Skip",
+              "type": "action",
+              "effect": {
+                "type": "skip",
+                "color": "Yellow"
+              }
+            },
+            "currentColor": "Yellow"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769644162251",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-28T23:49:22.253Z",
+      "endTime": "2026-01-28T23:49:22.253Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 130,
+      "events": [
+        {
+          "timestamp": "2026-01-28T23:49:22.253Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769644162251",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769643078109",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-28T23:31:18.110Z",
+      "endTime": "2026-01-28T23:39:42.746Z",
+      "duration": 505,
+      "totalTurns": 5,
+      "totalEvents": 21,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 10,
+        "draw": 5,
+        "play_card": 5
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 4060,
+      "events": [
+        {
+          "timestamp": "2026-01-28T23:31:18.110Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769643078109",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:32:09.646Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "reasoning": "No playable cards matching Blue 2. Must draw a card."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:32:44.216Z",
+          "event": "draw",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Wild Draw Four"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:33:16.963Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Green 2",
+            "reasoning": "Matches number on top card, saves wild cards for critical moments"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:33:34.914Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "card": "Green 2",
+            "newTopCard": {
+              "name": "Green 2",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 2
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:34:02.810Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Green Reverse",
+            "reasoning": "In 2-player game, Reverse acts as Skip. This skips player-2 and gives me another turn."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:34:20.254Z",
+          "event": "play_card",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "card": "Green Reverse",
+            "newTopCard": {
+              "name": "Green Reverse",
+              "type": "action",
+              "effect": {
+                "type": "reverse",
+                "color": "Green"
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:35:07.131Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Green 9",
+            "reasoning": "Matches Green color. Advancing the game."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:35:21.712Z",
+          "event": "play_card",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "card": "Green 9",
+            "newTopCard": {
+              "name": "Green 9",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 9
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:35:49.138Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "reasoning": "No Green cards or 9s in hand, must draw"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:36:02.074Z",
+          "event": "draw",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Blue 7"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:36:28.423Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Green 4",
+            "reasoning": "Matches Green 9. Reducing hand toward victory."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:36:42.416Z",
+          "event": "play_card",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "card": "Green 4",
+            "newTopCard": {
+              "name": "Green 4",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 4
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:37:24.000Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "reasoning": "No playable cards, opponent at 5 cards so need to build hand"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:37:40.238Z",
+          "event": "draw",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Yellow 1"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:38:07.768Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "reasoning": "No playable cards matching Green 4. Must draw."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:38:21.364Z",
+          "event": "draw",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Red 3"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:38:50.242Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Wild Draw Four",
+            "new_color": "Yellow",
+            "reasoning": "Force opponent to 10 cards and switch to Yellow where I have 5 cards for advantage"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:39:08.534Z",
+          "event": "play_card",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "card": "Wild Draw Four",
+            "newTopCard": {
+              "name": "Wild Draw Four",
+              "type": "wild",
+              "effect": {
+                "type": "wild_draw",
+                "value": 4
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:39:25.883Z",
+          "event": "draw",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "count": 4,
+            "cards": [
+              "Blue 5",
+              "Green 1",
+              "Yellow Skip",
+              "Red 4"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:39:42.746Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Yellow 2",
+            "reasoning": "Safe number card play, preserves action cards"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769641032531",
+      "gameName": "uno",
+      "playerCount": 3,
+      "players": [
+        "player-1",
+        "player-2",
+        "player-3"
+      ],
+      "startTime": "2026-01-28T22:57:12.532Z",
+      "endTime": "2026-01-28T23:03:11.503Z",
+      "duration": 359,
+      "totalTurns": 2,
+      "totalEvents": 11,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 5,
+        "play_card": 3,
+        "draw": 2
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 2179,
+      "events": [
+        {
+          "timestamp": "2026-01-28T22:57:12.532Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769641032531",
+            "playerCount": 3,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:59:15.408Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Green 3",
+            "reasoning": "Matches current color (Green). Reduces hand size and no special effects on this card."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:59:37.112Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Green 3",
+            "newTopCard": {
+              "name": "Green 3",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 3
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:00:30.088Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Green 5",
+            "reasoning": "Matches current color Green to reduce my hand size"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:00:54.062Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "card": "Green 5",
+            "newTopCard": {
+              "name": "Green 5",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 5
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:01:29.204Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Green 5",
+            "reasoning": "Perfect match - matches both color (Green) and number (5) on top card. Strong play to reduce hand size."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:01:41.341Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-3",
+          "data": {
+            "card": "Green 5",
+            "newTopCard": {
+              "name": "Green 5",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Green",
+                "value": 5
+              }
+            },
+            "currentColor": "Green"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:02:06.750Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "reasoning": "No cards match current top card (Green 5). Must draw a card."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:02:24.885Z",
+          "event": "draw",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Red Reverse"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:02:57.265Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "reasoning": "No playable cards matching Green or number 5"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T23:03:11.503Z",
+          "event": "draw",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Green 8"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769640997003",
+      "gameName": "uno",
+      "playerCount": 3,
+      "players": [],
+      "startTime": "2026-01-28T22:56:37.005Z",
+      "endTime": "2026-01-28T22:56:37.005Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 130,
+      "events": [
+        {
+          "timestamp": "2026-01-28T22:56:37.005Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769640997003",
+            "playerCount": 3,
+            "config": "UNO"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769640541075",
+      "gameName": "uno",
+      "playerCount": 3,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-28T22:49:01.077Z",
+      "endTime": "2026-01-28T22:51:17.667Z",
+      "duration": 137,
+      "totalTurns": 1,
+      "totalEvents": 5,
+      "eventCounts": {
+        "game_init": 1,
+        "play_card": 1,
+        "action_submitted": 2,
+        "discard": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 933,
+      "events": [
+        {
+          "timestamp": "2026-01-28T22:49:01.077Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769640541075",
+            "playerCount": 3,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:49:48.789Z",
+          "event": "play_card",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Red 2",
+            "newTopCard": {
+              "name": "Red 2",
+              "type": "number",
+              "effect": {
+                "type": "none",
+                "color": "Red",
+                "value": 2
+              }
+            },
+            "currentColor": "Red"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:49:58.001Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Red 2",
+            "reasoning": "Matches red color, keeping color active for next player"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:50:16.691Z",
+          "event": "discard",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Blue 9"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:51:17.667Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Blue 2",
+            "reasoning": "Matches the color Blue. Eliminates a non-green card while I have multiple green cards in hand."
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "uno-1769640173221",
+      "gameName": "uno",
+      "playerCount": 3,
+      "players": [
+        "player-1",
+        "player-2",
+        "player-3"
+      ],
+      "startTime": "2026-01-28T22:42:53.223Z",
+      "endTime": "2026-01-28T22:48:55.256Z",
+      "duration": 362,
+      "totalTurns": 1,
+      "totalEvents": 6,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 3,
+        "discard": 2
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 969,
+      "events": [
+        {
+          "timestamp": "2026-01-28T22:42:53.223Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769640173221",
+            "playerCount": 3,
+            "config": "UNO"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:45:50.184Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Green 4",
+            "reasoning": "Opening with a number card"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:46:48.379Z",
+          "event": "discard",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Green 4"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:47:37.574Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Red 4",
+            "reasoning": "Matches the number 4 on the discard pile"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:48:08.666Z",
+          "event": "discard",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "card": "Red 4"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:48:55.256Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Green Draw Two",
+            "reasoning": "Force next player to draw 2 cards and skip turn to build card advantage"
+          }
+        }
+      ]
+    },
+    {
+      "gameId": "markovs-chains-1769639459518",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-28T22:30:59.520Z",
+      "endTime": "2026-01-28T22:38:18.612Z",
+      "duration": 439,
+      "totalTurns": 10,
+      "totalEvents": 21,
+      "eventCounts": {
+        "game_init": 1,
+        "action_submitted": 19,
+        "draw": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 5584,
+      "events": [
+        {
+          "timestamp": "2026-01-28T22:30:59.520Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769639459518",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:33:08.128Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "reasoning": "Moving toward Victory. I will save my Certainty card for the final victory move to guarantee the win."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:33:55.726Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "reasoning": "Moving to intermediate state B to progress toward Victory. Using base 65% success probability to advance along the direct path to victory."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:34:06.321Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "reasoning": "My previous move to A failed. Attempting state B with same 65% probability."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:34:20.922Z",
+          "event": "action_submitted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "card": "Certainty",
+            "reasoning": "Using Certainty to guarantee reaching intermediate state B after my initial move failed. This secures board position and puts me one step closer to Victory while building momentum."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:34:34.076Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "C",
+            "reasoning": "Third attempt to leave Start. All three paths have same 65% probability - trying C."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:35:18.989Z",
+          "event": "action_submitted",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "reasoning": "Attempting alternative path. Moving to state A with 65% base probability. Diversifying attempts across different intermediate states."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:35:28.591Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Certainty",
+            "reasoning": "After three failed movement attempts, using Certainty to guarantee my next move will succeed."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:35:38.428Z",
+          "event": "action_submitted",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Friction",
+            "target": "player-1",
+            "reasoning": "Playing Friction to penalize opponent's next move probability. This defensive play aims to slow their progress toward Victory while I prepare my own advancement."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:35:49.610Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "reasoning": "Making a move with Certainty boost active to guarantee success."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:36:09.246Z",
+          "event": "action_submitted",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Victory",
+            "reasoning": "After establishing presence at intermediate state (conceptually), now attempting final push to Victory state with 55% base success probability."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:36:51.177Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "reasoning": "Attempting to leave Start. Base 65% probability. Need to progress toward Victory before turn limit."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:36:59.111Z",
+          "event": "draw",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "count": 1,
+            "cards": [
+              "Friction"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:37:06.698Z",
+          "event": "action_submitted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "C",
+            "reasoning": "Attempting state C to diversify my path options. With 65% success rate and preparation from drawing additional Friction card, building strategic position for next turn's victory push."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:37:17.455Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "reasoning": "Continuing attempts to leave Start. Probability still 65% base, trying different intermediate state."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:37:25.741Z",
+          "event": "action_submitted",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "pass",
+            "reasoning": "Conserving resources and analyzing opponent position. With hand now at capacity and multiple defensive cards available, waiting for optimal moment to deploy them."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:37:34.774Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "card": "Certainty",
+            "reasoning": "Using Certainty boost combined with move to guarantee reaching state A and finally progressing toward Victory."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:37:42.687Z",
+          "event": "action_submitted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "reasoning": "Committing to clear path forward: Start -> B -> Victory. With Certainty card available for final push, focusing on reaching intermediate state B to position myself for victory condition attainment."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:38:00.257Z",
+          "event": "action_submitted",
+          "turn": 9,
+          "player": "player-1",
+          "data": {
+            "type": "pass",
+            "reasoning": "Resetting strategy. Drawing card next phase instead of attempting more failed moves. Need fresh cards for better options."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:38:08.022Z",
+          "event": "action_submitted",
+          "turn": 9,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "reasoning": "Final strategic push toward Victory. Continuing aggressive strategy to reach intermediate state B, positioning for final victory move with Certainty card ready as backup."
+          }
+        },
+        {
+          "timestamp": "2026-01-28T22:38:18.612Z",
+          "event": "action_submitted",
+          "turn": 10,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "C",
+            "reasoning": "Turn 10 out of 15 max. Attempting another move to leave Start with 65% probability. This must succeed soon given the odds."
+          }
+        }
+      ]
+    }
+  ]
+}

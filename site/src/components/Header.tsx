@@ -13,6 +13,7 @@ function Header() {
           <a href="#usage">Usage</a>
           <a href="#games">Games</a>
           <Link to="/mechanics">Mechanics</Link>
+          <Link to="/logs">Logs</Link>
           <a href="#architecture">Architecture</a>
           <a
             href="https://github.com/christopherdebeer/playtest"
