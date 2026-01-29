@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "playtest",
-      "source": ".",
+      "source": "https://github.com/christopherdebeer/playtest",
       "description": "AI-driven game playtesting framework with TypeScript engine orchestration and parallel player agents"
     }
   ]
