@@ -20,9 +20,16 @@ import {
   gameExists,
   stateExists,
   getStatePath,
-  getGamePath
+  getGamePath,
+  validateActionSchema,
+  validateAction,
+  executeAction,
+  fileContest,
+  adjudicateContest,
+  adjudicateResignation,
+  ensureContestState
 } from './game.js';
-import type { PendingAction } from './types.js';
+import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
 import { getCardDefinition, parseRules } from './rules.js';
 import { getRulesPath } from './game.js';
@@ -197,9 +204,232 @@ program
     }
   });
 
+// ============ Contest-Based Adjudication Commands ============
+
+program
+  .command('act <game>')
+  .description('Execute action directly (contest-based system)')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .requiredOption('-a, --action <json>', 'Action JSON')
+  .action((game, options) => {
+    try {
+      const state = loadState(game);
+
+      // Parse action JSON
+      let action: GameAction;
+      try {
+        action = JSON.parse(options.action);
+      } catch {
+        console.log(JSON.stringify({
+          success: false,
+          validation: {
+            valid: false,
+            errors: ['Invalid JSON. Action must be valid JSON object. Example: \'{"type": "play_card", "card": "Red 5"}\'']
+          }
+        }));
+        process.exit(1);
+        return;
+      }
+
+      // Step 1: Schema validation
+      const schemaResult = validateActionSchema(action);
+      if (!schemaResult.valid) {
+        console.log(JSON.stringify({
+          success: false,
+          validation: schemaResult
+        }));
+        process.exit(1);
+        return;
+      }
+
+      // Step 2: Game rule validation
+      const ruleResult = validateAction(state, options.player, action);
+      if (!ruleResult.valid) {
+        console.log(JSON.stringify({
+          success: false,
+          validation: ruleResult
+        }));
+        process.exit(1);
+        return;
+      }
+
+      // Step 3: Execute the action
+      const execResult = executeAction(state, options.player, action);
+
+      if (!execResult.success) {
+        console.log(JSON.stringify({
+          success: false,
+          error: execResult.error
+        }));
+        process.exit(1);
+        return;
+      }
+
+      // Check for win condition (hand empty for card games)
+      const player = state.players[options.player];
+      if (player && player.hand.length === 0 && action.type === 'play_card') {
+        endGame(game, options.player, `${options.player} emptied their hand`);
+      }
+
+      // Reload state to get updated values
+      const updatedState = loadState(game);
+      const playerView = getPlayerView(updatedState, options.player);
+
+      console.log(JSON.stringify({
+        success: true,
+        action,
+        effect: execResult.effect,
+        validation: ruleResult,
+        handSize: player?.hand.length,
+        nextPlayer: updatedState.currentPlayer,
+        gameStatus: updatedState.status,
+        view: playerView
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('contest <game>')
+  .description('Contest the previous player\'s action')
+  .requiredOption('-p, --player <id>', 'Contesting player ID')
+  .requiredOption('-r, --reason <text>', 'Reason for contest')
+  .action((game, options) => {
+    try {
+      const state = loadState(game);
+      const result = fileContest(state, options.player, options.reason);
+
+      if (!result.success) {
+        console.log(JSON.stringify({
+          success: false,
+          error: result.error
+        }));
+        process.exit(1);
+        return;
+      }
+
+      const contestState = ensureContestState(state);
+
+      console.log(JSON.stringify({
+        success: true,
+        message: 'Contest filed. Waiting for gamemaster adjudication.',
+        contest: contestState.pendingContest
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('adjudicate <game>')
+  .description('Adjudicate a pending contest or resignation (gamemaster only)')
+  .option('--allow', 'Allow the contested action (reject the contest)')
+  .option('--reject', 'Reject the contested action (uphold the contest)')
+  .option('--accept-resignation', 'Accept a pending resignation')
+  .option('--reject-resignation', 'Reject a pending resignation')
+  .requiredOption('-r, --reason <text>', 'Reason for ruling')
+  .action((game, options) => {
+    try {
+      const state = loadState(game);
+      const contestState = ensureContestState(state);
+
+      // Handle resignation adjudication
+      if (options.acceptResignation || options.rejectResignation) {
+        if (!contestState.pendingResignation) {
+          console.log(JSON.stringify({
+            success: false,
+            error: 'No pending resignation to adjudicate'
+          }));
+          process.exit(1);
+          return;
+        }
+
+        const accepted = !!options.acceptResignation;
+        const result = adjudicateResignation(state, accepted, options.reason);
+
+        if (!result.success) {
+          console.log(JSON.stringify({
+            success: false,
+            error: result.error
+          }));
+          process.exit(1);
+          return;
+        }
+
+        const updatedState = loadState(game);
+        console.log(JSON.stringify({
+          success: true,
+          type: 'resignation',
+          accepted,
+          reason: options.reason,
+          gameStatus: updatedState.status,
+          winner: updatedState.shared.winner
+        }));
+        return;
+      }
+
+      // Handle contest adjudication
+      if (!options.allow && !options.reject) {
+        console.log(JSON.stringify({
+          success: false,
+          error: 'Must specify --allow or --reject for contest, or --accept-resignation/--reject-resignation'
+        }));
+        process.exit(1);
+        return;
+      }
+
+      if (!contestState.pendingContest) {
+        console.log(JSON.stringify({
+          success: false,
+          error: 'No pending contest to adjudicate'
+        }));
+        process.exit(1);
+        return;
+      }
+
+      const ruling = options.allow ? 'allowed' : 'rejected';
+      const result = adjudicateContest(state, ruling, options.reason);
+
+      if (!result.success) {
+        console.log(JSON.stringify({
+          success: false,
+          error: result.error
+        }));
+        process.exit(1);
+        return;
+      }
+
+      const updatedState = loadState(game);
+      console.log(JSON.stringify({
+        success: true,
+        type: 'contest',
+        ruling,
+        reason: options.reason,
+        actionReversed: result.reversed,
+        currentPlayer: updatedState.currentPlayer,
+        turn: updatedState.turn
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
 program
   .command('pending <game>')
-  .description('Wait for and get pending player action (gamemaster use)')
+  .description('Wait for pending action, contest, or resignation (gamemaster use)')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds', '120000')
   .action(async (game, options) => {
     try {
@@ -207,7 +437,7 @@ program
       const startTime = Date.now();
       const pollInterval = 500;
 
-      // Poll for pending action
+      // Poll for pending action, contest, or resignation
       while (Date.now() - startTime < timeout) {
         const state = loadState(game);
 
@@ -219,6 +449,29 @@ program
           return;
         }
 
+        // Check for pending contest (priority)
+        const contestState = ensureContestState(state);
+        if (contestState.pendingContest) {
+          console.log(JSON.stringify({
+            status: 'contest_pending',
+            contest: contestState.pendingContest,
+            turn: state.turn,
+            currentPlayer: state.currentPlayer
+          }));
+          return;
+        }
+
+        // Check for pending resignation
+        if (contestState.pendingResignation) {
+          console.log(JSON.stringify({
+            status: 'resignation_pending',
+            resignation: contestState.pendingResignation,
+            turn: state.turn
+          }));
+          return;
+        }
+
+        // Check for pending action (legacy mode)
         if (state.shared.pendingAction) {
           const pending = state.shared.pendingAction as PendingAction;
           // Clear the pending action
