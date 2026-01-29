@@ -30,6 +30,8 @@ games/*/state/
 # ===========================================
 
 engine/dist/
+site/dist/
+*.tsbuildinfo
 
 # ===========================================
 # DEPENDENCIES
