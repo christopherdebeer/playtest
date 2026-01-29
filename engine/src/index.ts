@@ -9,6 +9,7 @@ import {
   loadState,
   saveState,
   registerAgent,
+  startGame,
   endGame,
   roll,
   drawCards,
@@ -745,6 +746,31 @@ program
           effects: player.effects,
           score: player.score
         }
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('start <game>')
+  .description('Start the game (transition from waiting_for_players to in_progress)')
+  .action((game: string) => {
+    try {
+      startGame(game);
+      const state = loadState(game);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: state.status,
+        turn: state.turn,
+        currentPlayer: state.currentPlayer,
+        message: 'Game started successfully'
       }));
     } catch (e) {
       console.log(JSON.stringify({
