@@ -4,7 +4,7 @@ description: Game-agnostic gamemaster agent for rule interpretation and action v
 model: sonnet
 tools:
   - Read
-  - Bash(node /home/user/playtest/engine/dist/index.js *)
+  - Bash(npx playtest *)
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
@@ -25,42 +25,42 @@ You do NOT monitor every turn. Players act directly, and you adjudicate disputes
 
 ```bash
 # Wait for contest or resignation (blocking)
-node /home/user/playtest/engine/dist/index.js pending {GAME}
+npx playtest pending {GAME}
 
 # Get full game state for context
-node /home/user/playtest/engine/dist/index.js state {GAME}
+npx playtest state {GAME}
 
 # Adjudicate a contest
-node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --allow -r "Action was legal because..."
-node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --reject -r "Action violated rule X because..."
+npx playtest adjudicate {GAME} --allow -r "Action was legal because..."
+npx playtest adjudicate {GAME} --reject -r "Action violated rule X because..."
 
 # Adjudicate a resignation
-node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --accept-resignation -r "Resignation accepted"
-node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --reject-resignation -r "Cannot resign at this point"
+npx playtest adjudicate {GAME} --accept-resignation -r "Resignation accepted"
+npx playtest adjudicate {GAME} --reject-resignation -r "Cannot resign at this point"
 
 # End game if win condition met
-node /home/user/playtest/engine/dist/index.js end {GAME} -w <player-id> -r "reason"
+npx playtest end {GAME} -w <player-id> -r "reason"
 
 # Check game status
-node /home/user/playtest/engine/dist/index.js status {GAME}
+npx playtest status {GAME}
 ```
 
 ## Game Loop
 
 ```bash
 while game not over:
-  1. result = node /home/user/playtest/engine/dist/index.js pending {GAME}  # BLOCKS until event
+  1. result = npx playtest pending {GAME}  # BLOCKS until event
 
   2. If result.status == "contest_pending":
      - Read contest details (contestant, reason, original action)
-     - Get full state: node /home/user/playtest/engine/dist/index.js state {GAME}
+     - Get full state: npx playtest state {GAME}
      - Analyze the contested action against rules
-     - Issue ruling: node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --allow|--reject -r "reason"
+     - Issue ruling: npx playtest adjudicate {GAME} --allow|--reject -r "reason"
 
   3. If result.status == "resignation_pending":
      - Read resignation details (player, reason)
      - Decide if resignation is valid
-     - Issue ruling: node /home/user/playtest/engine/dist/index.js adjudicate {GAME} --accept-resignation|--reject-resignation -r "reason"
+     - Issue ruling: npx playtest adjudicate {GAME} --accept-resignation|--reject-resignation -r "reason"
 
   4. If result.status == "game_over":
      - Exit
@@ -146,9 +146,9 @@ Decision: `--accept-resignation -r "Valid strategic resignation"`
 
 ## BEGIN
 
-1. Read the game rules: `node /home/user/playtest/engine/dist/index.js rules {GAME}`
-2. Check game status: `node /home/user/playtest/engine/dist/index.js status {GAME}`
-3. Start your loop - call `node /home/user/playtest/engine/dist/index.js pending {GAME}` to wait for events
+1. Read the game rules: `npx playtest rules {GAME}`
+2. Check game status: `npx playtest status {GAME}`
+3. Start your loop - call `npx playtest pending {GAME}` to wait for events
 4. When event arrives, analyze and adjudicate
 5. Return to step 3
 

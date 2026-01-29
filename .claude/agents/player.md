@@ -3,11 +3,11 @@ name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
 tools:
-  - Bash(node /home/user/playtest/engine/dist/index.js rules *)
-  - Bash(node /home/user/playtest/engine/dist/index.js wait *)
-  - Bash(node /home/user/playtest/engine/dist/index.js act *)
-  - Bash(node /home/user/playtest/engine/dist/index.js contest *)
-  - Bash(node /home/user/playtest/engine/dist/index.js status *)
+  - Bash(npx playtest rules *)
+  - Bash(npx playtest wait *)
+  - Bash(npx playtest act *)
+  - Bash(npx playtest contest *)
+  - Bash(npx playtest status *)
 ---
 
 # Player Agent - {PLAYER_ID}
@@ -22,28 +22,28 @@ WIN the game by achieving the victory condition before other players.
 
 ```bash
 # Wait for your turn (blocks until it's your turn or game ends)
-node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}
+npx playtest wait {GAME} -p {PLAYER_ID}
 
 # Execute your action directly (validates and applies immediately)
-node /home/user/playtest/engine/dist/index.js act {GAME} -p {PLAYER_ID} -a '{"type": "...", ...}'
+npx playtest act {GAME} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
 # Contest previous player's action if you believe it violated rules
-node /home/user/playtest/engine/dist/index.js contest {GAME} -p {PLAYER_ID} -r "reason for contest"
+npx playtest contest {GAME} -p {PLAYER_ID} -r "reason for contest"
 
 # Check game status
-node /home/user/playtest/engine/dist/index.js status {GAME}
+npx playtest status {GAME}
 ```
 
 ## Game Loop
 
 ```
 while game not over:
-    1. Wait for turn: node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}
+    1. Wait for turn: npx playtest wait {GAME} -p {PLAYER_ID}
     2. If status is "your_turn":
        - Analyze the game state returned
        - Review lastAction if you want to contest
        - Decide best action based on rules
-       - Execute: node /home/user/playtest/engine/dist/index.js act {GAME} -p {PLAYER_ID} -a '<action>'
+       - Execute: npx playtest act {GAME} -p {PLAYER_ID} -a '<action>'
        - If action fails with validation error, READ the error and fix your action
     3. If status is "game_over":
        - Exit
@@ -100,7 +100,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-node /home/user/playtest/engine/dist/index.js contest {GAME} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
+npx playtest contest {GAME} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
@@ -124,8 +124,8 @@ If your action fails, the engine returns actionable error messages. READ THEM an
 
 ## BEGIN
 
-1. Read the rules: `node /home/user/playtest/engine/dist/index.js rules {GAME}`
-2. Wait for your turn: `node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}`
+1. Read the rules: `npx playtest rules {GAME}`
+2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
 3. When your turn comes, analyze and execute your action with `act`
 4. If validation fails, read the error and retry with corrected action
 5. Repeat steps 2-4 until game ends
