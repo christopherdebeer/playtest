@@ -4,7 +4,8 @@
   "description": "Multi-agent game playtesting framework with TypeScript engine",
   "private": true,
   "workspaces": [
-    "engine"
+    "engine",
+    "site"
   ],
   "bin": {
     "playtest": "engine/dist/index.js"

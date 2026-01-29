@@ -1,0 +1,99 @@
+.usage-section {
+  background: var(--bg-primary);
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.usage-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.usage-card h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.usage-card pre {
+  margin-bottom: 1rem;
+}
+
+.usage-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.cli-reference {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.cli-reference > h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+}
+
+.cmd-group {
+  margin-bottom: 1.5rem;
+}
+
+.cmd-group:last-child {
+  margin-bottom: 0;
+}
+
+.cmd-group h4 {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.cmd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cmd {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmd:last-child {
+  border-bottom: none;
+}
+
+.cmd code {
+  flex-shrink: 0;
+  min-width: 280px;
+}
+
+.cmd span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .cmd {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .cmd code {
+    min-width: auto;
+  }
+}
