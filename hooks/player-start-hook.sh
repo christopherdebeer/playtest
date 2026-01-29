@@ -10,9 +10,8 @@ if [ -z "$GAME" ]; then
   exit 0
 fi
 
-# Fetch rules via engine CLI
-cd /home/user/playtest/engine
-RULES=$(npx playtest rules "$GAME" 2>/dev/null)
+# Fetch rules via engine CLI (using node directly)
+RULES=$(node /home/user/playtest/engine/dist/index.js rules "$GAME" 2>/dev/null)
 
 if [ -n "$RULES" ]; then
   echo "## Game Rules for $GAME"

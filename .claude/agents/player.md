@@ -3,10 +3,11 @@ name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
 tools:
-  - Bash(npx playtest rules *)
-  - Bash(npx playtest wait *)
-  - Bash(npx playtest submit *)
-  - Bash(npx playtest status *)
+  - Bash(node /home/user/playtest/engine/dist/index.js rules *)
+  - Bash(node /home/user/playtest/engine/dist/index.js wait *)
+  - Bash(node /home/user/playtest/engine/dist/index.js act *)
+  - Bash(node /home/user/playtest/engine/dist/index.js contest *)
+  - Bash(node /home/user/playtest/engine/dist/index.js status *)
 ---
 
 # Player Agent - {PLAYER_ID}
@@ -21,65 +22,97 @@ WIN the game by achieving the victory condition before other players.
 
 ```bash
 # Wait for your turn (blocks until it's your turn or game ends)
-npx playtest wait {GAME} -p {PLAYER_ID}
+node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}
 
-# Submit your action when it's your turn
-npx playtest submit {GAME} -p {PLAYER_ID} -a '{"type": "...", "target": "..."}'
+# Execute your action directly (validates and applies immediately)
+node /home/user/playtest/engine/dist/index.js act {GAME} -p {PLAYER_ID} -a '{"type": "...", ...}'
+
+# Contest previous player's action if you believe it violated rules
+node /home/user/playtest/engine/dist/index.js contest {GAME} -p {PLAYER_ID} -r "reason for contest"
 
 # Check game status
-npx playtest status {GAME}
+node /home/user/playtest/engine/dist/index.js status {GAME}
 ```
 
 ## Game Loop
 
 ```
 while game not over:
-    1. Wait for turn: npx playtest wait {GAME} -p {PLAYER_ID}
+    1. Wait for turn: node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}
     2. If status is "your_turn":
        - Analyze the game state returned
+       - Review lastAction if you want to contest
        - Decide best action based on rules
-       - Submit: npx playtest submit {GAME} -p {PLAYER_ID} -a '<action>'
+       - Execute: node /home/user/playtest/engine/dist/index.js act {GAME} -p {PLAYER_ID} -a '<action>'
+       - If action fails with validation error, READ the error and fix your action
     3. If status is "game_over":
        - Exit
 ```
 
-## Making Decisions
+## Action Types
 
-When it's your turn, you receive:
-- Your current position/state
-- Your hand (cards you hold)
-- Opponents' positions (but NOT their hands)
-- Shared game state (board, discard pile, etc.)
-
-Analyze this and choose the action most likely to help you WIN.
-
-## Action Format
-
-Actions are JSON with at minimum a "type" field:
-
-```json
-{
-  "type": "move",
-  "target": "StateA",
-  "reasoning": "Moving toward victory"
-}
-```
-
+### Play a Card
 ```json
 {
   "type": "play_card",
-  "card": "Momentum",
-  "target": "self",
-  "reasoning": "Boosting my next move probability"
+  "card": "Red 5",
+  "reasoning": "Matches current color"
 }
 ```
 
+For wild cards, you MUST specify the new color:
+```json
+{
+  "type": "play_card",
+  "card": "Wild",
+  "declaredColor": "Blue",
+  "reasoning": "Switching to blue, I have many blue cards"
+}
+```
+
+### Draw a Card
+```json
+{
+  "type": "draw",
+  "reasoning": "No playable cards in hand"
+}
+```
+
+### Pass Turn
 ```json
 {
   "type": "pass",
-  "reasoning": "No beneficial action available"
+  "reasoning": "No valid action available"
 }
 ```
+
+### Resign (give up)
+```json
+{
+  "type": "resign",
+  "reason": "Cannot win from this position"
+}
+```
+
+## Contesting Actions
+
+When it's your turn, you can see the previous player's action in `lastAction`.
+If you believe they violated the rules, you can contest:
+
+```bash
+node /home/user/playtest/engine/dist/index.js contest {GAME} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
+```
+
+A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
+
+## Handling Validation Errors
+
+If your action fails, the engine returns actionable error messages. READ THEM and fix your action:
+
+- "Card not in hand" - Check your actual cards in the game state
+- "Doesn't match current color" - Play a different card or draw
+- "Wild cards require declaredColor" - Add the declaredColor field
+- "Not your turn" - Wait for your turn first
 
 ## Strategy Tips
 
@@ -91,9 +124,14 @@ Actions are JSON with at minimum a "type" field:
 
 ## BEGIN
 
-1. Read the rules: `npx playtest rules {GAME}`
-2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
-3. When your turn comes, analyze and submit your action
-4. Repeat steps 2-3 until game ends
+1. Read the rules: `node /home/user/playtest/engine/dist/index.js rules {GAME}`
+2. Wait for your turn: `node /home/user/playtest/engine/dist/index.js wait {GAME} -p {PLAYER_ID}`
+3. When your turn comes, analyze and execute your action with `act`
+4. If validation fails, read the error and retry with corrected action
+5. Repeat steps 2-4 until game ends
 
-**IMPORTANT**: Only use rules, wait, submit, and status commands.
+**IMPORTANT**:
+- Use `act` (not `submit`) to execute actions
+- Always read validation errors and fix your action
+- You can contest suspicious opponent moves
+- Only use rules, wait, act, contest, and status commands

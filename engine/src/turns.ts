@@ -1,8 +1,17 @@
 // Turn management - handles blocking waits for player turns
 
 import { watch, existsSync, type FSWatcher } from 'fs';
-import { loadState, getStateFile, getPlayerView } from './game.js';
-import type { WaitResult, GameState } from './types.js';
+import { loadState, getStateFile, getPlayerView, ensureContestState } from './game.js';
+import type { WaitResult, GameState, ContestState, LastAction } from './types.js';
+
+// Extended wait result with contest info
+export interface ExtendedWaitResult extends WaitResult {
+  lastAction?: LastAction;
+  contestState?: {
+    pendingContest?: boolean;
+    pendingResignation?: boolean;
+  };
+}
 
 const DEFAULT_TIMEOUT = 300000; // 5 minutes
 const POLL_INTERVAL = 500; // Check every 500ms
@@ -11,7 +20,7 @@ export async function waitForTurn(
   gameName: string,
   playerId: string,
   timeoutMs: number = DEFAULT_TIMEOUT
-): Promise<WaitResult> {
+): Promise<ExtendedWaitResult> {
   const startTime = Date.now();
 
   return new Promise((resolve) => {
@@ -74,12 +83,20 @@ export async function waitForTurn(
           return; // Keep waiting
         }
 
+        // Get contest state
+        const contestState = ensureContestState(state);
+
         // Check if it's this player's turn
         if (state.currentPlayer === playerId) {
           cleanup();
           resolve({
             status: 'your_turn',
-            gameState: getPlayerView(state, playerId)
+            gameState: getPlayerView(state, playerId),
+            lastAction: contestState.lastAction,
+            contestState: {
+              pendingContest: !!contestState.pendingContest,
+              pendingResignation: !!contestState.pendingResignation
+            }
           });
           return;
         }
@@ -93,7 +110,7 @@ export async function waitForTurn(
           resolve({
             status: 'game_not_found',
             error: errorMsg
-          } as WaitResult);
+          } as ExtendedWaitResult);
           return;
         }
         // Transient error (file mid-write), ignore and retry

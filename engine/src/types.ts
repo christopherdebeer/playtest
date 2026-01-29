@@ -143,3 +143,148 @@ export interface LogEvent {
   player?: string;
   data?: Record<string, unknown>;
 }
+
+// ============ Contest-Based Adjudication Types ============
+
+// Action schemas for validation
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'resign';
+
+export interface BaseAction {
+  type: ActionType;
+  reasoning?: string;
+}
+
+export interface PlayCardAction extends BaseAction {
+  type: 'play_card';
+  card: string;
+  declaredColor?: string;  // For wild cards
+}
+
+export interface DrawAction extends BaseAction {
+  type: 'draw';
+  count?: number;  // defaults to 1
+}
+
+export interface PassAction extends BaseAction {
+  type: 'pass';
+}
+
+export interface MoveAction extends BaseAction {
+  type: 'move';
+  target: string;
+  useCard?: string;  // Optional card to play with movement
+}
+
+export interface ResignAction extends BaseAction {
+  type: 'resign';
+  reason: string;  // Required: why player is resigning
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | ResignAction;
+
+// Action validation result
+export interface ActionValidationResult {
+  valid: boolean;
+  errors: string[];  // Actionable error messages for player
+  warnings?: string[];  // Non-blocking issues
+}
+
+// Last action tracking (for contests)
+export interface LastAction {
+  player: string;
+  action: GameAction;
+  timestamp: string;
+  turn: number;
+  result?: {
+    success: boolean;
+    details?: Record<string, unknown>;
+  };
+}
+
+// Pending contest state
+export interface PendingContest {
+  contestedBy: string;
+  reason: string;
+  originalAction: LastAction;
+  timestamp: string;
+}
+
+// Pending resignation (awaiting gamemaster adjudication)
+export interface PendingResignation {
+  player: string;
+  reason: string;
+  timestamp: string;
+}
+
+// Contest history entry
+export interface ContestHistoryEntry {
+  turn: number;
+  action: GameAction;
+  player: string;
+  contestedBy: string;
+  contestReason: string;
+  ruling: 'allowed' | 'rejected';
+  rulingReason: string;
+  timestamp: string;
+}
+
+// Resignation history entry
+export interface ResignationEntry {
+  player: string;
+  reason: string;
+  accepted: boolean;
+  rulingReason?: string;
+  timestamp: string;
+}
+
+// Extended game state with contest system
+export interface ContestState {
+  lastAction?: LastAction;
+  pendingContest?: PendingContest;
+  pendingResignation?: PendingResignation;
+  contestHistory: ContestHistoryEntry[];
+  resignations: ResignationEntry[];
+}
+
+// Act command result
+export interface ActResult {
+  success: boolean;
+  action?: GameAction;
+  validation?: ActionValidationResult;
+  effect?: {
+    type: string;
+    details?: Record<string, unknown>;
+  };
+  handSize?: number;
+  nextPlayer?: string;
+  error?: string;
+}
+
+// Contest result
+export interface ContestResult {
+  success: boolean;
+  contestId?: string;
+  message?: string;
+  error?: string;
+}
+
+// Adjudication result
+export interface AdjudicationResult {
+  success: boolean;
+  ruling?: 'allowed' | 'rejected';
+  reason?: string;
+  reversedAction?: boolean;
+  error?: string;
+}
+
+// Wait result extended with contest info
+export interface ExtendedWaitResult {
+  status: 'your_turn' | 'game_over' | 'timeout' | 'error' | 'game_not_found' | 'contest_pending' | 'resignation_pending';
+  gameState?: PlayerView;
+  winner?: string;
+  reason?: string;
+  error?: string;
+  lastAction?: LastAction;  // Previous player's action (for potential contest)
+  pendingContest?: PendingContest;
+  pendingResignation?: PendingResignation;
+}

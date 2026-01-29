@@ -10,7 +10,19 @@ import type {
   PlayerView,
   OpponentView,
   Card,
-  LogEvent
+  LogEvent,
+  GameAction,
+  PlayCardAction,
+  DrawAction,
+  PassAction,
+  ResignAction,
+  ActionValidationResult,
+  LastAction,
+  PendingContest,
+  PendingResignation,
+  ContestHistoryEntry,
+  ResignationEntry,
+  ContestState
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -396,4 +408,620 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
   saveState(state);
 
   return card;
+}
+
+// ============ Contest-Based Adjudication Functions ============
+
+// Initialize contest state in game state if not present
+export function ensureContestState(state: GameState): ContestState {
+  if (!state.shared.contestState) {
+    state.shared.contestState = {
+      contestHistory: [],
+      resignations: []
+    };
+  }
+  return state.shared.contestState as ContestState;
+}
+
+// Validate action schema/type
+export function validateActionSchema(action: unknown): ActionValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!action || typeof action !== 'object') {
+    return { valid: false, errors: ['Action must be a JSON object'] };
+  }
+
+  const act = action as Record<string, unknown>;
+
+  if (!act.type || typeof act.type !== 'string') {
+    return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
+  }
+
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'resign'];
+  if (!validTypes.includes(act.type)) {
+    return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
+  }
+
+  // Type-specific validation
+  switch (act.type) {
+    case 'play_card':
+      if (!act.card || typeof act.card !== 'string') {
+        errors.push('play_card action requires "card" field (string) - the exact name of the card to play');
+      }
+      if (act.declaredColor !== undefined && typeof act.declaredColor !== 'string') {
+        errors.push('declaredColor must be a string (e.g., "Red", "Blue", "Green", "Yellow")');
+      }
+      break;
+
+    case 'draw':
+      if (act.count !== undefined && (typeof act.count !== 'number' || act.count < 1)) {
+        errors.push('draw count must be a positive number (default: 1)');
+      }
+      break;
+
+    case 'pass':
+      // No additional fields required
+      break;
+
+    case 'move':
+      if (!act.target || typeof act.target !== 'string') {
+        errors.push('move action requires "target" field (string) - the state/position to move to');
+      }
+      break;
+
+    case 'resign':
+      if (!act.reason || typeof act.reason !== 'string' || act.reason.trim().length === 0) {
+        errors.push('resign action requires "reason" field (non-empty string) - explanation for resignation');
+      }
+      break;
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings: warnings.length > 0 ? warnings : undefined
+  };
+}
+
+// Validate action against game rules (basic engine-level validation)
+export function validateAction(state: GameState, playerId: string, action: GameAction): ActionValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const player = state.players[playerId];
+  if (!player) {
+    return { valid: false, errors: [`Player ${playerId} not found`] };
+  }
+
+  // Check if it's the player's turn
+  if (state.currentPlayer !== playerId) {
+    return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
+  }
+
+  // Check game status
+  if (state.status !== 'in_progress') {
+    return { valid: false, errors: [`Game is not in progress. Status: ${state.status}`] };
+  }
+
+  // Check for pending contest/resignation
+  const contestState = ensureContestState(state);
+  if (contestState.pendingContest) {
+    return { valid: false, errors: ['Cannot act while a contest is pending. Wait for adjudication.'] };
+  }
+  if (contestState.pendingResignation) {
+    return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
+  }
+
+  // Action-specific validation
+  switch (action.type) {
+    case 'play_card': {
+      const playAction = action as PlayCardAction;
+      const cardIndex = player.hand.findIndex(c => c.name === playAction.card);
+      if (cardIndex === -1) {
+        errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
+        break;
+      }
+
+      const card = player.hand[cardIndex];
+      const topCard = state.shared.topCard as Card | undefined;
+      const currentColor = state.shared.currentColor as string | undefined;
+
+      // Basic UNO matching validation (color or number match, or wild)
+      if (topCard && card.type !== 'wild') {
+        const colorMatch = card.effect?.color === currentColor;
+        const numberMatch = card.effect?.value !== undefined &&
+                          topCard.effect?.value !== undefined &&
+                          card.effect.value === topCard.effect.value;
+        const typeMatch = card.type === topCard.type && card.type === 'action' &&
+                         card.effect?.type === topCard.effect?.type;
+
+        if (!colorMatch && !numberMatch && !typeMatch) {
+          errors.push(`Card "${playAction.card}" doesn't match current color (${currentColor}) or top card (${topCard.name}). Play a matching card or draw.`);
+        }
+      }
+
+      // Wild card color declaration
+      if (card.type === 'wild' && !playAction.declaredColor) {
+        errors.push('Wild cards require "declaredColor" field. Specify: "Red", "Blue", "Green", or "Yellow"');
+      }
+
+      if (playAction.declaredColor) {
+        const validColors = ['Red', 'Blue', 'Green', 'Yellow'];
+        if (!validColors.includes(playAction.declaredColor)) {
+          errors.push(`Invalid color "${playAction.declaredColor}". Valid colors: ${validColors.join(', ')}`);
+        }
+      }
+      break;
+    }
+
+    case 'draw': {
+      // Basic validation - draws are generally allowed
+      if (state.deck.length === 0 && state.discardPile.length <= 1) {
+        warnings.push('Draw pile is empty and cannot be reshuffled');
+      }
+      break;
+    }
+
+    case 'pass': {
+      // Pass might be invalid if the player has playable cards
+      // But we leave complex rule interpretation to contests
+      warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
+      break;
+    }
+
+    case 'resign': {
+      // Resignations are always schema-valid, but require gamemaster approval
+      break;
+    }
+
+    case 'move': {
+      // For board games - check if target is valid
+      if (state.config.board) {
+        const validStates = state.config.board.states || [];
+        const moveAction = action as { target: string };
+        if (!validStates.includes(moveAction.target)) {
+          errors.push(`Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`);
+        }
+      }
+      break;
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings: warnings.length > 0 ? warnings : undefined
+  };
+}
+
+// Execute an action directly (the core of the contest system)
+export function executeAction(state: GameState, playerId: string, action: GameAction): {
+  success: boolean;
+  effect?: { type: string; details?: Record<string, unknown> };
+  error?: string;
+} {
+  const player = state.players[playerId];
+  const contestState = ensureContestState(state);
+
+  try {
+    switch (action.type) {
+      case 'play_card': {
+        const playAction = action as PlayCardAction;
+        const card = playCardByName(state, playerId, playAction.card, playAction.declaredColor);
+        if (!card) {
+          return { success: false, error: `Failed to play card "${playAction.card}"` };
+        }
+
+        // Record last action
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: {
+            success: true,
+            details: {
+              card: card.name,
+              effect: card.effect,
+              declaredColor: playAction.declaredColor,
+              newTopCard: state.shared.topCard,
+              currentColor: state.shared.currentColor
+            }
+          }
+        };
+
+        // Advance turn (action cards effects handled by engine)
+        advanceTurn(state);
+
+        logEvent(state, {
+          event: 'action_executed',
+          turn: state.turn,
+          player: playerId,
+          data: {
+            type: 'play_card',
+            card: card.name,
+            effect: card.effect,
+            declaredColor: playAction.declaredColor
+          }
+        });
+
+        return {
+          success: true,
+          effect: {
+            type: card.effect?.type || 'none',
+            details: {
+              card: card.name,
+              handSize: player.hand.length,
+              currentColor: state.shared.currentColor
+            }
+          }
+        };
+      }
+
+      case 'draw': {
+        const drawAction = action as DrawAction;
+        const count = drawAction.count || 1;
+        const cards = drawCards(state, playerId, count);
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: {
+            success: true,
+            details: { drawnCount: cards.length }
+          }
+        };
+
+        // After drawing, advance turn
+        advanceTurn(state);
+
+        logEvent(state, {
+          event: 'action_executed',
+          turn: state.turn,
+          player: playerId,
+          data: { type: 'draw', count: cards.length }
+        });
+
+        return {
+          success: true,
+          effect: {
+            type: 'draw',
+            details: { drawn: cards.length, handSize: player.hand.length }
+          }
+        };
+      }
+
+      case 'pass': {
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true }
+        };
+
+        advanceTurn(state);
+
+        logEvent(state, {
+          event: 'action_executed',
+          turn: state.turn,
+          player: playerId,
+          data: { type: 'pass' }
+        });
+
+        return {
+          success: true,
+          effect: { type: 'pass' }
+        };
+      }
+
+      case 'resign': {
+        const resignAction = action as ResignAction;
+        // Queue resignation for gamemaster adjudication
+        contestState.pendingResignation = {
+          player: playerId,
+          reason: resignAction.reason,
+          timestamp: new Date().toISOString()
+        };
+        saveState(state);
+
+        logEvent(state, {
+          event: 'resignation_submitted',
+          turn: state.turn,
+          player: playerId,
+          data: { reason: resignAction.reason }
+        });
+
+        return {
+          success: true,
+          effect: {
+            type: 'resignation_pending',
+            details: { reason: resignAction.reason }
+          }
+        };
+      }
+
+      case 'move': {
+        // Board game movement
+        const moveAction = action as { target: string; useCard?: string };
+        player.state = moveAction.target;
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: {
+            success: true,
+            details: { newState: moveAction.target }
+          }
+        };
+
+        advanceTurn(state);
+
+        logEvent(state, {
+          event: 'action_executed',
+          turn: state.turn,
+          player: playerId,
+          data: { type: 'move', target: moveAction.target }
+        });
+
+        return {
+          success: true,
+          effect: {
+            type: 'move',
+            details: { newState: player.state }
+          }
+        };
+      }
+
+      default:
+        return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
+    }
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+// File a contest against the previous action
+export function fileContest(state: GameState, contestingPlayer: string, reason: string): {
+  success: boolean;
+  error?: string;
+} {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.lastAction) {
+    return { success: false, error: 'No previous action to contest' };
+  }
+
+  if (contestState.lastAction.player === contestingPlayer) {
+    return { success: false, error: 'Cannot contest your own action' };
+  }
+
+  if (contestState.pendingContest) {
+    return { success: false, error: 'A contest is already pending' };
+  }
+
+  if (contestState.pendingResignation) {
+    return { success: false, error: 'A resignation is pending adjudication' };
+  }
+
+  contestState.pendingContest = {
+    contestedBy: contestingPlayer,
+    reason,
+    originalAction: contestState.lastAction,
+    timestamp: new Date().toISOString()
+  };
+
+  saveState(state);
+
+  logEvent(state, {
+    event: 'contest_filed',
+    turn: state.turn,
+    player: contestingPlayer,
+    data: {
+      reason,
+      contestedAction: contestState.lastAction.action,
+      contestedPlayer: contestState.lastAction.player
+    }
+  });
+
+  return { success: true };
+}
+
+// Adjudicate a pending contest
+export function adjudicateContest(
+  state: GameState,
+  ruling: 'allowed' | 'rejected',
+  rulingReason: string
+): {
+  success: boolean;
+  reversed?: boolean;
+  error?: string;
+} {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingContest) {
+    return { success: false, error: 'No pending contest to adjudicate' };
+  }
+
+  const contest = contestState.pendingContest;
+  const originalAction = contest.originalAction;
+
+  // Record in history
+  contestState.contestHistory.push({
+    turn: originalAction.turn,
+    action: originalAction.action,
+    player: originalAction.player,
+    contestedBy: contest.contestedBy,
+    contestReason: contest.reason,
+    ruling,
+    rulingReason,
+    timestamp: new Date().toISOString()
+  });
+
+  let reversed = false;
+
+  // If action is rejected, try to reverse it
+  if (ruling === 'rejected') {
+    reversed = reverseAction(state, originalAction);
+  }
+
+  // Clear pending contest
+  delete contestState.pendingContest;
+  saveState(state);
+
+  logEvent(state, {
+    event: 'contest_adjudicated',
+    turn: state.turn,
+    data: {
+      ruling,
+      rulingReason,
+      reversed,
+      contestedPlayer: originalAction.player,
+      contestedBy: contest.contestedBy
+    }
+  });
+
+  return { success: true, reversed };
+}
+
+// Adjudicate a pending resignation
+export function adjudicateResignation(
+  state: GameState,
+  accepted: boolean,
+  rulingReason?: string
+): {
+  success: boolean;
+  error?: string;
+} {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingResignation) {
+    return { success: false, error: 'No pending resignation to adjudicate' };
+  }
+
+  const resignation = contestState.pendingResignation;
+
+  // Record in history
+  contestState.resignations.push({
+    player: resignation.player,
+    reason: resignation.reason,
+    accepted,
+    rulingReason,
+    timestamp: new Date().toISOString()
+  });
+
+  if (accepted) {
+    // End game - the resigning player loses
+    const otherPlayers = state.turnOrder.filter(p => p !== resignation.player);
+    const winner = otherPlayers.length === 1 ? otherPlayers[0] : 'none';
+
+    state.status = 'completed';
+    state.shared.winner = winner;
+    state.shared.endReason = `${resignation.player} resigned: ${resignation.reason}`;
+
+    logEvent(state, {
+      event: 'game_end',
+      turn: state.turn,
+      data: {
+        winner,
+        reason: `Resignation accepted: ${resignation.reason}`,
+        resignedPlayer: resignation.player
+      }
+    });
+  }
+
+  // Clear pending resignation
+  delete contestState.pendingResignation;
+  saveState(state);
+
+  logEvent(state, {
+    event: 'resignation_adjudicated',
+    turn: state.turn,
+    data: {
+      player: resignation.player,
+      accepted,
+      rulingReason
+    }
+  });
+
+  return { success: true };
+}
+
+// Reverse a previous action (for rejected contests)
+function reverseAction(state: GameState, lastAction: LastAction): boolean {
+  const action = lastAction.action;
+  const playerId = lastAction.player;
+  const player = state.players[playerId];
+
+  if (!player) return false;
+
+  try {
+    switch (action.type) {
+      case 'play_card': {
+        // Move card back from discard to hand
+        const playAction = action as PlayCardAction;
+        const discardIndex = state.discardPile.findIndex(c => c.name === playAction.card);
+        if (discardIndex !== -1) {
+          const [card] = state.discardPile.splice(discardIndex, 1);
+          player.hand.push(card);
+
+          // Restore previous top card
+          if (state.discardPile.length > 0) {
+            state.shared.topCard = state.discardPile[state.discardPile.length - 1];
+            state.shared.currentColor = (state.shared.topCard as Card).effect?.color;
+          }
+        }
+
+        // Reverse turn advancement
+        reverseTurn(state);
+        saveState(state);
+        return true;
+      }
+
+      case 'draw': {
+        // Can't really reverse a draw without knowing which cards were drawn
+        // For now, just reverse the turn
+        reverseTurn(state);
+        saveState(state);
+        return true;
+      }
+
+      case 'pass':
+      case 'move': {
+        // Reverse turn advancement
+        reverseTurn(state);
+        saveState(state);
+        return true;
+      }
+
+      default:
+        return false;
+    }
+  } catch {
+    return false;
+  }
+}
+
+// Reverse turn advancement
+function reverseTurn(state: GameState): void {
+  const currentIndex = state.turnOrder.indexOf(state.currentPlayer!);
+  const prevIndex = (currentIndex - 1 + state.turnOrder.length) % state.turnOrder.length;
+
+  // If we're at the start of a new round, decrement turn counter
+  if (currentIndex === 0) {
+    state.turn = Math.max(1, state.turn - 1);
+  }
+
+  state.currentPlayer = state.turnOrder[prevIndex];
+}
+
+// Get contest state for a game
+export function getContestState(gameName: string): ContestState {
+  const state = loadState(gameName);
+  return ensureContestState(state);
 }
