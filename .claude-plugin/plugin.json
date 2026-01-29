@@ -1,12 +1,34 @@
 {
   "name": "playtest",
-  "version": "2.0.0",
-  "description": "AI-driven game playtesting framework with gamemaster orchestration and parallel player agents",
+  "version": "3.0.0",
+  "description": "AI-driven game playtesting framework with TypeScript engine orchestration and parallel player agents",
   "author": {
-    "name": "christopherdebeer"
+    "name": "Christopher de Beer"
   },
   "repository": "https://github.com/christopherdebeer/playtest",
   "license": "MIT",
-  "keywords": ["game", "playtesting", "multi-agent", "claude", "gamemaster"],
-  "skills": "./skills/"
+  "keywords": ["game", "playtesting", "multi-agent", "claude", "testing", "simulation"],
+  "hooks": {
+    "SubagentStart": [
+      {
+        "matcher": "player",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/player-start-hook.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "gamemaster",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/gamemaster-start-hook.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": []
+  }
 }

@@ -1,6 +1,6 @@
 ---
 name: view-results
-description: Analyze completed game logs and display results. Use when user wants to see game results, check playtest outcomes, or analyze game logs.
+description: This skill should be used when the user asks to "see game results", "check playtest outcomes", "analyze game logs", "view results", or wants to analyze completed game playtesting sessions.
 argument-hint: [game-name]
 allowed-tools: Read, Glob, Bash
 ---

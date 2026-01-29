@@ -9,6 +9,34 @@ Playtest enables automated testing of board/card games using:
 - **Gamemaster Agent**: Interprets rules and validates player actions
 - **Player Agents**: Compete to win using strategic decision-making
 
+## Installation
+
+### As a Claude Code Plugin (Recommended)
+
+Install directly from GitHub:
+
+```bash
+claude plugin add https://github.com/christopherdebeer/claude-subagent-comms-test
+```
+
+This gives you access to:
+- `/start-game` - Initialize multi-agent playtesting
+- `/stop-game` - Emergency halt active sessions
+- `/view-results` - Analyze game logs
+- Automatic agent definitions (gamemaster, player)
+- SubagentStart hooks for injecting game rules
+
+### As a Standalone Project
+
+Clone the repository for local development:
+
+```bash
+git clone https://github.com/christopherdebeer/claude-subagent-comms-test
+cd claude-subagent-comms-test
+npm install
+npm run build
+```
+
 ## Quick Start
 
 ```bash
@@ -23,22 +51,26 @@ cd engine && npx playtest init markovs-chains --players 2
 
 ```
 playtest/
-├── engine/                 # TypeScript game engine
-│   ├── src/               # Engine source code
-│   └── ARCHITECTURE.md    # v3 architecture docs
-├── games/                 # Game definitions
-│   ├── markovs-chains/    # Probability-based racing game
-│   │   └── RULES.md      # Game rules + structured config
-│   └── uno/              # Classic card game
-│       └── RULES.md
-├── .claude/
-│   └── agents/           # Game-agnostic agent definitions
-│       ├── gamemaster.md
-│       └── player.md
-└── skills/               # Claude Code skills
-    ├── start-game/
-    ├── stop-game/
-    └── view-results/
+├── .claude-plugin/         # Plugin manifest (for Claude Code)
+│   └── plugin.json        # Plugin metadata and configuration
+├── agents/                # Game-agnostic agent definitions (symlink to .claude/agents/)
+│   ├── gamemaster.md
+│   └── player.md
+├── skills/                # Claude Code skills
+│   ├── start-game/
+│   ├── stop-game/
+│   └── view-results/
+├── hooks/                 # SubagentStart hooks
+│   ├── player-start-hook.sh
+│   └── gamemaster-start-hook.sh
+├── engine/                # TypeScript game engine
+│   ├── src/              # Engine source code
+│   └── ARCHITECTURE.md   # v3 architecture docs
+└── games/                # Game definitions
+    ├── markovs-chains/   # Probability-based racing game
+    │   └── RULES.md     # Game rules + structured config
+    └── uno/             # Classic card game
+        └── RULES.md
 ```
 
 ## Game Configuration

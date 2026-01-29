@@ -1,6 +1,6 @@
 ---
 name: start-game
-description: Initialize and run a game with coordinated multi-agent architecture. Use when user wants to start a playtest, run a game, test game rules, or launch multi-agent game simulation.
+description: This skill should be used when the user asks to "start a playtest", "run a game", "test game rules", "launch multi-agent game simulation", or wants to initialize a game. Initializes and runs games with coordinated multi-agent architecture using TypeScript engine orchestration.
 argument-hint: <game-name> [num-players]
 allowed-tools: Read, Task, Bash, Glob
 ---
@@ -51,7 +51,6 @@ GAME_NAME="$0"
 NUM_PLAYERS="${1:-2}"
 
 # Initialize game state via engine
-cd /home/user/playtest/engine
 npx playtest init "$GAME_NAME" --players "$NUM_PLAYERS"
 ```
 
@@ -65,20 +64,20 @@ This creates `games/{GAME_NAME}/state/game.json` with:
 
 ```javascript
 // Read game-agnostic agent templates
-const gamemasterDef = await Read('.claude/agents/gamemaster.md');
-const playerDef = await Read('.claude/agents/player.md');
+const gamemasterDef = await Read('agents/gamemaster.md');
+const playerDef = await Read('agents/player.md');
 ```
 
 ### Step 3: Spawn Agents in Parallel
 
 **CRITICAL**: Use a SINGLE message with multiple Task calls.
 
-Agent definitions are in `.claude/agents/`:
+Agent definitions are in `agents/`:
 - `gamemaster.md` - sonnet model, full playtest CLI access
 - `player.md` - haiku model, limited to wait/submit/status
 
 ```javascript
-// Spawn gamemaster agent (uses .claude/agents/gamemaster.md definition)
+// Spawn gamemaster agent (uses agents/gamemaster.md definition)
 Task({
   subagent_type: "gamemaster",
   description: `Gamemaster for ${GAME_NAME}`,
@@ -89,7 +88,7 @@ Begin your gamemaster duties now.`,
   run_in_background: true
 });
 
-// Spawn player agents (uses .claude/agents/player.md definition)
+// Spawn player agents (uses agents/player.md definition)
 for (let i = 1; i <= NUM_PLAYERS; i++) {
   Task({
     subagent_type: "player",

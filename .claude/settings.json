@@ -5,10 +5,7 @@
   "permissions": {
     "allow": [
       "Skill(start-game *)",
-      "Skill(view-results *)",
-      "Skill(game-coordination)",
-      "Skill(file-protocol)",
-      "Skill(hook-sync)"
+      "Skill(view-results *)"
     ],
     "deny": [
       "Skill(stop-game *)"

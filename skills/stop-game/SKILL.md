@@ -1,6 +1,6 @@
 ---
 name: stop-game
-description: Emergency halt of active game session. Use when user wants to stop a running game, halt playtest, cancel game simulation, or clean up game state.
+description: This skill should be used when the user asks to "stop a running game", "halt playtest", "cancel game simulation", "clean up game state", or wants to emergency halt an active game session.
 argument-hint: [game-name]
 allowed-tools: Read, Bash, Glob
 ---
@@ -24,7 +24,7 @@ if [ -z "$GAME_NAME" ]; then
   # Find active game by checking status
   for game_dir in games/*/; do
     game=$(basename "$game_dir")
-    status=$(cd /home/user/playtest/engine && npx playtest status "$game" 2>/dev/null | jq -r '.status // "none"')
+    status=$(npx playtest status "$game" 2>/dev/null | jq -r '.status // "none"')
     if [ "$status" = "in_progress" ] || [ "$status" = "waiting_for_players" ]; then
       GAME_NAME="$game"
       break
@@ -41,7 +41,6 @@ fi
 ### 2. End Game via Engine
 
 ```bash
-cd /home/user/playtest/engine
 npx playtest end "$GAME_NAME" -w "none" -r "Manual stop by user"
 ```
 
@@ -49,7 +48,6 @@ npx playtest end "$GAME_NAME" -w "none" -r "Manual stop by user"
 
 ```bash
 # Clean up state files
-cd /home/user/playtest/engine
 npx playtest reset "$GAME_NAME"
 ```
 
