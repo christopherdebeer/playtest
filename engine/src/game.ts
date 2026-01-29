@@ -185,6 +185,12 @@ export function registerAgent(
     state.shared.gamemasterAgentId = agentId;
     saveState(state);
 
+    // Check if all players also registered - if so, auto-start
+    const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+    if (allPlayersRegistered) {
+      startGame(gameName);
+    }
+
     return {
       registered: true,
       role: 'gamemaster',
@@ -312,6 +318,22 @@ export function endGame(gameName: string, winner: string, reason: string): GameS
     event: 'game_end',
     turn: state.turn,
     data: { winner, reason }
+  });
+
+  return state;
+}
+
+export function cancelGame(gameName: string, reason: string): GameState {
+  const state = loadState(gameName);
+
+  state.status = 'cancelled';
+  state.shared.cancelReason = reason;
+  saveState(state);
+
+  logEvent(state, {
+    event: 'game_cancelled',
+    turn: state.turn,
+    data: { reason }
   });
 
   return state;

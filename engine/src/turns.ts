@@ -13,7 +13,7 @@ export interface ExtendedWaitResult extends WaitResult {
   };
 }
 
-const DEFAULT_TIMEOUT = 300000; // 5 minutes
+const DEFAULT_TIMEOUT = 0; // 0 = no timeout (block indefinitely)
 const POLL_INTERVAL = 500; // Check every 500ms
 
 export async function waitForTurn(
@@ -49,16 +49,16 @@ export async function waitForTurn(
       return;
     }
 
-    // Timeout handler
-    const timeout = setTimeout(() => {
+    // Timeout handler (only if timeout > 0)
+    const timeout = timeoutMs > 0 ? setTimeout(() => {
       cleanup();
       resolve({ status: 'timeout' });
-    }, timeoutMs);
+    }, timeoutMs) : null;
 
     // Cleanup function
     function cleanup() {
       watcher.close();
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       clearInterval(pollInterval);
     }
 
@@ -75,6 +75,16 @@ export async function waitForTurn(
             winner: state.shared.winner as string,
             reason: state.shared.endReason as string
           });
+          return;
+        }
+
+        // Game cancelled
+        if (state.status === 'cancelled') {
+          cleanup();
+          resolve({
+            status: 'game_cancelled',
+            reason: state.shared.cancelReason as string
+          } as ExtendedWaitResult);
           return;
         }
 
