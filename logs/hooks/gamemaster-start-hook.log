@@ -37,3 +37,16 @@ Extracted agent prompt:
 
 Extracted GAME: ''
 Warning: Could not extract game name from prompt
+=== HOOK START ===
+Timestamp: 2026-01-29T17:22:03.990Z
+Hook: gamemaster-start-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"3b7ef90c-4f64-45c8-87e2-8010ba54b088","transcript_path":"/root/.claude/projects/-home-user-playtest/3b7ef90c-4f64-45c8-87e2-8010ba54b088.jsonl","cwd":"/home/user/playtest","hook_event_name":"SubagentStart","agent_id":"a1faf5a","agent_type":"gamemaster"}
+Transcript path: /root/.claude/projects/-home-user-playtest/3b7ef90c-4f64-45c8-87e2-8010ba54b088.jsonl
+Extracted agent prompt:
+
+
+Extracted GAME: ''
+Warning: Could not extract game name from prompt
