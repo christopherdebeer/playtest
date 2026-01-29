@@ -1,0 +1,13 @@
+=== HOOK START ===
+Timestamp: 2026-01-29T13:26:06.412Z
+Hook: gamemaster-start-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"8895ddd4-d4d3-4000-a7d1-d2ecd26bd1fb","transcript_path":"/root/.claude/projects/-home-user-playtest/8895ddd4-d4d3-4000-a7d1-d2ecd26bd1fb.jsonl","cwd":"/home/user/playtest","hook_event_name":"SubagentStart","agent_id":"a29c451","agent_type":"gamemaster"}
+Transcript path: /root/.claude/projects/-home-user-playtest/8895ddd4-d4d3-4000-a7d1-d2ecd26bd1fb.jsonl
+Extracted agent prompt:
+
+
+Extracted GAME: ''
+Warning: Could not extract game name from prompt
