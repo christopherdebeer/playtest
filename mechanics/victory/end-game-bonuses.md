@@ -3,12 +3,13 @@ id: 2875
 name: "End Game Bonuses"
 slug: end-game-bonuses
 category: victory
+summary: "Extra points at game end"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2875/end-game-bonuses
 ---
 
 # End Game Bonuses
 
-End Game Bonuses is a board game mechanic. See BGG for detailed definition.
+Players receive bonus points at the end of the game based on achieving certain conditions.
 
 ## Reference
 

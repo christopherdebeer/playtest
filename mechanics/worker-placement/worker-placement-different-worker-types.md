@@ -3,12 +3,13 @@ id: 2933
 name: "Worker Placement, Different Worker Types"
 slug: worker-placement-different-worker-types
 category: worker-placement
+summary: "Specialized worker types"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2933/worker-placement-different-worker-types
 ---
 
 # Worker Placement, Different Worker Types
 
-Worker Placement, Different Worker Types is a board game mechanic. See BGG for detailed definition.
+Different types of workers have different capabilities or restrictions on where they can be placed.
 
 ## Reference
 

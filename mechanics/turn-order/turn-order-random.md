@@ -3,12 +3,13 @@ id: 2985
 name: "Turn Order: Random"
 slug: turn-order-random
 category: turn-order
+summary: "Random turn sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2985/turn-order-random
 ---
 
 # Turn Order: Random
 
-Turn Order: Random is a board game mechanic. See BGG for detailed definition.
+Turn order is determined randomly each round.
 
 ## Reference
 

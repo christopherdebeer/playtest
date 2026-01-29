@@ -3,12 +3,13 @@ id: 3002
 name: "Deduction"
 slug: deduction
 category: information
+summary: "Logic to uncover hidden info"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3002/deduction
 ---
 
 # Deduction
 
-Deduction is a board game mechanic. See BGG for detailed definition.
+Players use logic and reasoning to deduce hidden information, such as the identity of a culprit or location of items.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2923
 name: "Auction: Once Around"
 slug: auction-once-around
 category: auction
+summary: "Single bid per player per round"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2923/auction-once-around
 ---
 
 # Auction: Once Around
 
-Auction: Once Around is a board game mechanic. See BGG for detailed definition.
+Each player gets exactly one opportunity to bid in sequence before the auction resolves.
 
 ## Reference
 

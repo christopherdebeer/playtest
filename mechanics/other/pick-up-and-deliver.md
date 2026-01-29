@@ -3,12 +3,13 @@ id: 2007
 name: "Pick-up and Deliver"
 slug: pick-up-and-deliver
 category: other
+summary: "Transport goods for rewards"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2007/pick-up-and-deliver
 ---
 
 # Pick-up and Deliver
 
-Pick-up and Deliver is a board game mechanic. See BGG for detailed definition.
+Players pick up goods from one location and deliver them to another for rewards.
 
 ## Reference
 

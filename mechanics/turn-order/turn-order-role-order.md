@@ -3,12 +3,13 @@ id: 2833
 name: "Turn Order: Role Order"
 slug: turn-order-role-order
 category: turn-order
+summary: "Roles determine turn order"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2833/turn-order-role-order
 ---
 
 # Turn Order: Role Order
 
-Turn Order: Role Order is a board game mechanic. See BGG for detailed definition.
+Turn order is determined by players roles or positions in the game.
 
 ## Reference
 

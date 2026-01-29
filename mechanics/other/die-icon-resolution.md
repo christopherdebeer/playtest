@@ -3,12 +3,13 @@ id: 2856
 name: "Die Icon Resolution"
 slug: die-icon-resolution
 category: other
+summary: "Dice symbols trigger effects"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2856/die-icon-resolution
 ---
 
 # Die Icon Resolution
 
-Die Icon Resolution is a board game mechanic. See BGG for detailed definition.
+Dice faces show icons or symbols rather than numbers, with each symbol triggering specific effects.
 
 ## Reference
 

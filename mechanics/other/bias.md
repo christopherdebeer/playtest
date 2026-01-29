@@ -3,12 +3,13 @@ id: 2957
 name: "Bias"
 slug: bias
 category: other
+summary: "Asymmetric starting conditions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2957/bias
 ---
 
 # Bias
 
-Bias is a board game mechanic. See BGG for detailed definition.
+Players begin with different starting conditions or advantages, creating asymmetric gameplay from the start.
 
 ## Reference
 

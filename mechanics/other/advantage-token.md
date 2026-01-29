@@ -3,12 +3,13 @@ id: 2847
 name: "Advantage Token"
 slug: advantage-token
 category: other
+summary: "Tokens provide special advantages"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2847/advantage-token
 ---
 
 # Advantage Token
 
-Advantage Token is a board game mechanic. See BGG for detailed definition.
+Tokens that grant their holder special advantages or abilities during gameplay.
 
 ## Reference
 

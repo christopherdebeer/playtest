@@ -3,12 +3,13 @@ id: 2961
 name: "Map Deformation"
 slug: map-deformation
 category: other
+summary: "Modify the map"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2961/map-deformation
 ---
 
 # Map Deformation
 
-Map Deformation is a board game mechanic. See BGG for detailed definition.
+The map or board can be physically altered during play, changing geography or connections.
 
 ## Reference
 

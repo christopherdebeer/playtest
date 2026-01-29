@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import mechanicsData from '../data/mechanics.json'
 import gamesData from '../data/games.json'
@@ -9,8 +9,10 @@ interface MechanicDef {
   name: string
   slug: string
   category: string
+  summary: string
   bggUrl: string
   description: string
+  contentHtml: string
 }
 
 interface MechanicsData {
@@ -75,9 +77,22 @@ function MechanicsPage() {
 
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [expandedMechanics, setExpandedMechanics] = useState<Set<string>>(new Set())
 
   const data = mechanicsData as MechanicsData
   const games = gamesData as Game[]
+
+  const toggleExpanded = useCallback((slug: string) => {
+    setExpandedMechanics(prev => {
+      const next = new Set(prev)
+      if (next.has(slug)) {
+        next.delete(slug)
+      } else {
+        next.add(slug)
+      }
+      return next
+    })
+  }, [])
 
   // Find games using each mechanic
   const gamesUsingMechanic = (slug: string): Game[] => {
@@ -192,18 +207,37 @@ function MechanicsPage() {
                 <div className="mechanics-grid">
                   {mechanics.map(mechanic => {
                     const usedIn = gamesUsingMechanic(mechanic.slug)
+                    const isExpanded = expandedMechanics.has(mechanic.slug)
                     return (
                       <div
                         key={mechanic.slug}
                         id={`mechanic-${mechanic.slug}`}
-                        className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''}`}
+                        className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''} ${isExpanded ? 'expanded' : ''}`}
                         style={{ '--cat-color': color } as React.CSSProperties}
                       >
                         <div className="mechanic-card-header">
                           <h3>{mechanic.name}</h3>
                           <span className="mechanic-id">#{mechanic.id}</span>
                         </div>
-                        <p className="mechanic-description">{mechanic.description}</p>
+                        <p className="mechanic-summary">{mechanic.summary}</p>
+
+                        {!isExpanded && (
+                          <p className="mechanic-description">{mechanic.description}</p>
+                        )}
+
+                        {isExpanded && mechanic.contentHtml && (
+                          <div
+                            className="mechanic-content markdown-body"
+                            dangerouslySetInnerHTML={{ __html: mechanic.contentHtml }}
+                          />
+                        )}
+
+                        <button
+                          className="expand-toggle"
+                          onClick={() => toggleExpanded(mechanic.slug)}
+                        >
+                          {isExpanded ? 'Show less' : 'Show more'}
+                        </button>
 
                         {usedIn.length > 0 && (
                           <div className="mechanic-games">

@@ -3,12 +3,13 @@ id: 2082
 name: "Worker Placement"
 slug: worker-placement
 category: worker-placement
+summary: "Place workers to claim actions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2082/worker-placement
 ---
 
 # Worker Placement
 
-Players place worker tokens on action spaces to perform actions, blocking others from using those spaces.
+Players place worker tokens on action spaces to perform actions, blocking others from using those spaces until workers are retrieved.
 
 ## Reference
 

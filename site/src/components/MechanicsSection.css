@@ -1,0 +1,115 @@
+.mechanics-section {
+  padding: 4rem 0;
+  background: var(--bg-primary);
+}
+
+.mechanics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.mechanics-header .section-title {
+  margin-bottom: 0.5rem;
+}
+
+.mechanics-header .section-desc {
+  color: var(--text-secondary);
+  max-width: 550px;
+  margin: 0;
+}
+
+.browse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.browse-btn:hover {
+  background: var(--accent-hover);
+  color: white;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.category-card:hover {
+  border-color: var(--cat-color);
+  transform: translateY(-2px);
+}
+
+.category-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.category-card:hover .category-name {
+  color: var(--cat-color);
+}
+
+.category-count {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cat-color);
+}
+
+.mechanics-usage {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.mechanics-usage h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.mechanics-usage pre {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .mechanics-header {
+    flex-direction: column;
+  }
+
+  .browse-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}

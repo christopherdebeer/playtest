@@ -3,12 +3,13 @@ id: 2987
 name: "Hidden Victory Points"
 slug: hidden-victory-points
 category: victory
+summary: "Secret scoring"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2987/hidden-victory-points
 ---
 
 # Hidden Victory Points
 
-Hidden Victory Points is a board game mechanic. See BGG for detailed definition.
+Some or all victory points are hidden from other players until the end of the game.
 
 ## Reference
 

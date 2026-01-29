@@ -3,12 +3,13 @@ id: 2964
 name: "Pieces as Map"
 slug: pieces-as-map
 category: other
+summary: "Components form the board"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2964/pieces-as-map
 ---
 
 # Pieces as Map
 
-Pieces as Map is a board game mechanic. See BGG for detailed definition.
+Game pieces themselves form the play area or map as they are placed.
 
 ## Reference
 

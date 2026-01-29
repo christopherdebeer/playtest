@@ -3,12 +3,13 @@ id: 2850
 name: "Events"
 slug: events
 category: other
+summary: "Triggered occurrences affect play"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2850/events
 ---
 
 # Events
 
-Events is a board game mechanic. See BGG for detailed definition.
+Random or scripted events occur during the game that affect all or some players.
 
 ## Reference
 

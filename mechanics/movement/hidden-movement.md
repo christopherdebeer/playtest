@@ -3,12 +3,13 @@ id: 2967
 name: "Hidden Movement"
 slug: hidden-movement
 category: movement
+summary: "Secret piece positions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2967/hidden-movement
 ---
 
 # Hidden Movement
 
-Hidden Movement is a board game mechanic. See BGG for detailed definition.
+One or more players move pieces secretly, with their positions unknown to other players.
 
 ## Reference
 

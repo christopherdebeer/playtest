@@ -3,12 +3,13 @@ id: 2039
 name: "Line Drawing"
 slug: line-drawing
 category: other
+summary: "Draw lines on board"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2039/line-drawing
 ---
 
 # Line Drawing
 
-Line Drawing is a board game mechanic. See BGG for detailed definition.
+Players draw lines on the game board as part of gameplay, creating paths or boundaries.
 
 ## Reference
 

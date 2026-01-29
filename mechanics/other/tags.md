@@ -3,12 +3,13 @@ id: 3100
 name: "Tags"
 slug: tags
 category: other
+summary: "Keywords categorize items"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3100/tags
 ---
 
 # Tags
 
-Tags is a board game mechanic. See BGG for detailed definition.
+Game elements have tags or keywords that categorize them and determine interactions.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2910
 name: "Investment"
 slug: investment
 category: economic
+summary: "Spend now for future returns"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2910/investment
 ---
 
 # Investment
 
-Investment is a board game mechanic. See BGG for detailed definition.
+Players invest resources now to receive larger returns later in the game.
 
 ## Reference
 

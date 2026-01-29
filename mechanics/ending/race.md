@@ -3,12 +3,13 @@ id: 2876
 name: "Race"
 slug: race
 category: ending
+summary: "First to goal wins"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2876/race
 ---
 
 # Race
 
-Race is a board game mechanic. See BGG for detailed definition.
+Players race to be the first to reach a goal or complete an objective.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2975
 name: "Line of Sight"
 slug: line-of-sight
 category: movement
+summary: "Vision affects targeting"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2975/line-of-sight
 ---
 
 # Line of Sight
 
-Line of Sight is a board game mechanic. See BGG for detailed definition.
+Units can only target or affect what they can see, with obstacles blocking line of sight.
 
 ## Reference
 

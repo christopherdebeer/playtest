@@ -3,12 +3,13 @@ id: 2055
 name: "Paper-and-Pencil"
 slug: paper-and-pencil
 category: other
+summary: "Write during gameplay"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2055/paper-and-pencil
 ---
 
 # Paper-and-Pencil
 
-Paper-and-Pencil is a board game mechanic. See BGG for detailed definition.
+Players write on paper as part of the game, recording information or making marks.
 
 ## Reference
 

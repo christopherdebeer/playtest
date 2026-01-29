@@ -3,12 +3,13 @@ id: 3099
 name: "Multi-Use Cards"
 slug: multi-use-cards
 category: cards
+summary: "Cards have multiple functions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3099/multi-use-cards
 ---
 
 # Multi-Use Cards
 
-Multi-Use Cards is a board game mechanic. See BGG for detailed definition.
+Cards can be used in multiple ways, forcing players to choose how to use each card.
 
 ## Reference
 

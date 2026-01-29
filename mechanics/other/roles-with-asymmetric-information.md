@@ -3,12 +3,13 @@ id: 2892
 name: "Roles with Asymmetric Information"
 slug: roles-with-asymmetric-information
 category: other
+summary: "Different knowledge per role"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2892/roles-with-asymmetric-information
 ---
 
 # Roles with Asymmetric Information
 
-Roles with Asymmetric Information is a board game mechanic. See BGG for detailed definition.
+Different roles have access to different information, creating information asymmetry.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2953
 name: "Programmed Movement"
 slug: programmed-movement
 category: movement
+summary: "Pre-plan movement sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2953/programmed-movement
 ---
 
 # Programmed Movement
 
-Programmed Movement is a board game mechanic. See BGG for detailed definition.
+Players program their movement in advance, then execute the programmed moves simultaneously.
 
 ## Reference
 

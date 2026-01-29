@@ -3,12 +3,13 @@ id: 2865
 name: "Player Judge"
 slug: player-judge
 category: social
+summary: "Players judge submissions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2865/player-judge
 ---
 
 # Player Judge
 
-Player Judge is a board game mechanic. See BGG for detailed definition.
+One or more players act as judge, evaluating other players submissions or performances.
 
 ## Reference
 

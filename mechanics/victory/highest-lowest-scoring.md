@@ -3,12 +3,13 @@ id: 2889
 name: "Highest-Lowest Scoring"
 slug: highest-lowest-scoring
 category: victory
+summary: "Extreme values score"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2889/highest-lowest-scoring
 ---
 
 # Highest-Lowest Scoring
 
-Highest-Lowest Scoring is a board game mechanic. See BGG for detailed definition.
+Scoring is based on having the highest or lowest values in certain categories.
 
 ## Reference
 

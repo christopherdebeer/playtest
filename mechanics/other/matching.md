@@ -3,12 +3,13 @@ id: 3007
 name: "Matching"
 slug: matching
 category: other
+summary: "Find identical pairs"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3007/matching
 ---
 
 # Matching
 
-Matching is a board game mechanic. See BGG for detailed definition.
+Players try to match identical or related items, often from a set of face-down options.
 
 ## Reference
 

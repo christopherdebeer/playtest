@@ -3,12 +3,13 @@ id: 2073
 name: "Acting"
 slug: acting
 category: social
+summary: "Players physically act out clues"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2073/acting
 ---
 
 # Acting
 
-Acting is a board game mechanic. See BGG for detailed definition.
+Players physically act out clues for other players to guess. This often involves charades-like gameplay where verbal communication is restricted.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2844
 name: "Order Counters"
 slug: order-counters
 category: other
+summary: "Tokens determine action sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2844/order-counters
 ---
 
 # Order Counters
 
-Order Counters is a board game mechanic. See BGG for detailed definition.
+Counters or tokens are used to determine the order in which actions resolve.
 
 ## Reference
 

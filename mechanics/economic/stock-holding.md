@@ -3,12 +3,13 @@ id: 2005
 name: "Stock Holding"
 slug: stock-holding
 category: economic
+summary: "Own shares in companies"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2005/stock-holding
 ---
 
 # Stock Holding
 
-Stock Holding is a board game mechanic. See BGG for detailed definition.
+Players buy and sell shares in companies, profiting from dividends and price changes.
 
 ## Reference
 

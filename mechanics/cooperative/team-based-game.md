@@ -3,12 +3,13 @@ id: 2019
 name: "Team-Based Game"
 slug: team-based-game
 category: cooperative
+summary: "Fixed teams compete"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2019/team-based-game
 ---
 
 # Team-Based Game
 
-Team-Based Game is a board game mechanic. See BGG for detailed definition.
+Players are divided into fixed teams that compete against each other.
 
 ## Reference
 

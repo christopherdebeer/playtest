@@ -3,12 +3,13 @@ id: 2900
 name: "Market"
 slug: market
 category: economic
+summary: "Buy and sell with variable prices"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2900/market
 ---
 
 # Market
 
-Market is a board game mechanic. See BGG for detailed definition.
+A market system where prices fluctuate based on supply, demand, or other game factors.
 
 ## Reference
 

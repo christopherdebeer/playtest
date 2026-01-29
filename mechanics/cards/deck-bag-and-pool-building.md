@@ -3,12 +3,13 @@ id: 2664
 name: "Deck, Bag, and Pool Building"
 slug: deck-bag-and-pool-building
 category: cards
+summary: "Improve personal card collection"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2664/deck-bag-and-pool-building
 ---
 
 # Deck, Bag, and Pool Building
 
-Deck, Bag, and Pool Building is a board game mechanic. See BGG for detailed definition.
+Players add cards to their personal deck, bag, or pool during the game, improving their options over time.
 
 ## Reference
 

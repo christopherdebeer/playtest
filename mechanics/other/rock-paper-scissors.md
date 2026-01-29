@@ -3,12 +3,13 @@ id: 2003
 name: "Rock-Paper-Scissors"
 slug: rock-paper-scissors
 category: other
+summary: "Cyclic advantage system"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2003/rock-paper-scissors
 ---
 
 # Rock-Paper-Scissors
 
-Rock-Paper-Scissors is a board game mechanic. See BGG for detailed definition.
+A system where options have cyclic advantages over each other (A beats B, B beats C, C beats A).
 
 ## Reference
 

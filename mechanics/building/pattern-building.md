@@ -3,12 +3,13 @@ id: 2048
 name: "Pattern Building"
 slug: pattern-building
 category: building
+summary: "Create specific arrangements"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2048/pattern-building
 ---
 
 # Pattern Building
 
-Pattern Building is a board game mechanic. See BGG for detailed definition.
+Players try to create specific patterns or arrangements with game components.
 
 ## Reference
 

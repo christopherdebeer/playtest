@@ -3,12 +3,13 @@ id: 2676
 name: "Grid Movement"
 slug: grid-movement
 category: movement
+summary: "Move on grid squares"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2676/grid-movement
 ---
 
 # Grid Movement
 
-Grid Movement is a board game mechanic. See BGG for detailed definition.
+Pieces move on a grid of squares, with movement typically measured in squares.
 
 ## Reference
 

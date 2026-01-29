@@ -3,12 +3,13 @@ id: 2822
 name: "Scenario / Mission / Campaign Game"
 slug: scenario-mission-campaign-game
 category: other
+summary: "Linked scenarios tell story"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2822/scenario-mission-campaign-game
 ---
 
 # Scenario / Mission / Campaign Game
 
-Scenario / Mission / Campaign Game is a board game mechanic. See BGG for detailed definition.
+Multiple scenarios or missions are linked together, often telling an ongoing story.
 
 ## Reference
 

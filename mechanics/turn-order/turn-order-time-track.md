@@ -3,12 +3,13 @@ id: 2663
 name: "Turn Order: Time Track"
 slug: turn-order-time-track
 category: turn-order
+summary: "Time track sets turn order"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2663/turn-order-time-track
 ---
 
 # Turn Order: Time Track
 
-Turn Order: Time Track is a board game mechanic. See BGG for detailed definition.
+Players take turns based on their position on a time track, with the furthest behind going next.
 
 ## Reference
 

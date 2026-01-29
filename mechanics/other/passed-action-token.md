@@ -3,12 +3,13 @@ id: 2835
 name: "Passed Action Token"
 slug: passed-action-token
 category: other
+summary: "Token moves when passing"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2835/passed-action-token
 ---
 
 # Passed Action Token
 
-Passed Action Token is a board game mechanic. See BGG for detailed definition.
+A token that passes to another player when someone passes their turn or action.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2927
 name: "Auction: Multiple Lot"
 slug: auction-multiple-lot
 category: auction
+summary: "Multiple items auctioned together"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2927/auction-multiple-lot
 ---
 
 # Auction: Multiple Lot
 
-Auction: Multiple Lot is a board game mechanic. See BGG for detailed definition.
+Multiple items are auctioned simultaneously, with players bidding on combinations or sets.
 
 ## Reference
 

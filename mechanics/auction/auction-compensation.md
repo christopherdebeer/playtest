@@ -3,12 +3,13 @@ id: 3098
 name: "Auction Compensation"
 slug: auction-compensation
 category: auction
+summary: "Losing bidders receive compensation"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3098/auction-compensation
 ---
 
 # Auction Compensation
 
-Auction Compensation is a board game mechanic. See BGG for detailed definition.
+In this auction variant, players who lose the auction receive some form of compensation for their participation.
 
 ## Reference
 

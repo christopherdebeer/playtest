@@ -3,12 +3,13 @@ id: 2914
 name: "Increase Value of Unchosen Resources"
 slug: increase-value-of-unchosen-resources
 category: other
+summary: "Unpicked options gain value"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2914/increase-value-of-unchosen-resources
 ---
 
 # Increase Value of Unchosen Resources
 
-Increase Value of Unchosen Resources is a board game mechanic. See BGG for detailed definition.
+Resources that are not chosen accumulate additional value, making them more attractive over time.
 
 ## Reference
 

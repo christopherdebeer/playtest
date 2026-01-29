@@ -3,12 +3,13 @@ id: 3005
 name: "Slide / Push"
 slug: slide-push
 category: other
+summary: "Slide pieces to move"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3005/slide-push
 ---
 
 # Slide / Push
 
-Slide / Push is a board game mechanic. See BGG for detailed definition.
+Pieces are moved by sliding them, often pushing other pieces in the process.
 
 ## Reference
 

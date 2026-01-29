@@ -3,12 +3,13 @@ id: 2026
 name: "Hexagon Grid"
 slug: hexagon-grid
 category: movement
+summary: "Hexagonal tile board"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2026/hexagon-grid
 ---
 
 # Hexagon Grid
 
-Hexagon Grid is a board game mechanic. See BGG for detailed definition.
+The game board uses hexagonal tiles or spaces instead of squares, allowing six directions of movement.
 
 ## Reference
 

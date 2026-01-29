@@ -3,12 +3,13 @@ id: 2078
 name: "Point to Point Movement"
 slug: point-to-point-movement
 category: movement
+summary: "Move between connected points"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2078/point-to-point-movement
 ---
 
 # Point to Point Movement
 
-Point to Point Movement is a board game mechanic. See BGG for detailed definition.
+Movement occurs between specific points connected by lines or paths, not on a grid.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2944
 name: "Three Dimensional Movement"
 slug: three-dimensional-movement
 category: movement
+summary: "Move in 3D space"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2944/three-dimensional-movement
 ---
 
 # Three Dimensional Movement
 
-Three Dimensional Movement is a board game mechanic. See BGG for detailed definition.
+Pieces can move in three dimensions, not just on a flat plane.
 
 ## Reference
 

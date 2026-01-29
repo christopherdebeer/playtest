@@ -3,12 +3,13 @@ id: 2864
 name: "Force Commitment"
 slug: force-commitment
 category: conflict
+summary: "Allocate forces before revealing"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2864/force-commitment
 ---
 
 # Force Commitment
 
-Force Commitment is a board game mechanic. See BGG for detailed definition.
+Players must commit their forces to actions before knowing opponent commitments.
 
 ## Reference
 

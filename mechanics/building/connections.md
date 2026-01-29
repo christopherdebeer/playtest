@@ -3,12 +3,13 @@ id: 2883
 name: "Connections"
 slug: connections
 category: building
+summary: "Build links between points"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2883/connections
 ---
 
 # Connections
 
-Connections is a board game mechanic. See BGG for detailed definition.
+Players create connections or links between points on the board, often for scoring or network effects.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2860
 name: "Flicking"
 slug: flicking
 category: physical
+summary: "Flick pieces for movement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2860/flicking
 ---
 
 # Flicking
 
-Flicking is a board game mechanic. See BGG for detailed definition.
+Players physically flick game pieces to move them, requiring dexterity and aim.
 
 ## Reference
 

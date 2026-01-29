@@ -3,12 +3,13 @@ id: 2954
 name: "Relative Movement"
 slug: relative-movement
 category: movement
+summary: "Movement based on other pieces"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2954/relative-movement
 ---
 
 # Relative Movement
 
-Relative Movement is a board game mechanic. See BGG for detailed definition.
+Movement is determined relative to other game pieces rather than absolute positions.
 
 ## Reference
 

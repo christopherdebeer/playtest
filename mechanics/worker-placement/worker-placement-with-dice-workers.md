@@ -3,12 +3,13 @@ id: 2935
 name: "Worker Placement with Dice Workers"
 slug: worker-placement-with-dice-workers
 category: worker-placement
+summary: "Dice serve as workers"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2935/worker-placement-with-dice-workers
 ---
 
 # Worker Placement with Dice Workers
 
-Worker Placement with Dice Workers is a board game mechanic. See BGG for detailed definition.
+Dice are used as workers, with their values affecting what actions they can take or their effectiveness.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2834
 name: "Action Timer"
 slug: action-timer
 category: action
+summary: "Actions limited by real-time constraints"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2834/action-timer
 ---
 
 # Action Timer
 
-Action Timer is a board game mechanic. See BGG for detailed definition.
+Actions must be performed within a real-time limit, adding pressure and urgency to decision-making.
 
 ## Reference
 

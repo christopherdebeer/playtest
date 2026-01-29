@@ -3,12 +3,13 @@ id: 2974
 name: "Zone of Control"
 slug: zone-of-control
 category: movement
+summary: "Units restrict enemy movement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2974/zone-of-control
 ---
 
 # Zone of Control
 
-Zone of Control is a board game mechanic. See BGG for detailed definition.
+Units exert control over adjacent spaces, restricting or affecting enemy movement through those areas.
 
 ## Reference
 

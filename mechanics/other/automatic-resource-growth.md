@@ -3,12 +3,13 @@ id: 2903
 name: "Automatic Resource Growth"
 slug: automatic-resource-growth
 category: other
+summary: "Resources increase automatically"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2903/automatic-resource-growth
 ---
 
 # Automatic Resource Growth
 
-Automatic Resource Growth is a board game mechanic. See BGG for detailed definition.
+Resources grow or accumulate automatically without player action, often at the start of each turn or round.
 
 ## Reference
 

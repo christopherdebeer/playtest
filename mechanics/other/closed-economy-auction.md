@@ -3,12 +3,13 @@ id: 2928
 name: "Closed Economy Auction"
 slug: closed-economy-auction
 category: other
+summary: "Auction with fixed money supply"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2928/closed-economy-auction
 ---
 
 # Closed Economy Auction
 
-Closed Economy Auction is a board game mechanic. See BGG for detailed definition.
+An auction system where money paid goes to other players rather than the bank, keeping total money constant.
 
 ## Reference
 

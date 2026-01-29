@@ -3,12 +3,13 @@ id: 2893
 name: "Communication Limits"
 slug: communication-limits
 category: social
+summary: "Restricted player communication"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2893/communication-limits
 ---
 
 # Communication Limits
 
-Communication Limits is a board game mechanic. See BGG for detailed definition.
+Rules limit how players can communicate, requiring creative or restricted information sharing.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2931
 name: "Auction: Fixed Placement"
 slug: auction-fixed-placement
 category: auction
+summary: "Bids placed on fixed positions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2931/auction-fixed-placement
 ---
 
 # Auction: Fixed Placement
 
-Auction: Fixed Placement is a board game mechanic. See BGG for detailed definition.
+Players place bids on fixed positions or slots, with specific rules about placement and resolution.
 
 ## Reference
 

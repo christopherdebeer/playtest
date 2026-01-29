@@ -3,12 +3,13 @@ id: 2831
 name: "Real-Time"
 slug: real-time
 category: physical
+summary: "Continuous simultaneous play"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2831/real-time
 ---
 
 # Real-Time
 
-Real-Time is a board game mechanic. See BGG for detailed definition.
+Players act simultaneously in real-time rather than taking turns.
 
 ## Reference
 

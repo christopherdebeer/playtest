@@ -3,12 +3,13 @@ id: 2958
 name: "Moving Multiple Units"
 slug: moving-multiple-units
 category: other
+summary: "Control several pieces at once"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2958/moving-multiple-units
 ---
 
 # Moving Multiple Units
 
-Moving Multiple Units is a board game mechanic. See BGG for detailed definition.
+Players can move multiple units with a single action or command.
 
 ## Reference
 

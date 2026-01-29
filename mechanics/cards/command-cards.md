@@ -3,12 +3,13 @@ id: 2841
 name: "Command Cards"
 slug: command-cards
 category: cards
+summary: "Cards issue orders to units"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2841/command-cards
 ---
 
 # Command Cards
 
-Command Cards is a board game mechanic. See BGG for detailed definition.
+Special cards that allow players to give commands to their units, determining what actions they can take.
 
 ## Reference
 

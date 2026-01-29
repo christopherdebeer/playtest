@@ -3,12 +3,13 @@ id: 3001
 name: "Layering"
 slug: layering
 category: other
+summary: "Stack elements vertically"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3001/layering
 ---
 
 # Layering
 
-Layering is a board game mechanic. See BGG for detailed definition.
+Game elements can be stacked or layered on top of each other, creating three-dimensional play.
 
 ## Reference
 

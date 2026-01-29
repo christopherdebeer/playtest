@@ -3,12 +3,13 @@ id: 2959
 name: "Map Addition"
 slug: map-addition
 category: building
+summary: "Expand the play area"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2959/map-addition
 ---
 
 # Map Addition
 
-Map Addition is a board game mechanic. See BGG for detailed definition.
+New map sections or tiles are added to the play area during the game.
 
 ## Reference
 

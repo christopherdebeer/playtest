@@ -3,12 +3,13 @@ id: 2060
 name: "Pattern Recognition"
 slug: pattern-recognition
 category: information
+summary: "Identify visual patterns"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2060/pattern-recognition
 ---
 
 # Pattern Recognition
 
-Pattern Recognition is a board game mechanic. See BGG for detailed definition.
+Players must identify patterns in visual information presented during the game.
 
 ## Reference
 

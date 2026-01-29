@@ -3,12 +3,13 @@ id: 2826
 name: "Turn Order: Stat-Based"
 slug: turn-order-stat-based
 category: turn-order
+summary: "Stats determine turn order"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2826/turn-order-stat-based
 ---
 
 # Turn Order: Stat-Based
 
-Turn Order: Stat-Based is a board game mechanic. See BGG for detailed definition.
+Turn order is determined by comparing player or unit statistics.
 
 ## Reference
 

@@ -28,6 +28,7 @@ interface Game {
   id: string
   config: GameConfig
   rulesMarkdown: string
+  rulesHtml: string
 }
 
 function GamePage() {
@@ -136,9 +137,10 @@ function GamePage() {
 
         <div className="rules-section">
           <h2>Full Rules</h2>
-          <div className="rules-content">
-            <pre>{game.rulesMarkdown}</pre>
-          </div>
+          <div
+            className="rules-content markdown-body"
+            dangerouslySetInnerHTML={{ __html: game.rulesHtml }}
+          />
         </div>
       </div>
     </div>

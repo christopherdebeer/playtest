@@ -3,12 +3,13 @@ id: 2661
 name: "Push Your Luck"
 slug: push-your-luck
 category: dice
+summary: "Risk more for greater rewards"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2661/push-your-luck
 ---
 
 # Push Your Luck
 
-Players repeatedly take risks, weighing potential rewards against the chance of losing everything.
+Players repeatedly take risks, weighing potential rewards against the chance of losing everything gained.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2952
 name: "Impulse Movement"
 slug: impulse-movement
 category: movement
+summary: "Sequential unit activation"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2952/impulse-movement
 ---
 
 # Impulse Movement
 
-Impulse Movement is a board game mechanic. See BGG for detailed definition.
+Units are activated in impulses, with each impulse allowing movement or action for a subset of units.
 
 ## Reference
 

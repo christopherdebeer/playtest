@@ -3,12 +3,13 @@ id: 2047
 name: "Memory"
 slug: memory
 category: information
+summary: "Remember hidden information"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2047/memory
 ---
 
 # Memory
 
-Memory is a board game mechanic. See BGG for detailed definition.
+Players must remember hidden information, such as the locations of face-down tiles.
 
 ## Reference
 

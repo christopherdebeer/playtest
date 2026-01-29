@@ -3,12 +3,13 @@ id: 2008
 name: "Trading"
 slug: trading
 category: economic
+summary: "Exchange items with players"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2008/trading
 ---
 
 # Trading
 
-Players exchange resources, cards, or other game elements with each other.
+Players exchange resources, cards, or other game elements with each other through trades.
 
 ## Reference
 

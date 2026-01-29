@@ -3,12 +3,13 @@ id: 2990
 name: "Cube Tower"
 slug: cube-tower
 category: physical
+summary: "Physical tower randomizes results"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2990/cube-tower
 ---
 
 # Cube Tower
 
-Cube Tower is a board game mechanic. See BGG for detailed definition.
+A physical tower where cubes are dropped in, with the output determining game results.
 
 ## Reference
 

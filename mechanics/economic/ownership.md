@@ -3,12 +3,13 @@ id: 2911
 name: "Ownership"
 slug: ownership
 category: economic
+summary: "Control over game elements"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2911/ownership
 ---
 
 # Ownership
 
-Ownership is a board game mechanic. See BGG for detailed definition.
+Players can own or control various game elements, affecting how they can be used.
 
 ## Reference
 

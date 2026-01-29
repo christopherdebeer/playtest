@@ -3,12 +3,13 @@ id: 3113
 name: "Spelling"
 slug: spelling
 category: other
+summary: "Form words from letters"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3113/spelling
 ---
 
 # Spelling
 
-Spelling is a board game mechanic. See BGG for detailed definition.
+Players form words from available letters, as in Scrabble.
 
 ## Reference
 

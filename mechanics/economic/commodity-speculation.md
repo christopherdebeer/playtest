@@ -3,12 +3,13 @@ id: 2013
 name: "Commodity Speculation"
 slug: commodity-speculation
 category: economic
+summary: "Trade goods for profit"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2013/commodity-speculation
 ---
 
 # Commodity Speculation
 
-Commodity Speculation is a board game mechanic. See BGG for detailed definition.
+Players buy and sell commodities, trying to profit from price changes and market fluctuations.
 
 ## Reference
 

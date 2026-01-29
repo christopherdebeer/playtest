@@ -3,12 +3,13 @@ id: 2988
 name: "Stacking and Balancing"
 slug: stacking-and-balancing
 category: physical
+summary: "Stack pieces carefully"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2988/stacking-and-balancing
 ---
 
 # Stacking and Balancing
 
-Stacking and Balancing is a board game mechanic. See BGG for detailed definition.
+Players must stack or balance pieces, with the structure potentially collapsing.
 
 ## Reference
 

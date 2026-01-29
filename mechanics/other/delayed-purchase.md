@@ -3,12 +3,13 @@ id: 2901
 name: "Delayed Purchase"
 slug: delayed-purchase
 category: other
+summary: "Buy now, pay later"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2901/delayed-purchase
 ---
 
 # Delayed Purchase
 
-Delayed Purchase is a board game mechanic. See BGG for detailed definition.
+Players can acquire items with payment deferred to a later time in the game.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2863
 name: "Minimap Resolution"
 slug: minimap-resolution
 category: other
+summary: "Resolve on smaller map"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2863/minimap-resolution
 ---
 
 # Minimap Resolution
 
-Minimap Resolution is a board game mechanic. See BGG for detailed definition.
+Conflicts or actions are resolved on a separate smaller map or display.
 
 ## Reference
 

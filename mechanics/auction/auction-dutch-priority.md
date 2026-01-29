@@ -3,12 +3,13 @@ id: 2932
 name: "Auction: Dutch Priority"
 slug: auction-dutch-priority
 category: auction
+summary: "Dutch auction with priority rules"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2932/auction-dutch-priority
 ---
 
 # Auction: Dutch Priority
 
-Auction: Dutch Priority is a board game mechanic. See BGG for detailed definition.
+A Dutch auction where certain players have priority in claiming items at specific price points.
 
 ## Reference
 

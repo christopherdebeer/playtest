@@ -3,12 +3,13 @@ id: 2956
 name: "Chaining"
 slug: chaining
 category: other
+summary: "Link actions in sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2956/chaining
 ---
 
 # Chaining
 
-Chaining is a board game mechanic. See BGG for detailed definition.
+Actions can trigger additional actions in a chain, creating combos or extended turns.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2948
 name: "Resource to Move"
 slug: resource-to-move
 category: movement
+summary: "Spend resources for movement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2948/resource-to-move
 ---
 
 # Resource to Move
 
-Resource to Move is a board game mechanic. See BGG for detailed definition.
+Players must spend resources to move their pieces.
 
 ## Reference
 

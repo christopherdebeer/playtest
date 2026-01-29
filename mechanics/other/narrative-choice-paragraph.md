@@ -3,12 +3,13 @@ id: 2851
 name: "Narrative Choice / Paragraph"
 slug: narrative-choice-paragraph
 category: other
+summary: "Story-driven decisions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2851/narrative-choice-paragraph
 ---
 
 # Narrative Choice / Paragraph
 
-Narrative Choice / Paragraph is a board game mechanic. See BGG for detailed definition.
+Players read paragraphs and make choices that determine the story direction.
 
 ## Reference
 

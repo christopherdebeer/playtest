@@ -3,12 +3,13 @@ id: 2947
 name: "Movement Points"
 slug: movement-points
 category: movement
+summary: "Spend points to move"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2947/movement-points
 ---
 
 # Movement Points
 
-Movement Points is a board game mechanic. See BGG for detailed definition.
+Movement uses a pool of points, with different terrain or actions costing different amounts.
 
 ## Reference
 

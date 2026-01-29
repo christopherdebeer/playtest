@@ -3,12 +3,13 @@ id: 2079
 name: "Variable Phase Order"
 slug: variable-phase-order
 category: other
+summary: "Phase order can change"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2079/variable-phase-order
 ---
 
 # Variable Phase Order
 
-Variable Phase Order is a board game mechanic. See BGG for detailed definition.
+The order of game phases can vary from round to round.
 
 ## Reference
 

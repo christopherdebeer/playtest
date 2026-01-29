@@ -3,12 +3,13 @@ id: 2821
 name: "Single Loser Game"
 slug: single-loser-game
 category: ending
+summary: "Avoid being last"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2821/single-loser-game
 ---
 
 # Single Loser Game
 
-Single Loser Game is a board game mechanic. See BGG for detailed definition.
+Instead of a winner, the game has a single loser - the last player standing loses.
 
 ## Reference
 

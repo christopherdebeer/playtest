@@ -3,12 +3,13 @@ id: 2070
 name: "Simulation"
 slug: simulation
 category: other
+summary: "Model real-world systems"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2070/simulation
 ---
 
 # Simulation
 
-Simulation is a board game mechanic. See BGG for detailed definition.
+The game simulates real-world systems or situations with some degree of accuracy.
 
 ## Reference
 

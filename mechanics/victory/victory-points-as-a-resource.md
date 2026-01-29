@@ -3,12 +3,13 @@ id: 2874
 name: "Victory Points as a Resource"
 slug: victory-points-as-a-resource
 category: victory
+summary: "Spend VPs for effects"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2874/victory-points-as-a-resource
 ---
 
 # Victory Points as a Resource
 
-Victory Points as a Resource is a board game mechanic. See BGG for detailed definition.
+Victory points can be spent during the game for various effects, not just counted at the end.
 
 ## Reference
 

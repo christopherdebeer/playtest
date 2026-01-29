@@ -3,12 +3,13 @@ id: 2999
 name: "Bingo"
 slug: bingo
 category: other
+summary: "Mark matching items on a grid"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2999/bingo
 ---
 
 # Bingo
 
-Bingo is a board game mechanic. See BGG for detailed definition.
+Players mark items on a personal grid as they are called or revealed, trying to complete patterns.
 
 ## Reference
 

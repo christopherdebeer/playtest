@@ -3,6 +3,7 @@ id: 2011
 name: "Modular Board"
 slug: modular-board
 category: other
+summary: "Customizable board layout"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2011/modular-board
 ---
 

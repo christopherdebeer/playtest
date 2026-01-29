@@ -3,12 +3,13 @@ id: 2080
 name: "Area Majority / Influence"
 slug: area-majority-influence
 category: other
+summary: "Control areas through presence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2080/area-majority-influence
 ---
 
 # Area Majority / Influence
 
-Area Majority / Influence is a board game mechanic. See BGG for detailed definition.
+Players compete to have the most pieces or influence in various areas of the board. The player with majority presence typically gains benefits or points.
 
 ## Reference
 

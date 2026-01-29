@@ -3,12 +3,13 @@ id: 2858
 name: "Prisoner's Dilemma"
 slug: prisoner's-dilemma
 category: social
+summary: "Prisoner's Dilemma mechanic"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2858/prisoner's-dilemma
 ---
 
 # Prisoner's Dilemma
 
-Prisoner's Dilemma is a board game mechanic. See BGG for detailed definition.
+Prisoner's Dilemma is a board game mechanic that affects how players interact with the game.
 
 ## Reference
 

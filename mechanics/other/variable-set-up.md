@@ -3,12 +3,13 @@ id: 2897
 name: "Variable Set-up"
 slug: variable-set-up
 category: other
+summary: "Different starting setups"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2897/variable-set-up
 ---
 
 # Variable Set-up
 
-Variable Set-up is a board game mechanic. See BGG for detailed definition.
+The game can start with different configurations, adding variety to each play.
 
 ## Reference
 

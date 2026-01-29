@@ -3,12 +3,13 @@ id: 2912
 name: "Contracts"
 slug: contracts
 category: economic
+summary: "Fulfill agreements for rewards"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2912/contracts
 ---
 
 # Contracts
 
-Contracts is a board game mechanic. See BGG for detailed definition.
+Players take on contracts that specify conditions for completion and rewards upon fulfillment.
 
 ## Reference
 

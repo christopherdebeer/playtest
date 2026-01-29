@@ -3,12 +3,13 @@ id: 2838
 name: "Action Drafting"
 slug: action-drafting
 category: action
+summary: "Players select actions from a shared pool"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2838/action-drafting
 ---
 
 # Action Drafting
 
-Action Drafting is a board game mechanic. See BGG for detailed definition.
+Players take turns selecting actions from a common pool, with each chosen action becoming unavailable to others until refreshed.
 
 ## Reference
 

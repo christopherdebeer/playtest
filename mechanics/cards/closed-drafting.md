@@ -3,12 +3,13 @@ id: 2984
 name: "Closed Drafting"
 slug: closed-drafting
 category: cards
+summary: "Draft from hidden selection"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2984/closed-drafting
 ---
 
 # Closed Drafting
 
-Closed Drafting is a board game mechanic. See BGG for detailed definition.
+Players draft cards or items from a hand that is passed around, keeping selections hidden until revealed.
 
 ## Reference
 

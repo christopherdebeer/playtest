@@ -3,12 +3,13 @@ id: 2827
 name: "Turn Order: Auction"
 slug: turn-order-auction
 category: turn-order
+summary: "Bid for turn position"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2827/turn-order-auction
 ---
 
 # Turn Order: Auction
 
-Turn Order: Auction is a board game mechanic. See BGG for detailed definition.
+Players bid to determine their position in turn order.
 
 ## Reference
 

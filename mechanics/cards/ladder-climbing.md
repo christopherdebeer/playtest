@@ -3,12 +3,13 @@ id: 2980
 name: "Ladder Climbing"
 slug: ladder-climbing
 category: cards
+summary: "Play higher combinations"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2980/ladder-climbing
 ---
 
 # Ladder Climbing
 
-Ladder Climbing is a board game mechanic. See BGG for detailed definition.
+Players must play card combinations that beat the previous play, with the round ending when all pass.
 
 ## Reference
 

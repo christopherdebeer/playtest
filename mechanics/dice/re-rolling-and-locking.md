@@ -3,12 +3,13 @@ id: 2870
 name: "Re-rolling and Locking"
 slug: re-rolling-and-locking
 category: dice
+summary: "Reroll or keep dice"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2870/re-rolling-and-locking
 ---
 
 # Re-rolling and Locking
 
-Re-rolling and Locking is a board game mechanic. See BGG for detailed definition.
+Players can reroll dice while choosing to lock certain results, as in Yahtzee.
 
 ## Reference
 

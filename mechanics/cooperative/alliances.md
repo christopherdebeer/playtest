@@ -3,12 +3,13 @@ id: 2916
 name: "Alliances"
 slug: alliances
 category: cooperative
+summary: "Form temporary partnerships"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2916/alliances
 ---
 
 # Alliances
 
-Alliances is a board game mechanic. See BGG for detailed definition.
+Players can form temporary alliances with other players for mutual benefit, though these partnerships may shift throughout the game.
 
 ## Reference
 

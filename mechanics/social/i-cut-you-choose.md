@@ -3,12 +3,13 @@ id: 2906
 name: "I Cut, You Choose"
 slug: i-cut-you-choose
 category: social
+summary: "One divides, other chooses"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2906/i-cut-you-choose
 ---
 
 # I Cut, You Choose
 
-I Cut, You Choose is a board game mechanic. See BGG for detailed definition.
+One player divides resources into portions, and another player chooses which portion to take.
 
 ## Reference
 

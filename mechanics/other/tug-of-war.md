@@ -3,12 +3,13 @@ id: 2888
 name: "Tug of War"
 slug: tug-of-war
 category: other
+summary: "Push-pull between sides"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2888/tug-of-war
 ---
 
 # Tug of War
 
-Tug of War is a board game mechanic. See BGG for detailed definition.
+A marker moves back and forth between opposing sides based on player actions.
 
 ## Reference
 

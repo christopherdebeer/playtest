@@ -3,12 +3,13 @@ id: 2004
 name: "Set Collection"
 slug: set-collection
 category: cards
+summary: "Gather matching sets"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2004/set-collection
 ---
 
 # Set Collection
 
-Players collect sets of items to score points or achieve objectives.
+Players collect sets of items (cards, tiles, etc.) to score points or achieve objectives.
 
 ## Reference
 

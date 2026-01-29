@@ -3,12 +3,13 @@ id: 2960
 name: "Map Reduction"
 slug: map-reduction
 category: other
+summary: "Shrink the play area"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2960/map-reduction
 ---
 
 # Map Reduction
 
-Map Reduction is a board game mechanic. See BGG for detailed definition.
+The play area shrinks over time, forcing players into closer proximity.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2819
 name: "Solo / Solitaire Game"
 slug: solo-solitaire-game
 category: other
+summary: "Single player mode"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2819/solo-solitaire-game
 ---
 
 # Solo / Solitaire Game
 
-Solo / Solitaire Game is a board game mechanic. See BGG for detailed definition.
+The game can be played solo, with the player competing against the game system.
 
 ## Reference
 

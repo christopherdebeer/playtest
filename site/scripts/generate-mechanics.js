@@ -3,11 +3,18 @@ import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { parse as parseYaml } from 'yaml'
+import { marked } from 'marked'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const MECHANICS_DIR = join(__dirname, '..', '..', 'mechanics')
 const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'mechanics.json')
+
+// Configure marked for safe HTML output
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+})
 
 async function parseMechanicFile(content) {
   // Extract YAML frontmatter from mechanic markdown
@@ -25,13 +32,18 @@ async function parseMechanicFile(content) {
   const descMatch = markdownContent.match(/^#[^\n]+\n+([^\n#]+)/)
   const description = descMatch ? descMatch[1].trim() : ''
 
+  // Convert full markdown to HTML
+  const contentHtml = await marked.parse(markdownContent)
+
   return {
     id: config.id,
     name: config.name,
     slug: config.slug,
     category: config.category,
+    summary: config.summary || description.split('.')[0] + '.',
     bggUrl: config.bgg_url,
     description,
+    contentHtml,
   }
 }
 

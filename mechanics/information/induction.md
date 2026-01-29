@@ -3,12 +3,13 @@ id: 3003
 name: "Induction"
 slug: induction
 category: information
+summary: "Pattern recognition from examples"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3003/induction
 ---
 
 # Induction
 
-Induction is a board game mechanic. See BGG for detailed definition.
+Players must identify patterns or rules from examples provided during gameplay.
 
 ## Reference
 

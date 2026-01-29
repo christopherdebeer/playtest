@@ -3,12 +3,13 @@ id: 2949
 name: "Measurement Movement"
 slug: measurement-movement
 category: movement
+summary: "Measure distance for movement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2949/measurement-movement
 ---
 
 # Measurement Movement
 
-Measurement Movement is a board game mechanic. See BGG for detailed definition.
+Movement is determined by physically measuring distance rather than counting spaces.
 
 ## Reference
 

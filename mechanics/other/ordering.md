@@ -3,12 +3,13 @@ id: 3101
 name: "Ordering"
 slug: ordering
 category: other
+summary: "Arrange items in sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3101/ordering
 ---
 
 # Ordering
 
-Ordering is a board game mechanic. See BGG for detailed definition.
+Players must arrange items in a specific order or sequence as part of gameplay.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2904
 name: "Loans"
 slug: loans
 category: economic
+summary: "Borrow resources with interest"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2904/loans
 ---
 
 # Loans
 
-Loans is a board game mechanic. See BGG for detailed definition.
+Players can take loans of resources that must be repaid later, often with interest.
 
 ## Reference
 

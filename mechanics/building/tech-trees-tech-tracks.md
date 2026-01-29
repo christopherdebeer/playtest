@@ -3,12 +3,13 @@ id: 2849
 name: "Tech Trees / Tech Tracks"
 slug: tech-trees-tech-tracks
 category: building
+summary: "Unlock improvements in sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2849/tech-trees-tech-tracks
 ---
 
 # Tech Trees / Tech Tracks
 
-Tech Trees / Tech Tracks is a board game mechanic. See BGG for detailed definition.
+Players progress along technology trees or tracks, unlocking new abilities and improvements.
 
 ## Reference
 

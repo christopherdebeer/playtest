@@ -3,12 +3,13 @@ id: 2891
 name: "Hidden Roles"
 slug: hidden-roles
 category: information
+summary: "Secret player identities"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2891/hidden-roles
 ---
 
 # Hidden Roles
 
-Players have secret roles that determine their objectives and allegiances.
+Players have secret roles that determine their objectives and allegiances, unknown to other players.
 
 ## Reference
 

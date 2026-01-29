@@ -3,12 +3,13 @@ id: 2963
 name: "Movement Template"
 slug: movement-template
 category: movement
+summary: "Physical template guides movement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2963/movement-template
 ---
 
 # Movement Template
 
-Movement Template is a board game mechanic. See BGG for detailed definition.
+Physical templates are used to determine movement paths and distances.
 
 ## Reference
 

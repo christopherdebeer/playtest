@@ -3,12 +3,13 @@ id: 2813
 name: "Rondel"
 slug: rondel
 category: movement
+summary: "Circular action selection"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2813/rondel
 ---
 
 # Rondel
 
-Rondel is a board game mechanic. See BGG for detailed definition.
+Players move markers around a circular track to select actions, with movement cost increasing for distant actions.
 
 ## Reference
 

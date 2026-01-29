@@ -3,12 +3,13 @@ id: 2043
 name: "Enclosure"
 slug: enclosure
 category: building
+summary: "Surround areas to capture"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2043/enclosure
 ---
 
 # Enclosure
 
-Enclosure is a board game mechanic. See BGG for detailed definition.
+Players surround or enclose areas to claim them, often for points or resources.
 
 ## Reference
 

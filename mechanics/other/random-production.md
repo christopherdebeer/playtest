@@ -3,12 +3,13 @@ id: 2909
 name: "Random Production"
 slug: random-production
 category: other
+summary: "Randomized resource generation"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2909/random-production
 ---
 
 # Random Production
 
-Random Production is a board game mechanic. See BGG for detailed definition.
+Resources are produced randomly, adding uncertainty to economic planning.
 
 ## Reference
 

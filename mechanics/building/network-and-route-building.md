@@ -3,12 +3,13 @@ id: 2081
 name: "Network and Route Building"
 slug: network-and-route-building
 category: building
+summary: "Create connected paths"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2081/network-and-route-building
 ---
 
 # Network and Route Building
 
-Network and Route Building is a board game mechanic. See BGG for detailed definition.
+Players build networks of connected routes, often for transportation or scoring.
 
 ## Reference
 

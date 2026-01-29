@@ -3,12 +3,13 @@ id: 2902
 name: "Income"
 slug: income
 category: economic
+summary: "Regular resource generation"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2902/income
 ---
 
 # Income
 
-Income is a board game mechanic. See BGG for detailed definition.
+Players receive regular income of resources, typically at the start of each round or turn.
 
 ## Reference
 

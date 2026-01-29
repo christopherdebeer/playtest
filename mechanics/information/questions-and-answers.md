@@ -3,12 +3,13 @@ id: 3102
 name: "Questions and Answers"
 slug: questions-and-answers
 category: information
+summary: "Q&A determines outcomes"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3102/questions-and-answers
 ---
 
 # Questions and Answers
 
-Questions and Answers is a board game mechanic. See BGG for detailed definition.
+Gameplay involves asking and answering questions, with answers affecting game outcomes.
 
 ## Reference
 

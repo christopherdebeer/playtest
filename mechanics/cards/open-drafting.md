@@ -3,12 +3,13 @@ id: 2041
 name: "Open Drafting"
 slug: open-drafting
 category: cards
+summary: "Draft from visible options"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2041/open-drafting
 ---
 
 # Open Drafting
 
-Open Drafting is a board game mechanic. See BGG for detailed definition.
+Players draft cards or items from a face-up display visible to all players.
 
 ## Reference
 

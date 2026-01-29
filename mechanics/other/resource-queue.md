@@ -3,12 +3,13 @@ id: 3103
 name: "Resource Queue"
 slug: resource-queue
 category: other
+summary: "Resources in ordered sequence"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3103/resource-queue
 ---
 
 # Resource Queue
 
-Resource Queue is a board game mechanic. See BGG for detailed definition.
+Resources are managed in a queue, with order affecting availability or value.
 
 ## Reference
 

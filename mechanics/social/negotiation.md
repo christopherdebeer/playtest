@@ -3,12 +3,13 @@ id: 2915
 name: "Negotiation"
 slug: negotiation
 category: social
+summary: "Discuss deals with players"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2915/negotiation
 ---
 
 # Negotiation
 
-Negotiation is a board game mechanic. See BGG for detailed definition.
+Players can negotiate, make deals, and trade with each other through discussion.
 
 ## Reference
 

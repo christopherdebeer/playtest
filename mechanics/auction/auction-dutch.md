@@ -3,12 +3,13 @@ id: 2924
 name: "Auction: Dutch"
 slug: auction-dutch
 category: auction
+summary: "Price decreases until someone buys"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2924/auction-dutch
 ---
 
 # Auction: Dutch
 
-Auction: Dutch is a board game mechanic. See BGG for detailed definition.
+The price starts high and decreases until a player agrees to pay the current price, winning the auction.
 
 ## Reference
 

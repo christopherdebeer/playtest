@@ -3,12 +3,13 @@ id: 3000
 name: "Hot Potato"
 slug: hot-potato
 category: other
+summary: "Avoid holding item at end"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3000/hot-potato
 ---
 
 # Hot Potato
 
-Hot Potato is a board game mechanic. See BGG for detailed definition.
+Players try to avoid being the one holding a particular item when a timer or round ends.
 
 ## Reference
 

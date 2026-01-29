@@ -3,12 +3,13 @@ id: 2871
 name: "Kill Steal"
 slug: kill-steal
 category: conflict
+summary: "Claim others eliminations"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2871/kill-steal
 ---
 
 # Kill Steal
 
-Kill Steal is a board game mechanic. See BGG for detailed definition.
+Players can claim credit for eliminations or achievements initiated by other players.
 
 ## Reference
 

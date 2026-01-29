@@ -3,12 +3,13 @@ id: 2035
 name: "Roll / Spin and Move"
 slug: roll-spin-and-move
 category: movement
+summary: "Random movement distance"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2035/roll-spin-and-move
 ---
 
 # Roll / Spin and Move
 
-Roll / Spin and Move is a board game mechanic. See BGG for detailed definition.
+Players roll dice or spin a spinner to determine how far they move.
 
 ## Reference
 

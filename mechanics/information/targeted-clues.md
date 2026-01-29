@@ -3,12 +3,13 @@ id: 2866
 name: "Targeted Clues"
 slug: targeted-clues
 category: information
+summary: "Clues for specific players"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2866/targeted-clues
 ---
 
 # Targeted Clues
 
-Targeted Clues is a board game mechanic. See BGG for detailed definition.
+Clues are given to specific players, requiring deduction about why you received certain clues.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2887
 name: "Catch the Leader"
 slug: catch-the-leader
 category: victory
+summary: "Mechanics target leading player"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2887/catch-the-leader
 ---
 
 # Catch the Leader
 
-Catch the Leader is a board game mechanic. See BGG for detailed definition.
+Game mechanisms that specifically target or disadvantage the player who is currently winning.
 
 ## Reference
 

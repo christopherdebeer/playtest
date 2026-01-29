@@ -3,12 +3,13 @@ id: 2946
 name: "Pattern Movement"
 slug: pattern-movement
 category: movement
+summary: "Move in set patterns"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2946/pattern-movement
 ---
 
 # Pattern Movement
 
-Pattern Movement is a board game mechanic. See BGG for detailed definition.
+Pieces move in predetermined patterns, like chess pieces.
 
 ## Reference
 

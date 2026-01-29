@@ -3,12 +3,13 @@ id: 2839
 name: "Action Retrieval"
 slug: action-retrieval
 category: action
+summary: "Recover previously used actions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2839/action-retrieval
 ---
 
 # Action Retrieval
 
-Action Retrieval is a board game mechanic. See BGG for detailed definition.
+Players can retrieve or refresh actions that were previously used, allowing them to be used again.
 
 ## Reference
 

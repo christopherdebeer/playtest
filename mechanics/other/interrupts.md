@@ -3,12 +3,13 @@ id: 2837
 name: "Interrupts"
 slug: interrupts
 category: other
+summary: "Act during others turns"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2837/interrupts
 ---
 
 # Interrupts
 
-Interrupts is a board game mechanic. See BGG for detailed definition.
+Players can interrupt the normal flow of play to take actions during other players turns.
 
 ## Reference
 

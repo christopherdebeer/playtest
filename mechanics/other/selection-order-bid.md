@@ -3,12 +3,13 @@ id: 2926
 name: "Selection Order Bid"
 slug: selection-order-bid
 category: other
+summary: "Bid for selection priority"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2926/selection-order-bid
 ---
 
 # Selection Order Bid
 
-Selection Order Bid is a board game mechanic. See BGG for detailed definition.
+Players bid to determine the order in which they make selections.
 
 ## Reference
 

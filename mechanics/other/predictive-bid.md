@@ -3,12 +3,13 @@ id: 3006
 name: "Predictive Bid"
 slug: predictive-bid
 category: other
+summary: "Bid on expected outcomes"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3006/predictive-bid
 ---
 
 # Predictive Bid
 
-Predictive Bid is a board game mechanic. See BGG for detailed definition.
+Players bid on what they predict will happen, scoring based on accuracy.
 
 ## Reference
 

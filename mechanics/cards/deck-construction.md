@@ -3,12 +3,13 @@ id: 3004
 name: "Deck Construction"
 slug: deck-construction
 category: cards
+summary: "Build deck before playing"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3004/deck-construction
 ---
 
 # Deck Construction
 
-Deck Construction is a board game mechanic. See BGG for detailed definition.
+Players construct their deck before the game begins, selecting cards to include based on strategy.
 
 ## Reference
 

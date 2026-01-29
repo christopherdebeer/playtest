@@ -3,12 +3,13 @@ id: 2965
 name: "Multiple Maps"
 slug: multiple-maps
 category: other
+summary: "Play across several maps"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2965/multiple-maps
 ---
 
 # Multiple Maps
 
-Multiple Maps is a board game mechanic. See BGG for detailed definition.
+The game uses multiple maps or boards that interact with each other.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2855
 name: "Ratio / Combat Results Table"
 slug: ratio-combat-results-table
 category: conflict
+summary: "Combat odds from table"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2855/ratio-combat-results-table
 ---
 
 # Ratio / Combat Results Table
 
-Ratio / Combat Results Table is a board game mechanic. See BGG for detailed definition.
+Combat results are determined by consulting a table based on the ratio of attacking to defending strength.
 
 ## Reference
 

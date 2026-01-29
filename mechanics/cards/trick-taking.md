@@ -3,12 +3,13 @@ id: 2009
 name: "Trick-taking"
 slug: trick-taking
 category: cards
+summary: "Win card rounds"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2009/trick-taking
 ---
 
 # Trick-taking
 
-Players play cards in rounds (tricks), with the highest card winning the trick.
+Players play cards in rounds (tricks), with the highest card of the led suit (or trump) winning the trick.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2017
 name: "Voting"
 slug: voting
 category: social
+summary: "Decide by majority vote"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2017/voting
 ---
 
 # Voting
 
-Voting is a board game mechanic. See BGG for detailed definition.
+Players vote to make collective decisions, with majority typically winning.
 
 ## Reference
 

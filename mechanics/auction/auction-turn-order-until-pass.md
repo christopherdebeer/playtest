@@ -3,12 +3,13 @@ id: 2919
 name: "Auction: Turn Order Until Pass"
 slug: auction-turn-order-until-pass
 category: auction
+summary: "Bid in turn order until passing"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2919/auction-turn-order-until-pass
 ---
 
 # Auction: Turn Order Until Pass
 
-Auction: Turn Order Until Pass is a board game mechanic. See BGG for detailed definition.
+Players bid in turn order, with each player either raising the bid or passing. Passed players cannot re-enter.
 
 ## Reference
 

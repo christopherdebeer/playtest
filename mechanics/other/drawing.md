@@ -3,12 +3,13 @@ id: 3096
 name: "Drawing"
 slug: drawing
 category: other
+summary: "Create pictures as gameplay"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/3096/drawing
 ---
 
 # Drawing
 
-Drawing is a board game mechanic. See BGG for detailed definition.
+Players draw pictures as part of the game, often for others to guess or interpret.
 
 ## Reference
 

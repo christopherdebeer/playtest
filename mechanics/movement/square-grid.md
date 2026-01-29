@@ -3,12 +3,13 @@ id: 2940
 name: "Square Grid"
 slug: square-grid
 category: movement
+summary: "Square tile board"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2940/square-grid
 ---
 
 # Square Grid
 
-Square Grid is a board game mechanic. See BGG for detailed definition.
+The game board uses a grid of square spaces.
 
 ## Reference
 

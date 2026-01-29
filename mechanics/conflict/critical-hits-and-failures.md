@@ -3,12 +3,13 @@ id: 2854
 name: "Critical Hits and Failures"
 slug: critical-hits-and-failures
 category: conflict
+summary: "Extreme results on dice rolls"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2854/critical-hits-and-failures
 ---
 
 # Critical Hits and Failures
 
-Critical Hits and Failures is a board game mechanic. See BGG for detailed definition.
+Certain dice results produce dramatically better or worse outcomes than normal rolls.
 
 ## Reference
 

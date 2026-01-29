@@ -3,12 +3,13 @@ id: 2027
 name: "Storytelling"
 slug: storytelling
 category: social
+summary: "Create narrative together"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2027/storytelling
 ---
 
 # Storytelling
 
-Storytelling is a board game mechanic. See BGG for detailed definition.
+Players collaboratively create a story, with gameplay elements guiding the narrative.
 
 ## Reference
 

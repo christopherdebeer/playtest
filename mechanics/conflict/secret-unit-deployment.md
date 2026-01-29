@@ -3,12 +3,13 @@ id: 2016
 name: "Secret Unit Deployment"
 slug: secret-unit-deployment
 category: conflict
+summary: "Hidden unit placement"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2016/secret-unit-deployment
 ---
 
 # Secret Unit Deployment
 
-Secret Unit Deployment is a board game mechanic. See BGG for detailed definition.
+Players deploy units secretly, with positions hidden from opponents.
 
 ## Reference
 

@@ -3,12 +3,13 @@ id: 2038
 name: "Singing"
 slug: singing
 category: physical
+summary: "Sing as gameplay element"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2038/singing
 ---
 
 # Singing
 
-Singing is a board game mechanic. See BGG for detailed definition.
+Players must sing as part of the game, often for others to guess songs.
 
 ## Reference
 

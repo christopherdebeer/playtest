@@ -3,12 +3,13 @@ id: 2955
 name: "Mancala"
 slug: mancala
 category: other
+summary: "Sow seeds around pits"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2955/mancala
 ---
 
 # Mancala
 
-Mancala is a board game mechanic. See BGG for detailed definition.
+Players pick up pieces from a pit and distribute them one at a time around a circuit of pits.
 
 ## Reference
 

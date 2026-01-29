@@ -187,11 +187,90 @@
   font-family: monospace;
 }
 
+.mechanic-summary {
+  color: var(--cat-color, var(--accent));
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .mechanic-description {
   color: var(--text-secondary);
   font-size: 0.85rem;
   line-height: 1.5;
   margin-bottom: 0.75rem;
+}
+
+.mechanic-card.expanded {
+  grid-column: 1 / -1;
+}
+
+.mechanic-content.markdown-body {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.mechanic-content.markdown-body h1,
+.mechanic-content.markdown-body h2,
+.mechanic-content.markdown-body h3 {
+  color: var(--text-primary);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mechanic-content.markdown-body h1 { font-size: 1.1rem; }
+.mechanic-content.markdown-body h2 { font-size: 1rem; }
+.mechanic-content.markdown-body h3 { font-size: 0.9rem; }
+
+.mechanic-content.markdown-body p {
+  margin-bottom: 0.5rem;
+}
+
+.mechanic-content.markdown-body ul,
+.mechanic-content.markdown-body ol {
+  margin-bottom: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.mechanic-content.markdown-body code {
+  background: var(--code-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.mechanic-content.markdown-body pre {
+  background: var(--code-bg);
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
+}
+
+.mechanic-content.markdown-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.expand-toggle {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--cat-color, var(--accent));
+  background: transparent;
+  border: 1px solid var(--cat-color, var(--accent));
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.expand-toggle:hover {
+  background: color-mix(in srgb, var(--cat-color, var(--accent)) 15%, transparent);
 }
 
 .mechanic-games {

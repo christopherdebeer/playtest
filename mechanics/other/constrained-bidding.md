@@ -3,12 +3,13 @@ id: 2922
 name: "Constrained Bidding"
 slug: constrained-bidding
 category: other
+summary: "Bidding with restrictions"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2922/constrained-bidding
 ---
 
 # Constrained Bidding
 
-Constrained Bidding is a board game mechanic. See BGG for detailed definition.
+Auctions where bids are constrained by specific rules, such as bid increments or resource limitations.
 
 ## Reference
 

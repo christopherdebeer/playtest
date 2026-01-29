@@ -3,12 +3,13 @@ id: 2930
 name: "Auction: Dexterity"
 slug: auction-dexterity
 category: auction
+summary: "Physical skill affects bidding"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2930/auction-dexterity
 ---
 
 # Auction: Dexterity
 
-Auction: Dexterity is a board game mechanic. See BGG for detailed definition.
+Auction outcomes are influenced by physical dexterity or skill rather than purely by bid amounts.
 
 ## Reference
 

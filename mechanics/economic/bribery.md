@@ -3,12 +3,13 @@ id: 2913
 name: "Bribery"
 slug: bribery
 category: economic
+summary: "Pay others for favors"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2913/bribery
 ---
 
 # Bribery
 
-Bribery is a board game mechanic. See BGG for detailed definition.
+Players can pay other players (in game resources) to influence their decisions or gain advantages.
 
 ## Reference
 

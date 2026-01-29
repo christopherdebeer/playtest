@@ -3,12 +3,13 @@ id: 2991
 name: "Speed Matching"
 slug: speed-matching
 category: physical
+summary: "Quick pattern matching"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2991/speed-matching
 ---
 
 # Speed Matching
 
-Speed Matching is a board game mechanic. See BGG for detailed definition.
+Players race to match patterns as quickly as possible.
 
 ## Reference
 

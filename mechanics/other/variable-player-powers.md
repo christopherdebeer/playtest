@@ -3,12 +3,13 @@ id: 2015
 name: "Variable Player Powers"
 slug: variable-player-powers
 category: other
+summary: "Unique player abilities"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2015/variable-player-powers
 ---
 
 # Variable Player Powers
 
-Each player has unique abilities that create asymmetric gameplay.
+Each player has unique abilities or powers that create asymmetric gameplay.
 
 ## Reference
 

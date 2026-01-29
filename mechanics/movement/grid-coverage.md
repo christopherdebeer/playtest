@@ -3,12 +3,13 @@ id: 2978
 name: "Grid Coverage"
 slug: grid-coverage
 category: movement
+summary: "Cover grid spaces"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2978/grid-coverage
 ---
 
 # Grid Coverage
 
-Grid Coverage is a board game mechanic. See BGG for detailed definition.
+Players attempt to cover or control spaces on a grid pattern board.
 
 ## Reference
 
