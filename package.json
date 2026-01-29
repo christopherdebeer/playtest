@@ -11,8 +11,7 @@
     "playtest": "engine/dist/index.js"
   },
   "scripts": {
-    "build": "npm run build --workspace=engine",
-    "postinstall": "npm run build"
+    "build": "npm run build --workspace=engine"
   },
   "keywords": ["game", "playtesting", "multi-agent", "claude"],
   "author": "",
