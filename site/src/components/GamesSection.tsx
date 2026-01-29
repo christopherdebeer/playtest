@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import gamesData from '../data/games.json'
+import MechanicBadge from './MechanicBadge'
 import './GamesSection.css'
 
 interface GameConfig {
@@ -10,6 +11,7 @@ interface GameConfig {
   startingCards?: number
   deckSize?: number
   boardStates?: string[]
+  mechanics?: string[]
 }
 
 interface Game {
@@ -39,6 +41,17 @@ function GamesSection() {
               </div>
 
               <p className="game-objective">{game.config.winCondition}</p>
+
+              {game.config.mechanics && game.config.mechanics.length > 0 && (
+                <div className="game-mechanics" onClick={(e) => e.preventDefault()}>
+                  {game.config.mechanics.slice(0, 4).map((slug) => (
+                    <MechanicBadge key={slug} slug={slug} linkToPage={false} />
+                  ))}
+                  {game.config.mechanics.length > 4 && (
+                    <span className="more-mechanics">+{game.config.mechanics.length - 4}</span>
+                  )}
+                </div>
+              )}
 
               <div className="game-stats">
                 {game.config.startingCards && (

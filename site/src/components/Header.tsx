@@ -12,6 +12,7 @@ function Header() {
         <nav className="nav">
           <a href="#usage">Usage</a>
           <a href="#games">Games</a>
+          <Link to="/mechanics">Mechanics</Link>
           <a href="#architecture">Architecture</a>
           <a
             href="https://github.com/christopherdebeer/playtest"

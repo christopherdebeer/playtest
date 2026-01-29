@@ -58,6 +58,21 @@
   font-size: 1rem;
 }
 
+.mechanics-section {
+  margin-bottom: 2.5rem;
+}
+
+.mechanics-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.mechanics-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .quick-start {
   background: var(--bg-secondary);
   border: 1px solid var(--border);

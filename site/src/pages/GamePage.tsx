@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import gamesData from '../data/games.json'
+import MechanicBadge from '../components/MechanicBadge'
 import './GamePage.css'
 
 interface CardDef {
@@ -20,6 +21,7 @@ interface GameConfig {
     states: string[]
     start: string
   }
+  mechanics?: string[]
 }
 
 interface Game {
@@ -80,6 +82,17 @@ function GamePage() {
             <span className="meta-value">{game.config.maxTurns}</span>
           </div>
         </div>
+
+        {game.config.mechanics && game.config.mechanics.length > 0 && (
+          <div className="mechanics-section">
+            <h2>Game Mechanics</h2>
+            <div className="mechanics-badges">
+              {game.config.mechanics.map((slug) => (
+                <MechanicBadge key={slug} slug={slug} showCategory />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="quick-start">
           <h2>Quick Start</h2>
