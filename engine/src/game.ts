@@ -323,6 +323,22 @@ export function endGame(gameName: string, winner: string, reason: string): GameS
   return state;
 }
 
+export function cancelGame(gameName: string, reason: string): GameState {
+  const state = loadState(gameName);
+
+  state.status = 'cancelled';
+  state.shared.cancelReason = reason;
+  saveState(state);
+
+  logEvent(state, {
+    event: 'game_cancelled',
+    turn: state.turn,
+    data: { reason }
+  });
+
+  return state;
+}
+
 // Randomization functions (engine-controlled)
 
 export function roll(probability: number): { roll: number; success: boolean } {

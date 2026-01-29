@@ -1,6 +1,6 @@
 // Core game types
 
-export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'completed';
+export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'completed' | 'cancelled';
 export type Role = 'gamemaster' | 'player';
 
 export interface Card {
@@ -91,7 +91,7 @@ export interface GameState {
 }
 
 export interface WaitResult {
-  status: 'your_turn' | 'game_over' | 'timeout' | 'error' | 'game_not_found';
+  status: 'your_turn' | 'game_over' | 'game_cancelled' | 'timeout' | 'error' | 'game_not_found';
   gameState?: PlayerView;
   winner?: string;
   reason?: string;
@@ -279,7 +279,7 @@ export interface AdjudicationResult {
 
 // Wait result extended with contest info
 export interface ExtendedWaitResult {
-  status: 'your_turn' | 'game_over' | 'timeout' | 'error' | 'game_not_found' | 'contest_pending' | 'resignation_pending';
+  status: 'your_turn' | 'game_over' | 'game_cancelled' | 'timeout' | 'error' | 'game_not_found' | 'contest_pending' | 'resignation_pending';
   gameState?: PlayerView;
   winner?: string;
   reason?: string;

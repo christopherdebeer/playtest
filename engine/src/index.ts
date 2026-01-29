@@ -11,6 +11,7 @@ import {
   registerAgent,
   startGame,
   endGame,
+  cancelGame,
   roll,
   drawCards,
   discardCard,
@@ -133,7 +134,7 @@ program
   .command('wait <game>')
   .description('Wait for player turn (blocking)')
   .requiredOption('-p, --player <id>', 'Player ID')
-  .option('-t, --timeout <ms>', 'Timeout in milliseconds', '300000')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
       // Auto-register the player if not already registered
@@ -437,7 +438,7 @@ program
 program
   .command('pending <game>')
   .description('Wait for pending action, contest, or resignation (gamemaster use)')
-  .option('-t, --timeout <ms>', 'Timeout in milliseconds', '120000')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { timeout: string }) => {
     try {
       // Auto-register the gamemaster if not already registered
@@ -453,13 +454,22 @@ program
       const pollInterval = 500;
 
       // Poll for pending action, contest, or resignation
-      while (Date.now() - startTime < timeout) {
+      // timeout=0 means infinite wait
+      while (timeout === 0 || Date.now() - startTime < timeout) {
         const state = loadState(game);
 
         if (state.status === 'completed') {
           console.log(JSON.stringify({
             status: 'game_over',
             winner: state.shared.winner
+          }));
+          return;
+        }
+
+        if (state.status === 'cancelled') {
+          console.log(JSON.stringify({
+            status: 'game_cancelled',
+            reason: state.shared.cancelReason
           }));
           return;
         }
@@ -832,6 +842,30 @@ program
         success: true,
         gameId: state.gameId,
         winner: options.winner,
+        totalTurns: state.turn,
+        reason: options.reason
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('cancel <game>')
+  .description('Cancel game without a winner (releases all waiting agents)')
+  .requiredOption('-r, --reason <text>', 'Cancellation reason')
+  .action((game: string, options: { reason: string }) => {
+    try {
+      const state = cancelGame(game, options.reason);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: 'cancelled',
         totalTurns: state.turn,
         reason: options.reason
       }));
