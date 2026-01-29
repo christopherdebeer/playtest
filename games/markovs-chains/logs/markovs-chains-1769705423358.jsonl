@@ -1,0 +1,2 @@
+{"timestamp":"2026-01-29T16:50:23.367Z","event":"game_init","data":{"gameId":"markovs-chains-1769705423358","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-29T16:50:32.698Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}

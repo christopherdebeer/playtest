@@ -32,6 +32,25 @@
         ]
       }
     ],
-    "SubagentStop": []
+    "SubagentStop": [
+      {
+        "matcher": "player",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/player-stop-hook.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "gamemaster",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/gamemaster-stop-hook.sh"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -29,6 +29,25 @@
         ]
       }
     ],
-    "SubagentStop": []
+    "SubagentStop": [
+      {
+        "matcher": "player",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/player-stop-hook.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "gamemaster",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/gamemaster-stop-hook.sh"
+          }
+        ]
+      }
+    ]
   }
 }

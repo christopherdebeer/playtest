@@ -1,8 +1,21 @@
 // Game state management
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+// Debug logging flag (can be set from CLI)
+let DEBUG_MODE = false;
+
+export function setDebugMode(enabled: boolean): void {
+  DEBUG_MODE = enabled;
+}
+
+function debug(...args: any[]): void {
+  if (DEBUG_MODE) {
+    console.error(...args);
+  }
+}
 import type {
   GameState,
   GameStatus,
@@ -59,20 +72,141 @@ export function stateExists(gameName: string): boolean {
   return existsSync(getStateFile(gameName));
 }
 
-export function loadState(gameName: string): GameState {
+// ============ File Locking ============
+
+function getLockFile(gameName: string): string {
+  return `${getStateFile(gameName)}.lock`;
+}
+
+function acquireLock(gameName: string, timeoutMs: number = 5000): boolean {
+  const lockFile = getLockFile(gameName);
+  const startTime = Date.now();
+  const retryInterval = 10; // Check every 10ms
+
+  debug(`[LOCK DEBUG] Attempting to acquire lock: ${lockFile}`);
+
+  // Ensure the directory exists for the lock file
+  const lockDir = dirname(lockFile);
+  if (!existsSync(lockDir)) {
+    debug(`[LOCK DEBUG] Creating lock directory: ${lockDir}`);
+    mkdirSync(lockDir, { recursive: true });
+  }
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      // Try to create lock file exclusively (fails if exists)
+      writeFileSync(lockFile, `${process.pid}\n${new Date().toISOString()}`, { flag: 'wx' });
+      debug(`[LOCK DEBUG] Lock acquired by PID ${process.pid}`);
+      return true;
+    } catch (e: any) {
+      if (e.code === 'EEXIST') {
+        // Lock file exists, check if stale
+        try {
+          const lockContent = readFileSync(lockFile, 'utf-8');
+          const lockAge = Date.now() - new Date(lockContent.split('\n')[1]).getTime();
+
+          // If lock is older than 2 seconds, consider it stale and remove
+          if (lockAge > 2000) {
+            debug(`[LOCK DEBUG] Stale lock detected (${lockAge}ms old), removing...`);
+            unlinkSync(lockFile);
+            continue;
+          }
+        } catch {
+          // Lock file might have been removed, try again
+        }
+
+        // Wait before retrying
+        const elapsed = Date.now() - startTime;
+        if (elapsed < timeoutMs) {
+          // Busy wait (not ideal but simple for now)
+          const waitUntil = Date.now() + retryInterval;
+          while (Date.now() < waitUntil) { /* busy wait */ }
+        }
+      } else {
+        // Other error, fail
+        debug(`[LOCK DEBUG] Lock acquisition failed:`, e);
+        return false;
+      }
+    }
+  }
+
+  debug(`[LOCK DEBUG] Lock acquisition timeout after ${timeoutMs}ms`);
+  return false;
+}
+
+function releaseLock(gameName: string): void {
+  const lockFile = getLockFile(gameName);
+
+  try {
+    if (existsSync(lockFile)) {
+      unlinkSync(lockFile);
+      debug(`[LOCK DEBUG] Lock released by PID ${process.pid}`);
+    }
+  } catch (e) {
+    debug(`[LOCK DEBUG] Error releasing lock:`, e);
+  }
+}
+
+// ============ State Management with Locking ============
+
+// Internal functions without locking (for use within locked operations)
+function loadStateUnsafe(gameName: string): GameState {
   const stateFile = getStateFile(gameName);
+  debug(`[LOADSTATE DEBUG] Loading state for ${gameName} from ${stateFile}`);
+
   if (!existsSync(stateFile)) {
+    debug(`[LOADSTATE DEBUG] ERROR: State file not found`);
     throw new Error(`No active game found for ${gameName}`);
   }
-  return JSON.parse(readFileSync(stateFile, 'utf-8'));
+
+  const state = JSON.parse(readFileSync(stateFile, 'utf-8'));
+  debug(`[LOADSTATE DEBUG] Loaded successfully, status: ${state.status}`);
+  return state;
+}
+
+function saveStateUnsafe(state: GameState): void {
+  const stateDir = getStatePath(state.gameName);
+  const stateFile = getStateFile(state.gameName);
+
+  debug(`[SAVESTATE DEBUG] Saving state for ${state.gameName} to ${stateFile}`);
+  debug(`[SAVESTATE DEBUG] Status: ${state.status}, Turn: ${state.turn}`);
+
+  if (!existsSync(stateDir)) {
+    debug(`[SAVESTATE DEBUG] Creating state directory: ${stateDir}`);
+    mkdirSync(stateDir, { recursive: true });
+  }
+
+  writeFileSync(stateFile, JSON.stringify(state, null, 2));
+  debug(`[SAVESTATE DEBUG] State saved successfully`);
+}
+
+// Public functions with locking
+export function loadState(gameName: string): GameState {
+  // Acquire lock before reading
+  if (!acquireLock(gameName)) {
+    throw new Error(`Failed to acquire lock for ${gameName}`);
+  }
+
+  try {
+    return loadStateUnsafe(gameName);
+  } finally {
+    // Always release lock
+    releaseLock(gameName);
+  }
 }
 
 export function saveState(state: GameState): void {
-  const stateDir = getStatePath(state.gameName);
-  if (!existsSync(stateDir)) {
-    mkdirSync(stateDir, { recursive: true });
+  // Acquire lock before writing
+  if (!acquireLock(state.gameName)) {
+    throw new Error(`Failed to acquire lock for ${state.gameName}`);
   }
-  writeFileSync(getStateFile(state.gameName), JSON.stringify(state, null, 2));
+
+  try {
+    saveStateUnsafe(state);
+  } finally {
+    // Always release lock
+    releaseLock(state.gameName);
+  }
 }
 
 export function logEvent(state: GameState, event: Omit<LogEvent, 'timestamp'>): void {
@@ -178,73 +312,118 @@ export function registerAgent(
   agentId: string,
   playerId?: string
 ): { registered: boolean; role: string; playerId?: string; rules: string } {
-  const state = loadState(gameName);
+  debug(`[REGISTER DEBUG] === Starting registration ===`);
+  debug(`[REGISTER DEBUG] Game: ${gameName}, Role: ${role}, AgentId: ${agentId}, PlayerId: ${playerId || 'auto'}`);
 
-  if (role === 'gamemaster') {
-    // Gamemaster registration - store in shared state
-    state.shared.gamemasterAgentId = agentId;
-    saveState(state);
+  // Acquire lock for the entire registration operation
+  if (!acquireLock(gameName)) {
+    throw new Error(`Failed to acquire lock for ${gameName}`);
+  }
 
-    // Check if all players also registered - if so, auto-start
-    const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
-    if (allPlayersRegistered) {
-      startGame(gameName);
+  try {
+    const state = loadStateUnsafe(gameName);
+
+    if (role === 'gamemaster') {
+      debug(`[REGISTER DEBUG] Gamemaster registration path`);
+      debug(`[REGISTER DEBUG] Before: gamemasterAgentId = ${state.shared.gamemasterAgentId || 'null'}`);
+
+      // Gamemaster registration - store in shared state
+      state.shared.gamemasterAgentId = agentId;
+      debug(`[REGISTER DEBUG] After assignment: gamemasterAgentId = ${state.shared.gamemasterAgentId}`);
+
+      saveStateUnsafe(state);
+      debug(`[REGISTER DEBUG] State saved for gamemaster`);
+
+      // Check if all players also registered - if so, auto-start
+      const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+      debug(`[REGISTER DEBUG] All players registered? ${allPlayersRegistered}`);
+      if (allPlayersRegistered) {
+        debug(`[REGISTER DEBUG] Starting game automatically...`);
+        startGameUnsafe(gameName);
+      }
+
+      return {
+        registered: true,
+        role: 'gamemaster',
+        rules: state.rulesMarkdown
+      };
+    }
+
+    // Player registration
+    debug(`[REGISTER DEBUG] Player registration path`);
+
+    if (!playerId) {
+      debug(`[REGISTER DEBUG] Auto-assigning player slot...`);
+      // Auto-assign to first unregistered player
+      for (const pid of state.turnOrder) {
+        if (!state.players[pid].agentId) {
+          playerId = pid;
+          debug(`[REGISTER DEBUG] Assigned to ${playerId}`);
+          break;
+        }
+      }
+    }
+
+    if (!playerId || !state.players[playerId]) {
+      debug(`[REGISTER DEBUG] ERROR: No available player slot`);
+      throw new Error(`No available player slot for registration`);
+    }
+
+    debug(`[REGISTER DEBUG] Before: ${playerId}.agentId = ${state.players[playerId].agentId || 'null'}`);
+
+    if (state.players[playerId].agentId) {
+      debug(`[REGISTER DEBUG] ERROR: Player already registered`);
+      throw new Error(`Player ${playerId} already registered`);
+    }
+
+    state.players[playerId].agentId = agentId;
+    debug(`[REGISTER DEBUG] After assignment: ${playerId}.agentId = ${state.players[playerId].agentId}`);
+
+    saveStateUnsafe(state);
+    debug(`[REGISTER DEBUG] State saved for ${playerId}`);
+
+    // Check if all players registered
+    const allRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+    debug(`[REGISTER DEBUG] All players registered? ${allRegistered}`);
+    debug(`[REGISTER DEBUG] Gamemaster registered? ${!!state.shared.gamemasterAgentId}`);
+
+    if (allRegistered && state.shared.gamemasterAgentId) {
+      debug(`[REGISTER DEBUG] Starting game automatically...`);
+      startGameUnsafe(gameName);
     }
 
     return {
       registered: true,
-      role: 'gamemaster',
+      role: 'player',
+      playerId,
       rules: state.rulesMarkdown
     };
+  } finally {
+    // Always release lock
+    releaseLock(gameName);
   }
-
-  // Player registration
-  if (!playerId) {
-    // Auto-assign to first unregistered player
-    for (const pid of state.turnOrder) {
-      if (!state.players[pid].agentId) {
-        playerId = pid;
-        break;
-      }
-    }
-  }
-
-  if (!playerId || !state.players[playerId]) {
-    throw new Error(`No available player slot for registration`);
-  }
-
-  if (state.players[playerId].agentId) {
-    throw new Error(`Player ${playerId} already registered`);
-  }
-
-  state.players[playerId].agentId = agentId;
-  saveState(state);
-
-  // Check if all players registered
-  const allRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
-  if (allRegistered && state.shared.gamemasterAgentId) {
-    startGame(gameName);
-  }
-
-  return {
-    registered: true,
-    role: 'player',
-    playerId,
-    rules: state.rulesMarkdown
-  };
 }
 
-export function startGame(gameName: string): void {
-  const state = loadState(gameName);
+// Internal unsafe version (called within locked operations)
+function startGameUnsafe(gameName: string): void {
+  debug(`[STARTGAME DEBUG] === Starting game ${gameName} ===`);
+
+  const state = loadStateUnsafe(gameName);
+  debug(`[STARTGAME DEBUG] Current status: ${state.status}`);
 
   if (state.status !== 'waiting_for_players') {
+    debug(`[STARTGAME DEBUG] Game already started, skipping`);
     return; // Already started
   }
 
+  debug(`[STARTGAME DEBUG] Changing status to in_progress`);
   state.status = 'in_progress';
   state.turn = 1;
   state.currentPlayer = state.turnOrder[0];
-  saveState(state);
+  debug(`[STARTGAME DEBUG] First player: ${state.currentPlayer}`);
+
+  saveStateUnsafe(state);
+  debug(`[STARTGAME DEBUG] State saved, game started`);
 
   logEvent(state, {
     event: 'game_start',
@@ -254,6 +433,19 @@ export function startGame(gameName: string): void {
       firstPlayer: state.currentPlayer
     }
   });
+}
+
+// Public version with locking
+export function startGame(gameName: string): void {
+  if (!acquireLock(gameName)) {
+    throw new Error(`Failed to acquire lock for ${gameName}`);
+  }
+
+  try {
+    startGameUnsafe(gameName);
+  } finally {
+    releaseLock(gameName);
+  }
 }
 
 export function getPlayerView(state: GameState, playerId: string): PlayerView {

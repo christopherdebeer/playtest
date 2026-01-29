@@ -29,7 +29,8 @@ import {
   fileContest,
   adjudicateContest,
   adjudicateResignation,
-  ensureContestState
+  ensureContestState,
+  setDebugMode
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -50,10 +51,24 @@ import { getRulesPath } from './game.js';
 
 const program = new Command();
 
+// Global debug flag
+let DEBUG_MODE = false;
+
+function debug(...args: any[]): void {
+  if (DEBUG_MODE) {
+    console.error(...args);
+  }
+}
+
 program
   .name('playtest')
   .description('Game-agnostic AI playtesting engine')
-  .version('3.0.0');
+  .version('3.0.0')
+  .option('--debug', 'Enable debug logging')
+  .hook('preAction', (thisCommand) => {
+    DEBUG_MODE = thisCommand.opts().debug || false;
+    setDebugMode(DEBUG_MODE);
+  });
 
 // ============ Game Lifecycle Commands ============
 
@@ -151,8 +166,20 @@ program
     try {
       // Auto-register the player if not already registered
       const state = loadState(game);
+      debug(`[WAIT DEBUG] Player ${options.player}: checking registration...`);
+      debug(`[WAIT DEBUG] Current agentId: ${state.players[options.player]?.agentId || 'null'}`);
+
       if (!state.players[options.player]?.agentId) {
-        registerAgent(game, 'player', `agent-${options.player}`, options.player);
+        debug(`[WAIT DEBUG] Attempting auto-registration for ${options.player}...`);
+        try {
+          const regResult = registerAgent(game, 'player', `agent-${options.player}`, options.player);
+          debug(`[WAIT DEBUG] Registration result:`, regResult);
+        } catch (regError) {
+          debug(`[WAIT DEBUG] Registration error:`, regError);
+          throw regError;
+        }
+      } else {
+        debug(`[WAIT DEBUG] Already registered with agentId: ${state.players[options.player].agentId}`);
       }
 
       const result = await waitForTurn(game, options.player, parseInt(options.timeout, 10));
@@ -456,8 +483,20 @@ program
       // Auto-register the gamemaster if not already registered
       {
         const state = loadState(game);
+        debug(`[PENDING DEBUG] Gamemaster: checking registration...`);
+        debug(`[PENDING DEBUG] Current gamemasterAgentId: ${state.shared.gamemasterAgentId || 'null'}`);
+
         if (!state.shared.gamemasterAgentId) {
-          registerAgent(game, 'gamemaster', 'agent-gamemaster');
+          debug(`[PENDING DEBUG] Attempting auto-registration for gamemaster...`);
+          try {
+            const regResult = registerAgent(game, 'gamemaster', 'agent-gamemaster');
+            debug(`[PENDING DEBUG] Registration result:`, regResult);
+          } catch (regError) {
+            debug(`[PENDING DEBUG] Registration error:`, regError);
+            throw regError;
+          }
+        } else {
+          debug(`[PENDING DEBUG] Already registered with agentId: ${state.shared.gamemasterAgentId}`);
         }
       }
 
