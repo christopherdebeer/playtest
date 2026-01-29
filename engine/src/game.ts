@@ -185,6 +185,12 @@ export function registerAgent(
     state.shared.gamemasterAgentId = agentId;
     saveState(state);
 
+    // Check if all players also registered - if so, auto-start
+    const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+    if (allPlayersRegistered) {
+      startGame(gameName);
+    }
+
     return {
       registered: true,
       role: 'gamemaster',

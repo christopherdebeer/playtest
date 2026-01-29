@@ -136,6 +136,12 @@ program
   .option('-t, --timeout <ms>', 'Timeout in milliseconds', '300000')
   .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
+      // Auto-register the player if not already registered
+      const state = loadState(game);
+      if (!state.players[options.player]?.agentId) {
+        registerAgent(game, 'player', `agent-${options.player}`, options.player);
+      }
+
       const result = await waitForTurn(game, options.player, parseInt(options.timeout, 10));
       console.log(JSON.stringify(result));
 
@@ -434,6 +440,14 @@ program
   .option('-t, --timeout <ms>', 'Timeout in milliseconds', '120000')
   .action(async (game: string, options: { timeout: string }) => {
     try {
+      // Auto-register the gamemaster if not already registered
+      {
+        const state = loadState(game);
+        if (!state.shared.gamemasterAgentId) {
+          registerAgent(game, 'gamemaster', 'agent-gamemaster');
+        }
+      }
+
       const timeout = parseInt(options.timeout, 10);
       const startTime = Date.now();
       const pollInterval = 500;
