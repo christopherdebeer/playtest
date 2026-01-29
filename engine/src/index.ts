@@ -47,7 +47,7 @@ program
   .command('init <game>')
   .description('Initialize a new game')
   .option('-p, --players <n>', 'Number of players', '2')
-  .action((game, options) => {
+  .action((game: string, options: { players: string }) => {
     try {
       const playerCount = parseInt(options.players, 10);
       const state = initGame(game, playerCount);
@@ -73,7 +73,7 @@ program
   .requiredOption('-r, --role <role>', 'Role: gamemaster or player')
   .requiredOption('-a, --agent-id <id>', 'Agent ID')
   .option('-p, --player <id>', 'Player ID (auto-assigned if not specified)')
-  .action((game, options) => {
+  .action((game: string, options: { role: 'gamemaster' | 'player'; agentId: string; player?: string }) => {
     try {
       const result = registerAgent(game, options.role, options.agentId, options.player);
       console.log(JSON.stringify({
@@ -92,7 +92,7 @@ program
 program
   .command('status <game>')
   .description('Get current game status')
-  .action((game) => {
+  .action((game: string) => {
     try {
       if (!stateExists(game)) {
         console.log(JSON.stringify({
@@ -133,7 +133,7 @@ program
   .description('Wait for player turn (blocking)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds', '300000')
-  .action(async (game, options) => {
+  .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
       const result = await waitForTurn(game, options.player, parseInt(options.timeout, 10));
       console.log(JSON.stringify(result));
@@ -158,7 +158,7 @@ program
   .description('Submit player action (queues for gamemaster validation)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-a, --action <json>', 'Action JSON')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; action: string }) => {
     try {
       const state = loadState(game);
 
@@ -211,7 +211,7 @@ program
   .description('Execute action directly (contest-based system)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-a, --action <json>', 'Action JSON')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; action: string }) => {
     try {
       const state = loadState(game);
 
@@ -299,7 +299,7 @@ program
   .description('Contest the previous player\'s action')
   .requiredOption('-p, --player <id>', 'Contesting player ID')
   .requiredOption('-r, --reason <text>', 'Reason for contest')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; reason: string }) => {
     try {
       const state = loadState(game);
       const result = fileContest(state, options.player, options.reason);
@@ -337,7 +337,7 @@ program
   .option('--accept-resignation', 'Accept a pending resignation')
   .option('--reject-resignation', 'Reject a pending resignation')
   .requiredOption('-r, --reason <text>', 'Reason for ruling')
-  .action((game, options) => {
+  .action((game: string, options: { allow?: boolean; reject?: boolean; acceptResignation?: boolean; rejectResignation?: boolean; reason: string }) => {
     try {
       const state = loadState(game);
       const contestState = ensureContestState(state);
@@ -431,7 +431,7 @@ program
   .command('pending <game>')
   .description('Wait for pending action, contest, or resignation (gamemaster use)')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds', '120000')
-  .action(async (game, options) => {
+  .action(async (game: string, options: { timeout: string }) => {
     try {
       const timeout = parseInt(options.timeout, 10);
       const startTime = Date.now();
@@ -513,7 +513,7 @@ program
   .description('Roll probability check')
   .requiredOption('--probability <p>', 'Success probability (0.0-1.0)')
   .option('-c, --context <text>', 'Context for logging', 'probability check')
-  .action((game, options) => {
+  .action((game: string, options: { probability: string; context: string }) => {
     try {
       const state = loadState(game);
       const probability = parseFloat(options.probability);
@@ -557,7 +557,7 @@ program
   .description('Draw cards from deck')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-n, --count <n>', 'Number of cards to draw', '1')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; count: string }) => {
     try {
       const state = loadState(game);
       const count = parseInt(options.count, 10);
@@ -590,7 +590,7 @@ program
   .description('Discard a card from hand')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-i, --index <n>', 'Card index in hand')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; index: string }) => {
     try {
       const state = loadState(game);
       const index = parseInt(options.index, 10);
@@ -626,7 +626,7 @@ program
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-c, --card <name>', 'Card name to play')
   .option('--color <color>', 'Declared color for wild cards')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; card: string; color?: string }) => {
     try {
       const state = loadState(game);
       const card = playCardByName(state, options.player, options.card, options.color);
@@ -675,7 +675,7 @@ program
   .command('state <game>')
   .description('Get full game state (gamemaster only)')
   .option('-p, --player <id>', 'Get player-filtered view instead')
-  .action((game, options) => {
+  .action((game: string, options: { player?: string }) => {
     try {
       const state = loadState(game);
 
@@ -713,7 +713,7 @@ program
   .description('Update player state (gamemaster only)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-s, --state <json>', 'State updates JSON')
-  .action((game, options) => {
+  .action((game: string, options: { player: string; state: string }) => {
     try {
       const gameState = loadState(game);
       const updates = JSON.parse(options.state);
@@ -758,7 +758,7 @@ program
 program
   .command('advance <game>')
   .description('Advance to next player turn (gamemaster only)')
-  .action((game) => {
+  .action((game: string) => {
     try {
       const state = loadState(game);
       const previousPlayer = state.currentPlayer;
@@ -784,7 +784,7 @@ program
   .description('End game and declare winner')
   .requiredOption('-w, --winner <id>', 'Winner player ID')
   .requiredOption('-r, --reason <text>', 'End reason')
-  .action((game, options) => {
+  .action((game: string, options: { winner: string; reason: string }) => {
     try {
       const state = endGame(game, options.winner, options.reason);
 
@@ -809,7 +809,7 @@ program
 program
   .command('rules <game>')
   .description('Get game rules markdown')
-  .action((game) => {
+  .action((game: string) => {
     try {
       if (!stateExists(game)) {
         throw new Error(`No active game for ${game}`);
@@ -834,7 +834,7 @@ program
   .description('Reset game state (clean up and optionally reinitialize)')
   .option('-p, --players <n>', 'Reinitialize with this many players')
   .option('--keep-logs', 'Keep existing log files')
-  .action((game, options) => {
+  .action((game: string, options: { players?: string; keepLogs?: boolean }) => {
     try {
       // Check if game exists
       if (!gameExists(game)) {
