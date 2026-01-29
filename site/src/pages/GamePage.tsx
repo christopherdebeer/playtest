@@ -1,7 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
 import gamesData from '../data/games.json'
+import logsDataRaw from '../data/logs.json'
 import MechanicBadge from '../components/MechanicBadge'
+import { LogsData } from '../types/logs'
 import './GamePage.css'
+
+const logsData = logsDataRaw as unknown as LogsData
 
 interface CardDef {
   name: string
@@ -99,6 +103,22 @@ function GamePage() {
           <h2>Quick Start</h2>
           <pre><code>npx playtest init {game.id} --players 3</code></pre>
         </div>
+
+        {(() => {
+          const gameLogs = logsData.logs.filter(l => l.gameName === game.id)
+          if (gameLogs.length === 0) return null
+          return (
+            <div className="game-logs-section">
+              <h2>Playtest Logs</h2>
+              <p className="logs-summary">
+                {gameLogs.length} playtest session{gameLogs.length !== 1 ? 's' : ''} recorded
+              </p>
+              <Link to={`/logs?game=${game.id}`} className="view-logs-btn">
+                View Game Logs
+              </Link>
+            </div>
+          )
+        })()}
 
         {game.config.board && (
           <div className="board-section">
