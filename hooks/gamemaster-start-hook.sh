@@ -10,8 +10,8 @@ if [ -z "$GAME" ]; then
   exit 0
 fi
 
-# Fetch rules (using node directly)
-RULES=$(node /home/user/playtest/engine/dist/index.js rules "$GAME" 2>/dev/null)
+# Fetch rules via engine CLI
+RULES=$(npx playtest rules "$GAME" 2>/dev/null)
 if [ -n "$RULES" ]; then
   echo "## Game Rules for $GAME"
   echo ""
@@ -20,7 +20,7 @@ if [ -n "$RULES" ]; then
 fi
 
 # Fetch initial state
-STATUS=$(node /home/user/playtest/engine/dist/index.js status "$GAME" 2>/dev/null)
+STATUS=$(npx playtest status "$GAME" 2>/dev/null)
 if [ -n "$STATUS" ]; then
   echo "## Current Game Status"
   echo '```json'
