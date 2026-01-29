@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run generate-games && vite",
-    "build": "npm run generate-games && tsc -b && vite build",
+    "dev": "npm run generate && vite",
+    "build": "npm run generate && tsc -b && vite build",
     "preview": "vite preview",
-    "generate-games": "node scripts/generate-games.js"
+    "generate": "npm run generate-games && npm run generate-mechanics",
+    "generate-games": "node scripts/generate-games.js",
+    "generate-mechanics": "node scripts/generate-mechanics.js"
   },
   "dependencies": {
     "react": "^18.3.1",

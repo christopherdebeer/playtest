@@ -1,0 +1,1562 @@
+{
+  "generated": "2026-01-29T14:05:07.086Z",
+  "source": "https://boardgamegeek.com/browse/boardgamemechanic",
+  "count": 192,
+  "categories": [
+    "action",
+    "auction",
+    "building",
+    "cards",
+    "conflict",
+    "cooperative",
+    "dice",
+    "economic",
+    "ending",
+    "information",
+    "movement",
+    "other",
+    "physical",
+    "social",
+    "turn-order",
+    "victory",
+    "worker-placement"
+  ],
+  "mechanics": [
+    {
+      "id": 2073,
+      "name": "Acting",
+      "slug": "acting",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2073/acting",
+      "description": "Acting is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2840,
+      "name": "Action / Event",
+      "slug": "action-event",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2840/action-event",
+      "description": "Action / Event is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2838,
+      "name": "Action Drafting",
+      "slug": "action-drafting",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2838/action-drafting",
+      "description": "Action Drafting is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2001,
+      "name": "Action Points",
+      "slug": "action-points",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2001/action-points",
+      "description": "A player receives a number of Action Points on their turn, which they may spend on a variety of actions."
+    },
+    {
+      "id": 2689,
+      "name": "Action Queue",
+      "slug": "action-queue",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2689/action-queue",
+      "description": "Action Queue is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2839,
+      "name": "Action Retrieval",
+      "slug": "action-retrieval",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2839/action-retrieval",
+      "description": "Action Retrieval is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2834,
+      "name": "Action Timer",
+      "slug": "action-timer",
+      "category": "action",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2834/action-timer",
+      "description": "Action Timer is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2847,
+      "name": "Advantage Token",
+      "slug": "advantage-token",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2847/advantage-token",
+      "description": "Advantage Token is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2916,
+      "name": "Alliances",
+      "slug": "alliances",
+      "category": "cooperative",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2916/alliances",
+      "description": "Alliances is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2080,
+      "name": "Area Majority / Influence",
+      "slug": "area-majority-influence",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2080/area-majority-influence",
+      "description": "Area Majority / Influence is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2046,
+      "name": "Area Movement",
+      "slug": "area-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2046/area-movement",
+      "description": "Area Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2021,
+      "name": "Area-Impulse",
+      "slug": "area-impulse",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2021/area-impulse",
+      "description": "Area-Impulse is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2012,
+      "name": "Auction / Bidding",
+      "slug": "auction-bidding",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2012/auction-bidding",
+      "description": "Auction / Bidding is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3098,
+      "name": "Auction Compensation",
+      "slug": "auction-compensation",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3098/auction-compensation",
+      "description": "Auction Compensation is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2930,
+      "name": "Auction: Dexterity",
+      "slug": "auction-dexterity",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2930/auction-dexterity",
+      "description": "Auction: Dexterity is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2924,
+      "name": "Auction: Dutch",
+      "slug": "auction-dutch",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2924/auction-dutch",
+      "description": "Auction: Dutch is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2932,
+      "name": "Auction: Dutch Priority",
+      "slug": "auction-dutch-priority",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2932/auction-dutch-priority",
+      "description": "Auction: Dutch Priority is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2918,
+      "name": "Auction: English",
+      "slug": "auction-english",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2918/auction-english",
+      "description": "Auction: English is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2931,
+      "name": "Auction: Fixed Placement",
+      "slug": "auction-fixed-placement",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2931/auction-fixed-placement",
+      "description": "Auction: Fixed Placement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2927,
+      "name": "Auction: Multiple Lot",
+      "slug": "auction-multiple-lot",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2927/auction-multiple-lot",
+      "description": "Auction: Multiple Lot is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2923,
+      "name": "Auction: Once Around",
+      "slug": "auction-once-around",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2923/auction-once-around",
+      "description": "Auction: Once Around is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2920,
+      "name": "Auction: Sealed Bid",
+      "slug": "auction-sealed-bid",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2920/auction-sealed-bid",
+      "description": "Auction: Sealed Bid is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2919,
+      "name": "Auction: Turn Order Until Pass",
+      "slug": "auction-turn-order-until-pass",
+      "category": "auction",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2919/auction-turn-order-until-pass",
+      "description": "Auction: Turn Order Until Pass is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2903,
+      "name": "Automatic Resource Growth",
+      "slug": "automatic-resource-growth",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2903/automatic-resource-growth",
+      "description": "Automatic Resource Growth is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2014,
+      "name": "Betting and Bluffing",
+      "slug": "betting-and-bluffing",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2014/betting-and-bluffing",
+      "description": "Betting and Bluffing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2957,
+      "name": "Bias",
+      "slug": "bias",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2957/bias",
+      "description": "Bias is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3097,
+      "name": "Bids As Wagers",
+      "slug": "bids-as-wagers",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3097/bids-as-wagers",
+      "description": "Bids As Wagers is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2999,
+      "name": "Bingo",
+      "slug": "bingo",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2999/bingo",
+      "description": "Bingo is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2913,
+      "name": "Bribery",
+      "slug": "bribery",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2913/bribery",
+      "description": "Bribery is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2018,
+      "name": "Campaign / Battle Card Driven",
+      "slug": "campaign-battle-card-driven",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2018/campaign-battle-card-driven",
+      "description": "Campaign / Battle Card Driven is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2857,
+      "name": "Card Play Conflict Resolution",
+      "slug": "card-play-conflict-resolution",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2857/card-play-conflict-resolution",
+      "description": "Card Play Conflict Resolution is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2887,
+      "name": "Catch the Leader",
+      "slug": "catch-the-leader",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2887/catch-the-leader",
+      "description": "Catch the Leader is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2956,
+      "name": "Chaining",
+      "slug": "chaining",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2956/chaining",
+      "description": "Chaining is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2057,
+      "name": "Chit-Pull System",
+      "slug": "chit-pull-system",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2057/chit-pull-system",
+      "description": "Chit-Pull System is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2984,
+      "name": "Closed Drafting",
+      "slug": "closed-drafting",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2984/closed-drafting",
+      "description": "Closed Drafting is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2928,
+      "name": "Closed Economy Auction",
+      "slug": "closed-economy-auction",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2928/closed-economy-auction",
+      "description": "Closed Economy Auction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2841,
+      "name": "Command Cards",
+      "slug": "command-cards",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2841/command-cards",
+      "description": "Command Cards is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2013,
+      "name": "Commodity Speculation",
+      "slug": "commodity-speculation",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2013/commodity-speculation",
+      "description": "Commodity Speculation is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2893,
+      "name": "Communication Limits",
+      "slug": "communication-limits",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2893/communication-limits",
+      "description": "Communication Limits is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2883,
+      "name": "Connections",
+      "slug": "connections",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2883/connections",
+      "description": "Connections is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2922,
+      "name": "Constrained Bidding",
+      "slug": "constrained-bidding",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2922/constrained-bidding",
+      "description": "Constrained Bidding is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2912,
+      "name": "Contracts",
+      "slug": "contracts",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2912/contracts",
+      "description": "Contracts is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2023,
+      "name": "Cooperative Game",
+      "slug": "cooperative-game",
+      "category": "cooperative",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2023/cooperative-game",
+      "description": "Players work together against the game system rather than competing against each other."
+    },
+    {
+      "id": 2010,
+      "name": "Crayon Rail System",
+      "slug": "crayon-rail-system",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2010/crayon-rail-system",
+      "description": "Crayon Rail System is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2854,
+      "name": "Critical Hits and Failures",
+      "slug": "critical-hits-and-failures",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2854/critical-hits-and-failures",
+      "description": "Critical Hits and Failures is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2990,
+      "name": "Cube Tower",
+      "slug": "cube-tower",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2990/cube-tower",
+      "description": "Cube Tower is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3004,
+      "name": "Deck Construction",
+      "slug": "deck-construction",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3004/deck-construction",
+      "description": "Deck Construction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2664,
+      "name": "Deck, Bag, and Pool Building",
+      "slug": "deck-bag-and-pool-building",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2664/deck-bag-and-pool-building",
+      "description": "Deck, Bag, and Pool Building is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3002,
+      "name": "Deduction",
+      "slug": "deduction",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3002/deduction",
+      "description": "Deduction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2901,
+      "name": "Delayed Purchase",
+      "slug": "delayed-purchase",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2901/delayed-purchase",
+      "description": "Delayed Purchase is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2072,
+      "name": "Dice Rolling",
+      "slug": "dice-rolling",
+      "category": "dice",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2072/dice-rolling",
+      "description": "Players roll dice to determine outcomes, introducing randomness into game decisions."
+    },
+    {
+      "id": 2856,
+      "name": "Die Icon Resolution",
+      "slug": "die-icon-resolution",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2856/die-icon-resolution",
+      "description": "Die Icon Resolution is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2950,
+      "name": "Different Dice Movement",
+      "slug": "different-dice-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2950/different-dice-movement",
+      "description": "Different Dice Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3096,
+      "name": "Drawing",
+      "slug": "drawing",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3096/drawing",
+      "description": "Drawing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2882,
+      "name": "Elapsed Real Time Ending",
+      "slug": "elapsed-real-time-ending",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2882/elapsed-real-time-ending",
+      "description": "Elapsed Real Time Ending is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2043,
+      "name": "Enclosure",
+      "slug": "enclosure",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2043/enclosure",
+      "description": "Enclosure is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2875,
+      "name": "End Game Bonuses",
+      "slug": "end-game-bonuses",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2875/end-game-bonuses",
+      "description": "End Game Bonuses is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2850,
+      "name": "Events",
+      "slug": "events",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2850/events",
+      "description": "Events is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2885,
+      "name": "Finale Ending",
+      "slug": "finale-ending",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2885/finale-ending",
+      "description": "Finale Ending is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2860,
+      "name": "Flicking",
+      "slug": "flicking",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2860/flicking",
+      "description": "Flicking is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2843,
+      "name": "Follow",
+      "slug": "follow",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2843/follow",
+      "description": "Follow is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2864,
+      "name": "Force Commitment",
+      "slug": "force-commitment",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2864/force-commitment",
+      "description": "Force Commitment is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2978,
+      "name": "Grid Coverage",
+      "slug": "grid-coverage",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2978/grid-coverage",
+      "description": "Grid Coverage is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2676,
+      "name": "Grid Movement",
+      "slug": "grid-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2676/grid-movement",
+      "description": "Grid Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2040,
+      "name": "Hand Management",
+      "slug": "hand-management",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2040/hand-management",
+      "description": "Players manage a hand of cards, deciding when to play each card for maximum effect."
+    },
+    {
+      "id": 2026,
+      "name": "Hexagon Grid",
+      "slug": "hexagon-grid",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2026/hexagon-grid",
+      "description": "Hexagon Grid is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2967,
+      "name": "Hidden Movement",
+      "slug": "hidden-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2967/hidden-movement",
+      "description": "Hidden Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2891,
+      "name": "Hidden Roles",
+      "slug": "hidden-roles",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2891/hidden-roles",
+      "description": "Players have secret roles that determine their objectives and allegiances."
+    },
+    {
+      "id": 2987,
+      "name": "Hidden Victory Points",
+      "slug": "hidden-victory-points",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2987/hidden-victory-points",
+      "description": "Hidden Victory Points is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2889,
+      "name": "Highest-Lowest Scoring",
+      "slug": "highest-lowest-scoring",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2889/highest-lowest-scoring",
+      "description": "Highest-Lowest Scoring is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3000,
+      "name": "Hot Potato",
+      "slug": "hot-potato",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3000/hot-potato",
+      "description": "Hot Potato is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2906,
+      "name": "I Cut, You Choose",
+      "slug": "i-cut-you-choose",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2906/i-cut-you-choose",
+      "description": "I Cut, You Choose is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2952,
+      "name": "Impulse Movement",
+      "slug": "impulse-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2952/impulse-movement",
+      "description": "Impulse Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2902,
+      "name": "Income",
+      "slug": "income",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2902/income",
+      "description": "Income is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2914,
+      "name": "Increase Value of Unchosen Resources",
+      "slug": "increase-value-of-unchosen-resources",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2914/increase-value-of-unchosen-resources",
+      "description": "Increase Value of Unchosen Resources is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3003,
+      "name": "Induction",
+      "slug": "induction",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3003/induction",
+      "description": "Induction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2837,
+      "name": "Interrupts",
+      "slug": "interrupts",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2837/interrupts",
+      "description": "Interrupts is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2910,
+      "name": "Investment",
+      "slug": "investment",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2910/investment",
+      "description": "Investment is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2871,
+      "name": "Kill Steal",
+      "slug": "kill-steal",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2871/kill-steal",
+      "description": "Kill Steal is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2886,
+      "name": "King of the Hill",
+      "slug": "king-of-the-hill",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2886/king-of-the-hill",
+      "description": "King of the Hill is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2980,
+      "name": "Ladder Climbing",
+      "slug": "ladder-climbing",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2980/ladder-climbing",
+      "description": "Ladder Climbing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3001,
+      "name": "Layering",
+      "slug": "layering",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3001/layering",
+      "description": "Layering is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2824,
+      "name": "Legacy Game",
+      "slug": "legacy-game",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2824/legacy-game",
+      "description": "Legacy Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2039,
+      "name": "Line Drawing",
+      "slug": "line-drawing",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2039/line-drawing",
+      "description": "Line Drawing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2975,
+      "name": "Line of Sight",
+      "slug": "line-of-sight",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2975/line-of-sight",
+      "description": "Line of Sight is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2904,
+      "name": "Loans",
+      "slug": "loans",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2904/loans",
+      "description": "Loans is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2836,
+      "name": "Lose a Turn",
+      "slug": "lose-a-turn",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2836/lose-a-turn",
+      "description": "Lose a Turn is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2955,
+      "name": "Mancala",
+      "slug": "mancala",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2955/mancala",
+      "description": "Mancala is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2959,
+      "name": "Map Addition",
+      "slug": "map-addition",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2959/map-addition",
+      "description": "Map Addition is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2961,
+      "name": "Map Deformation",
+      "slug": "map-deformation",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2961/map-deformation",
+      "description": "Map Deformation is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2960,
+      "name": "Map Reduction",
+      "slug": "map-reduction",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2960/map-reduction",
+      "description": "Map Reduction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2900,
+      "name": "Market",
+      "slug": "market",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2900/market",
+      "description": "Market is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3007,
+      "name": "Matching",
+      "slug": "matching",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3007/matching",
+      "description": "Matching is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2949,
+      "name": "Measurement Movement",
+      "slug": "measurement-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2949/measurement-movement",
+      "description": "Measurement Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2981,
+      "name": "Melding and Splaying",
+      "slug": "melding-and-splaying",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2981/melding-and-splaying",
+      "description": "Melding and Splaying is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2047,
+      "name": "Memory",
+      "slug": "memory",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2047/memory",
+      "description": "Memory is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2863,
+      "name": "Minimap Resolution",
+      "slug": "minimap-resolution",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2863/minimap-resolution",
+      "description": "Minimap Resolution is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2011,
+      "name": "Modular Board",
+      "slug": "modular-board",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2011/modular-board",
+      "description": "The game board is made of interchangeable pieces, creating a different layout each game."
+    },
+    {
+      "id": 2962,
+      "name": "Move Through Deck",
+      "slug": "move-through-deck",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2962/move-through-deck",
+      "description": "Move Through Deck is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2947,
+      "name": "Movement Points",
+      "slug": "movement-points",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2947/movement-points",
+      "description": "Movement Points is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2963,
+      "name": "Movement Template",
+      "slug": "movement-template",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2963/movement-template",
+      "description": "Movement Template is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2958,
+      "name": "Moving Multiple Units",
+      "slug": "moving-multiple-units",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2958/moving-multiple-units",
+      "description": "Moving Multiple Units is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3099,
+      "name": "Multi-Use Cards",
+      "slug": "multi-use-cards",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3099/multi-use-cards",
+      "description": "Multi-Use Cards is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2965,
+      "name": "Multiple Maps",
+      "slug": "multiple-maps",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2965/multiple-maps",
+      "description": "Multiple Maps is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2851,
+      "name": "Narrative Choice / Paragraph",
+      "slug": "narrative-choice-paragraph",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2851/narrative-choice-paragraph",
+      "description": "Narrative Choice / Paragraph is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2915,
+      "name": "Negotiation",
+      "slug": "negotiation",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2915/negotiation",
+      "description": "Negotiation is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3104,
+      "name": "Neighbor Scope",
+      "slug": "neighbor-scope",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3104/neighbor-scope",
+      "description": "Neighbor Scope is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2081,
+      "name": "Network and Route Building",
+      "slug": "network-and-route-building",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2081/network-and-route-building",
+      "description": "Network and Route Building is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2846,
+      "name": "Once-Per-Game Abilities",
+      "slug": "once-per-game-abilities",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2846/once-per-game-abilities",
+      "description": "Once-Per-Game Abilities is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2041,
+      "name": "Open Drafting",
+      "slug": "open-drafting",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2041/open-drafting",
+      "description": "Open Drafting is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2844,
+      "name": "Order Counters",
+      "slug": "order-counters",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2844/order-counters",
+      "description": "Order Counters is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3101,
+      "name": "Ordering",
+      "slug": "ordering",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3101/ordering",
+      "description": "Ordering is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2911,
+      "name": "Ownership",
+      "slug": "ownership",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2911/ownership",
+      "description": "Ownership is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2055,
+      "name": "Paper-and-Pencil",
+      "slug": "paper-and-pencil",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2055/paper-and-pencil",
+      "description": "Paper-and-Pencil is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2835,
+      "name": "Passed Action Token",
+      "slug": "passed-action-token",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2835/passed-action-token",
+      "description": "Passed Action Token is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2048,
+      "name": "Pattern Building",
+      "slug": "pattern-building",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2048/pattern-building",
+      "description": "Pattern Building is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2946,
+      "name": "Pattern Movement",
+      "slug": "pattern-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2946/pattern-movement",
+      "description": "Pattern Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2060,
+      "name": "Pattern Recognition",
+      "slug": "pattern-recognition",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2060/pattern-recognition",
+      "description": "Pattern Recognition is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2989,
+      "name": "Physical Removal",
+      "slug": "physical-removal",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2989/physical-removal",
+      "description": "Physical Removal is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2007,
+      "name": "Pick-up and Deliver",
+      "slug": "pick-up-and-deliver",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2007/pick-up-and-deliver",
+      "description": "Pick-up and Deliver is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2964,
+      "name": "Pieces as Map",
+      "slug": "pieces-as-map",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2964/pieces-as-map",
+      "description": "Pieces as Map is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2685,
+      "name": "Player Elimination",
+      "slug": "player-elimination",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2685/player-elimination",
+      "description": "Players can be eliminated from the game before it ends."
+    },
+    {
+      "id": 2865,
+      "name": "Player Judge",
+      "slug": "player-judge",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2865/player-judge",
+      "description": "Player Judge is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2078,
+      "name": "Point to Point Movement",
+      "slug": "point-to-point-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2078/point-to-point-movement",
+      "description": "Point to Point Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3006,
+      "name": "Predictive Bid",
+      "slug": "predictive-bid",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3006/predictive-bid",
+      "description": "Predictive Bid is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2858,
+      "name": "Prisoner's Dilemma",
+      "slug": "prisoner's-dilemma",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2858/prisoner's-dilemma",
+      "description": "Prisoner's Dilemma is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2953,
+      "name": "Programmed Movement",
+      "slug": "programmed-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2953/programmed-movement",
+      "description": "Programmed Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2661,
+      "name": "Push Your Luck",
+      "slug": "push-your-luck",
+      "category": "dice",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2661/push-your-luck",
+      "description": "Players repeatedly take risks, weighing potential rewards against the chance of losing everything."
+    },
+    {
+      "id": 3102,
+      "name": "Questions and Answers",
+      "slug": "questions-and-answers",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3102/questions-and-answers",
+      "description": "Questions and Answers is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2876,
+      "name": "Race",
+      "slug": "race",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2876/race",
+      "description": "Race is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2909,
+      "name": "Random Production",
+      "slug": "random-production",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2909/random-production",
+      "description": "Random Production is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2855,
+      "name": "Ratio / Combat Results Table",
+      "slug": "ratio-combat-results-table",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2855/ratio-combat-results-table",
+      "description": "Ratio / Combat Results Table is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2870,
+      "name": "Re-rolling and Locking",
+      "slug": "re-rolling-and-locking",
+      "category": "dice",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2870/re-rolling-and-locking",
+      "description": "Re-rolling and Locking is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2831,
+      "name": "Real-Time",
+      "slug": "real-time",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2831/real-time",
+      "description": "Real-Time is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2954,
+      "name": "Relative Movement",
+      "slug": "relative-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2954/relative-movement",
+      "description": "Relative Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3103,
+      "name": "Resource Queue",
+      "slug": "resource-queue",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3103/resource-queue",
+      "description": "Resource Queue is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2948,
+      "name": "Resource to Move",
+      "slug": "resource-to-move",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2948/resource-to-move",
+      "description": "Resource to Move is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2003,
+      "name": "Rock-Paper-Scissors",
+      "slug": "rock-paper-scissors",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2003/rock-paper-scissors",
+      "description": "Rock-Paper-Scissors is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2028,
+      "name": "Role Playing",
+      "slug": "role-playing",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2028/role-playing",
+      "description": "Role Playing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2892,
+      "name": "Roles with Asymmetric Information",
+      "slug": "roles-with-asymmetric-information",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2892/roles-with-asymmetric-information",
+      "description": "Roles with Asymmetric Information is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2035,
+      "name": "Roll / Spin and Move",
+      "slug": "roll-spin-and-move",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2035/roll-spin-and-move",
+      "description": "Roll / Spin and Move is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2813,
+      "name": "Rondel",
+      "slug": "rondel",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2813/rondel",
+      "description": "Rondel is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2822,
+      "name": "Scenario / Mission / Campaign Game",
+      "slug": "scenario-mission-campaign-game",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2822/scenario-mission-campaign-game",
+      "description": "Scenario / Mission / Campaign Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2823,
+      "name": "Score-and-Reset Game",
+      "slug": "score-and-reset-game",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2823/score-and-reset-game",
+      "description": "Score-and-Reset Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2016,
+      "name": "Secret Unit Deployment",
+      "slug": "secret-unit-deployment",
+      "category": "conflict",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2016/secret-unit-deployment",
+      "description": "Secret Unit Deployment is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2926,
+      "name": "Selection Order Bid",
+      "slug": "selection-order-bid",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2926/selection-order-bid",
+      "description": "Selection Order Bid is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2820,
+      "name": "Semi-Cooperative Game",
+      "slug": "semi-cooperative-game",
+      "category": "cooperative",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2820/semi-cooperative-game",
+      "description": "Semi-Cooperative Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2004,
+      "name": "Set Collection",
+      "slug": "set-collection",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2004/set-collection",
+      "description": "Players collect sets of items to score points or achieve objectives."
+    },
+    {
+      "id": 2070,
+      "name": "Simulation",
+      "slug": "simulation",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2070/simulation",
+      "description": "Simulation is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2020,
+      "name": "Simultaneous Action Selection",
+      "slug": "simultaneous-action-selection",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2020/simultaneous-action-selection",
+      "description": "All players choose their actions at the same time, then reveal them together."
+    },
+    {
+      "id": 2038,
+      "name": "Singing",
+      "slug": "singing",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2038/singing",
+      "description": "Singing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2821,
+      "name": "Single Loser Game",
+      "slug": "single-loser-game",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2821/single-loser-game",
+      "description": "Single Loser Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3005,
+      "name": "Slide / Push",
+      "slug": "slide-push",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3005/slide-push",
+      "description": "Slide / Push is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2819,
+      "name": "Solo / Solitaire Game",
+      "slug": "solo-solitaire-game",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2819/solo-solitaire-game",
+      "description": "Solo / Solitaire Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2991,
+      "name": "Speed Matching",
+      "slug": "speed-matching",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2991/speed-matching",
+      "description": "Speed Matching is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3113,
+      "name": "Spelling",
+      "slug": "spelling",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3113/spelling",
+      "description": "Spelling is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2940,
+      "name": "Square Grid",
+      "slug": "square-grid",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2940/square-grid",
+      "description": "Square Grid is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2988,
+      "name": "Stacking and Balancing",
+      "slug": "stacking-and-balancing",
+      "category": "physical",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2988/stacking-and-balancing",
+      "description": "Stacking and Balancing is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2853,
+      "name": "Stat Check Resolution",
+      "slug": "stat-check-resolution",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2853/stat-check-resolution",
+      "description": "Stat Check Resolution is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2861,
+      "name": "Static Capture",
+      "slug": "static-capture",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2861/static-capture",
+      "description": "Static Capture is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2005,
+      "name": "Stock Holding",
+      "slug": "stock-holding",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2005/stock-holding",
+      "description": "Stock Holding is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2027,
+      "name": "Storytelling",
+      "slug": "storytelling",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2027/storytelling",
+      "description": "Storytelling is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2884,
+      "name": "Sudden Death Ending",
+      "slug": "sudden-death-ending",
+      "category": "ending",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2884/sudden-death-ending",
+      "description": "Sudden Death Ending is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 3100,
+      "name": "Tags",
+      "slug": "tags",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/3100/tags",
+      "description": "Tags is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2686,
+      "name": "Take That",
+      "slug": "take-that",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2686/take-that",
+      "description": "Players can directly attack or hinder other players."
+    },
+    {
+      "id": 2866,
+      "name": "Targeted Clues",
+      "slug": "targeted-clues",
+      "category": "information",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2866/targeted-clues",
+      "description": "Targeted Clues is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2019,
+      "name": "Team-Based Game",
+      "slug": "team-based-game",
+      "category": "cooperative",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2019/team-based-game",
+      "description": "Team-Based Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2849,
+      "name": "Tech Trees / Tech Tracks",
+      "slug": "tech-trees-tech-tracks",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2849/tech-trees-tech-tracks",
+      "description": "Tech Trees / Tech Tracks is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2944,
+      "name": "Three Dimensional Movement",
+      "slug": "three-dimensional-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2944/three-dimensional-movement",
+      "description": "Three Dimensional Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2002,
+      "name": "Tile Placement",
+      "slug": "tile-placement",
+      "category": "building",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2002/tile-placement",
+      "description": "Players place tiles to build a shared or personal playing area."
+    },
+    {
+      "id": 2939,
+      "name": "Track Movement",
+      "slug": "track-movement",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2939/track-movement",
+      "description": "Track Movement is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2008,
+      "name": "Trading",
+      "slug": "trading",
+      "category": "economic",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2008/trading",
+      "description": "Players exchange resources, cards, or other game elements with each other."
+    },
+    {
+      "id": 2814,
+      "name": "Traitor Game",
+      "slug": "traitor-game",
+      "category": "cooperative",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2814/traitor-game",
+      "description": "Traitor Game is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2009,
+      "name": "Trick-taking",
+      "slug": "trick-taking",
+      "category": "cards",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2009/trick-taking",
+      "description": "Players play cards in rounds (tricks), with the highest card winning the trick."
+    },
+    {
+      "id": 2888,
+      "name": "Tug of War",
+      "slug": "tug-of-war",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2888/tug-of-war",
+      "description": "Tug of War is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2827,
+      "name": "Turn Order: Auction",
+      "slug": "turn-order-auction",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2827/turn-order-auction",
+      "description": "Turn Order: Auction is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2829,
+      "name": "Turn Order: Claim Action",
+      "slug": "turn-order-claim-action",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2829/turn-order-claim-action",
+      "description": "Turn Order: Claim Action is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2830,
+      "name": "Turn Order: Pass Order",
+      "slug": "turn-order-pass-order",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2830/turn-order-pass-order",
+      "description": "Turn Order: Pass Order is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2828,
+      "name": "Turn Order: Progressive",
+      "slug": "turn-order-progressive",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2828/turn-order-progressive",
+      "description": "Turn Order: Progressive is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2985,
+      "name": "Turn Order: Random",
+      "slug": "turn-order-random",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2985/turn-order-random",
+      "description": "Turn Order: Random is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2833,
+      "name": "Turn Order: Role Order",
+      "slug": "turn-order-role-order",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2833/turn-order-role-order",
+      "description": "Turn Order: Role Order is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2826,
+      "name": "Turn Order: Stat-Based",
+      "slug": "turn-order-stat-based",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2826/turn-order-stat-based",
+      "description": "Turn Order: Stat-Based is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2663,
+      "name": "Turn Order: Time Track",
+      "slug": "turn-order-time-track",
+      "category": "turn-order",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2663/turn-order-time-track",
+      "description": "Turn Order: Time Track is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2079,
+      "name": "Variable Phase Order",
+      "slug": "variable-phase-order",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2079/variable-phase-order",
+      "description": "Variable Phase Order is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2015,
+      "name": "Variable Player Powers",
+      "slug": "variable-player-powers",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2015/variable-player-powers",
+      "description": "Each player has unique abilities that create asymmetric gameplay."
+    },
+    {
+      "id": 2897,
+      "name": "Variable Set-up",
+      "slug": "variable-set-up",
+      "category": "other",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2897/variable-set-up",
+      "description": "Variable Set-up is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2874,
+      "name": "Victory Points as a Resource",
+      "slug": "victory-points-as-a-resource",
+      "category": "victory",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2874/victory-points-as-a-resource",
+      "description": "Victory Points as a Resource is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2017,
+      "name": "Voting",
+      "slug": "voting",
+      "category": "social",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2017/voting",
+      "description": "Voting is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2082,
+      "name": "Worker Placement",
+      "slug": "worker-placement",
+      "category": "worker-placement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2082/worker-placement",
+      "description": "Players place worker tokens on action spaces to perform actions, blocking others from using those spaces."
+    },
+    {
+      "id": 2935,
+      "name": "Worker Placement with Dice Workers",
+      "slug": "worker-placement-with-dice-workers",
+      "category": "worker-placement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2935/worker-placement-with-dice-workers",
+      "description": "Worker Placement with Dice Workers is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2933,
+      "name": "Worker Placement, Different Worker Types",
+      "slug": "worker-placement-different-worker-types",
+      "category": "worker-placement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2933/worker-placement-different-worker-types",
+      "description": "Worker Placement, Different Worker Types is a board game mechanic. See BGG for detailed definition."
+    },
+    {
+      "id": 2974,
+      "name": "Zone of Control",
+      "slug": "zone-of-control",
+      "category": "movement",
+      "bggUrl": "https://boardgamegeek.com/boardgamemechanic/2974/zone-of-control",
+      "description": "Zone of Control is a board game mechanic. See BGG for detailed definition."
+    }
+  ]
+}

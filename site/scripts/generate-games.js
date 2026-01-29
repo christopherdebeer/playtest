@@ -30,6 +30,7 @@ async function parseRulesFile(content) {
       startingCards: config.starting_cards,
       deck: config.deck,
       board: config.board,
+      mechanics: config.mechanics || [],  // Include mechanics references
       deckSize: config.deck?.reduce((acc, c) => acc + c.count, 0),
       boardStates: config.board?.states,
     },

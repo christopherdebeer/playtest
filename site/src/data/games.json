@@ -140,6 +140,7 @@
           }
         ]
       },
+      "mechanics": [],
       "deckSize": 30,
       "boardStates": [
         "Start",
@@ -690,6 +691,12 @@
             "value": 4
           }
         }
+      ],
+      "mechanics": [
+        "hand-management",
+        "set-collection",
+        "take-that",
+        "lose-a-turn"
       ],
       "deckSize": 108
     },
