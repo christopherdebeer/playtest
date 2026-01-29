@@ -2,12 +2,7 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-tools:
-  - Bash(npx playtest rules *)
-  - Bash(npx playtest wait *)
-  - Bash(npx playtest act *)
-  - Bash(npx playtest contest *)
-  - Bash(npx playtest status *)
+allowed-tools: Bash(npx playtest rules *) Bash(npx playtest wait *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
 ---
 
 # Player Agent - {PLAYER_ID}
