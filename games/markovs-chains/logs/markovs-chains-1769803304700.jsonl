@@ -1,0 +1,12 @@
+{"timestamp":"2026-01-30T20:01:44.703Z","event":"game_init","data":{"gameId":"markovs-chains-1769803304700","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T20:01:47.283Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T20:02:44.662Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T20:03:02.930Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"move","target":"B"}}
+{"timestamp":"2026-01-30T20:03:20.519Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"play_card","card":"Momentum","effect":{"type":"probability_boost","value":0.3}}}
+{"timestamp":"2026-01-30T20:03:38.471Z","event":"effect_applied","turn":2,"player":"player-1","data":{"effectType":"probability_penalty","appliedBy":"player-2","card":"Friction","duration":1}}
+{"timestamp":"2026-01-30T20:03:38.472Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"play_card","card":"Friction","effect":{"type":"probability_penalty","value":-0.25},"effectTarget":"player-1"}}
+{"timestamp":"2026-01-30T20:03:56.814Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"move","target":"Checkpoint-X"}}
+{"timestamp":"2026-01-30T20:04:29.320Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"Checkpoint-Y"}}
+{"timestamp":"2026-01-30T20:04:43.561Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-01-30T20:05:17.743Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T20:05:17.747Z","event":"game_end","turn":4,"data":{"winner":"player-2","reason":"player-2 reached Victory state","autoDetected":true}}

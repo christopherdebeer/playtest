@@ -1,10 +1,10 @@
 ---
 name: "Markov's Chains"
-version: "2.1"
+version: "2.2"
 players: 2-4
 starting_cards: 4
 win_condition: "First player to reach the Victory state"
-max_turns: 15
+max_turns: 20
 
 # Engine mechanics - enable/disable engine capabilities for this game
 engine_mechanics:
@@ -14,14 +14,22 @@ engine_mechanics:
 
 # Structured config for engine
 board:
-  states: ["Start", "A", "B", "C", "Victory"]
+  states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]
   start: "Start"
   edges:
+    # Layer 1: Start to intermediate states (65%)
     - { from: "Start", to: ["A", "B", "C"], probability: 0.65 }
-    - { from: ["A", "B", "C"], to: "Victory", probability: 0.35 }
+    # Layer 2: Intermediate to checkpoints (50%)
+    - { from: ["A", "B", "C"], to: ["Checkpoint-X", "Checkpoint-Y"], probability: 0.50 }
+    # Layer 3: Checkpoints to Victory (35%)
+    - { from: ["Checkpoint-X", "Checkpoint-Y"], to: "Victory", probability: 0.35 }
+    # Lateral movement between intermediates (40%)
     - { from: "A", to: ["B", "C"], probability: 0.4 }
     - { from: "B", to: ["A", "C"], probability: 0.4 }
     - { from: "C", to: ["A", "B"], probability: 0.4 }
+    # Lateral movement between checkpoints (45%)
+    - { from: "Checkpoint-X", to: "Checkpoint-Y", probability: 0.45 }
+    - { from: "Checkpoint-Y", to: "Checkpoint-X", probability: 0.45 }
 
 deck:
   # Boost cards (8 total - reduced from 10 in v2.1)
@@ -48,41 +56,38 @@ Players race through a network of connected states, making strategic decisions a
 
 ## Game Setup
 
-### State Graph
+### State Graph (v2.2 - Extended Path)
 
-The game board consists of 6 states arranged as follows:
+The game board consists of 7 states arranged in 4 layers:
 
 ```
-    [Start]
-    /  |  \
-  [A] [B] [C]
-    \  |  /
-   [Victory]
+         [Start]           Layer 0: Starting point
+         /  |  \
+       [A] [B] [C]         Layer 1: Intermediate states (65%)
+         \  |  /
+   [Checkpoint-X]──[Checkpoint-Y]   Layer 2: Checkpoints (50%)
+            \    /
+          [Victory]        Layer 3: Goal state (35%)
 ```
 
 **State Descriptions:**
 - **Start**: All players begin here
-- **A, B, C**: Intermediate states (3 different paths)
+- **A, B, C**: First intermediate layer (3 different paths)
+- **Checkpoint-X, Checkpoint-Y**: Second intermediate layer (mandatory!)
 - **Victory**: The goal state - first player to reach wins
+
+**Minimum Path to Victory:** 3 moves (Start → A/B/C → Checkpoint → Victory)
 
 ### Edge Weights (Transition Probabilities)
 
-Each connection between states has a base probability of success:
+**Layer Transitions:**
+- Start → A/B/C: **0.65** (65% success)
+- A/B/C → Checkpoint-X/Y: **0.50** (50% success)
+- Checkpoint-X/Y → Victory: **0.35** (35% success - hardest!)
 
-- Start → A: 0.65
-- Start → B: 0.65
-- Start → C: 0.65
-- A → Victory: 0.35
-- B → Victory: 0.35
-- C → Victory: 0.35
-
-Additional connections (shortcuts):
-- A → B: 0.4
-- B → C: 0.4
-- C → A: 0.4
-- B → A: 0.4
-- C → B: 0.4
-- A → C: 0.4
+**Lateral Movement:**
+- Between A, B, C: **0.40** (40% success)
+- Between Checkpoints: **0.45** (45% success)
 
 ### Card Deck
 
