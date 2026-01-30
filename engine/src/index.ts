@@ -32,8 +32,7 @@ import {
   adjudicateVictory,
   ensureContestState,
   setDebugMode,
-  resolveGameInstance,
-  listGameInstances
+  checkAllWinConditions
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -419,16 +418,12 @@ program
         return;
       }
 
-      // Check for win condition (hand empty for card games)
-      const player = state.players[options.player];
-      if (player && player.hand.length === 0 && action.type === 'play_card') {
-        endGame(game, options.player, `${options.player} emptied their hand`);
-      }
-
       // Reload state to get updated values
       const updatedState = loadState(game);
+      const player = updatedState.players[options.player];
       const playerView = getPlayerView(updatedState, options.player);
 
+      // Return result with gameOver info if applicable
       console.log(JSON.stringify({
         success: true,
         action,
@@ -437,6 +432,8 @@ program
         handSize: player?.hand.length,
         nextPlayer: updatedState.currentPlayer,
         gameStatus: updatedState.status,
+        gameOver: execResult.gameOver || false,
+        winner: execResult.winner,
         view: playerView
       }));
     } catch (e) {

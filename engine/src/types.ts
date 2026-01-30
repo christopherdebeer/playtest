@@ -21,7 +21,7 @@ export interface PlayerState {
   hand: Card[];
   effects: Effect[];
   score?: number;
-  persona?: string;  // Assigned persona slug (e.g., 'aggressive', 'casual')
+  lastActionTurn?: number;  // Track last turn player acted (prevents multiple actions per turn)
 }
 
 export interface Effect {
@@ -202,6 +202,7 @@ export interface PlayCardAction extends BaseAction {
   type: 'play_card';
   card: string;
   declaredColor?: string;  // For wild cards
+  target?: string;  // Target player for interference cards (Block, Friction, Sabotage, etc.)
 }
 
 export interface DrawAction extends BaseAction {
