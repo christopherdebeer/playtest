@@ -26,7 +26,7 @@
 │                    TypeScript Engine                             │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │                    CLI Router                            │   │
-│  │  init | register | wait | submit | roll | draw | end    │   │
+│  │  init | register | wait | act | roll | draw | end       │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │
 │  │   Game   │ │   Turn   │ │   Deck   │ │   Rules Parser   │   │
@@ -69,9 +69,9 @@ npx playtest status <game>
 npx playtest wait <game> --player <id> --timeout <seconds>
 # Returns: { status: "your_turn"|"game_over", state, hand, opponents }
 
-# Submit player action (engine validates and resolves)
-npx playtest submit <game> --player <id> --action '<json>'
-# Returns: { accepted, result, nextPlayer? }
+# Execute player action directly (contest-based system)
+npx playtest act <game> --player <id> --action '<json>'
+# Returns: { success, effect, validation, gameState }
 ```
 
 ### Game Mechanics (Engine Handles Randomization)
@@ -133,12 +133,11 @@ RULES:
 
 COMMANDS AVAILABLE:
 - npx playtest status {game}     # Check game state
-- npx playtest submit ... --validated  # Approve action
-- npx playtest effect ...        # Apply game effects
+- npx playtest pending {game}    # Wait for contests
+- npx playtest adjudicate ...    # Rule on contests
 - npx playtest end ...           # Declare winner
 
-When a player submits an action, evaluate it against the rules.
-If valid, the engine will execute it. If invalid, reject with reason.
+Wait for contests via pending. If a player contests, adjudicate the dispute.
 ```
 
 ### Player Agent
@@ -165,9 +164,9 @@ RULES SUMMARY:
 
 COMMANDS AVAILABLE:
 - npx playtest wait {game} --player {id}   # Wait for your turn
-- npx playtest submit {game} --player {id} --action '<json>'
+- npx playtest act {game} --player {id} --action '<json>'
 
-When it's your turn, analyze your options and submit the best action.
+When it's your turn, analyze your options and execute the best action.
 ```
 
 ## State Management
@@ -265,10 +264,10 @@ The engine:
 ### Turn Execution
 1. Player calls `npx playtest wait` (blocks)
 2. Engine returns state when it's their turn
-3. Player analyzes and calls `npx playtest submit`
-4. Engine validates action format
-5. Engine asks gamemaster to validate against rules
-6. If valid, engine executes (rolls, draws, moves)
+3. Player analyzes and calls `npx playtest act`
+4. Engine validates action schema and game rules
+5. Engine executes action directly (contest-based)
+6. If another player contests, gamemaster adjudicates
 7. Engine updates state, logs event
 8. Engine signals next player
 

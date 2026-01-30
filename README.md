@@ -106,7 +106,7 @@ Natural language rules for gamemaster interpretation...
 npx playtest init <game> -p <n>          # Initialize game
 npx playtest status <game>               # Check status
 npx playtest wait <game> -p <id>         # Wait for turn (blocking)
-npx playtest submit <game> -p <id> -a .. # Submit action
+npx playtest act <game> -p <id> -a ..    # Execute action
 npx playtest roll <game> --probability   # Probability roll
 npx playtest draw <game> -p <id>         # Draw cards
 npx playtest end <game> -w <id> -r ..    # End game
