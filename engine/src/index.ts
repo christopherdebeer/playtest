@@ -1129,6 +1129,11 @@ program
   .action(async (options: { name: 'start' | 'stop'; agent: 'player' | 'gamemaster' }) => {
     const { name: hookType, agent: agentType } = options;
 
+    // Immediate log to confirm hook is invoked
+    const fsEarly = await import('fs');
+    try { fsEarly.mkdirSync('/home/user/playtest/logs/hooks', { recursive: true }); } catch { /* ignore */ }
+    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Hook invoked: ${hookType}-${agentType}\n`); } catch { /* ignore */ }
+
     // Read JSON input from stdin
     let inputJson: {
       session_id?: string;
@@ -1154,38 +1159,78 @@ program
 
     const transcriptPath = inputJson.transcript_path || '';
 
-    // Extract game name from transcript
-    let gameName = '';
-    if (transcriptPath && existsSync(transcriptPath)) {
-      try {
-        const { readFileSync } = await import('fs');
-        const content = readFileSync(transcriptPath, 'utf8');
-        const lines = content.split('\n').slice(0, 50); // Check first 50 lines
+    // Helper function to extract game name from transcript content
+    const extractGameName = (content: string): string => {
+      const lines = content.split('\n').slice(0, 50); // Check first 50 lines
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const entry = JSON.parse(line);
+          if (entry.role === 'user' && entry.type === 'message') {
+            const text = typeof entry.content === 'string'
+              ? entry.content
+              : Array.isArray(entry.content)
+                ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
+                : '';
 
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const entry = JSON.parse(line);
-            if (entry.role === 'user' && entry.type === 'message') {
-              const text = typeof entry.content === 'string'
-                ? entry.content
-                : Array.isArray(entry.content)
-                  ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
-                  : '';
-
-              const match = text.match(/^GAME:\s*(\S+)/m);
-              if (match) {
-                gameName = match[1];
-                break;
-              }
+            const match = text.match(/^GAME:\s*(\S+)/m);
+            if (match) {
+              return match[1];
             }
-          } catch {
-            // Skip invalid JSON lines
           }
+        } catch {
+          // Skip invalid JSON lines
         }
-      } catch {
-        // Could not read transcript
       }
+      return '';
+    };
+
+    // Poll transcript until game name is found (for start hooks)
+    // Stop hooks can fail fast since transcript should already exist
+    const MAX_WAIT_MS = hookType === 'start' ? 10000 : 2000;
+    const POLL_INTERVAL_MS = 200;
+    const startTime = Date.now();
+
+    let gameName = '';
+    const { readFileSync, appendFileSync, mkdirSync } = await import('fs');
+
+    // Setup debug logging with absolute path
+    const logsDir = '/home/user/playtest/logs/hooks';
+    try { mkdirSync(logsDir, { recursive: true }); } catch { /* ignore */ }
+    const logFile = `${logsDir}/${agentType}-${hookType}-hook.log`;
+    const log = (msg: string) => {
+      const ts = new Date().toISOString();
+      try { appendFileSync(logFile, `[${ts}] ${msg}\n`); } catch { /* ignore */ }
+    };
+
+    log(`=== HOOK START ===`);
+    log(`Hook: ${agentType}-${hookType}`);
+    log(`Transcript path: ${transcriptPath}`);
+    log(`Max wait: ${MAX_WAIT_MS}ms`);
+
+    while (Date.now() - startTime < MAX_WAIT_MS) {
+      if (transcriptPath && existsSync(transcriptPath)) {
+        try {
+          const content = readFileSync(transcriptPath, 'utf8');
+          const lineCount = content.split('\n').filter(l => l.trim()).length;
+          log(`Polling: file exists, ${lineCount} lines, elapsed ${Date.now() - startTime}ms`);
+          gameName = extractGameName(content);
+          if (gameName) {
+            log(`Found game name: ${gameName}`);
+            break;
+          }
+        } catch (e) {
+          log(`Read error: ${e}`);
+        }
+      } else {
+        log(`Polling: file not found, elapsed ${Date.now() - startTime}ms`);
+      }
+      // Wait before polling again
+      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+    }
+
+    if (!gameName) {
+      log(`Timeout: game name not found after ${Date.now() - startTime}ms`);
     }
 
     // Handle start hooks - inject context
