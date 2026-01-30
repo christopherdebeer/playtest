@@ -38,7 +38,7 @@ deck:
   - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
   # Interference cards (10 total)
   - { name: "Friction", count: 4, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
-  - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 2 } }
+  - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 1 } }
   - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
   # State Cards - NEW in v2.3! (8 total) - Placeable on board states
   - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20 } }

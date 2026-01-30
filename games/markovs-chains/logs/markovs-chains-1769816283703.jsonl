@@ -1,0 +1,12 @@
+{"timestamp":"2026-01-30T23:38:03.707Z","event":"game_init","data":{"gameId":"markovs-chains-1769816283703","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T23:40:06.137Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T23:40:37.754Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T23:41:21.174Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T23:41:52.205Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-30T23:42:21.355Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T23:42:39.979Z","event":"effect_applied","turn":3,"player":"player-2","data":{"effectType":"block_turn","appliedBy":"player-1","card":"Block","duration":2}}
+{"timestamp":"2026-01-30T23:42:39.980Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"play_card","card":"Block","effect":{"type":"block_turn","duration":2},"effectTarget":"player-2"}}
+{"timestamp":"2026-01-30T23:43:13.669Z","event":"contest_filed","turn":3,"player":"player-2","data":{"reason":"Block card rule violation: Rules specify 1 turn duration but effect applied shows 2 turns. Per rules: 'Block: Target opponent cannot move OR play cards for 1 turn' with 'Duration: 1 turn'. Effect should expire after my next turn, not the turn after that.","contestedAction":{"type":"play_card","card":"Block","targetPlayer":"player-2","reasoning":"Player-2 is dangerously close to Victory at Checkpoint-X. Blocking them prevents their next move and buys me time to reach Checkpoint."},"contestedPlayer":"player-1"}}
+{"timestamp":"2026-01-30T23:48:42.572Z","event":"contest_adjudicated","turn":3,"data":{"ruling":"rejected","rulingReason":"Contest upheld: Block card duration should be 1 turn per rules, not 2 turns. Engine config has a bug.","reversed":true,"contestedPlayer":"player-1","contestedBy":"player-2"}}
+{"timestamp":"2026-01-30T23:50:00.530Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T23:54:44.418Z","event":"game_end","turn":3,"data":{"winner":"none","reason":"Playtest ended due to agent coordination issues. Key finding: dynamic action discovery via 'npx playtest actions' worked successfully."}}
