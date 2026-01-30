@@ -21,6 +21,7 @@ export interface PlayerState {
   hand: Card[];
   effects: Effect[];
   score?: number;
+  persona?: string;  // Assigned persona slug (e.g., 'aggressive', 'casual')
 }
 
 export interface Effect {

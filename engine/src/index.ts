@@ -79,10 +79,31 @@ program
   .command('init <game>')
   .description('Initialize a new game instance')
   .option('-p, --players <n>', 'Number of players', '2')
-  .action((game: string, options: { players: string }) => {
+  .option('--personas <list>', 'Persona assignments: "random" (default), "none", or comma-separated list (e.g., "aggressive,casual")', 'random')
+  .action((game: string, options: { players: string; personas: string }) => {
     try {
       const playerCount = parseInt(options.players, 10);
-      const state = initGame(game, playerCount);
+
+      // Parse persona assignments
+      let personaOverrides: Record<string, string> | undefined;
+      if (options.personas === 'none') {
+        // No personas - set all to empty to prevent random assignment
+        personaOverrides = {};
+        for (let i = 1; i <= playerCount; i++) {
+          personaOverrides[`player-${i}`] = '';  // Empty string means no persona
+        }
+      } else if (options.personas !== 'random') {
+        // Specific persona list
+        const personaList = options.personas.split(',').map(p => p.trim());
+        personaOverrides = {};
+        for (let i = 1; i <= playerCount; i++) {
+          const persona = personaList[i - 1] || 'random';  // Fall back to random if not enough specified
+          personaOverrides[`player-${i}`] = persona;
+        }
+      }
+      // If 'random', leave personaOverrides undefined - will be assigned at registration
+
+      const state = initGame(game, playerCount, personaOverrides ? { personas: personaOverrides } : undefined);
 
       // Generate explicit spawn instructions for coordinator
       const spawnInstructions = {
@@ -97,6 +118,7 @@ program
           playerId,
           instanceId: state.gameId,
           agentType: 'player',
+          persona: state.players[playerId].persona || 'random',  // Show pre-assigned or 'random'
           prompt: `INSTANCE: ${state.gameId}\nPLAYER_ID: ${playerId}\n\nRegister and play to WIN!`
         }))
       };
@@ -130,15 +152,17 @@ program
       const result = registerAgent(game, options.role, options.agentId, options.player);
       // Return full rules and config on successful registration
       // This replaces the need for a separate 'rules' command
+      const personaInfo = result.persona ? ` with persona "${result.persona}"` : '';
       console.log(JSON.stringify({
         success: true,
         registered: result.registered,
         role: result.role,
         playerId: result.playerId,
+        persona: result.persona,
         instanceId: result.instanceId,
         rules: result.rules,
         config: result.config,
-        message: `Registered as ${result.role}${result.playerId ? ` (${result.playerId})` : ''} for instance ${result.instanceId}. Rules included above.`
+        message: `Registered as ${result.role}${result.playerId ? ` (${result.playerId})` : ''}${personaInfo} for instance ${result.instanceId}. Rules included above.`
       }));
     } catch (e) {
       console.log(JSON.stringify({

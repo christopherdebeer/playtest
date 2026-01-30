@@ -47,6 +47,46 @@ import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const GAMES_DIR = join(PROJECT_ROOT, 'games');
+const PERSONAS_DIR = join(PROJECT_ROOT, '.claude', 'agents', 'personas');
+
+// ============ Persona Management ============
+
+/**
+ * Get list of available persona slugs (filenames without .md extension)
+ * Excludes README.md
+ */
+export function getAvailablePersonas(): string[] {
+  if (!existsSync(PERSONAS_DIR)) {
+    return [];
+  }
+  return readdirSync(PERSONAS_DIR)
+    .filter(f => f.endsWith('.md') && f !== 'README.md')
+    .map(f => f.replace('.md', ''));
+}
+
+/**
+ * Load persona content by slug
+ * Returns the full markdown content of the persona file
+ */
+export function loadPersonaContent(slug: string): string | null {
+  const personaPath = join(PERSONAS_DIR, `${slug}.md`);
+  if (!existsSync(personaPath)) {
+    return null;
+  }
+  return readFileSync(personaPath, 'utf-8');
+}
+
+/**
+ * Select a random persona from available personas
+ * Returns the slug, or null if no personas available
+ */
+export function selectRandomPersona(): string | null {
+  const personas = getAvailablePersonas();
+  if (personas.length === 0) {
+    return null;
+  }
+  return personas[Math.floor(Math.random() * personas.length)];
+}
 
 export function getGamePath(gameName: string): string {
   return join(GAMES_DIR, gameName);
@@ -309,7 +349,11 @@ export function logEvent(state: GameState, event: Omit<LogEvent, 'timestamp'>): 
   appendFileSync(state.log, JSON.stringify(fullEvent) + '\n');
 }
 
-export function initGame(gameName: string, playerCount: number): GameState {
+export interface InitGameOptions {
+  personas?: Record<string, string>;  // Map of playerId -> persona slug (or "random")
+}
+
+export function initGame(gameName: string, playerCount: number, options?: InitGameOptions): GameState {
   if (!gameExists(gameName)) {
     throw new Error(`Game '${gameName}' not found. Create games/${gameName}/RULES.md first.`);
   }
@@ -337,10 +381,25 @@ export function initGame(gameName: string, playerCount: number): GameState {
   for (let i = 1; i <= playerCount; i++) {
     const playerId = `player-${i}`;
     turnOrder.push(playerId);
+
+    // Assign persona if specified
+    // - undefined or "random" = assign random at registration
+    // - empty string "" = no persona (explicit opt-out)
+    // - any other string = specific persona slug
+    const assignedPersona = options?.personas?.[playerId];
+    let persona: string | undefined;
+    if (assignedPersona === '') {
+      persona = '_none_';  // Marker for explicit no-persona
+    } else if (assignedPersona && assignedPersona !== 'random') {
+      persona = assignedPersona;
+    }
+    // else undefined = random assignment at registration
+
     players[playerId] = {
       state: config.board?.start ?? 'start',
       hand: [],
-      effects: []
+      effects: [],
+      persona
     };
   }
 
@@ -398,7 +457,7 @@ export function registerAgent(
   role: 'gamemaster' | 'player',
   agentId: string,
   playerId?: string
-): { registered: boolean; role: string; playerId?: string; rules: string; instanceId: string; config: object } {
+): { registered: boolean; role: string; playerId?: string; persona?: string; rules: string; instanceId: string; config: object } {
   debug(`[REGISTER DEBUG] === Starting registration ===`);
   debug(`[REGISTER DEBUG] Game: ${gameNameOrInstanceId}, Role: ${role}, AgentId: ${agentId}, PlayerId: ${playerId || 'auto'}`);
 
@@ -476,8 +535,40 @@ export function registerAgent(
     state.players[playerId].agentId = agentId;
     debug(`[REGISTER DEBUG] After assignment: ${playerId}.agentId = ${state.players[playerId].agentId}`);
 
+    // Assign persona if not pre-assigned
+    // - undefined = random assignment
+    // - '_none_' = explicit no persona
+    // - any other string = specific persona
+    let persona = state.players[playerId].persona;
+    if (persona === '_none_') {
+      // Explicit opt-out - no persona
+      persona = undefined;
+      state.players[playerId].persona = undefined;
+      debug(`[REGISTER DEBUG] Persona explicitly disabled`);
+    } else if (!persona) {
+      // Random assignment
+      const randomPersona = selectRandomPersona();
+      if (randomPersona) {
+        persona = randomPersona;
+        state.players[playerId].persona = persona;
+        debug(`[REGISTER DEBUG] Randomly assigned persona: ${persona}`);
+      }
+    } else {
+      debug(`[REGISTER DEBUG] Using pre-assigned persona: ${persona}`);
+    }
+
     saveStateUnsafe(state, instanceId);
     debug(`[REGISTER DEBUG] State saved for ${playerId}`);
+
+    // Build rules with persona injection
+    let rulesWithPersona = state.rulesMarkdown;
+    if (persona) {
+      const personaContent = loadPersonaContent(persona);
+      if (personaContent) {
+        rulesWithPersona = `${state.rulesMarkdown}\n\n---\n\n# Your Persona\n\n${personaContent}`;
+        debug(`[REGISTER DEBUG] Injected persona content for ${persona}`);
+      }
+    }
 
     // Check if all players registered
     const allRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
@@ -493,7 +584,8 @@ export function registerAgent(
       registered: true,
       role: 'player',
       playerId,
-      rules: state.rulesMarkdown,
+      persona,
+      rules: rulesWithPersona,
       instanceId: state.gameId,
       config: state.config
     };
