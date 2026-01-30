@@ -126,7 +126,8 @@ Begin playing now. Play to WIN!`,
 
 **Turn Management:**
 - `npx playtest wait <game> -p <id>` - Block until turn (player)
-- `npx playtest submit <game> -p <id> -a '<json>'` - Submit action
+- `npx playtest actions <game> -p <id>` - **Discover available actions** (dynamic!)
+- `npx playtest act <game> -p <id> -a '<json>'` - Execute action
 - `npx playtest advance <game>` - Next turn (gamemaster)
 
 **Game Mechanics:**
