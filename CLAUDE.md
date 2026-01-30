@@ -91,6 +91,9 @@ npx playtest end <game> -w <id> -r '<why>'   # End game with winner
 # Player commands (agents use these)
 npx playtest wait <game> -p <id>             # Block until your turn
 npx playtest submit <game> -p <id> -a '{}'   # Submit action
+npx playtest actions <game> -p <id>          # Get available actions (dynamic!)
+npx playtest actions <game> -p <id> --json   # Get available actions as JSON
+npx playtest act <game> -p <id> -a '{}'      # Execute action directly
 
 # Gamemaster commands
 npx playtest pending <game>                  # Wait for player action
