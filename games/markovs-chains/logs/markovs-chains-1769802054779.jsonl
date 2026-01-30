@@ -1,0 +1,9 @@
+{"timestamp":"2026-01-30T19:40:54.783Z","event":"game_init","data":{"gameId":"markovs-chains-1769802054779","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T19:40:57.283Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T19:42:00.391Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T19:42:15.618Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"move","target":"B"}}
+{"timestamp":"2026-01-30T19:42:29.789Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"B"}}
+{"timestamp":"2026-01-30T19:42:44.840Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"play_card","card":"Momentum","effect":{"type":"probability_boost","value":0.3}}}
+{"timestamp":"2026-01-30T19:43:10.855Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-01-30T19:43:30.498Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T19:43:30.501Z","event":"game_end","turn":3,"data":{"winner":"player-2","reason":"player-2 reached Victory state","autoDetected":true}}

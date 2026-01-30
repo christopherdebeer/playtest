@@ -1,6 +1,6 @@
 ---
 name: "Markov's Chains"
-version: "2.0"
+version: "2.1"
 players: 2-4
 starting_cards: 4
 win_condition: "First player to reach the Victory state"
@@ -12,19 +12,19 @@ board:
   start: "Start"
   edges:
     - { from: "Start", to: ["A", "B", "C"], probability: 0.65 }
-    - { from: ["A", "B", "C"], to: "Victory", probability: 0.55 }
+    - { from: ["A", "B", "C"], to: "Victory", probability: 0.35 }
     - { from: "A", to: ["B", "C"], probability: 0.4 }
     - { from: "B", to: ["A", "C"], probability: 0.4 }
     - { from: "C", to: ["A", "B"], probability: 0.4 }
 
 deck:
-  # Boost cards (10 total)
+  # Boost cards (8 total - reduced from 10 in v2.1)
   - { name: "Catalyst", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
   - { name: "Momentum", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
-  - { name: "Certainty", count: 4, type: "boost", effect: { type: "auto_success" } }
+  - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
   # Interference cards (12 total)
   - { name: "Friction", count: 5, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
-  - { name: "Block", count: 4, type: "interference", effect: { type: "block_turn", duration: 1 } }
+  - { name: "Block", count: 4, type: "interference", effect: { type: "block_turn", duration: 2 } }
   - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
   # Utility cards (8 total)
   - { name: "Redirect", count: 3, type: "utility", effect: { type: "force_retarget" } }
@@ -66,9 +66,9 @@ Each connection between states has a base probability of success:
 - Start → A: 0.65
 - Start → B: 0.65
 - Start → C: 0.65
-- A → Victory: 0.55
-- B → Victory: 0.55
-- C → Victory: 0.55
+- A → Victory: 0.35
+- B → Victory: 0.35
+- C → Victory: 0.35
 
 Additional connections (shortcuts):
 - A → B: 0.4
@@ -80,16 +80,16 @@ Additional connections (shortcuts):
 
 ### Card Deck
 
-The deck contains 30 action cards:
+The deck contains 28 action cards:
 
-**Boost Cards (10 cards):**
+**Boost Cards (8 cards):**
 - **Catalyst**: +0.2 to your next transition probability (3 cards)
 - **Momentum**: +0.3 to your next transition probability (3 cards)
-- **Certainty**: Your next move succeeds automatically (4 cards)
+- **Certainty**: Your next move succeeds automatically (2 cards) ⚠️ *Rare!*
 
 **Interference Cards (12 cards):**
 - **Friction**: -0.25 to target opponent's next transition (5 cards)
-- **Block**: Target opponent cannot move OR play cards for 1 turn (4 cards)
+- **Block**: Target opponent cannot move OR play cards for 2 turns (4 cards) 🔒 *Powerful!*
 - **Sabotage**: Force target opponent to discard 1 card (3 cards)
 
 **Utility Cards (8 cards):**
