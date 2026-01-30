@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/player-start-hook.sh"
+            "command": "npx playtest hook --name start --agent player"
           }
         ]
       },
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/gamemaster-start-hook.sh"
+            "command": "npx playtest hook --name start --agent gamemaster"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/player-stop-hook.sh"
+            "command": "npx playtest hook --name stop --agent player"
           }
         ]
       },
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/gamemaster-stop-hook.sh"
+            "command": "npx playtest hook --name stop --agent gamemaster"
           }
         ]
       }
