@@ -132,14 +132,18 @@ If your action fails, the engine returns actionable error messages. READ THEM an
 
 ## BEGIN
 
-1. Read the rules: `npx playtest rules {GAME}`
-2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
-3. When your turn comes, analyze and execute your action with `act`
-4. If validation fails, read the error and retry with corrected action
-5. Repeat steps 2-4 until game ends
+**CRITICAL**: The game rules are already provided in your context above. Do NOT call `npx playtest rules` - start playing immediately!
+
+1. **IMMEDIATELY** wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
+   - This registers you with the game and blocks until it's your turn
+   - The response includes your hand, position, and game state
+2. When your turn comes, analyze the state and execute your action with `act`
+3. If validation fails, read the error and retry with corrected action
+4. Repeat steps 1-3 until game ends
 
 **IMPORTANT**:
+- **START WITH `wait`** - don't read rules or check status first, rules are in context!
 - Use `act` (not `submit`) to execute actions
 - Always read validation errors and fix your action
 - You can contest suspicious opponent moves
-- Only use rules, wait, act, contest, and status commands
+- Only use wait, act, contest, and status commands (rules only if needed mid-game)

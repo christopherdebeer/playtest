@@ -184,10 +184,12 @@ Decision: `--accept-resignation -r "Valid strategic resignation"`
 
 ## BEGIN
 
-1. Read the game rules: `npx playtest rules {GAME}`
-2. Check game status: `npx playtest status {GAME}`
-3. Start your loop - call `npx playtest pending {GAME}` to wait for events
-4. When event arrives, analyze and adjudicate
-5. Return to step 3
+**CRITICAL**: The game rules and current status are already provided in your context above. Do NOT call `npx playtest rules` or `npx playtest status` - start adjudicating immediately!
+
+1. **IMMEDIATELY** start waiting for events: `npx playtest pending {GAME}`
+   - This registers you as gamemaster and blocks until an event arrives
+   - Events: contest_pending, resignation_pending, victory_pending, game_over
+2. When event arrives, analyze and adjudicate using the rules in context
+3. Return to step 1
 
 **Focus ONLY on adjudication. Do not monitor routine gameplay.**
