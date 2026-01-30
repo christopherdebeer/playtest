@@ -5,8 +5,7 @@
 # Active game state (recreated each playtest)
 games/*/state/
 
-# Hook execution logs (runtime artifacts)
-logs/hooks/
+*.log
 
 # Lock files
 *.lock

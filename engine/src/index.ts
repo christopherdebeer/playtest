@@ -1131,8 +1131,9 @@ program
 
     // Immediate log to confirm hook is invoked
     const fsEarly = await import('fs');
-    try { fsEarly.mkdirSync('/home/user/playtest/logs/hooks', { recursive: true }); } catch { /* ignore */ }
-    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Hook invoked: ${hookType}-${agentType}\n`); } catch { /* ignore */ }
+    const earlyLogsDir = `${process.cwd()}/logs/hooks`;
+    try { fsEarly.mkdirSync(earlyLogsDir, { recursive: true }); } catch { /* ignore */ }
+    try { fsEarly.appendFileSync(`${earlyLogsDir}/hook-invocations.log`, `[${new Date().toISOString()}] Hook invoked: ${hookType}-${agentType}\n`); } catch { /* ignore */ }
 
     // Read JSON input from stdin
     let inputJson: {
@@ -1159,8 +1160,8 @@ program
     }
 
     // Debug: Log the raw stdin JSON
-    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Raw stdin: ${rawInput.substring(0, 500)}\n`); } catch { /* ignore */ }
-    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Parsed fields: ${JSON.stringify(Object.keys(inputJson))}\n`); } catch { /* ignore */ }
+    try { fsEarly.appendFileSync(`${earlyLogsDir}/hook-invocations.log`, `[${new Date().toISOString()}] Raw stdin: ${rawInput.substring(0, 500)}\n`); } catch { /* ignore */ }
+    try { fsEarly.appendFileSync(`${earlyLogsDir}/hook-invocations.log`, `[${new Date().toISOString()}] Parsed fields: ${JSON.stringify(Object.keys(inputJson))}\n`); } catch { /* ignore */ }
 
     const transcriptPath = inputJson.transcript_path || '';
 
@@ -1233,8 +1234,8 @@ program
     let gameName = '';
     const { readFileSync, appendFileSync, mkdirSync } = await import('fs');
 
-    // Setup debug logging with absolute path
-    const logsDir = '/home/user/playtest/logs/hooks';
+    // Setup debug logging with relative path from cwd
+    const logsDir = `${process.cwd()}/logs/hooks`;
     try { mkdirSync(logsDir, { recursive: true }); } catch { /* ignore */ }
     const logFile = `${logsDir}/${agentType}-${hookType}-hook.log`;
     const log = (msg: string) => {
@@ -1389,7 +1390,7 @@ program
   .action(async (options: { event: string; matcher?: string }) => {
     const { event: eventName, matcher } = options;
     const fs = await import('fs');
-    const logsDir = '/home/user/playtest/logs/hooks';
+    const logsDir = `${process.cwd()}/logs/hooks`;
 
     try { fs.mkdirSync(logsDir, { recursive: true }); } catch { /* ignore */ }
 

@@ -1,1 +1,0 @@
-../../hooks/gamemaster-stop-hook.sh

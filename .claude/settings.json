@@ -178,16 +178,6 @@
           }
         ]
       }
-    ],
-    "Setup": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx playtest hook-event --event Setup"
-          }
-        ]
-      }
     ]
   }
 }

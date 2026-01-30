@@ -9,6 +9,57 @@
   "license": "MIT",
   "keywords": ["game", "playtesting", "multi-agent", "claude", "testing", "simulation"],
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event SessionStart"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PreToolUse --matcher Task"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PreToolUse --matcher all"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PostToolUse --matcher all"
+          }
+        ]
+      }
+    ],
     "SubagentStart": [
       {
         "matcher": "player",
@@ -25,6 +76,14 @@
           {
             "type": "command",
             "command": "npx playtest hook --name start --agent gamemaster"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event SubagentStart"
           }
         ]
       }
@@ -45,6 +104,74 @@
           {
             "type": "command",
             "command": "npx playtest hook --name stop --agent gamemaster"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event SubagentStop"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event Stop"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PreCompact"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event SessionEnd"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event Notification"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PermissionRequest"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx playtest hook-event --event PostToolUseFailure"
           }
         ]
       }

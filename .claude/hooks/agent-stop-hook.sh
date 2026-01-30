@@ -1,1 +1,0 @@
-../../hooks/agent-stop-hook.sh
