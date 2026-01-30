@@ -133,8 +133,10 @@ for (const player of spawnInstructions.players) {
 - `npx playtest status <instance>` - Game status (accepts instance ID or game name)
 
 **Turn Management:**
-- `npx playtest wait <instance> -p <id>` - Block until turn (player)
-- `npx playtest act <instance> -p <id> -a '<json>'` - Execute action
+- `npx playtest wait <game> -p <id>` - Block until turn (player)
+- `npx playtest actions <game> -p <id>` - **Discover available actions** (dynamic!)
+- `npx playtest act <game> -p <id> -a '<json>'` - Execute action
+- `npx playtest advance <game>` - Next turn (gamemaster)
 
 **Gamemaster:**
 - `npx playtest pending <instance>` - Wait for contest/resignation/victory
