@@ -30,6 +30,13 @@ export interface Effect {
   source?: string;   // who applied it
 }
 
+// Engine mechanics that can be enabled per-game
+export interface EngineMechanics {
+  probability_movement?: boolean;  // Moves use edge probabilities (default: true if board.edges have probability)
+  card_boosts?: boolean;           // Cards can modify move probability (default: true if deck exists)
+  victory_declaration?: boolean;   // Players must declare victory for GM adjudication (default: false)
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -40,6 +47,7 @@ export interface GameConfig {
   deck?: DeckConfig[];
   board?: BoardConfig;
   mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
+  engine_mechanics?: EngineMechanics;  // Enable/disable engine capabilities
   [key: string]: unknown;  // game-specific config
 }
 
@@ -154,6 +162,23 @@ export interface RollResult {
   context: string;
 }
 
+/**
+ * Log event structure for game event logging.
+ *
+ * SOURCE OF TRUTH: /shared/types/log-events.ts
+ *
+ * Keep in sync with:
+ * - shared/types/log-events.ts (canonical event definitions)
+ * - site/src/types/logs.ts (TypedLogEvent union)
+ *
+ * Event types include:
+ * - game_init, game_start, game_end, game_cancelled
+ * - action_executed
+ * - probability_roll, state_transition, move_failed (probability_movement)
+ * - victory_claimed, victory_adjudicated, victory_rejected (victory_declaration)
+ * - contest_filed, contest_adjudicated
+ * - resignation_submitted, resignation_adjudicated
+ */
 export interface LogEvent {
   timestamp: string;
   event: string;
@@ -190,7 +215,9 @@ export interface PassAction extends BaseAction {
 export interface MoveAction extends BaseAction {
   type: 'move';
   target: string;
-  useCard?: string;  // Optional card to play with movement
+  boost?: string;           // Card name to use for probability boost
+  declareVictory?: boolean; // Player believes this move wins
+  victoryReason?: string;   // Why they believe they won
 }
 
 export interface ResignAction extends BaseAction {
@@ -234,6 +261,25 @@ export interface PendingResignation {
   timestamp: string;
 }
 
+// Pending victory claim (awaiting gamemaster adjudication)
+export interface PendingVictoryClaim {
+  player: string;
+  reason: string;           // Why they believe they won
+  fromState: string;        // State before the move
+  toState: string;          // Claimed victory state
+  action: GameAction;       // The action that led to claim
+  timestamp: string;
+}
+
+// Victory claim history entry
+export interface VictoryClaimEntry {
+  player: string;
+  reason: string;
+  ruling: 'accepted' | 'rejected';
+  rulingReason: string;
+  timestamp: string;
+}
+
 // Contest history entry
 export interface ContestHistoryEntry {
   turn: number;
@@ -260,8 +306,10 @@ export interface ContestState {
   lastAction?: LastAction;
   pendingContest?: PendingContest;
   pendingResignation?: PendingResignation;
+  pendingVictoryClaim?: PendingVictoryClaim;
   contestHistory: ContestHistoryEntry[];
   resignations: ResignationEntry[];
+  victoryHistory: VictoryClaimEntry[];
 }
 
 // Act command result
@@ -297,7 +345,7 @@ export interface AdjudicationResult {
 
 // Wait result extended with contest info
 export interface ExtendedWaitResult {
-  status: 'your_turn' | 'game_over' | 'game_cancelled' | 'timeout' | 'error' | 'game_not_found' | 'contest_pending' | 'resignation_pending';
+  status: 'your_turn' | 'game_over' | 'game_cancelled' | 'timeout' | 'error' | 'game_not_found' | 'contest_pending' | 'resignation_pending' | 'victory_pending';
   gameState?: PlayerView;
   winner?: string;
   reason?: string;
@@ -305,4 +353,5 @@ export interface ExtendedWaitResult {
   lastAction?: LastAction;  // Previous player's action (for potential contest)
   pendingContest?: PendingContest;
   pendingResignation?: PendingResignation;
+  pendingVictoryClaim?: PendingVictoryClaim;
 }

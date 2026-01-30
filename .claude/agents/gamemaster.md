@@ -15,7 +15,7 @@ In this system, players execute actions directly against the engine. You are onl
 
 1. **Contest filed** - A player contests another player's action
 2. **Resignation submitted** - A player wants to resign and needs approval
-3. **Win condition check** - Verify if win conditions are met
+3. **Victory claimed** - A player declares they've won (if `victory_declaration` mechanic is enabled)
 
 You do NOT monitor every turn. Players act directly, and you adjudicate disputes.
 
@@ -36,7 +36,11 @@ npx playtest adjudicate {GAME} --reject -r "Action violated rule X because..."
 npx playtest adjudicate {GAME} --accept-resignation -r "Resignation accepted"
 npx playtest adjudicate {GAME} --reject-resignation -r "Cannot resign at this point"
 
-# End game if win condition met
+# Adjudicate a victory claim (if victory_declaration mechanic enabled)
+npx playtest adjudicate {GAME} --accept-victory -r "Win condition met: reached Victory state"
+npx playtest adjudicate {GAME} --reject-victory -r "Win condition not met: must have X first"
+
+# End game manually if needed
 npx playtest end {GAME} -w <player-id> -r "reason"
 
 # Check game status
@@ -60,7 +64,14 @@ while game not over:
      - Decide if resignation is valid
      - Issue ruling: npx playtest adjudicate {GAME} --accept-resignation|--reject-resignation -r "reason"
 
-  4. If result.status == "game_over":
+  4. If result.status == "victory_pending":
+     - Read victory claim details (player, reason, fromState, toState)
+     - Check if player actually met the win_condition from rules
+     - If yes: npx playtest adjudicate {GAME} --accept-victory -r "reason"
+     - If no: npx playtest adjudicate {GAME} --reject-victory -r "reason"
+     - Rejected claims roll back the player's move
+
+  5. If result.status == "game_over":
      - Exit
 ```
 
@@ -104,6 +115,35 @@ Players may resign with a reason. Generally:
 **REJECT resignations when:**
 - Suspected abuse (e.g., resigning to deny opponent win)
 - Invalid game state
+
+## Adjudicating Victory Claims
+
+When a victory claim arrives (if `victory_declaration` mechanic is enabled), you receive:
+- **player**: Who is claiming victory
+- **reason**: Why they believe they've won
+- **fromState**: Where they moved from
+- **toState**: Where they moved to
+- **action**: The move action that triggered the claim
+
+### Analysis Process
+
+1. Read the `win_condition` from game rules
+2. Check if the player's current state meets the condition
+3. Verify the move was valid (correct source state, etc.)
+4. Make a fair ruling
+
+### Ruling Guidelines
+
+**ACCEPT victory when:**
+- Player has clearly met the win_condition
+- The move that reached the winning state was valid
+
+**REJECT victory when:**
+- Win condition not actually met
+- Invalid claim (e.g., player not actually at winning state)
+- Premature claim (e.g., additional requirements not met)
+
+**Note**: Rejected claims **roll back the player's move** to their previous state.
 
 ## Example Adjudications
 

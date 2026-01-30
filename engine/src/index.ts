@@ -29,6 +29,7 @@ import {
   fileContest,
   adjudicateContest,
   adjudicateResignation,
+  adjudicateVictory,
   ensureContestState,
   setDebugMode
 } from './game.js';
@@ -378,16 +379,53 @@ program
 
 program
   .command('adjudicate <game>')
-  .description('Adjudicate a pending contest or resignation (gamemaster only)')
+  .description('Adjudicate a pending contest, resignation, or victory claim (gamemaster only)')
   .option('--allow', 'Allow the contested action (reject the contest)')
   .option('--reject', 'Reject the contested action (uphold the contest)')
   .option('--accept-resignation', 'Accept a pending resignation')
   .option('--reject-resignation', 'Reject a pending resignation')
+  .option('--accept-victory', 'Accept a pending victory claim')
+  .option('--reject-victory', 'Reject a pending victory claim (rolls back move)')
   .requiredOption('-r, --reason <text>', 'Reason for ruling')
-  .action((game: string, options: { allow?: boolean; reject?: boolean; acceptResignation?: boolean; rejectResignation?: boolean; reason: string }) => {
+  .action((game: string, options: { allow?: boolean; reject?: boolean; acceptResignation?: boolean; rejectResignation?: boolean; acceptVictory?: boolean; rejectVictory?: boolean; reason: string }) => {
     try {
       const state = loadState(game);
       const contestState = ensureContestState(state);
+
+      // Handle victory claim adjudication
+      if (options.acceptVictory || options.rejectVictory) {
+        if (!contestState.pendingVictoryClaim) {
+          console.log(JSON.stringify({
+            success: false,
+            error: 'No pending victory claim to adjudicate'
+          }));
+          process.exit(1);
+          return;
+        }
+
+        const accepted = !!options.acceptVictory;
+        const result = adjudicateVictory(state, accepted, options.reason);
+
+        if (!result.success) {
+          console.log(JSON.stringify({
+            success: false,
+            error: result.error
+          }));
+          process.exit(1);
+          return;
+        }
+
+        const updatedState = loadState(game);
+        console.log(JSON.stringify({
+          success: true,
+          type: 'victory',
+          accepted,
+          reason: options.reason,
+          gameStatus: updatedState.status,
+          winner: updatedState.shared.winner
+        }));
+        return;
+      }
 
       // Handle resignation adjudication
       if (options.acceptResignation || options.rejectResignation) {
@@ -428,7 +466,7 @@ program
       if (!options.allow && !options.reject) {
         console.log(JSON.stringify({
           success: false,
-          error: 'Must specify --allow or --reject for contest, or --accept-resignation/--reject-resignation'
+          error: 'Must specify --allow/--reject for contest, --accept-resignation/--reject-resignation, or --accept-victory/--reject-victory'
         }));
         process.exit(1);
         return;
@@ -542,6 +580,16 @@ program
           console.log(JSON.stringify({
             status: 'resignation_pending',
             resignation: contestState.pendingResignation,
+            turn: state.turn
+          }));
+          return;
+        }
+
+        // Check for pending victory claim
+        if (contestState.pendingVictoryClaim) {
+          console.log(JSON.stringify({
+            status: 'victory_pending',
+            victoryClaim: contestState.pendingVictoryClaim,
             turn: state.turn
           }));
           return;

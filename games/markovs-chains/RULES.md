@@ -6,6 +6,12 @@ starting_cards: 4
 win_condition: "First player to reach the Victory state"
 max_turns: 15
 
+# Engine mechanics - enable/disable engine capabilities for this game
+engine_mechanics:
+  probability_movement: true   # Moves use edge probabilities
+  card_boosts: true            # Cards can modify move probability
+  victory_declaration: true    # Players must declare victory for GM adjudication
+
 # Structured config for engine
 board:
   states: ["Start", "A", "B", "C", "Victory"]

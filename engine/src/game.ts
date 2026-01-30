@@ -28,14 +28,18 @@ import type {
   PlayCardAction,
   DrawAction,
   PassAction,
+  MoveAction,
   ResignAction,
   ActionValidationResult,
   LastAction,
   PendingContest,
   PendingResignation,
+  PendingVictoryClaim,
   ContestHistoryEntry,
   ResignationEntry,
-  ContestState
+  VictoryClaimEntry,
+  ContestState,
+  EngineMechanics
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -541,6 +545,70 @@ export function roll(probability: number): { roll: number; success: boolean } {
   };
 }
 
+// Helper: Get edge probability from board config
+export function getEdgeProbability(state: GameState, from: string, to: string): number {
+  const board = state.config.board;
+  if (!board?.edges) return 1.0; // No board = auto-success
+
+  for (const edge of board.edges) {
+    const fromMatch = Array.isArray(edge.from)
+      ? edge.from.includes(from)
+      : edge.from === from;
+    const toMatch = Array.isArray(edge.to)
+      ? edge.to.includes(to)
+      : edge.to === to;
+
+    if (fromMatch && toMatch) {
+      return edge.probability ?? 1.0;
+    }
+  }
+
+  return 0.5; // Default probability if edge not found
+}
+
+// Helper: Find card in player's hand by name
+export function findCardInHand(player: PlayerState, cardName: string): Card | null {
+  return player.hand.find(c => c.name === cardName) || null;
+}
+
+// Helper: Remove card from player's hand by name
+export function removeCardFromHand(player: PlayerState, cardName: string): Card | null {
+  const idx = player.hand.findIndex(c => c.name === cardName);
+  if (idx !== -1) {
+    return player.hand.splice(idx, 1)[0];
+  }
+  return null;
+}
+
+// Helper: Check if an engine mechanic is enabled for this game
+// Mechanics can be explicitly set in engine_mechanics, or inferred from config
+export function isMechanicEnabled(state: GameState, mechanic: keyof EngineMechanics): boolean {
+  const explicit = state.config.engine_mechanics?.[mechanic];
+  if (explicit !== undefined) {
+    return explicit;
+  }
+
+  // Infer from config if not explicitly set
+  switch (mechanic) {
+    case 'probability_movement':
+      // Enabled if board has edges with probability defined
+      return state.config.board?.edges?.some(e => e.probability !== undefined) ?? false;
+
+    case 'card_boosts':
+      // Enabled if deck exists with boost-type effects
+      return state.config.deck?.some(d =>
+        d.effect?.type === 'probability_boost' || d.effect?.type === 'auto_success'
+      ) ?? false;
+
+    case 'victory_declaration':
+      // Default to false - must be explicitly enabled
+      return false;
+
+    default:
+      return false;
+  }
+}
+
 export function drawCards(state: GameState, playerId: string, count: number): Card[] {
   const player = state.players[playerId];
   if (!player) {
@@ -631,10 +699,16 @@ export function ensureContestState(state: GameState): ContestState {
   if (!state.shared.contestState) {
     state.shared.contestState = {
       contestHistory: [],
-      resignations: []
+      resignations: [],
+      victoryHistory: []
     };
   }
-  return state.shared.contestState as ContestState;
+  // Ensure victoryHistory exists for older game states
+  const cs = state.shared.contestState as ContestState;
+  if (!cs.victoryHistory) {
+    cs.victoryHistory = [];
+  }
+  return cs;
 }
 
 // Validate action schema/type
@@ -959,37 +1033,195 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
 
       case 'move': {
-        // Board game movement
-        const moveAction = action as { target: string; useCard?: string };
-        player.state = moveAction.target;
+        // Board game movement - mechanics applied based on game config
+        const moveAction = action as MoveAction;
+        const fromState = player.state;
+        const toState = moveAction.target;
 
-        contestState.lastAction = {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          turn: state.turn,
-          result: {
+        // Check if probability_movement mechanic is enabled
+        const useProbability = isMechanicEnabled(state, 'probability_movement');
+        const useCardBoosts = isMechanicEnabled(state, 'card_boosts');
+        const useVictoryDeclaration = isMechanicEnabled(state, 'victory_declaration');
+
+        let moveSucceeded = true;
+        let boostCard: Card | null = null;
+        let boostValue = 0;
+        let baseProbability = 1.0;
+        let effectiveProbability = 1.0;
+        let rollValue = 0;
+
+        // Apply probability mechanics if enabled
+        if (useProbability) {
+          baseProbability = getEdgeProbability(state, fromState, toState);
+
+          // Apply card boost if enabled and specified
+          if (useCardBoosts && moveAction.boost) {
+            boostCard = findCardInHand(player, moveAction.boost);
+            if (boostCard) {
+              if (boostCard.effect?.type === 'probability_boost') {
+                boostValue = boostCard.effect.value || 0;
+              } else if (boostCard.effect?.type === 'auto_success') {
+                boostValue = 1.0; // Auto-success cards guarantee move
+              }
+            }
+          }
+
+          effectiveProbability = Math.min(1.0, baseProbability + boostValue);
+          const rollResult = roll(effectiveProbability);
+          rollValue = rollResult.roll;
+          moveSucceeded = rollResult.success;
+
+          // Log probability roll
+          logEvent(state, {
+            event: 'probability_roll',
+            turn: state.turn,
+            player: playerId,
+            data: {
+              fromState,
+              toState,
+              baseProbability,
+              boost: boostCard ? { card: boostCard.name, value: boostValue } : null,
+              effectiveProbability,
+              roll: rollValue,
+              success: moveSucceeded
+            }
+          });
+        }
+
+        if (moveSucceeded) {
+          // Apply state change
+          player.state = toState;
+
+          // Consume boost card if used
+          if (boostCard) {
+            removeCardFromHand(player, boostCard.name);
+            state.discardPile.push(boostCard);
+          }
+
+          // Log state transition
+          logEvent(state, {
+            event: 'state_transition',
+            turn: state.turn,
+            player: playerId,
+            data: { fromState, toState }
+          });
+
+          // Handle victory declaration if mechanic is enabled
+          if (useVictoryDeclaration && moveAction.declareVictory) {
+            contestState.pendingVictoryClaim = {
+              player: playerId,
+              reason: moveAction.victoryReason || `Reached ${toState}`,
+              fromState,
+              toState,
+              action: moveAction,
+              timestamp: new Date().toISOString()
+            };
+
+            logEvent(state, {
+              event: 'victory_claimed',
+              turn: state.turn,
+              player: playerId,
+              data: {
+                reason: moveAction.victoryReason,
+                state: toState
+              }
+            });
+
+            contestState.lastAction = {
+              player: playerId,
+              action,
+              timestamp: new Date().toISOString(),
+              turn: state.turn,
+              result: {
+                success: true,
+                details: { newState: toState, victoryPending: true }
+              }
+            };
+
+            // Don't advance turn - wait for gamemaster adjudication
+            saveState(state);
+
+            return {
+              success: true,
+              effect: {
+                type: 'victory_pending',
+                details: {
+                  newState: toState,
+                  awaitingAdjudication: true
+                }
+              }
+            };
+          }
+
+          // Record last action
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: {
+              success: true,
+              details: { newState: toState }
+            }
+          };
+
+          advanceTurn(state);
+
+          // Log action with reasoning
+          logEvent(state, {
+            event: 'action_executed',
+            turn: state.turn,
+            player: playerId,
+            data: {
+              type: 'move',
+              target: toState,
+              success: true,
+              reasoning: moveAction.reasoning
+            }
+          });
+
+          return {
             success: true,
-            details: { newState: moveAction.target }
-          }
-        };
+            effect: {
+              type: 'move',
+              details: { newState: player.state }
+            }
+          };
+        } else {
+          // Move failed (probability roll failed)
+          logEvent(state, {
+            event: 'move_failed',
+            turn: state.turn,
+            player: playerId,
+            data: {
+              fromState,
+              toState,
+              probability: effectiveProbability,
+              reasoning: moveAction.reasoning
+            }
+          });
 
-        advanceTurn(state);
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: {
+              success: false,
+              details: { fromState, toState, probability: effectiveProbability }
+            }
+          };
 
-        logEvent(state, {
-          event: 'action_executed',
-          turn: state.turn,
-          player: playerId,
-          data: { type: 'move', target: moveAction.target }
-        });
+          advanceTurn(state);
 
-        return {
-          success: true,
-          effect: {
-            type: 'move',
-            details: { newState: player.state }
-          }
-        };
+          return {
+            success: true, // Action was processed, even if move failed
+            effect: {
+              type: 'move_failed',
+              details: { fromState, toState, stayedAt: fromState }
+            }
+          };
+        }
       }
 
       default:
@@ -1158,6 +1390,84 @@ export function adjudicateResignation(
     turn: state.turn,
     data: {
       player: resignation.player,
+      accepted,
+      rulingReason
+    }
+  });
+
+  return { success: true };
+}
+
+// Adjudicate a pending victory claim
+export function adjudicateVictory(
+  state: GameState,
+  accepted: boolean,
+  rulingReason: string
+): { success: boolean; error?: string } {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingVictoryClaim) {
+    return { success: false, error: 'No pending victory claim to adjudicate' };
+  }
+
+  const claim = contestState.pendingVictoryClaim;
+
+  // Ensure victoryHistory array exists
+  if (!contestState.victoryHistory) {
+    contestState.victoryHistory = [];
+  }
+
+  // Record in history
+  contestState.victoryHistory.push({
+    player: claim.player,
+    reason: claim.reason,
+    ruling: accepted ? 'accepted' : 'rejected',
+    rulingReason,
+    timestamp: new Date().toISOString()
+  });
+
+  if (accepted) {
+    state.status = 'completed';
+    state.shared.winner = claim.player;
+    state.shared.endReason = `Victory claim accepted: ${rulingReason}`;
+
+    logEvent(state, {
+      event: 'game_end',
+      turn: state.turn,
+      data: {
+        winner: claim.player,
+        reason: rulingReason,
+        claimedState: claim.toState
+      }
+    });
+  } else {
+    // Rejected - ROLL BACK the move, then advance turn
+    const player = state.players[claim.player];
+    player.state = claim.fromState; // Roll back to previous state
+
+    logEvent(state, {
+      event: 'victory_rejected',
+      turn: state.turn,
+      player: claim.player,
+      data: {
+        reason: rulingReason,
+        rolledBackFrom: claim.toState,
+        rolledBackTo: claim.fromState
+      }
+    });
+
+    advanceTurn(state);
+  }
+
+  // Clear pending victory claim
+  delete contestState.pendingVictoryClaim;
+  saveState(state);
+
+  logEvent(state, {
+    event: 'victory_adjudicated',
+    turn: state.turn,
+    data: {
+      player: claim.player,
       accepted,
       rulingReason
     }

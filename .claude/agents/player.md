@@ -46,22 +46,27 @@ while game not over:
 
 ## Action Types
 
-### Play a Card
+Available action types depend on the game. Check the rules for which apply.
+
+### Move (board games)
 ```json
 {
-  "type": "play_card",
-  "card": "Red 5",
-  "reasoning": "Matches current color"
+  "type": "move",
+  "target": "<state_name>",
+  "boost": "<card_name>",        // Optional: card to boost probability
+  "declareVictory": true,        // Set if you believe you've won
+  "victoryReason": "<why>",      // Required if declareVictory is true
+  "reasoning": "Your strategy explanation"
 }
 ```
 
-For wild cards, you MUST specify the new color:
+### Play a Card (card games)
 ```json
 {
   "type": "play_card",
-  "card": "Wild",
-  "declaredColor": "Blue",
-  "reasoning": "Switching to blue, I have many blue cards"
+  "card": "<card_name>",
+  "declaredColor": "<color>",    // For wild cards
+  "reasoning": "Your strategy explanation"
 }
 ```
 
@@ -81,13 +86,21 @@ For wild cards, you MUST specify the new color:
 }
 ```
 
-### Resign (give up)
+### Resign
 ```json
 {
   "type": "resign",
   "reason": "Cannot win from this position"
 }
 ```
+
+## Declaring Victory
+
+If the game rules enable `victory_declaration`, you MUST declare when you believe you've met the win condition:
+- Set `"declareVictory": true` in your action
+- Provide a `"victoryReason"` explaining why you've won
+- The gamemaster will adjudicate your claim
+- If rejected, your move is rolled back and the game continues
 
 ## Contesting Actions
 
