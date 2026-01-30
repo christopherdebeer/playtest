@@ -72,7 +72,29 @@ echo "Parsed game status: '$GAME_STATUS'" >> "$LOG_FILE" 2>&1
 
 # Allow stop if game is completed or cancelled
 if [ "$GAME_STATUS" = "completed" ] || [ "$GAME_STATUS" = "cancelled" ]; then
-  echo "Game ended (status: $GAME_STATUS), allowing stop" >> "$LOG_FILE" 2>&1
+  echo "Game ended (status: $GAME_STATUS), checking for analysis..." >> "$LOG_FILE" 2>&1
+
+  # Get game ID from status JSON
+  GAME_ID=$(echo "$STATUS_JSON" | python3 -c "import sys, json; print(json.load(sys.stdin).get('gameId', ''))" 2>/dev/null)
+  echo "Game ID: $GAME_ID" >> "$LOG_FILE" 2>&1
+
+  # Check if analysis file exists
+  ANALYSIS_PATTERN="games/$GAME/logs/playtest-analysis-*-$GAME_ID.md"
+  ANALYSIS_FILES=$(ls $ANALYSIS_PATTERN 2>/dev/null | wc -l)
+  echo "Analysis files matching pattern '$ANALYSIS_PATTERN': $ANALYSIS_FILES" >> "$LOG_FILE" 2>&1
+
+  if [ "$ANALYSIS_FILES" -eq 0 ]; then
+    echo "No analysis file found! Blocking stop until analysis is written." >> "$LOG_FILE" 2>&1
+    {
+      echo "=== HOOK END ==="
+      echo "Exit Code: 2 (blocked - no analysis)"
+      echo ""
+    } >> "$LOG_FILE" 2>&1
+    echo "Game ended but no analysis written. Write the playtest analysis to games/$GAME/logs/playtest-analysis-VERSION-$GAME_ID.md before exiting." >&2
+    exit 2
+  fi
+
+  echo "Analysis file found, allowing stop" >> "$LOG_FILE" 2>&1
   {
     echo "=== HOOK END ==="
     echo "Exit Code: 0 (allowed)"

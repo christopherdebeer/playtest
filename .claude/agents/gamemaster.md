@@ -2,7 +2,7 @@
 name: gamemaster
 description: Game-agnostic gamemaster agent for rule interpretation and action validation
 model: sonnet
-allowed-tools: Read Bash(npx playtest *)
+allowed-tools: Read Write Bash(npx playtest *)
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
@@ -142,6 +142,71 @@ Decision process:
 
 Decision: `--accept-resignation -r "Valid strategic resignation"`
 
+## Post-Game Analysis (REQUIRED)
+
+When the game ends (status == "game_over" or "completed"), you **MUST** write a playtest analysis before exiting.
+
+### Analysis Location
+Write the analysis to: `games/{GAME}/logs/playtest-analysis-{VERSION}-{GAME_ID}.md`
+
+Get the game ID and version from the game state.
+
+### Analysis Template
+
+```markdown
+# {GAME_NAME} {VERSION} PLAYTEST ANALYSIS
+
+**Game ID:** {gameId}
+**Version:** {version}
+**Winner:** {winner} (turn {turn})
+**Duration:** {turns} turns
+**Date:** YYYY-MM-DD
+
+## Game Flow Analysis
+
+| Turn | Player-1 | Player-2 | Analysis |
+|------|----------|----------|----------|
+| 1 | action | action | notes |
+...
+
+## Key Observations
+
+### What Worked
+- Bullet points on mechanics that functioned well
+
+### What Didn't Work
+- Issues found during play
+
+### Balance Findings
+- Card usage patterns
+- Probability outcomes
+- Strategic decisions
+
+## Recommendations for Next Version
+
+1. Priority changes
+2. Balance adjustments
+3. Rule clarifications
+
+## Grades
+
+| Category | Grade | Rationale |
+|----------|-------|-----------|
+| Game Length | A-F | vs target |
+| Strategic Depth | A-F | variety of play |
+| Balance | A-F | fairness |
+| Engine Performance | A-F | bugs/issues |
+```
+
+### How to Generate Analysis
+
+1. Read the game log: `games/{GAME}/logs/{gameId}.jsonl`
+2. Parse each event to reconstruct game flow
+3. Analyze patterns, issues, and balance
+4. Write the markdown analysis file using the Write tool
+
+**The stop hook will block you from exiting if the analysis file doesn't exist.**
+
 ## BEGIN
 
 1. Read the game rules: `npx playtest rules {GAME}`
@@ -149,5 +214,6 @@ Decision: `--accept-resignation -r "Valid strategic resignation"`
 3. Start your loop - call `npx playtest pending {GAME}` to wait for events
 4. When event arrives, analyze and adjudicate
 5. Return to step 3
+6. **When game ends, WRITE THE ANALYSIS FILE before exiting**
 
-**Focus ONLY on adjudication. Do not monitor routine gameplay.**
+**Focus on adjudication during gameplay. Write analysis when game ends.**
