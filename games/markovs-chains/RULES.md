@@ -1,10 +1,10 @@
 ---
 name: "Markov's Chains"
-version: "2.2"
+version: "2.3"
 players: 2-4
-starting_cards: 4
+starting_cards: 5
 win_condition: "First player to reach the Victory state"
-max_turns: 20
+max_turns: 25
 
 # Engine mechanics - enable/disable engine capabilities for this game
 engine_mechanics:
@@ -17,33 +17,37 @@ board:
   states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]
   start: "Start"
   edges:
-    # Layer 1: Start to intermediate states (65%)
-    - { from: "Start", to: ["A", "B", "C"], probability: 0.65 }
-    # Layer 2: Intermediate to checkpoints (50%)
-    - { from: ["A", "B", "C"], to: ["Checkpoint-X", "Checkpoint-Y"], probability: 0.50 }
-    # Layer 3: Checkpoints to Victory (35%)
-    - { from: ["Checkpoint-X", "Checkpoint-Y"], to: "Victory", probability: 0.35 }
-    # Lateral movement between intermediates (40%)
-    - { from: "A", to: ["B", "C"], probability: 0.4 }
-    - { from: "B", to: ["A", "C"], probability: 0.4 }
-    - { from: "C", to: ["A", "B"], probability: 0.4 }
-    # Lateral movement between checkpoints (45%)
-    - { from: "Checkpoint-X", to: "Checkpoint-Y", probability: 0.45 }
-    - { from: "Checkpoint-Y", to: "Checkpoint-X", probability: 0.45 }
+    # Layer 1: Start to intermediate states (55% - reduced from 65%)
+    - { from: "Start", to: ["A", "B", "C"], probability: 0.55 }
+    # Layer 2: Intermediate to checkpoints (40% - reduced from 50%)
+    - { from: ["A", "B", "C"], to: ["Checkpoint-X", "Checkpoint-Y"], probability: 0.40 }
+    # Layer 3: Checkpoints to Victory (25% - reduced from 35%)
+    - { from: ["Checkpoint-X", "Checkpoint-Y"], to: "Victory", probability: 0.25 }
+    # Lateral movement between intermediates (35%)
+    - { from: "A", to: ["B", "C"], probability: 0.35 }
+    - { from: "B", to: ["A", "C"], probability: 0.35 }
+    - { from: "C", to: ["A", "B"], probability: 0.35 }
+    # Lateral movement between checkpoints (40%)
+    - { from: "Checkpoint-X", to: "Checkpoint-Y", probability: 0.40 }
+    - { from: "Checkpoint-Y", to: "Checkpoint-X", probability: 0.40 }
 
 deck:
-  # Boost cards (8 total - reduced from 10 in v2.1)
-  - { name: "Catalyst", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
-  - { name: "Momentum", count: 3, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
+  # Boost cards (6 total - reduced from 8)
+  - { name: "Catalyst", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
+  - { name: "Momentum", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
   - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
-  # Interference cards (12 total)
-  - { name: "Friction", count: 5, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
-  - { name: "Block", count: 4, type: "interference", effect: { type: "block_turn", duration: 2 } }
+  # Interference cards (10 total)
+  - { name: "Friction", count: 4, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
+  - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 2 } }
   - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
-  # Utility cards (8 total)
-  - { name: "Redirect", count: 3, type: "utility", effect: { type: "force_retarget" } }
+  # State Cards - NEW in v2.3! (8 total) - Placeable on board states
+  - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20 } }
+  - { name: "Safe Haven", count: 3, type: "buff", placeable: true, targetMode: "owner", effect: { type: "probability_boost", value: 0.15 } }
+  - { name: "Toll Gate", count: 2, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "force_discard", value: 1 } }
+  # Utility cards (6 total - reduced from 8)
+  - { name: "Redirect", count: 2, type: "utility", effect: { type: "force_retarget" } }
   - { name: "State Swap", count: 2, type: "utility", effect: { type: "swap_positions" } }
-  - { name: "Reroll", count: 3, type: "utility", effect: { type: "reroll_failed" } }
+  - { name: "Reroll", count: 2, type: "utility", effect: { type: "reroll_failed" } }
 ---
 
 # Markov's Chains - Game Rules
@@ -80,33 +84,39 @@ The game board consists of 7 states arranged in 4 layers:
 
 ### Edge Weights (Transition Probabilities)
 
-**Layer Transitions:**
-- Start → A/B/C: **0.65** (65% success)
-- A/B/C → Checkpoint-X/Y: **0.50** (50% success)
-- Checkpoint-X/Y → Victory: **0.35** (35% success - hardest!)
+**Layer Transitions (v2.3 - reduced probabilities):**
+- Start → A/B/C: **0.55** (55% success - reduced from 65%)
+- A/B/C → Checkpoint-X/Y: **0.40** (40% success - reduced from 50%)
+- Checkpoint-X/Y → Victory: **0.25** (25% success - hardest! reduced from 35%)
 
 **Lateral Movement:**
-- Between A, B, C: **0.40** (40% success)
-- Between Checkpoints: **0.45** (45% success)
+- Between A, B, C: **0.35** (35% success)
+- Between Checkpoints: **0.40** (40% success)
 
 ### Card Deck
 
-The deck contains 28 action cards:
+The deck contains 30 action cards:
 
-**Boost Cards (8 cards):**
-- **Catalyst**: +0.2 to your next transition probability (3 cards)
-- **Momentum**: +0.3 to your next transition probability (3 cards)
+**Boost Cards (6 cards):**
+- **Catalyst**: +0.2 to your next transition probability (2 cards)
+- **Momentum**: +0.3 to your next transition probability (2 cards)
 - **Certainty**: Your next move succeeds automatically (2 cards) ⚠️ *Rare!*
 
-**Interference Cards (12 cards):**
-- **Friction**: -0.25 to target opponent's next transition (5 cards)
-- **Block**: Target opponent cannot move OR play cards for 2 turns (4 cards) 🔒 *Powerful!*
+**Interference Cards (10 cards):**
+- **Friction**: -0.25 to target opponent's next transition (4 cards)
+- **Block**: Target opponent cannot move OR play cards for 2 turns (3 cards) 🔒 *Powerful!*
 - **Sabotage**: Force target opponent to discard 1 card (3 cards)
 
-**Utility Cards (8 cards):**
-- **Redirect**: Force opponent to attempt a different transition (3 cards)
+**State Cards - NEW in v2.3! (8 cards):**
+Place these cards on board states to create traps or buffs!
+- **Hazard**: Place on a state - opponents entering get -20% probability (3 cards) 🚧 *Trap!*
+- **Safe Haven**: Place on a state - you get +15% probability when at this state (3 cards) 🏠 *Defensive!*
+- **Toll Gate**: Place on a state - opponents must discard 1 card when entering (2 cards) 💰 *Tax!*
+
+**Utility Cards (6 cards):**
+- **Redirect**: Force opponent to attempt a different transition (2 cards)
 - **State Swap**: Swap positions with another player at same tier only (2 cards)
-- **Reroll**: Reroll a failed transition attempt (3 cards)
+- **Reroll**: Reroll a failed transition attempt (2 cards)
 
 ### Initial Setup
 
@@ -134,11 +144,13 @@ Choose ONE of the following:
    - Base probability (from edge weight)
    - Plus any active card effects
    - Minus any opponent interference
+   - **Plus/minus any placed card effects at destination** (NEW in v2.3!)
 3. Roll for success:
    - Generate random number 0.0 - 1.0
    - If number ≤ probability: Move succeeds, advance to target state
    - If number > probability: Move fails, stay in current state
-4. Discard any single-use cards that were applied
+4. When entering a state with placed cards, their effects trigger automatically
+5. Discard any single-use cards that were applied
 
 **Option B: Play Card**
 - Play 1 card from your hand
@@ -146,7 +158,14 @@ Choose ONE of the following:
 - Card goes to discard pile
 - Some cards trigger on your next move (mark as "pending")
 
-**Option C: Pass**
+**Option C: Place Card** (NEW in v2.3!)
+- Play a state card (Hazard, Safe Haven, or Toll Gate) from your hand
+- Choose a board state to place it on
+- The card remains on that state until triggered or the game ends
+- Multiple cards can be placed on the same state
+- Effects trigger when any player enters that state
+
+**Option D: Pass**
 - Do nothing this turn
 - Useful if waiting for strategic moment
 
@@ -204,6 +223,27 @@ Choose ONE of the following:
 - **Reroll**: After failing a move, immediately reroll the probability check
   - Can only be played immediately after failed move
   - Uses same probability as original attempt
+
+### State Cards (NEW in v2.3!)
+State cards are placed on board states and trigger when players interact with those states.
+
+- **Hazard**: Place on any state to create a trap
+  - Opponents entering the state get -20% to their next probability roll
+  - Does NOT affect the player who placed it (targetMode: opponents)
+  - Great for placing on Checkpoint states to slow down leaders
+  - Example: Place on Checkpoint-X, opponent entering has -20% penalty
+
+- **Safe Haven**: Place on any state to create a defensive buff
+  - When you are on this state, you get +15% probability
+  - Only affects the player who placed it (targetMode: owner)
+  - Great for creating a "safe path" through the board
+  - Example: Place on state B, you get +15% when moving from B
+
+- **Toll Gate**: Place on any state to tax opponents
+  - Opponents entering the state must discard 1 card
+  - Does NOT affect the player who placed it
+  - Powerful for controlling key chokepoints
+  - Example: Place on Checkpoint-Y, opponent loses a card when entering
 
 ## Winning
 
@@ -292,17 +332,26 @@ Log every:
 
 ### Balance Considerations
 
+**v2.3 Changes from v2.2**:
+- Added **State Cards** mechanic: Hazard, Safe Haven, Toll Gate (placeable on board states)
+- Reduced all transition probabilities by 10-15 points (55%/40%/25%)
+- Increased starting cards (4→5) to support state card usage
+- Increased max turns (20→25) to accommodate longer games
+- Rebalanced deck: Added 8 state cards, reduced boosts (8→6), reduced utility (8→6)
+
+**v2.2 Changes from v2.1**:
+- Added Checkpoint states for mandatory 3-move minimum path
+- First defensive card usage observed (Friction)
+
 **v2.0 Changes from v1.0**:
 - Reduced base probabilities (0.7→0.65, 0.6→0.55) to increase card importance
 - Strengthened Friction (-0.2→-0.25) to incentivize defensive play
 - Strengthened Block (now blocks card play too) for stronger disruption
 - Nerfed State Swap (same-tier only) to prevent game-stealing
 - Removed Probability Scan (no value), added Sabotage (interaction)
-- Rebalanced deck: More interference (10→12), fewer boosts (12→10)
-- Added max turn limit (15 turns) to prevent stalemates
 
 **Future adjustments to consider**:
-- If games too short: Decrease base probabilities further
+- If games too short: Decrease base probabilities further or add more intermediate states
 - If games too long: Increase base probabilities or reduce max_turns
-- If defensive cards still unused: Strengthen further or add incentives
+- If state cards unused: Increase their power or add more copies
 - If too luck-dependent: Increase card_boost_strength or starting_cards
