@@ -7,40 +7,43 @@ AI-driven game playtesting framework with TypeScript engine orchestration and pa
 | Skill | Description |
 |-------|-------------|
 | `/start-game <game> [players]` | Initialize and run a multi-agent game playtest |
-| `/stop-game [game]` | Emergency halt of active game session |
-| `/view-results [game]` | Analyze completed game logs and display results |
+| `/stop-game [instance]` | Emergency halt of active game session |
+| `/view-results [instance]` | Analyze completed game logs and display results |
 
 ### Examples
 
 ```
-/start-game uno 3
-/stop-game
-/view-results uno
+/start-game markovs-chains 2
+/stop-game mc-a1b2c3
+/view-results mc-a1b2c3
 ```
 
-## Architecture (v3 Engine-Driven)
+## Architecture (v4 Instance-Based)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Coordinator (skill)                     │
 │  1. npx playtest init <game> --players <n>                  │
-│  2. Spawn gamemaster (sonnet) + player agents (haiku)       │
+│     → Returns instance ID + spawn instructions              │
+│  2. Spawn agents with instance ID from spawn instructions   │
 └─────────────────────────────────────────────────────────────┘
           │
           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    TypeScript Engine                         │
-│  - State management (games/<game>/state/game.json)          │
+│  - Instance-based state (games/<game>/state/<instance>.json)│
+│  - Register command returns rules                           │
 │  - Turn blocking (npx playtest wait)                        │
-│  - Randomization (npx playtest roll)                        │
-│  - Deck operations (npx playtest draw/play/discard)         │
+│  - Action validation (npx playtest act)                     │
 └─────────────────────────────────────────────────────────────┘
           │                    │                    │
           ▼                    ▼                    ▼
     ┌───────────┐        ┌───────────┐        ┌───────────┐
     │Gamemaster │        │ Player 1  │        │ Player 2  │
     │  (Sonnet) │        │  (Haiku)  │        │  (Haiku)  │
-    │ Validates │        │ Decides   │        │ Decides   │
+    │           │        │           │        │           │
+    │ Register  │        │ Register  │        │ Register  │
+    │ Pending   │        │ Wait/Act  │        │ Wait/Act  │
     └───────────┘        └───────────┘        └───────────┘
 ```
 
@@ -50,7 +53,7 @@ AI-driven game playtesting framework with TypeScript engine orchestration and pa
 games/<game-name>/           # Game definitions and runtime
 ├── RULES.md                # Game rules (YAML frontmatter + markdown)
 ├── state/                  # Active game state (gitignored)
-│   └── game.json          # Authoritative state managed by engine
+│   └── <instance>.json    # State per instance (e.g., mc-a1b2c3.json)
 └── logs/                   # Game logs
     └── <gameId>.jsonl     # Event stream
 
@@ -65,14 +68,7 @@ engine/                      # TypeScript game engine
 
 mechanics/                   # BGG game mechanics database (192 mechanics)
 ├── index.json             # Master index with all mechanics
-├── README.md              # Mechanics documentation
-├── action/                # Action-related mechanics
-├── auction/               # Auction and bidding variants
-├── cards/                 # Card game mechanics (hand-management, etc.)
-├── cooperative/           # Co-op and team mechanics
-├── dice/                  # Dice and randomness
-├── movement/              # Movement mechanics
-└── .../                   # 17 categories total
+└── <category>/            # 17 categories total
 
 skills/                      # Claude Code skills
 ├── start-game/            # Launch multi-agent playtest
@@ -83,28 +79,31 @@ skills/                      # Claude Code skills
 ## Engine CLI Reference
 
 ```bash
-# Game lifecycle
-npx playtest init <game> -p <n>              # Initialize game
-npx playtest reset <game> [-p <n>]           # Reset (optionally reinit)
-npx playtest end <game> -w <id> -r '<why>'   # End game with winner
+# Game lifecycle - returns instance ID and spawn instructions
+npx playtest init <game> -p <n>              # Initialize game instance
+npx playtest reset <instance> [-p <n>]       # Reset (optionally reinit)
+npx playtest end <instance> -w <id> -r '<why>'  # End game with winner
+
+# Registration - returns rules + config (agents call this FIRST)
+npx playtest register <instance> --role <role> [--player <id>]
 
 # Player commands (agents use these)
-npx playtest wait <game> -p <id>             # Block until your turn
-npx playtest act <game> -p <id> -a '{}'      # Execute action directly
+npx playtest wait <instance> -p <id>         # Block until your turn
+npx playtest act <instance> -p <id> -a '{}'  # Execute action directly
 
 # Gamemaster commands
-npx playtest pending <game>                  # Wait for player action
-npx playtest advance <game>                  # Next player's turn
-npx playtest state <game>                    # Full game state
+npx playtest pending <instance>              # Wait for player action
+npx playtest adjudicate <instance> [opts]    # Adjudicate events
+npx playtest state <instance>                # Full game state
 
 # Game mechanics
-npx playtest roll <game> --probability <p>   # Probability check
-npx playtest draw <game> -p <id> -n <count>  # Draw cards
-npx playtest play <game> -p <id> -c '<name>' # Play card by name
+npx playtest roll <instance> --probability <p>   # Probability check
+npx playtest draw <instance> -p <id> -n <count>  # Draw cards
+npx playtest play <instance> -p <id> -c '<name>' # Play card by name
 
 # Info
-npx playtest status <game>                   # Game status
-npx playtest rules <game>                    # Get rules markdown
+npx playtest status <instance>               # Game status
+npx playtest rules <game>                    # Get rules markdown (by game name)
 
 # Mechanics reference (from mechanics/ folder)
 npx playtest mechanic --list                 # List all categories
@@ -114,8 +113,24 @@ npx playtest mechanic <query>                # Search mechanics
 npx playtest mechanic <slug> --markdown      # Full description
 ```
 
+## Agent Flow (v4)
+
+1. **Agent spawns** with prompt containing `INSTANCE` and `PLAYER_ID`
+2. **Agent registers**: `npx playtest register {INSTANCE} --role player --player {PLAYER_ID}`
+   - Returns rules, config, and game status
+3. **Agent enters wait loop**: `npx playtest wait {INSTANCE} -p {PLAYER_ID}`
+4. **Agent acts**: `npx playtest act {INSTANCE} -p {PLAYER_ID} -a '{...}'`
+
 ## Quick Start
 
-1. Start a game: `/start-game uno 3`
-2. Monitor progress: `npx playtest status uno`
-3. View results: `/view-results uno`
+1. Start a game: `/start-game markovs-chains 2`
+2. Get instance ID from output (e.g., `mc-a1b2c3`)
+3. Monitor progress: `npx playtest status mc-a1b2c3`
+4. View results: `/view-results mc-a1b2c3`
+
+## Key Benefits (v4)
+
+- **Concurrent instances**: Multiple games of same type can run simultaneously
+- **Explicit agent flow**: Register → Wait → Act (no hook-based rules injection)
+- **Instance IDs**: Short, unique identifiers (e.g., `mc-a1b2c3`)
+- **Spawn instructions**: Init returns exact prompts for spawning agents

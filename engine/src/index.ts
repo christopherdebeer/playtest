@@ -9,6 +9,10 @@ import {
   loadState,
   saveState,
   registerAgent,
+  registerAgentByInstance,
+  loadStateByInstance,
+  saveStateByInstance,
+  instanceExists,
   startGame,
   endGame,
   cancelGame,
@@ -75,18 +79,21 @@ program
 
 program
   .command('init <game>')
-  .description('Initialize a new game')
+  .description('Initialize a new game instance')
   .option('-p, --players <n>', 'Number of players', '2')
   .action((game: string, options: { players: string }) => {
     try {
       const playerCount = parseInt(options.players, 10);
-      const state = initGame(game, playerCount);
+      const { state, spawnInstructions } = initGame(game, playerCount);
       console.log(JSON.stringify({
         success: true,
+        instance: state.instanceId,
         gameId: state.gameId,
+        gameName: state.gameName,
         status: state.status,
         players: state.turnOrder,
-        message: `Game initialized. Waiting for ${playerCount} players to register.`
+        spawn: spawnInstructions,
+        message: `Game instance ${state.instanceId} created. Use spawn instructions to start agents.`
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -98,18 +105,32 @@ program
   });
 
 program
-  .command('register <game>')
-  .description('Register an agent as gamemaster or player')
+  .command('register <instanceOrGame>')
+  .description('Register an agent with a game instance. Returns rules and game config.')
   .requiredOption('-r, --role <role>', 'Role: gamemaster or player')
-  .requiredOption('-a, --agent-id <id>', 'Agent ID')
-  .option('-p, --player <id>', 'Player ID (auto-assigned if not specified)')
-  .action((game: string, options: { role: 'gamemaster' | 'player'; agentId: string; player?: string }) => {
+  .option('-p, --player <id>', 'Player ID (required for player role, auto-assigned if not specified)')
+  .option('-a, --agent-id <id>', 'Agent ID (legacy, auto-generated if not provided)')
+  .action((instanceOrGame: string, options: { role: 'gamemaster' | 'player'; player?: string; agentId?: string }) => {
     try {
-      const result = registerAgent(game, options.role, options.agentId, options.player);
-      console.log(JSON.stringify({
-        success: true,
-        ...result
-      }));
+      // Check if this is an instance ID (short format like "mc-abc123")
+      if (instanceExists(instanceOrGame)) {
+        // Instance-based registration (new architecture)
+        const result = registerAgentByInstance(instanceOrGame, options.role, options.player);
+        console.log(JSON.stringify({
+          success: true,
+          ...result
+        }));
+      } else if (stateExists(instanceOrGame)) {
+        // Legacy: game name based registration
+        const agentId = options.agentId || `agent-${options.role}-${Date.now()}`;
+        const result = registerAgent(instanceOrGame, options.role, agentId, options.player);
+        console.log(JSON.stringify({
+          success: true,
+          ...result
+        }));
+      } else {
+        throw new Error(`Instance or game '${instanceOrGame}' not found`);
+      }
     } catch (e) {
       console.log(JSON.stringify({
         success: false,
@@ -120,22 +141,28 @@ program
   });
 
 program
-  .command('status <game>')
-  .description('Get current game status')
-  .action((game: string) => {
+  .command('status <instanceOrGame>')
+  .description('Get current game status by instance ID or game name')
+  .action((instanceOrGame: string) => {
     try {
-      if (!stateExists(game)) {
+      let state;
+      if (instanceExists(instanceOrGame)) {
+        state = loadStateByInstance(instanceOrGame);
+      } else if (stateExists(instanceOrGame)) {
+        state = loadState(instanceOrGame);
+      } else {
         console.log(JSON.stringify({
           success: false,
-          error: `No active game for ${game}`
+          error: `No active game or instance '${instanceOrGame}'`
         }));
         process.exit(1);
       }
 
-      const state = loadState(game);
       console.log(JSON.stringify({
         success: true,
+        instance: state.instanceId,
         gameId: state.gameId,
+        gameName: state.gameName,
         status: state.status,
         turn: state.turn,
         currentPlayer: state.currentPlayer,
@@ -1030,22 +1057,24 @@ program
       // Reinitialize if players specified
       if (options.players) {
         const playerCount = parseInt(options.players, 10);
-        const state = initGame(game, playerCount);
+        const { state, spawnInstructions } = initGame(game, playerCount);
 
         // Auto-start the game
         state.status = 'in_progress';
         state.turn = 1;
         state.currentPlayer = state.turnOrder[0];
-        saveState(state);
+        saveStateByInstance(state);
 
         result = {
           ...result,
           reinitialized: true,
+          instance: state.instanceId,
           gameId: state.gameId,
           status: state.status,
           players: state.turnOrder,
           topCard: state.shared.topCard,
-          currentColor: state.shared.currentColor
+          currentColor: state.shared.currentColor,
+          spawn: spawnInstructions
         };
       }
 

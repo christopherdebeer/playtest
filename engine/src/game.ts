@@ -1,6 +1,6 @@
 // Game state management
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync, readdirSync, Dirent } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -58,6 +58,80 @@ export function getStatePath(gameName: string): string {
 
 export function getStateFile(gameName: string): string {
   return join(getStatePath(gameName), 'game.json');
+}
+
+// Instance-based state file (supports concurrent games)
+export function getInstanceStateFile(gameName: string, instanceId: string): string {
+  return join(getStatePath(gameName), `${instanceId}.json`);
+}
+
+// Generate a short unique instance ID (6 chars)
+export function generateInstanceId(gameName: string): string {
+  const prefix = gameName.slice(0, 2).toLowerCase();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `${prefix}-${random}`;
+}
+
+// Parse game name from instance ID (e.g., "mc-abc123" -> need lookup)
+// For now, we store the gameName in state, so we need to find the state file
+export function findInstanceState(instanceId: string): { gameName: string; stateFile: string } | null {
+  // Search all game directories for this instance
+  const gamesDir = GAMES_DIR;
+  if (!existsSync(gamesDir)) return null;
+
+  const games = readdirSync(gamesDir, { withFileTypes: true })
+    .filter((d: Dirent) => d.isDirectory() && !d.name.startsWith('.'))
+    .map((d: Dirent) => d.name);
+
+  for (const gameName of games) {
+    const stateFile = getInstanceStateFile(gameName, instanceId);
+    if (existsSync(stateFile)) {
+      return { gameName, stateFile };
+    }
+  }
+  return null;
+}
+
+// Load state by instance ID
+export function loadStateByInstance(instanceId: string): GameState {
+  const found = findInstanceState(instanceId);
+  if (!found) {
+    throw new Error(`Instance '${instanceId}' not found`);
+  }
+
+  if (!acquireLock(instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId}`);
+  }
+
+  try {
+    return JSON.parse(readFileSync(found.stateFile, 'utf-8'));
+  } finally {
+    releaseLock(instanceId);
+  }
+}
+
+// Save state by instance ID
+export function saveStateByInstance(state: GameState): void {
+  const stateDir = getStatePath(state.gameName);
+  const stateFile = getInstanceStateFile(state.gameName, state.instanceId!);
+
+  if (!acquireLock(state.instanceId!)) {
+    throw new Error(`Failed to acquire lock for ${state.instanceId}`);
+  }
+
+  try {
+    if (!existsSync(stateDir)) {
+      mkdirSync(stateDir, { recursive: true });
+    }
+    writeFileSync(stateFile, JSON.stringify(state, null, 2));
+  } finally {
+    releaseLock(state.instanceId!);
+  }
+}
+
+// Check if instance exists
+export function instanceExists(instanceId: string): boolean {
+  return findInstanceState(instanceId) !== null;
 }
 
 export function getLogPath(gameName: string, gameId: string): string {
@@ -227,7 +301,15 @@ export function logEvent(state: GameState, event: Omit<LogEvent, 'timestamp'>): 
   appendFileSync(state.log, JSON.stringify(fullEvent) + '\n');
 }
 
-export function initGame(gameName: string, playerCount: number): GameState {
+export interface InitResult {
+  state: GameState;
+  spawnInstructions: {
+    gamemaster: { prompt: string; firstCommand: string };
+    players: Array<{ id: string; prompt: string; firstCommand: string }>;
+  };
+}
+
+export function initGame(gameName: string, playerCount: number): InitResult {
   if (!gameExists(gameName)) {
     throw new Error(`Game '${gameName}' not found. Create games/${gameName}/RULES.md first.`);
   }
@@ -241,6 +323,8 @@ export function initGame(gameName: string, playerCount: number): GameState {
     throw new Error(`Player count ${playerCount} out of range [${min}, ${max}] for ${gameName}`);
   }
 
+  // Generate unique instance ID for concurrent game support
+  const instanceId = generateInstanceId(gameName);
   const gameId = `${gameName}-${Date.now()}`;
 
   // Build and shuffle deck if configured
@@ -286,6 +370,7 @@ export function initGame(gameName: string, playerCount: number): GameState {
 
   const state: GameState = {
     gameId,
+    instanceId,
     gameName,
     status: 'waiting_for_players',
     turn: 0,
@@ -300,14 +385,28 @@ export function initGame(gameName: string, playerCount: number): GameState {
     log: logPath
   };
 
-  saveState(state);
+  // Save using instance-based state file
+  saveStateByInstance(state);
 
   logEvent(state, {
     event: 'game_init',
-    data: { gameId, playerCount, config: config.name }
+    data: { gameId, instanceId, playerCount, config: config.name }
   });
 
-  return state;
+  // Generate spawn instructions for coordinator
+  const spawnInstructions = {
+    gamemaster: {
+      prompt: `INSTANCE: ${instanceId}\nROLE: gamemaster\n\nBegin gamemaster duties.`,
+      firstCommand: `npx playtest register ${instanceId} --role gamemaster`
+    },
+    players: turnOrder.map(playerId => ({
+      id: playerId,
+      prompt: `INSTANCE: ${instanceId}\nPLAYER_ID: ${playerId}\n\nPlay to WIN!`,
+      firstCommand: `npx playtest register ${instanceId} --role player --player ${playerId}`
+    }))
+  };
+
+  return { state, spawnInstructions };
 }
 
 export function registerAgent(
@@ -406,6 +505,128 @@ export function registerAgent(
     // Always release lock
     releaseLock(gameName);
   }
+}
+
+// Instance-based registration (new architecture)
+export interface RegisterResult {
+  registered: boolean;
+  role: 'gamemaster' | 'player';
+  playerId?: string;
+  instanceId: string;
+  gameName: string;
+  rules: string;
+  config: Record<string, unknown>;
+  status: string;
+}
+
+export function registerAgentByInstance(
+  instanceId: string,
+  role: 'gamemaster' | 'player',
+  playerId?: string
+): RegisterResult {
+  debug(`[REGISTER DEBUG] === Instance-based registration ===`);
+  debug(`[REGISTER DEBUG] Instance: ${instanceId}, Role: ${role}, PlayerId: ${playerId || 'auto'}`);
+
+  const found = findInstanceState(instanceId);
+  if (!found) {
+    throw new Error(`Instance '${instanceId}' not found`);
+  }
+
+  // Acquire lock for the entire registration operation
+  if (!acquireLock(instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId}`);
+  }
+
+  try {
+    const state: GameState = JSON.parse(readFileSync(found.stateFile, 'utf-8'));
+
+    if (role === 'gamemaster') {
+      // Gamemaster registration
+      state.shared.gamemasterAgentId = `gm-${instanceId}`;
+
+      writeFileSync(found.stateFile, JSON.stringify(state, null, 2));
+
+      // Check if all players also registered - if so, auto-start
+      const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+      if (allPlayersRegistered) {
+        startGameByInstanceUnsafe(state, found.stateFile);
+      }
+
+      return {
+        registered: true,
+        role: 'gamemaster',
+        instanceId,
+        gameName: state.gameName,
+        rules: state.rulesMarkdown,
+        config: state.config as Record<string, unknown>,
+        status: state.status
+      };
+    }
+
+    // Player registration
+    if (!playerId) {
+      // Auto-assign to first unregistered player
+      for (const pid of state.turnOrder) {
+        if (!state.players[pid].agentId) {
+          playerId = pid;
+          break;
+        }
+      }
+    }
+
+    if (!playerId || !state.players[playerId]) {
+      throw new Error(`No available player slot for registration`);
+    }
+
+    if (state.players[playerId].agentId) {
+      throw new Error(`Player ${playerId} already registered`);
+    }
+
+    state.players[playerId].agentId = `${playerId}-${instanceId}`;
+
+    writeFileSync(found.stateFile, JSON.stringify(state, null, 2));
+
+    // Check if all players registered
+    const allRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+    if (allRegistered && state.shared.gamemasterAgentId) {
+      startGameByInstanceUnsafe(state, found.stateFile);
+    }
+
+    return {
+      registered: true,
+      role: 'player',
+      playerId,
+      instanceId,
+      gameName: state.gameName,
+      rules: state.rulesMarkdown,
+      config: state.config as Record<string, unknown>,
+      status: state.status
+    };
+  } finally {
+    releaseLock(instanceId);
+  }
+}
+
+// Internal: start game by instance (already locked)
+function startGameByInstanceUnsafe(state: GameState, stateFile: string): void {
+  if (state.status !== 'waiting_for_players') {
+    return; // Already started
+  }
+
+  state.status = 'in_progress';
+  state.turn = 1;
+  state.currentPlayer = state.turnOrder[0];
+
+  writeFileSync(stateFile, JSON.stringify(state, null, 2));
+
+  logEvent(state, {
+    event: 'game_start',
+    turn: 1,
+    data: {
+      players: state.turnOrder,
+      firstPlayer: state.currentPlayer
+    }
+  });
 }
 
 // Internal unsafe version (called within locked operations)

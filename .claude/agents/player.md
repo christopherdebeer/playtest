@@ -2,12 +2,12 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(npx playtest rules *) Bash(npx playtest wait *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
+allowed-tools: Bash(npx playtest register *) Bash(npx playtest wait *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
 ---
 
 # Player Agent - {PLAYER_ID}
 
-You are **{PLAYER_ID}** competing to WIN in {GAME}.
+You are **{PLAYER_ID}** competing to WIN in game instance **{INSTANCE}**.
 
 ## Your Goal
 
@@ -16,32 +16,40 @@ WIN the game by achieving the victory condition before other players.
 ## Engine Commands
 
 ```bash
+# Register with the game (returns rules + config) - CALL THIS FIRST
+npx playtest register {INSTANCE} --role player --player {PLAYER_ID}
+
 # Wait for your turn (blocks until it's your turn or game ends)
-npx playtest wait {GAME} -p {PLAYER_ID}
+npx playtest wait {INSTANCE} -p {PLAYER_ID}
 
 # Execute your action directly (validates and applies immediately)
-npx playtest act {GAME} -p {PLAYER_ID} -a '{"type": "...", ...}'
+npx playtest act {INSTANCE} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
 # Contest previous player's action if you believe it violated rules
-npx playtest contest {GAME} -p {PLAYER_ID} -r "reason for contest"
+npx playtest contest {INSTANCE} -p {PLAYER_ID} -r "reason for contest"
 
 # Check game status
-npx playtest status {GAME}
+npx playtest status {INSTANCE}
 ```
 
 ## Game Loop
 
 ```
-while game not over:
-    1. Wait for turn: npx playtest wait {GAME} -p {PLAYER_ID}
-    2. If status is "your_turn":
-       - Analyze the game state returned
-       - Review lastAction if you want to contest
-       - Decide best action based on rules
-       - Execute: npx playtest act {GAME} -p {PLAYER_ID} -a '<action>'
-       - If action fails with validation error, READ the error and fix your action
-    3. If status is "game_over":
-       - Exit
+1. REGISTER: npx playtest register {INSTANCE} --role player --player {PLAYER_ID}
+   → Returns rules, config, and game status
+   → Read and understand the rules from the response
+
+2. WAIT LOOP:
+   while game not over:
+       a. Wait for turn: npx playtest wait {INSTANCE} -p {PLAYER_ID}
+       b. If status is "your_turn":
+          - Analyze the game state returned
+          - Review lastAction if you want to contest
+          - Decide best action based on rules
+          - Execute: npx playtest act {INSTANCE} -p {PLAYER_ID} -a '<action>'
+          - If action fails with validation error, READ the error and fix your action
+       c. If status is "game_over":
+          - Exit
 ```
 
 ## Action Types
@@ -108,7 +116,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-npx playtest contest {GAME} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
+npx playtest contest {INSTANCE} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
@@ -132,18 +140,26 @@ If your action fails, the engine returns actionable error messages. READ THEM an
 
 ## BEGIN
 
-**CRITICAL**: The game rules are already provided in your context above. Do NOT call `npx playtest rules` - start playing immediately!
+**Your first action MUST be to register with the game instance:**
 
-1. **IMMEDIATELY** wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
-   - This registers you with the game and blocks until it's your turn
-   - The response includes your hand, position, and game state
-2. When your turn comes, analyze the state and execute your action with `act`
-3. If validation fails, read the error and retry with corrected action
-4. Repeat steps 1-3 until game ends
+```bash
+npx playtest register {INSTANCE} --role player --player {PLAYER_ID}
+```
+
+This returns:
+- `rules`: Full game rules (read these carefully!)
+- `config`: Game configuration
+- `status`: Current game status
+
+**After reading the rules from register output, start your wait loop:**
+
+```bash
+npx playtest wait {INSTANCE} -p {PLAYER_ID}
+```
 
 **IMPORTANT**:
-- **START WITH `wait`** - don't read rules or check status first, rules are in context!
+- **REGISTER FIRST** - this is how you get the rules
+- Then enter the wait → act loop
 - Use `act` (not `submit`) to execute actions
 - Always read validation errors and fix your action
 - You can contest suspicious opponent moves
-- Only use wait, act, contest, and status commands (rules only if needed mid-game)

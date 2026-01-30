@@ -102,6 +102,7 @@ export interface PendingAction {
 
 export interface GameState {
   gameId: string;
+  instanceId: string;  // Short unique instance ID for concurrent games
   gameName: string;
   status: GameStatus;
   turn: number;
@@ -114,6 +115,19 @@ export interface GameState {
   config: GameConfig;
   rulesMarkdown: string;
   log: string;  // path to log file
+}
+
+// Spawn instructions returned by init command
+export interface SpawnInstructions {
+  gamemaster: {
+    prompt: string;
+    firstCommand: string;
+  };
+  players: Array<{
+    id: string;
+    prompt: string;
+    firstCommand: string;
+  }>;
 }
 
 export interface WaitResult {
