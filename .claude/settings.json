@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/player-start-hook.sh"
+            "command": "npx playtest hook --name start --agent player"
           }
         ]
       },
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/gamemaster-start-hook.sh"
+            "command": "npx playtest hook --name start --agent gamemaster"
           }
         ]
       }
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/player-stop-hook.sh"
+            "command": "npx playtest hook --name stop --agent player"
           }
         ]
       },
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hooks/gamemaster-stop-hook.sh"
+            "command": "npx playtest hook --name stop --agent gamemaster"
           }
         ]
       }

@@ -1119,4 +1119,161 @@ program
     }
   });
 
+// ============ Hook Commands ============
+
+program
+  .command('hook')
+  .description('Handle agent session hooks (reads JSON from stdin)')
+  .requiredOption('-n, --name <type>', 'Hook type: start or stop')
+  .requiredOption('-a, --agent <type>', 'Agent type: player or gamemaster')
+  .action(async (options: { name: 'start' | 'stop'; agent: 'player' | 'gamemaster' }) => {
+    const { name: hookType, agent: agentType } = options;
+
+    // Read JSON input from stdin
+    let inputJson: {
+      session_id?: string;
+      transcript_path?: string;
+      cwd?: string;
+      hook_event_name?: string;
+      agent_id?: string;
+      agent_type?: string;
+    } = {};
+
+    try {
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(chunk);
+      }
+      const input = Buffer.concat(chunks).toString('utf8').trim();
+      if (input) {
+        inputJson = JSON.parse(input);
+      }
+    } catch {
+      // No stdin or invalid JSON - continue with empty input
+    }
+
+    const transcriptPath = inputJson.transcript_path || '';
+
+    // Extract game name from transcript
+    let gameName = '';
+    if (transcriptPath && existsSync(transcriptPath)) {
+      try {
+        const { readFileSync } = await import('fs');
+        const content = readFileSync(transcriptPath, 'utf8');
+        const lines = content.split('\n').slice(0, 50); // Check first 50 lines
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const entry = JSON.parse(line);
+            if (entry.role === 'user' && entry.type === 'message') {
+              const text = typeof entry.content === 'string'
+                ? entry.content
+                : Array.isArray(entry.content)
+                  ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
+                  : '';
+
+              const match = text.match(/^GAME:\s*(\S+)/m);
+              if (match) {
+                gameName = match[1];
+                break;
+              }
+            }
+          } catch {
+            // Skip invalid JSON lines
+          }
+        }
+      } catch {
+        // Could not read transcript
+      }
+    }
+
+    // Handle start hooks - inject context
+    if (hookType === 'start') {
+      if (!gameName) {
+        // Can't inject context without game name - exit silently
+        process.exit(0);
+      }
+
+      if (!stateExists(gameName)) {
+        // Game not initialized yet - exit silently
+        process.exit(0);
+      }
+
+      try {
+        const state = loadState(gameName);
+
+        // Output rules
+        console.log(`## Game Rules for ${gameName}`);
+        console.log('');
+        console.log(JSON.stringify({
+          success: true,
+          rules: state.rulesMarkdown,
+          config: state.config
+        }));
+
+        // For gamemaster, also output current status
+        if (agentType === 'gamemaster') {
+          console.log('');
+          console.log('## Current Game Status');
+          console.log('```json');
+          console.log(JSON.stringify({
+            success: true,
+            gameId: state.gameId,
+            status: state.status,
+            turn: state.turn,
+            currentPlayer: state.currentPlayer,
+            players: Object.fromEntries(
+              Object.entries(state.players).map(([id, p]) => [
+                id,
+                { state: p.state, handSize: p.hand.length, registered: !!p.agentId }
+              ])
+            ),
+            winner: state.shared.winner
+          }));
+          console.log('```');
+        }
+
+        process.exit(0);
+      } catch {
+        // Error loading state - exit silently
+        process.exit(0);
+      }
+    }
+
+    // Handle stop hooks - block if game in progress
+    if (hookType === 'stop') {
+      if (!gameName) {
+        // Can't determine game - allow stop
+        process.exit(0);
+      }
+
+      if (!stateExists(gameName)) {
+        // No active game - allow stop
+        process.exit(0);
+      }
+
+      try {
+        const state = loadState(gameName);
+        const gameStatus = state.status;
+
+        // Allow stop if game is completed or cancelled
+        if (gameStatus === 'completed' || gameStatus === 'cancelled') {
+          process.exit(0);
+        }
+
+        // Block stop if game is still in progress
+        const message = agentType === 'gamemaster'
+          ? 'Game not finished. Continue managing the game until completion.'
+          : 'Game still in progress. Wait for your turn or for the game to end.';
+
+        console.error(message);
+        process.exit(2);
+      } catch {
+        // Error checking state - allow stop
+        process.exit(0);
+      }
+    }
+  });
+
 program.parse();
