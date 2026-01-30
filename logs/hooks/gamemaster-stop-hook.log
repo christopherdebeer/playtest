@@ -190,3 +190,51 @@ Extracted agent prompt:
 
 Extracted GAME: ''
 Warning: Could not extract game name, allowing stop
+=== HOOK START ===
+Timestamp: 2026-01-30T20:05:26.384Z
+Hook: gamemaster-stop-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"4ca807a0-c16a-4d79-8da7-7c33960a8bff","transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl","cwd":"/home/user/playtest","permission_mode":"default","hook_event_name":"SubagentStop","stop_hook_active":false,"agent_id":"a8ff7fb","agent_transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff/subagents/agent-a8ff7fb.jsonl"}
+Transcript path: /root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl
+Extracted agent prompt:
+
+Extracted GAME: ''
+Warning: Could not extract game name, allowing stop
+=== HOOK START ===
+Timestamp: 2026-01-30T20:05:28.664Z
+Hook: gamemaster-stop-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"4ca807a0-c16a-4d79-8da7-7c33960a8bff","transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl","cwd":"/home/user/playtest","permission_mode":"default","hook_event_name":"SubagentStop","stop_hook_active":false,"agent_id":"ab94f6c","agent_transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff/subagents/agent-ab94f6c.jsonl"}
+Transcript path: /root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl
+Extracted agent prompt:
+
+Extracted GAME: ''
+Warning: Could not extract game name, allowing stop
+=== HOOK START ===
+Timestamp: 2026-01-30T20:05:47.705Z
+Hook: gamemaster-stop-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"4ca807a0-c16a-4d79-8da7-7c33960a8bff","transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl","cwd":"/home/user/playtest","permission_mode":"default","hook_event_name":"SubagentStop","stop_hook_active":false,"agent_id":"a560022","agent_transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff/subagents/agent-a560022.jsonl"}
+Transcript path: /root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl
+Extracted agent prompt:
+
+Extracted GAME: ''
+Warning: Could not extract game name, allowing stop
+=== HOOK START ===
+Timestamp: 2026-01-30T20:09:27.588Z
+Hook: gamemaster-stop-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"4ca807a0-c16a-4d79-8da7-7c33960a8bff","transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl","cwd":"/home/user/playtest","permission_mode":"default","hook_event_name":"SubagentStop","stop_hook_active":false,"agent_id":"aad1316","agent_transcript_path":"/root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff/subagents/agent-aad1316.jsonl"}
+Transcript path: /root/.claude/projects/-home-user-playtest/4ca807a0-c16a-4d79-8da7-7c33960a8bff.jsonl
+Extracted agent prompt:
+
+Extracted GAME: ''
+Warning: Could not extract game name, allowing stop
