@@ -1,0 +1,12 @@
+{"timestamp":"2026-01-30T20:16:35.919Z","event":"game_init","data":{"gameId":"markovs-chains-1769804195915","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T20:17:46.754Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T20:18:08.316Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T20:18:29.751Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T20:18:45.327Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-30T20:19:04.936Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"play_card","card":"Catalyst","effect":{"type":"probability_boost","value":0.2}}}
+{"timestamp":"2026-01-30T20:19:19.992Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"play_card","card":"Catalyst","effect":{"type":"probability_boost","value":0.2}}}
+{"timestamp":"2026-01-30T20:19:34.064Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T20:19:52.343Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T20:20:05.820Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-01-30T20:20:40.650Z","event":"action_executed","turn":5,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-01-30T20:20:40.653Z","event":"game_end","turn":5,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}

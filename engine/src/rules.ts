@@ -50,11 +50,19 @@ export function buildDeck(deckConfig: DeckConfig[]): Card[] {
 
   for (const cardDef of deckConfig) {
     for (let i = 0; i < cardDef.count; i++) {
-      deck.push({
+      const card: Card = {
         name: cardDef.name,
         type: cardDef.type ?? 'standard',
         effect: cardDef.effect ?? { type: 'none' }
-      });
+      };
+
+      // Add placeable card properties if defined
+      if (cardDef.placeable) {
+        card.placeable = true;
+        card.targetMode = cardDef.targetMode ?? 'opponents';  // Default to affecting opponents
+      }
+
+      deck.push(card);
     }
   }
 

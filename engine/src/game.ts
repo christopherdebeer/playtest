@@ -29,6 +29,8 @@ import type {
   DrawAction,
   PassAction,
   ResignAction,
+  PlaceCardAction,
+  PlacedCard,
   ActionValidationResult,
   LastAction,
   PendingContest,
@@ -269,7 +271,9 @@ export function initGame(gameName: string, playerCount: number): GameState {
 
   // Initialize discard pile for card games (flip top card from deck)
   let discardPile: Card[] = [];
-  const shared: Record<string, unknown> = {};
+  const shared: Record<string, unknown> = {
+    placedCards: []  // Track cards placed on board states (state cards mechanic)
+  };
 
   if (deck.length > 0 && startingCards > 0) {
     const topCard = deck.shift()!;
@@ -708,6 +712,139 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
   return card;
 }
 
+// ============ State Cards (Placed Card Effects) ============
+
+/**
+ * Get all cards placed on a specific state.
+ */
+export function getPlacedCardsOnState(state: GameState, targetState: string): PlacedCard[] {
+  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
+  return placedCards.filter(pc => pc.state === targetState);
+}
+
+/**
+ * Apply effects from placed cards when a player enters a state.
+ * Returns the net probability modifier and any effects applied.
+ */
+export function applyPlacedCardEffects(
+  state: GameState,
+  playerId: string,
+  targetState: string
+): { probabilityModifier: number; effectsApplied: string[] } {
+  const placedCards = getPlacedCardsOnState(state, targetState);
+  let probabilityModifier = 0;
+  const effectsApplied: string[] = [];
+
+  for (const pc of placedCards) {
+    // Determine if this card affects this player
+    let affectsPlayer = false;
+    switch (pc.targetMode) {
+      case 'owner':
+        affectsPlayer = pc.placedBy === playerId;
+        break;
+      case 'opponents':
+        affectsPlayer = pc.placedBy !== playerId;
+        break;
+      case 'all':
+        affectsPlayer = true;
+        break;
+    }
+
+    if (!affectsPlayer) continue;
+
+    // Apply effect based on type
+    switch (pc.effect.type) {
+      case 'probability_boost':
+        probabilityModifier += pc.effect.value ?? 0;
+        effectsApplied.push(`${pc.cardName}: +${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
+        break;
+
+      case 'probability_penalty':
+        probabilityModifier += pc.effect.value ?? 0;  // value should be negative
+        effectsApplied.push(`${pc.cardName}: ${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
+        break;
+
+      case 'force_discard':
+        // Force player to discard cards
+        const discardCount = Math.abs(pc.effect.value ?? 1);
+        const player = state.players[playerId];
+        for (let i = 0; i < discardCount && player.hand.length > 0; i++) {
+          const discardedCard = player.hand.pop();
+          if (discardedCard) {
+            state.discardPile.push(discardedCard);
+            effectsApplied.push(`${pc.cardName}: Forced discard of ${discardedCard.name} (placed by ${pc.placedBy})`);
+          }
+        }
+        break;
+
+      default:
+        // Add effect to player's effect list for other effect types
+        const player2 = state.players[playerId];
+        player2.effects.push({
+          type: pc.effect.type,
+          value: pc.effect.value,
+          duration: pc.effect.duration ?? 1,
+          source: pc.placedBy
+        });
+        effectsApplied.push(`${pc.cardName}: Applied ${pc.effect.type} effect (placed by ${pc.placedBy})`);
+        break;
+    }
+
+    // Decrement triggers remaining if applicable
+    if (pc.triggersRemaining !== undefined) {
+      pc.triggersRemaining--;
+    }
+  }
+
+  // Remove placed cards with no triggers remaining
+  const allPlacedCards = (state.shared.placedCards || []) as PlacedCard[];
+  state.shared.placedCards = allPlacedCards.filter(
+    pc => pc.triggersRemaining === undefined || pc.triggersRemaining > 0
+  );
+
+  return { probabilityModifier, effectsApplied };
+}
+
+/**
+ * Place a card on a board state.
+ */
+export function placeCard(
+  state: GameState,
+  playerId: string,
+  cardName: string,
+  targetState: string
+): PlacedCard | null {
+  const player = state.players[playerId];
+  if (!player) return null;
+
+  // Find and remove card from hand
+  const cardIndex = player.hand.findIndex(c => c.name === cardName);
+  if (cardIndex === -1) return null;
+
+  const [card] = player.hand.splice(cardIndex, 1);
+
+  // Verify card is placeable
+  if (!card.placeable) return null;
+
+  // Create placed card entry
+  const placedCard: PlacedCard = {
+    cardName: card.name,
+    placedBy: playerId,
+    state: targetState,
+    effect: card.effect,
+    targetMode: card.targetMode ?? 'opponents',
+    triggersRemaining: card.effect.duration  // Use duration as trigger count, undefined = unlimited
+  };
+
+  // Add to placed cards list
+  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
+  placedCards.push(placedCard);
+  state.shared.placedCards = placedCards;
+
+  saveState(state);
+  return placedCard;
+}
+
 // ============ Contest-Based Adjudication Functions ============
 
 // Initialize contest state in game state if not present
@@ -736,7 +873,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'resign'];
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign'];
   if (!validTypes.includes(act.type)) {
     return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
   }
@@ -765,6 +902,15 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     case 'move':
       if (!act.target || typeof act.target !== 'string') {
         errors.push('move action requires "target" field (string) - the state/position to move to');
+      }
+      break;
+
+    case 'place_card':
+      if (!act.card || typeof act.card !== 'string') {
+        errors.push('place_card action requires "card" field (string) - the exact name of the card to place');
+      }
+      if (!act.targetState || typeof act.targetState !== 'string') {
+        errors.push('place_card action requires "targetState" field (string) - the board state to place the card on');
       }
       break;
 
@@ -932,6 +1078,35 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         if (!validStates.includes(moveAction.target)) {
           errors.push(`Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`);
         }
+      }
+      break;
+    }
+
+    case 'place_card': {
+      const placeAction = action as PlaceCardAction;
+      const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
+
+      if (cardIndex === -1) {
+        errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
+        break;
+      }
+
+      const card = player.hand[cardIndex];
+
+      // Check if card is placeable
+      if (!card.placeable) {
+        errors.push(`Card "${placeAction.card}" cannot be placed on states. Only cards marked as placeable can be used with place_card action.`);
+        break;
+      }
+
+      // Check if target state is valid
+      if (state.config.board) {
+        const validStates = state.config.board.states || [];
+        if (!validStates.includes(placeAction.targetState)) {
+          errors.push(`Invalid target state "${placeAction.targetState}". Valid states: ${validStates.join(', ')}`);
+        }
+      } else {
+        errors.push('place_card action requires a game with board states defined.');
       }
       break;
     }
@@ -1172,6 +1347,24 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       case 'move': {
         // Board game movement
         const moveAction = action as { target: string; useCard?: string };
+
+        // Apply effects from placed cards at the destination state
+        const placedCardEffects = applyPlacedCardEffects(state, playerId, moveAction.target);
+
+        // Log placed card effects if any were applied
+        if (placedCardEffects.effectsApplied.length > 0) {
+          logEvent(state, {
+            event: 'placed_card_triggered',
+            turn: state.turn,
+            player: playerId,
+            data: {
+              targetState: moveAction.target,
+              effects: placedCardEffects.effectsApplied,
+              probabilityModifier: placedCardEffects.probabilityModifier
+            }
+          });
+        }
+
         player.state = moveAction.target;
 
         contestState.lastAction = {
@@ -1181,7 +1374,10 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           turn: state.turn,
           result: {
             success: true,
-            details: { newState: moveAction.target }
+            details: {
+              newState: moveAction.target,
+              placedCardEffects: placedCardEffects.effectsApplied
+            }
           }
         };
 
@@ -1189,7 +1385,11 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           event: 'action_executed',
           turn: state.turn,
           player: playerId,
-          data: { type: 'move', target: moveAction.target }
+          data: {
+            type: 'move',
+            target: moveAction.target,
+            placedCardEffects: placedCardEffects.effectsApplied
+          }
         });
 
         // Check win condition BEFORE advancing turn (critical for board games!)
@@ -1211,7 +1411,12 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             winner: winCheck.winner,
             effect: {
               type: 'move',
-              details: { newState: player.state, gameEnded: true, winner: winCheck.winner }
+              details: {
+                newState: player.state,
+                gameEnded: true,
+                winner: winCheck.winner,
+                placedCardEffects: placedCardEffects.effectsApplied
+              }
             }
           };
         }
@@ -1222,7 +1427,63 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           success: true,
           effect: {
             type: 'move',
-            details: { newState: player.state }
+            details: {
+              newState: player.state,
+              placedCardEffects: placedCardEffects.effectsApplied
+            }
+          }
+        };
+      }
+
+      case 'place_card': {
+        const placeAction = action as PlaceCardAction;
+        const placedCard = placeCard(state, playerId, placeAction.card, placeAction.targetState);
+
+        if (!placedCard) {
+          return { success: false, error: `Failed to place card "${placeAction.card}"` };
+        }
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: {
+            success: true,
+            details: {
+              card: placedCard.cardName,
+              targetState: placedCard.state,
+              targetMode: placedCard.targetMode,
+              effect: placedCard.effect
+            }
+          }
+        };
+
+        logEvent(state, {
+          event: 'action_executed',
+          turn: state.turn,
+          player: playerId,
+          data: {
+            type: 'place_card',
+            card: placedCard.cardName,
+            targetState: placedCard.state,
+            targetMode: placedCard.targetMode,
+            effect: placedCard.effect
+          }
+        });
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'place_card',
+            details: {
+              card: placedCard.cardName,
+              targetState: placedCard.state,
+              targetMode: placedCard.targetMode,
+              handSize: player.hand.length
+            }
           }
         };
       }

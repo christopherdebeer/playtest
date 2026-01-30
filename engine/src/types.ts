@@ -13,6 +13,8 @@ export interface Card {
     target?: string;
     color?: string;  // For card games like UNO
   };
+  placeable?: boolean;  // Can this card be placed on board states?
+  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
 }
 
 export interface PlayerState {
@@ -71,6 +73,8 @@ export interface DeckConfig {
     duration?: number;
     color?: string;  // For card games like UNO
   };
+  placeable?: boolean;  // Can this card be placed on board states?
+  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
 }
 
 export interface BoardConfig {
@@ -166,7 +170,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'resign';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign';
 
 export interface BaseAction {
   type: ActionType;
@@ -200,7 +204,36 @@ export interface ResignAction extends BaseAction {
   reason: string;  // Required: why player is resigning
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | ResignAction;
+// ============ State Cards (Game-Agnostic Board Placement) ============
+
+/**
+ * A card placed on a board state/location.
+ * When players interact with that state, the placed card's effect triggers.
+ */
+export interface PlacedCard {
+  cardName: string;
+  placedBy: string;           // Player who placed this card
+  state: string;              // Board state where the card is placed
+  effect: {
+    type: string;             // Effect type (probability_penalty, probability_boost, force_discard, etc.)
+    value?: number;
+    duration?: number;        // How long the effect lasts after triggering
+  };
+  targetMode: 'owner' | 'opponents' | 'all';  // Who the effect applies to
+  triggersRemaining?: number; // How many times it can trigger (undefined = unlimited until removed)
+}
+
+/**
+ * Action to place a card on a board state.
+ * The card must be marked as `placeable: true` in the game's deck config.
+ */
+export interface PlaceCardAction extends BaseAction {
+  type: 'place_card';
+  card: string;               // Card name to place
+  targetState: string;        // Board state to place the card on
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction;
 
 // Action validation result
 export interface ActionValidationResult {
