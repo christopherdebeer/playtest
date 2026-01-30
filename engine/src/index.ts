@@ -31,7 +31,9 @@ import {
   adjudicateResignation,
   adjudicateVictory,
   ensureContestState,
-  setDebugMode
+  setDebugMode,
+  resolveGameInstance,
+  listGameInstances
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -75,18 +77,38 @@ program
 
 program
   .command('init <game>')
-  .description('Initialize a new game')
+  .description('Initialize a new game instance')
   .option('-p, --players <n>', 'Number of players', '2')
   .action((game: string, options: { players: string }) => {
     try {
       const playerCount = parseInt(options.players, 10);
       const state = initGame(game, playerCount);
+
+      // Generate explicit spawn instructions for coordinator
+      const spawnInstructions = {
+        gamemaster: {
+          role: 'gamemaster',
+          instanceId: state.gameId,
+          agentType: 'gamemaster',
+          prompt: `INSTANCE: ${state.gameId}\nROLE: gamemaster\n\nRegister and begin gamemaster duties.`
+        },
+        players: state.turnOrder.map(playerId => ({
+          role: 'player',
+          playerId,
+          instanceId: state.gameId,
+          agentType: 'player',
+          prompt: `INSTANCE: ${state.gameId}\nPLAYER_ID: ${playerId}\n\nRegister and play to WIN!`
+        }))
+      };
+
       console.log(JSON.stringify({
         success: true,
-        gameId: state.gameId,
+        instanceId: state.gameId,
+        gameName: state.gameName,
         status: state.status,
         players: state.turnOrder,
-        message: `Game initialized. Waiting for ${playerCount} players to register.`
+        spawnInstructions,
+        message: `Game instance ${state.gameId} created. Spawn agents using the instructions above.`
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -99,16 +121,24 @@ program
 
 program
   .command('register <game>')
-  .description('Register an agent as gamemaster or player')
+  .description('Register an agent as gamemaster or player. Returns rules on successful registration.')
   .requiredOption('-r, --role <role>', 'Role: gamemaster or player')
   .requiredOption('-a, --agent-id <id>', 'Agent ID')
   .option('-p, --player <id>', 'Player ID (auto-assigned if not specified)')
   .action((game: string, options: { role: 'gamemaster' | 'player'; agentId: string; player?: string }) => {
     try {
       const result = registerAgent(game, options.role, options.agentId, options.player);
+      // Return full rules and config on successful registration
+      // This replaces the need for a separate 'rules' command
       console.log(JSON.stringify({
         success: true,
-        ...result
+        registered: result.registered,
+        role: result.role,
+        playerId: result.playerId,
+        instanceId: result.instanceId,
+        rules: result.rules,
+        config: result.config,
+        message: `Registered as ${result.role}${result.playerId ? ` (${result.playerId})` : ''} for instance ${result.instanceId}. Rules included above.`
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -121,7 +151,7 @@ program
 
 program
   .command('status <game>')
-  .description('Get current game status')
+  .description('Get current game status (accepts game name or instance ID)')
   .action((game: string) => {
     try {
       if (!stateExists(game)) {
@@ -135,7 +165,8 @@ program
       const state = loadState(game);
       console.log(JSON.stringify({
         success: true,
-        gameId: state.gameId,
+        instanceId: state.gameId,
+        gameName: state.gameName,
         status: state.status,
         turn: state.turn,
         currentPlayer: state.currentPlayer,
@@ -146,6 +177,57 @@ program
           ])
         ),
         winner: state.shared.winner
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('list [game]')
+  .description('List active game instances (optionally for a specific game)')
+  .action(async (game?: string) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const GAMES_DIR = path.join(process.cwd(), 'games');
+
+      const results: { gameName: string; instanceId: string; status: string; turn: number }[] = [];
+
+      // If game specified, list instances for that game only
+      const gamesToCheck = game ? [game] : fs.readdirSync(GAMES_DIR).filter((f: string) => {
+        try {
+          return fs.statSync(path.join(GAMES_DIR, f)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+
+      for (const gameName of gamesToCheck) {
+        const instances = listGameInstances(gameName);
+        for (const instanceId of instances) {
+          try {
+            const state = loadState(instanceId);
+            results.push({
+              gameName: state.gameName,
+              instanceId: state.gameId,
+              status: state.status,
+              turn: state.turn
+            });
+          } catch {
+            // Skip if can't load state
+          }
+        }
+      }
+
+      console.log(JSON.stringify({
+        success: true,
+        instances: results,
+        count: results.length
       }));
     } catch (e) {
       console.log(JSON.stringify({

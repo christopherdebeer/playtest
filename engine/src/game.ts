@@ -1,6 +1,6 @@
 // Game state management
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -52,12 +52,14 @@ export function getGamePath(gameName: string): string {
   return join(GAMES_DIR, gameName);
 }
 
-export function getStatePath(gameName: string): string {
-  return join(getGamePath(gameName), 'state');
+// Instance-based state path (supports concurrent instances)
+export function getStatePath(gameName: string, instanceId?: string): string {
+  const basePath = join(getGamePath(gameName), 'state');
+  return instanceId ? join(basePath, instanceId) : basePath;
 }
 
-export function getStateFile(gameName: string): string {
-  return join(getStatePath(gameName), 'game.json');
+export function getStateFile(gameName: string, instanceId?: string): string {
+  return join(getStatePath(gameName, instanceId), 'game.json');
 }
 
 export function getLogPath(gameName: string, gameId: string): string {
@@ -72,18 +74,85 @@ export function gameExists(gameName: string): boolean {
   return existsSync(getRulesPath(gameName));
 }
 
-export function stateExists(gameName: string): boolean {
-  return existsSync(getStateFile(gameName));
+// Check if state exists - supports both game name and instance ID
+export function stateExists(gameNameOrInstanceId: string): boolean {
+  // Try as instance ID first (format: gameName-timestamp)
+  const resolved = resolveGameInstance(gameNameOrInstanceId);
+  if (resolved) {
+    return existsSync(getStateFile(resolved.gameName, resolved.instanceId));
+  }
+  // Fall back to legacy single-instance path
+  return existsSync(getStateFile(gameNameOrInstanceId));
+}
+
+// Resolve a game name or instance ID to {gameName, instanceId}
+// Returns null if cannot be resolved
+export function resolveGameInstance(gameNameOrInstanceId: string): { gameName: string; instanceId: string } | null {
+  // Check if it's an instance ID (format: gameName-timestamp)
+  const match = gameNameOrInstanceId.match(/^(.+)-(\d{13,})$/);
+  if (match) {
+    const [, gameName, timestamp] = match;
+    const instanceId = `${gameName}-${timestamp}`;
+    if (existsSync(getStateFile(gameName, instanceId))) {
+      return { gameName, instanceId };
+    }
+  }
+
+  // Try as game name - find most recent instance
+  const statePath = getStatePath(gameNameOrInstanceId);
+  if (existsSync(statePath)) {
+    try {
+      const entries = readdirSync(statePath);
+      // Filter to instance directories (format: gameName-timestamp)
+      const instances = entries
+        .filter((e: string) => e.match(/^.+-\d{13,}$/))
+        .filter((e: string) => existsSync(join(statePath, e, 'game.json')))
+        .sort((a: string, b: string) => {
+          // Sort by modification time, most recent first
+          const aStat = statSync(join(statePath, a, 'game.json'));
+          const bStat = statSync(join(statePath, b, 'game.json'));
+          return bStat.mtime.getTime() - aStat.mtime.getTime();
+        });
+
+      if (instances.length > 0) {
+        return { gameName: gameNameOrInstanceId, instanceId: instances[0] };
+      }
+    } catch {
+      // Directory doesn't exist or can't be read
+    }
+
+    // Fall back to legacy single-instance path (game.json directly in state/)
+    if (existsSync(getStateFile(gameNameOrInstanceId))) {
+      // Legacy: no instance ID, gameName only
+      return { gameName: gameNameOrInstanceId, instanceId: '' };
+    }
+  }
+
+  return null;
+}
+
+// List all active game instances for a game name
+export function listGameInstances(gameName: string): string[] {
+  const statePath = getStatePath(gameName);
+  if (!existsSync(statePath)) return [];
+
+  try {
+    return readdirSync(statePath)
+      .filter((e: string) => e.match(/^.+-\d{13,}$/))
+      .filter((e: string) => existsSync(join(statePath, e, 'game.json')));
+  } catch {
+    return [];
+  }
 }
 
 // ============ File Locking ============
 
-function getLockFile(gameName: string): string {
-  return `${getStateFile(gameName)}.lock`;
+function getLockFile(gameName: string, instanceId?: string): string {
+  return `${getStateFile(gameName, instanceId)}.lock`;
 }
 
-function acquireLock(gameName: string, timeoutMs: number = 5000): boolean {
-  const lockFile = getLockFile(gameName);
+function acquireLock(gameName: string, instanceId?: string, timeoutMs: number = 5000): boolean {
+  const lockFile = getLockFile(gameName, instanceId);
   const startTime = Date.now();
   const retryInterval = 10; // Check every 10ms
 
@@ -138,8 +207,8 @@ function acquireLock(gameName: string, timeoutMs: number = 5000): boolean {
   return false;
 }
 
-function releaseLock(gameName: string): void {
-  const lockFile = getLockFile(gameName);
+function releaseLock(gameName: string, instanceId?: string): void {
+  const lockFile = getLockFile(gameName, instanceId);
 
   try {
     if (existsSync(lockFile)) {
@@ -154,13 +223,13 @@ function releaseLock(gameName: string): void {
 // ============ State Management with Locking ============
 
 // Internal functions without locking (for use within locked operations)
-function loadStateUnsafe(gameName: string): GameState {
-  const stateFile = getStateFile(gameName);
-  debug(`[LOADSTATE DEBUG] Loading state for ${gameName} from ${stateFile}`);
+function loadStateUnsafe(gameName: string, instanceId?: string): GameState {
+  const stateFile = getStateFile(gameName, instanceId);
+  debug(`[LOADSTATE DEBUG] Loading state for ${gameName}/${instanceId || 'default'} from ${stateFile}`);
 
   if (!existsSync(stateFile)) {
     debug(`[LOADSTATE DEBUG] ERROR: State file not found`);
-    throw new Error(`No active game found for ${gameName}`);
+    throw new Error(`No active game found for ${instanceId || gameName}`);
   }
 
   const state = JSON.parse(readFileSync(stateFile, 'utf-8'));
@@ -168,11 +237,13 @@ function loadStateUnsafe(gameName: string): GameState {
   return state;
 }
 
-function saveStateUnsafe(state: GameState): void {
-  const stateDir = getStatePath(state.gameName);
-  const stateFile = getStateFile(state.gameName);
+function saveStateUnsafe(state: GameState, instanceId?: string): void {
+  // Use gameId as instanceId if not provided
+  const effectiveInstanceId = instanceId || state.gameId;
+  const stateDir = getStatePath(state.gameName, effectiveInstanceId);
+  const stateFile = getStateFile(state.gameName, effectiveInstanceId);
 
-  debug(`[SAVESTATE DEBUG] Saving state for ${state.gameName} to ${stateFile}`);
+  debug(`[SAVESTATE DEBUG] Saving state for ${state.gameName}/${effectiveInstanceId} to ${stateFile}`);
   debug(`[SAVESTATE DEBUG] Status: ${state.status}, Turn: ${state.turn}`);
 
   if (!existsSync(stateDir)) {
@@ -185,31 +256,42 @@ function saveStateUnsafe(state: GameState): void {
 }
 
 // Public functions with locking
-export function loadState(gameName: string): GameState {
+// Accepts game name OR instance ID (format: gameName-timestamp)
+export function loadState(gameNameOrInstanceId: string): GameState {
+  // Resolve to gameName + instanceId
+  const resolved = resolveGameInstance(gameNameOrInstanceId);
+  if (!resolved) {
+    throw new Error(`No active game found for ${gameNameOrInstanceId}`);
+  }
+  const { gameName, instanceId } = resolved;
+
   // Acquire lock before reading
-  if (!acquireLock(gameName)) {
-    throw new Error(`Failed to acquire lock for ${gameName}`);
+  if (!acquireLock(gameName, instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId || gameName}`);
   }
 
   try {
-    return loadStateUnsafe(gameName);
+    return loadStateUnsafe(gameName, instanceId);
   } finally {
     // Always release lock
-    releaseLock(gameName);
+    releaseLock(gameName, instanceId);
   }
 }
 
 export function saveState(state: GameState): void {
+  // Use gameId as instanceId for instance-specific storage
+  const instanceId = state.gameId;
+
   // Acquire lock before writing
-  if (!acquireLock(state.gameName)) {
-    throw new Error(`Failed to acquire lock for ${state.gameName}`);
+  if (!acquireLock(state.gameName, instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId}`);
   }
 
   try {
-    saveStateUnsafe(state);
+    saveStateUnsafe(state, instanceId);
   } finally {
     // Always release lock
-    releaseLock(state.gameName);
+    releaseLock(state.gameName, instanceId);
   }
 }
 
@@ -310,22 +392,31 @@ export function initGame(gameName: string, playerCount: number): GameState {
   return state;
 }
 
+// Accepts game name OR instance ID
 export function registerAgent(
-  gameName: string,
+  gameNameOrInstanceId: string,
   role: 'gamemaster' | 'player',
   agentId: string,
   playerId?: string
-): { registered: boolean; role: string; playerId?: string; rules: string } {
+): { registered: boolean; role: string; playerId?: string; rules: string; instanceId: string; config: object } {
   debug(`[REGISTER DEBUG] === Starting registration ===`);
-  debug(`[REGISTER DEBUG] Game: ${gameName}, Role: ${role}, AgentId: ${agentId}, PlayerId: ${playerId || 'auto'}`);
+  debug(`[REGISTER DEBUG] Game: ${gameNameOrInstanceId}, Role: ${role}, AgentId: ${agentId}, PlayerId: ${playerId || 'auto'}`);
+
+  // Resolve to gameName + instanceId
+  const resolved = resolveGameInstance(gameNameOrInstanceId);
+  if (!resolved) {
+    throw new Error(`No active game found for ${gameNameOrInstanceId}`);
+  }
+  const { gameName, instanceId } = resolved;
+  debug(`[REGISTER DEBUG] Resolved: gameName=${gameName}, instanceId=${instanceId}`);
 
   // Acquire lock for the entire registration operation
-  if (!acquireLock(gameName)) {
-    throw new Error(`Failed to acquire lock for ${gameName}`);
+  if (!acquireLock(gameName, instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId || gameName}`);
   }
 
   try {
-    const state = loadStateUnsafe(gameName);
+    const state = loadStateUnsafe(gameName, instanceId);
 
     if (role === 'gamemaster') {
       debug(`[REGISTER DEBUG] Gamemaster registration path`);
@@ -335,7 +426,7 @@ export function registerAgent(
       state.shared.gamemasterAgentId = agentId;
       debug(`[REGISTER DEBUG] After assignment: gamemasterAgentId = ${state.shared.gamemasterAgentId}`);
 
-      saveStateUnsafe(state);
+      saveStateUnsafe(state, instanceId);
       debug(`[REGISTER DEBUG] State saved for gamemaster`);
 
       // Check if all players also registered - if so, auto-start
@@ -343,13 +434,15 @@ export function registerAgent(
       debug(`[REGISTER DEBUG] All players registered? ${allPlayersRegistered}`);
       if (allPlayersRegistered) {
         debug(`[REGISTER DEBUG] Starting game automatically...`);
-        startGameUnsafe(gameName);
+        startGameUnsafe(gameName, instanceId);
       }
 
       return {
         registered: true,
         role: 'gamemaster',
-        rules: state.rulesMarkdown
+        rules: state.rulesMarkdown,
+        instanceId: state.gameId,
+        config: state.config
       };
     }
 
@@ -383,7 +476,7 @@ export function registerAgent(
     state.players[playerId].agentId = agentId;
     debug(`[REGISTER DEBUG] After assignment: ${playerId}.agentId = ${state.players[playerId].agentId}`);
 
-    saveStateUnsafe(state);
+    saveStateUnsafe(state, instanceId);
     debug(`[REGISTER DEBUG] State saved for ${playerId}`);
 
     // Check if all players registered
@@ -393,26 +486,28 @@ export function registerAgent(
 
     if (allRegistered && state.shared.gamemasterAgentId) {
       debug(`[REGISTER DEBUG] Starting game automatically...`);
-      startGameUnsafe(gameName);
+      startGameUnsafe(gameName, instanceId);
     }
 
     return {
       registered: true,
       role: 'player',
       playerId,
-      rules: state.rulesMarkdown
+      rules: state.rulesMarkdown,
+      instanceId: state.gameId,
+      config: state.config
     };
   } finally {
     // Always release lock
-    releaseLock(gameName);
+    releaseLock(gameName, instanceId);
   }
 }
 
 // Internal unsafe version (called within locked operations)
-function startGameUnsafe(gameName: string): void {
-  debug(`[STARTGAME DEBUG] === Starting game ${gameName} ===`);
+function startGameUnsafe(gameName: string, instanceId?: string): void {
+  debug(`[STARTGAME DEBUG] === Starting game ${gameName}/${instanceId || 'default'} ===`);
 
-  const state = loadStateUnsafe(gameName);
+  const state = loadStateUnsafe(gameName, instanceId);
   debug(`[STARTGAME DEBUG] Current status: ${state.status}`);
 
   if (state.status !== 'waiting_for_players') {
@@ -426,7 +521,7 @@ function startGameUnsafe(gameName: string): void {
   state.currentPlayer = state.turnOrder[0];
   debug(`[STARTGAME DEBUG] First player: ${state.currentPlayer}`);
 
-  saveStateUnsafe(state);
+  saveStateUnsafe(state, instanceId);
   debug(`[STARTGAME DEBUG] State saved, game started`);
 
   logEvent(state, {
@@ -440,15 +535,21 @@ function startGameUnsafe(gameName: string): void {
 }
 
 // Public version with locking
-export function startGame(gameName: string): void {
-  if (!acquireLock(gameName)) {
-    throw new Error(`Failed to acquire lock for ${gameName}`);
+export function startGame(gameNameOrInstanceId: string): void {
+  const resolved = resolveGameInstance(gameNameOrInstanceId);
+  if (!resolved) {
+    throw new Error(`No active game found for ${gameNameOrInstanceId}`);
+  }
+  const { gameName, instanceId } = resolved;
+
+  if (!acquireLock(gameName, instanceId)) {
+    throw new Error(`Failed to acquire lock for ${instanceId || gameName}`);
   }
 
   try {
-    startGameUnsafe(gameName);
+    startGameUnsafe(gameName, instanceId);
   } finally {
-    releaseLock(gameName);
+    releaseLock(gameName, instanceId);
   }
 }
 

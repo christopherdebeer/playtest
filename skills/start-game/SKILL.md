@@ -5,9 +5,9 @@ argument-hint: <game-name> [num-players]
 allowed-tools: Read, Task, Bash, Glob
 ---
 
-# Start Game - Engine-Driven Architecture (v3)
+# Start Game - Instance-Based Architecture (v4)
 
-This skill uses the TypeScript engine to manage game state, with agents for decision-making only.
+This skill uses the TypeScript engine to manage game instances, with agents for decision-making only.
 
 ## Architecture Overview
 
@@ -15,88 +15,78 @@ This skill uses the TypeScript engine to manage game state, with agents for deci
 ┌─────────────────────────────────────────────────────────────┐
 │                     Coordinator (this skill)                 │
 │  1. npx playtest init <game> --players <n>                  │
-│  2. Spawn gamemaster + player agents                        │
+│  2. Parse instanceId and spawnInstructions from output      │
+│  3. Spawn gamemaster + player agents with instance IDs      │
 └─────────────────────────────────────────────────────────────┘
           │
           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    TypeScript Engine                         │
-│  - State management (games/<game>/state/game.json)          │
+│  - Instance management (games/<game>/state/<instanceId>/)   │
 │  - Turn blocking (npx playtest wait)                        │
-│  - Randomization (npx playtest roll)                        │
-│  - Deck operations (npx playtest draw/discard)              │
+│  - Registration with rules (npx playtest register)          │
+│  - Concurrent game support                                   │
 └─────────────────────────────────────────────────────────────┘
           │                    │                    │
           ▼                    ▼                    ▼
     ┌───────────┐        ┌───────────┐        ┌───────────┐
     │Gamemaster │        │ Player 1  │        │ Player 2  │
     │  (Sonnet) │        │  (Haiku)  │        │  (Haiku)  │
-    │           │        │           │        │           │
-    │ Validates │        │ Decides   │        │ Decides   │
-    │ rules     │        │ actions   │        │ actions   │
+    │ Registers │        │ Registers │        │ Registers │
+    │ → Rules   │        │ → Rules   │        │ → Rules   │
     └───────────┘        └───────────┘        └───────────┘
 ```
 
 ## Arguments
 
-- `$0`: Game name (e.g., "markovs-chains")
+- `$0`: Game name (e.g., "uno", "markovs-chains")
 - `$1`: Number of players (optional, default: 2)
 
 ## Implementation Steps
 
-### Step 1: Initialize Game via Engine
+### Step 1: Initialize Game Instance via Engine
 
 ```bash
 GAME_NAME="$0"
 NUM_PLAYERS="${1:-2}"
 
-# Initialize game state via engine
+# Initialize game - returns instanceId and spawn instructions
 npx playtest init "$GAME_NAME" --players "$NUM_PLAYERS"
 ```
 
-This creates `games/{GAME_NAME}/state/game.json` with:
-- Shuffled deck
-- Dealt hands
-- Turn order
-- Initial positions
+The init command returns JSON with:
+- `instanceId`: Unique game instance ID (e.g., "uno-1706789012345")
+- `gameName`: The base game name
+- `players`: Array of player IDs ["player-1", "player-2", ...]
+- `spawnInstructions`: Pre-formatted prompts for each agent
 
-### Step 2: Read Agent Templates
+### Step 2: Parse Init Output
 
-```javascript
-// Read game-agnostic agent templates
-const gamemasterDef = await Read('agents/gamemaster.md');
-const playerDef = await Read('agents/player.md');
-```
+Extract the `instanceId` and `spawnInstructions` from the JSON output.
 
-### Step 3: Spawn Agents in Parallel
+### Step 3: Spawn Agents in Parallel with Instance IDs
 
 **CRITICAL**: Use a SINGLE message with multiple Task calls.
 
-Agent definitions are in `agents/`:
-- `gamemaster.md` - sonnet model, full playtest CLI access
-- `player.md` - haiku model, limited to wait/submit/status
-
 ```javascript
+// Parse init output
+const initResult = JSON.parse(initOutput);
+const { instanceId, spawnInstructions } = initResult;
+
 // Spawn gamemaster agent (uses agents/gamemaster.md definition)
 Task({
   subagent_type: "gamemaster",
-  description: `Gamemaster for ${GAME_NAME}`,
-  prompt: `GAME: ${GAME_NAME}
-PLAYERS: ${NUM_PLAYERS}
-
-Begin your gamemaster duties now.`,
+  description: `Gamemaster for ${instanceId}`,
+  prompt: spawnInstructions.gamemaster.prompt,
   run_in_background: true
 });
 
 // Spawn player agents (uses agents/player.md definition)
-for (let i = 1; i <= NUM_PLAYERS; i++) {
+for (const player of spawnInstructions.players) {
   Task({
     subagent_type: "player",
-    description: `player-${i} for ${GAME_NAME}`,
-    prompt: `GAME: ${GAME_NAME}
-YOUR ID: player-${i}
-
-Begin playing now. Play to WIN!`,
+    description: `${player.playerId} for ${instanceId}`,
+    prompt: player.prompt,
     run_in_background: true
   });
 }
@@ -105,49 +95,72 @@ Begin playing now. Play to WIN!`,
 ### Step 4: Report Status
 
 ```markdown
-## Game Launched: {GAME_NAME}
+## Game Launched: {instanceId}
 
-**Engine initialized** with {NUM_PLAYERS} players
+**Instance ID**: `{instanceId}` (use this in all commands)
+**Game**: {gameName}
+**Players**: {NUM_PLAYERS}
 
 **Agents spawned:**
-- Gamemaster (validates rules, resolves actions)
-- player-1 through player-{NUM_PLAYERS} (compete to win)
+- Gamemaster (will register and wait for adjudication requests)
+- player-1 through player-{NUM_PLAYERS} (will register and compete to win)
 
 **Monitor:**
-- Status: `npx playtest status {GAME_NAME}`
-- State: `cat games/{GAME_NAME}/state/game.json`
-- Logs: `games/{GAME_NAME}/logs/{gameId}.jsonl`
+- Status: `npx playtest status {instanceId}`
+- List instances: `npx playtest list {gameName}`
+- Logs: `games/{gameName}/logs/{instanceId}.jsonl`
+
+**Key Change**: Agents now call `register` as their first command to receive rules.
 ```
+
+## Agent Flow (New)
+
+1. Agent spawns with `INSTANCE: {instanceId}` and `PLAYER_ID: {playerId}` (or `ROLE: gamemaster`)
+2. Agent calls `npx playtest register {instanceId} -r {role} -a {agentId} [-p {playerId}]`
+3. Register returns rules and config - agent reads and understands them
+4. Agent proceeds with game loop (wait/act for players, pending/adjudicate for GM)
 
 ## Engine CLI Reference
 
 **Initialization:**
-- `npx playtest init <game> -p <n>` - Create game
+- `npx playtest init <game> -p <n>` - Create game instance, get spawn instructions
+
+**Registration (NEW - replaces rules command for agents):**
+- `npx playtest register <instance> -r <role> -a <agentId> [-p <playerId>]` - Register and get rules
+
+**Instance Management:**
+- `npx playtest list [game]` - List active game instances
+- `npx playtest status <instance>` - Game status (accepts instance ID or game name)
 
 **Turn Management:**
-- `npx playtest wait <game> -p <id>` - Block until turn (player)
-- `npx playtest act <game> -p <id> -a '<json>'` - Execute action
-- `npx playtest advance <game>` - Next turn (gamemaster)
+- `npx playtest wait <instance> -p <id>` - Block until turn (player)
+- `npx playtest act <instance> -p <id> -a '<json>'` - Execute action
 
-**Game Mechanics:**
-- `npx playtest roll <game> --probability <p>` - Dice/probability
-- `npx playtest draw <game> -p <id> -n <count>` - Draw cards
-- `npx playtest update <game> -p <id> -s '<json>'` - Update state
-
-**State:**
-- `npx playtest status <game>` - Game status
-- `npx playtest state <game>` - Full state (gamemaster)
-- `npx playtest state <game> -p <id>` - Player view
+**Gamemaster:**
+- `npx playtest pending <instance>` - Wait for contest/resignation/victory
+- `npx playtest adjudicate <instance> ...` - Rule on disputes
 
 **End:**
-- `npx playtest end <game> -w <id> -r '<reason>'` - End game
+- `npx playtest end <instance> -w <id> -r '<reason>'` - End game
 
-## Key Differences from v2
+## Concurrent Games
 
-| v2 | v3 |
+Multiple instances of the same game can run simultaneously:
+
+```bash
+# Start two uno games
+npx playtest init uno -p 3  # Returns uno-1706789012345
+npx playtest init uno -p 2  # Returns uno-1706789067890
+
+# Each agent uses its specific instance ID
+# No conflicts between games
+```
+
+## Key Differences from v3
+
+| v3 | v4 |
 |----|-----|
-| Bash scripts for everything | TypeScript engine |
-| Agents manage state | Engine manages state |
-| Agents do randomization | Engine does randomization |
-| inotifywait polling | Engine blocking waits |
-| Manual info hiding | Automatic info hiding |
+| Game name in commands | Instance ID in commands |
+| rules command for rules | register command returns rules |
+| Single instance per game | Concurrent instances supported |
+| GAME: {name} in prompts | INSTANCE: {id} in prompts |
