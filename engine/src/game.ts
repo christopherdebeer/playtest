@@ -39,9 +39,9 @@ import type {
   PendingVictoryClaim,
   ContestHistoryEntry,
   ResignationEntry,
-  VictoryClaimEntry,
   ContestState,
-  EngineMechanics
+  AvailableAction,
+  AvailableActionsResult
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -1040,6 +1040,193 @@ export function placeCard(
 
   saveState(state);
   return placedCard;
+}
+
+// ============ Dynamic Action Discovery ============
+
+/**
+ * Get all available actions for a player based on game rules and current state.
+ * This function procedurally exposes what actions are possible, enabling
+ * game-agnostic action discovery.
+ */
+export function getAvailableActions(state: GameState, playerId: string): AvailableActionsResult {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+
+  const isYourTurn = state.currentPlayer === playerId;
+  const hasBoard = !!state.config.board;
+  const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
+  const handCards = player.hand.map(c => c.name);
+  const placeableCards = player.hand.filter(c => c.placeable).map(c => c.name);
+  const playableCards = player.hand.filter(c => !c.placeable).map(c => c.name);
+  const boardStates = state.config.board?.states || [];
+  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
+
+  // Check for blocking effects
+  const isBlocked = player.effects.some(e => {
+    const effectType = e.type.toLowerCase();
+    return effectType === 'block_turn' || effectType === 'block' || effectType === 'skip';
+  });
+
+  // Get valid move targets from current state
+  const getValidMoveTargets = (): string[] => {
+    if (!state.config.board) return [];
+    const currentState = player.state;
+    const targets: string[] = [];
+
+    for (const edge of state.config.board.edges) {
+      const fromStates = Array.isArray(edge.from) ? edge.from : [edge.from];
+      const toStates = Array.isArray(edge.to) ? edge.to : [edge.to];
+
+      if (fromStates.includes(currentState)) {
+        targets.push(...toStates);
+      }
+    }
+
+    return [...new Set(targets)]; // Remove duplicates
+  };
+
+  const moveTargets = getValidMoveTargets();
+  const opponents = state.turnOrder.filter(pid => pid !== playerId);
+
+  const actions: AvailableAction[] = [];
+
+  // === MOVE action (for board games) ===
+  if (hasBoard) {
+    const moveEnabled = isYourTurn && !isBlocked && moveTargets.length > 0;
+    actions.push({
+      type: 'move',
+      description: 'Move to an adjacent state on the board',
+      enabled: moveEnabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              moveTargets.length === 0 ? 'No valid move targets from current state' :
+              undefined,
+      required: { target: 'The state to move to' },
+      optional: { reasoning: 'Explanation of your move choice' },
+      examples: moveTargets.slice(0, 2).map(target => ({
+        type: 'move' as const,
+        target
+      })),
+      targets: moveTargets
+    });
+  }
+
+  // === PLAY_CARD action (for regular cards) ===
+  if (playableCards.length > 0) {
+    const playEnabled = isYourTurn && !isBlocked;
+    const interferenceCards = player.hand.filter(c =>
+      c.type === 'interference' ||
+      ['block_turn', 'probability_penalty', 'force_discard', 'skip'].includes(c.effect?.type || '')
+    ).map(c => c.name);
+
+    actions.push({
+      type: 'play_card',
+      description: 'Play a card from your hand to apply its effect',
+      enabled: playEnabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required: { card: 'The exact name of the card to play' },
+      optional: Object.fromEntries(
+        Object.entries({
+          target: interferenceCards.length > 0 && opponents.length > 1 ?
+                  `Target player for interference cards (${interferenceCards.join(', ')}). Options: ${opponents.join(', ')}` :
+                  undefined,
+          declaredColor: 'For wild cards: Red, Blue, Green, or Yellow',
+          reasoning: 'Explanation of your play'
+        }).filter(([_, v]) => v !== undefined)
+      ) as Record<string, string>,
+      examples: playableCards.slice(0, 2).map(card => {
+        const c = player.hand.find(h => h.name === card)!;
+        const isInterference = interferenceCards.includes(card);
+        const example: PlayCardAction = { type: 'play_card', card };
+        if (isInterference && opponents.length > 0) {
+          example.target = opponents[0];
+        }
+        return example;
+      }),
+      cards: playableCards
+    });
+  }
+
+  // === PLACE_CARD action (for state/placeable cards) ===
+  if (hasBoard && placeableCards.length > 0) {
+    const placeEnabled = isYourTurn && !isBlocked;
+    actions.push({
+      type: 'place_card',
+      description: 'Place a state card on a board location to create a trap or buff',
+      enabled: placeEnabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required: {
+        card: 'The name of the placeable card (Hazard, Safe Haven, Toll Gate, etc.)',
+        targetState: 'The board state to place the card on'
+      },
+      optional: { reasoning: 'Explanation of your placement strategy' },
+      examples: placeableCards.slice(0, 2).flatMap(card => {
+        const c = player.hand.find(h => h.name === card)!;
+        // Suggest strategic placements
+        return boardStates.slice(0, 2).map(targetState => ({
+          type: 'place_card' as const,
+          card,
+          targetState
+        }));
+      }).slice(0, 3),
+      cards: placeableCards,
+      targets: boardStates
+    });
+  }
+
+  // === DRAW action (for card games) ===
+  if (hasDeck) {
+    const drawEnabled = isYourTurn && !isBlocked;
+    actions.push({
+      type: 'draw',
+      description: 'Draw a card from the deck',
+      enabled: drawEnabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required: {},
+      optional: { count: 'Number of cards to draw (default: 1)' },
+      examples: [{ type: 'draw' }]
+    });
+  }
+
+  // === PASS action (always available on your turn) ===
+  actions.push({
+    type: 'pass',
+    description: 'Skip your turn without taking an action',
+    enabled: isYourTurn,  // Pass is always allowed, even when blocked
+    reason: !isYourTurn ? 'Not your turn' : undefined,
+    required: {},
+    optional: { reasoning: 'Why you are passing' },
+    examples: [{ type: 'pass' }]
+  });
+
+  // === RESIGN action (always available) ===
+  actions.push({
+    type: 'resign',
+    description: 'Forfeit the game (requires gamemaster approval)',
+    enabled: isYourTurn,
+    reason: !isYourTurn ? 'Not your turn' : undefined,
+    required: { reason: 'Explanation for why you are resigning' },
+    examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
+  });
+
+  return {
+    playerId,
+    isYourTurn,
+    currentState: player.state,
+    hand: handCards,
+    actions,
+    placedCards,
+    activeEffects: player.effects
+  };
 }
 
 // ============ Contest-Based Adjudication Functions ============

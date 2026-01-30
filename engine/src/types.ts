@@ -390,3 +390,34 @@ export interface ExtendedWaitResult {
   pendingResignation?: PendingResignation;
   pendingVictoryClaim?: PendingVictoryClaim;
 }
+
+// ============ Dynamic Action Discovery ============
+
+/**
+ * Describes an available action with usage instructions.
+ * Used to procedurally expose available commands based on game rules and state.
+ */
+export interface AvailableAction {
+  type: ActionType;
+  description: string;
+  enabled: boolean;              // Whether this action is currently available
+  reason?: string;               // Why it's enabled/disabled
+  required: Record<string, string>;  // field name -> description
+  optional?: Record<string, string>;
+  examples: GameAction[];        // Concrete examples the agent can use
+  cards?: string[];              // Specific cards that can be used (for play_card, place_card)
+  targets?: string[];            // Valid targets (for move, place_card)
+}
+
+/**
+ * Result of getAvailableActions() - shows what a player can do.
+ */
+export interface AvailableActionsResult {
+  playerId: string;
+  isYourTurn: boolean;
+  currentState: string;
+  hand: string[];                // Card names in hand
+  actions: AvailableAction[];
+  placedCards: PlacedCard[];     // Cards placed on board (if any)
+  activeEffects: Effect[];       // Effects currently on this player
+}
