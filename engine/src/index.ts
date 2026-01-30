@@ -1144,28 +1144,42 @@ program
       agent_type?: string;
     } = {};
 
+    let rawInput = '';
     try {
       const chunks: Buffer[] = [];
       for await (const chunk of process.stdin) {
         chunks.push(chunk);
       }
-      const input = Buffer.concat(chunks).toString('utf8').trim();
-      if (input) {
-        inputJson = JSON.parse(input);
+      rawInput = Buffer.concat(chunks).toString('utf8').trim();
+      if (rawInput) {
+        inputJson = JSON.parse(rawInput);
       }
     } catch {
       // No stdin or invalid JSON - continue with empty input
     }
 
+    // Debug: Log the raw stdin JSON
+    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Raw stdin: ${rawInput.substring(0, 500)}\n`); } catch { /* ignore */ }
+    try { fsEarly.appendFileSync('/home/user/playtest/logs/hooks/hook-invocations.log', `[${new Date().toISOString()}] Parsed fields: ${JSON.stringify(Object.keys(inputJson))}\n`); } catch { /* ignore */ }
+
     const transcriptPath = inputJson.transcript_path || '';
 
     // Helper function to extract game name from transcript content
-    const extractGameName = (content: string): string => {
-      const lines = content.split('\n').slice(0, 50); // Check first 50 lines
-      for (const line of lines) {
+    // Searches both user messages AND Task tool_use entries
+    const extractGameName = (content: string, searchToolUse: boolean = false): string => {
+      const lines = content.split('\n');
+      // For tool_use search, scan all lines (Task calls can be anywhere)
+      // For subagent transcripts, check first 50 lines
+      const linesToCheck = searchToolUse ? lines : lines.slice(0, 50);
+
+      let foundGame = '';
+
+      for (const line of linesToCheck) {
         if (!line.trim()) continue;
         try {
           const entry = JSON.parse(line);
+
+          // Check for user messages (subagent transcript format)
           if (entry.role === 'user' && entry.type === 'message') {
             const text = typeof entry.content === 'string'
               ? entry.content
@@ -1178,11 +1192,36 @@ program
               return match[1];
             }
           }
+
+          // Check for message.content (main transcript user format)
+          if (entry.message?.role === 'user' && entry.message?.content) {
+            const text = typeof entry.message.content === 'string'
+              ? entry.message.content
+              : '';
+            const match = text.match(/^GAME:\s*(\S+)/m);
+            if (match) {
+              return match[1];
+            }
+          }
+
+          // Check for Task tool_use entries in main transcript (assistant messages)
+          if (searchToolUse && entry.message?.role === 'assistant' && Array.isArray(entry.message?.content)) {
+            for (const block of entry.message.content) {
+              if (block.type === 'tool_use' && block.name === 'Task' && block.input?.prompt) {
+                const match = block.input.prompt.match(/^GAME:\s*(\S+)/m);
+                if (match) {
+                  // Keep searching to find the most recent one
+                  foundGame = match[1];
+                }
+              }
+            }
+          }
         } catch {
           // Skip invalid JSON lines
         }
       }
-      return '';
+
+      return foundGame;
     };
 
     // Poll transcript until game name is found (for start hooks)
@@ -1203,18 +1242,29 @@ program
       try { appendFileSync(logFile, `[${ts}] ${msg}\n`); } catch { /* ignore */ }
     };
 
+    // Determine which transcript to poll and how to search
+    // For SubagentStart: Read MAIN transcript, search Task tool_use entries
+    //   (subagent transcript doesn't exist yet when hook fires)
+    // For SubagentStop: use agent_transcript_path if available
+    const targetTranscript = hookType === 'start'
+      ? transcriptPath  // Main transcript has Task tool_use with prompt
+      : ((inputJson as { agent_transcript_path?: string }).agent_transcript_path || transcriptPath);
+    const searchToolUse = hookType === 'start';  // Search Task tool_use for start hooks
+
     log(`=== HOOK START ===`);
     log(`Hook: ${agentType}-${hookType}`);
-    log(`Transcript path: ${transcriptPath}`);
+    log(`Main transcript path: ${transcriptPath}`);
+    log(`Target transcript: ${targetTranscript}`);
+    log(`Search mode: ${searchToolUse ? 'Task tool_use' : 'user messages'}`);
     log(`Max wait: ${MAX_WAIT_MS}ms`);
 
     while (Date.now() - startTime < MAX_WAIT_MS) {
-      if (transcriptPath && existsSync(transcriptPath)) {
+      if (targetTranscript && existsSync(targetTranscript)) {
         try {
-          const content = readFileSync(transcriptPath, 'utf8');
+          const content = readFileSync(targetTranscript, 'utf8');
           const lineCount = content.split('\n').filter(l => l.trim()).length;
           log(`Polling: file exists, ${lineCount} lines, elapsed ${Date.now() - startTime}ms`);
-          gameName = extractGameName(content);
+          gameName = extractGameName(content, searchToolUse);
           if (gameName) {
             log(`Found game name: ${gameName}`);
             break;
@@ -1236,17 +1286,22 @@ program
     // Handle start hooks - inject context
     if (hookType === 'start') {
       if (!gameName) {
+        log(`No game name found - exiting`);
         // Can't inject context without game name - exit silently
         process.exit(0);
       }
 
+      log(`Checking if state exists for game: ${gameName}`);
       if (!stateExists(gameName)) {
+        log(`State does not exist for game: ${gameName} - exiting`);
         // Game not initialized yet - exit silently
         process.exit(0);
       }
 
+      log(`Loading state for game: ${gameName}`);
       try {
         const state = loadState(gameName);
+        log(`State loaded successfully. Rules length: ${state.rulesMarkdown?.length || 0}`);
 
         // Output rules
         console.log(`## Game Rules for ${gameName}`);
@@ -1256,6 +1311,7 @@ program
           rules: state.rulesMarkdown,
           config: state.config
         }));
+        log(`Rules output complete`);
 
         // For gamemaster, also output current status
         if (agentType === 'gamemaster') {
@@ -1280,7 +1336,8 @@ program
         }
 
         process.exit(0);
-      } catch {
+      } catch (err) {
+        log(`Error loading state: ${err}`);
         // Error loading state - exit silently
         process.exit(0);
       }
@@ -1316,6 +1373,222 @@ program
         process.exit(2);
       } catch {
         // Error checking state - allow stop
+        process.exit(0);
+      }
+    }
+  });
+
+// ============ Universal Hook Event Handler ============
+// Handles all hook events for tracing and debugging
+
+program
+  .command('hook-event')
+  .description('Universal hook event handler (reads JSON from stdin)')
+  .requiredOption('-e, --event <name>', 'Hook event name')
+  .option('-m, --matcher <pattern>', 'Matcher pattern (for tool events)')
+  .action(async (options: { event: string; matcher?: string }) => {
+    const { event: eventName, matcher } = options;
+    const fs = await import('fs');
+    const logsDir = '/home/user/playtest/logs/hooks';
+
+    try { fs.mkdirSync(logsDir, { recursive: true }); } catch { /* ignore */ }
+
+    const traceLog = `${logsDir}/hook-trace.log`;
+    const log = (msg: string) => {
+      const ts = new Date().toISOString();
+      try { fs.appendFileSync(traceLog, `[${ts}] ${msg}\n`); } catch { /* ignore */ }
+    };
+
+    // Read stdin
+    let rawInput = '';
+    let inputJson: Record<string, unknown> = {};
+    try {
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(chunk);
+      }
+      rawInput = Buffer.concat(chunks).toString('utf8').trim();
+      if (rawInput) {
+        inputJson = JSON.parse(rawInput);
+      }
+    } catch {
+      // No stdin or invalid JSON
+    }
+
+    log(`========== ${eventName} ==========`);
+    log(`Matcher: ${matcher || '(none)'}`);
+    log(`Input keys: ${JSON.stringify(Object.keys(inputJson))}`);
+    log(`Raw input (first 1000 chars): ${rawInput.substring(0, 1000)}`);
+
+    // Extract common fields
+    const transcriptPath = (inputJson.transcript_path as string) || '';
+    const prompt = (inputJson.prompt as string) || '';
+    const toolName = (inputJson.tool_name as string) || '';
+    const toolInput = inputJson.tool_input as Record<string, unknown> || {};
+
+    // Helper to extract game name from transcript or prompt
+    const extractGameName = (text: string): string => {
+      const match = text.match(/^GAME:\s*(\S+)/m);
+      return match ? match[1] : '';
+    };
+
+    // Try to find game name from various sources
+    let gameName = '';
+
+    // For UserPromptSubmit, check the prompt directly
+    if (eventName === 'UserPromptSubmit' && prompt) {
+      gameName = extractGameName(prompt);
+      log(`UserPromptSubmit prompt: ${prompt.substring(0, 200)}`);
+    }
+
+    // For PreToolUse with Task, check the tool input
+    if (eventName === 'PreToolUse' && toolName === 'Task') {
+      const taskPrompt = (toolInput.prompt as string) || '';
+      gameName = extractGameName(taskPrompt);
+      log(`PreToolUse Task prompt: ${taskPrompt.substring(0, 200)}`);
+    }
+
+    // For SessionStart, could search transcript
+    if (eventName === 'SessionStart' && transcriptPath) {
+      log(`SessionStart - transcript available at: ${transcriptPath}`);
+    }
+
+    log(`Extracted game name: ${gameName || '(none)'}`);
+
+    // Handle context injection based on event type
+    switch (eventName) {
+      case 'SessionStart': {
+        // stdout is added to context
+        log(`SessionStart - can inject context via stdout`);
+        // Output rules if we have a game
+        if (gameName && stateExists(gameName)) {
+          try {
+            const state = loadState(gameName);
+            console.log(`## Game Context Loaded`);
+            console.log(`Game: ${gameName}`);
+            console.log(`Status: ${state.status}`);
+            log(`SessionStart - output game context for ${gameName}`);
+          } catch (e) {
+            log(`SessionStart - error loading state: ${e}`);
+          }
+        }
+        process.exit(0);
+        break;
+      }
+
+      case 'UserPromptSubmit': {
+        // stdout is added to context
+        log(`UserPromptSubmit - can inject context via stdout`);
+        if (gameName && stateExists(gameName)) {
+          try {
+            const state = loadState(gameName);
+            console.log(`\n## Active Game: ${gameName}`);
+            console.log(`Status: ${state.status}`);
+            console.log(`Turn: ${state.turn}`);
+            console.log(`Current Player: ${state.currentPlayer}`);
+            log(`UserPromptSubmit - output game status for ${gameName}`);
+          } catch (e) {
+            log(`UserPromptSubmit - error loading state: ${e}`);
+          }
+        }
+        process.exit(0);
+        break;
+      }
+
+      case 'PreToolUse': {
+        // Can use JSON output with additionalContext or updatedInput
+        log(`PreToolUse - tool: ${toolName}, can use additionalContext/updatedInput`);
+
+        if (toolName === 'Task' && gameName && stateExists(gameName)) {
+          try {
+            const state = loadState(gameName);
+            // Return JSON with additionalContext
+            const output = {
+              hookSpecificOutput: {
+                hookEventName: 'PreToolUse',
+                additionalContext: `\n## Game Rules for ${gameName}\n${state.rulesMarkdown}\n\n## Current State\nTurn: ${state.turn}\nStatus: ${state.status}`
+              }
+            };
+            console.log(JSON.stringify(output));
+            log(`PreToolUse Task - injected game rules via additionalContext`);
+          } catch (e) {
+            log(`PreToolUse - error: ${e}`);
+          }
+        }
+        process.exit(0);
+        break;
+      }
+
+      case 'PostToolUse': {
+        // Can use JSON output with additionalContext
+        log(`PostToolUse - tool: ${toolName}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'SubagentStart': {
+        // Side effects only - stdout NOT injected into subagent
+        log(`SubagentStart - side effects only, stdout not injected`);
+        log(`Agent ID: ${inputJson.agent_id}`);
+        log(`Agent Type: ${inputJson.agent_type}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'SubagentStop': {
+        log(`SubagentStop - agent finished`);
+        log(`Agent ID: ${inputJson.agent_id}`);
+        log(`Agent transcript: ${inputJson.agent_transcript_path}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'Stop': {
+        log(`Stop - Claude finishing response`);
+        log(`stop_hook_active: ${inputJson.stop_hook_active}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'PreCompact': {
+        log(`PreCompact - trigger: ${inputJson.trigger}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'SessionEnd': {
+        log(`SessionEnd - reason: ${inputJson.reason}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'Notification': {
+        log(`Notification - type: ${inputJson.notification_type}`);
+        log(`Message: ${inputJson.message}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'PermissionRequest': {
+        log(`PermissionRequest - tool: ${toolName}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'PostToolUseFailure': {
+        log(`PostToolUseFailure - tool: ${toolName}`);
+        process.exit(0);
+        break;
+      }
+
+      case 'Setup': {
+        log(`Setup - trigger: ${inputJson.trigger}`);
+        process.exit(0);
+        break;
+      }
+
+      default: {
+        log(`Unknown event: ${eventName}`);
         process.exit(0);
       }
     }
