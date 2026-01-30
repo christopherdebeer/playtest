@@ -1,0 +1,7 @@
+{"timestamp":"2026-01-30T11:35:33.123Z","event":"game_init","data":{"gameId":"markovs-chains-1769772933121","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T11:36:07.195Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T11:36:15.504Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T11:36:24.040Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"move","target":"B"}}
+{"timestamp":"2026-01-30T11:36:32.667Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T11:37:08.739Z","event":"game_end","turn":2,"data":{"winner":"player-1","reason":"Reached Victory state in 2 turns"}}
+{"timestamp":"2026-01-30T11:37:27.456Z","event":"game_end","turn":2,"data":{"winner":"player-1","reason":"Player-1 reached Victory state"}}

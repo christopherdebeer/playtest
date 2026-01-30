@@ -1,0 +1,16 @@
+{"timestamp":"2026-01-30T12:05:13.333Z","event":"game_init","data":{"gameId":"markovs-chains-1769774713331","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T12:05:55.851Z","event":"probability_roll","turn":1,"player":"player-1","data":{"fromState":"Start","toState":"A","baseProbability":0.65,"boost":null,"effectiveProbability":0.65,"roll":0.9283322934231063,"success":false}}
+{"timestamp":"2026-01-30T12:05:55.852Z","event":"move_failed","turn":1,"player":"player-1","data":{"fromState":"Start","toState":"A","probability":0.65,"reasoning":"Use Momentum to boost probability of moving from Start to A, which has a 0.55 probability of reaching Victory"}}
+{"timestamp":"2026-01-30T12:06:04.450Z","event":"probability_roll","turn":1,"player":"player-2","data":{"fromState":"Start","toState":"A","baseProbability":0.65,"boost":null,"effectiveProbability":0.65,"roll":0.3146880663626088,"success":true}}
+{"timestamp":"2026-01-30T12:06:04.450Z","event":"state_transition","turn":1,"player":"player-2","data":{"fromState":"Start","toState":"A"}}
+{"timestamp":"2026-01-30T12:06:04.451Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"move","target":"A","success":true,"reasoning":"Attempt to move from Start to A with base 0.65 probability"}}
+{"timestamp":"2026-01-30T12:06:11.245Z","event":"probability_roll","turn":2,"player":"player-1","data":{"fromState":"Start","toState":"C","baseProbability":0.65,"boost":null,"effectiveProbability":0.65,"roll":0.06683599421542397,"success":true}}
+{"timestamp":"2026-01-30T12:06:11.245Z","event":"state_transition","turn":2,"player":"player-1","data":{"fromState":"Start","toState":"C"}}
+{"timestamp":"2026-01-30T12:06:11.246Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"C","success":true,"reasoning":"Use Catalyst to boost probability of moving from Start to C, which has a path to Victory"}}
+{"timestamp":"2026-01-30T12:06:11.838Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-30T12:06:23.202Z","event":"probability_roll","turn":3,"player":"player-1","data":{"fromState":"C","toState":"Victory","baseProbability":0.55,"boost":null,"effectiveProbability":0.55,"roll":0.9200185857473722,"success":false}}
+{"timestamp":"2026-01-30T12:06:23.202Z","event":"move_failed","turn":3,"player":"player-1","data":{"fromState":"C","toState":"Victory","probability":0.55,"reasoning":"Use Certainty to guarantee move from C to Victory"}}
+{"timestamp":"2026-01-30T12:06:30.726Z","event":"probability_roll","turn":3,"player":"player-2","data":{"fromState":"A","toState":"Victory","baseProbability":0.55,"boost":null,"effectiveProbability":0.55,"roll":0.5102502510092145,"success":true}}
+{"timestamp":"2026-01-30T12:06:30.726Z","event":"state_transition","turn":3,"player":"player-2","data":{"fromState":"A","toState":"Victory"}}
+{"timestamp":"2026-01-30T12:06:30.727Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"move","target":"Victory","success":true,"reasoning":"Use Certainty to guarantee move from A to Victory, which has a base 0.55 probability"}}
+{"timestamp":"2026-01-30T12:07:05.487Z","event":"game_end","turn":4,"data":{"winner":"none","reason":"Manual stop by user"}}

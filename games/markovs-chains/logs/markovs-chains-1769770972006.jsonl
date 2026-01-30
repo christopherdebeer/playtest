@@ -1,0 +1,13 @@
+{"timestamp":"2026-01-30T11:02:52.009Z","event":"game_init","data":{"gameId":"markovs-chains-1769770972006","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T11:03:44.160Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T11:03:59.801Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T11:04:09.048Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-30T11:04:16.112Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T11:04:16.399Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"B"}}
+{"timestamp":"2026-01-30T11:05:01.532Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T11:05:09.003Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T11:05:16.084Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T11:05:24.389Z","event":"action_executed","turn":5,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T11:05:33.297Z","event":"action_executed","turn":5,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T11:05:45.787Z","event":"action_executed","turn":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T11:05:48.811Z","event":"game_end","turn":6,"data":{"winner":"none","reason":"Manual stop by user"}}

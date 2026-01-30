@@ -1,3 +1,0 @@
-{"timestamp":"2026-01-29T00:13:38.745Z","event":"game_init","data":{"gameId":"uno-1769645618744","playerCount":2,"config":"UNO"}}
-{"timestamp":"2026-01-29T00:14:00.994Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Red"}}
-{"timestamp":"2026-01-29T00:14:08.725Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"draw","count":1}}

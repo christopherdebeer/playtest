@@ -1,3 +1,0 @@
-{"timestamp":"2026-01-29T14:05:47.762Z","event":"game_init","data":{"gameId":"markovs-chains-1769695547760","playerCount":2,"config":"Markov's Chains"}}
-{"timestamp":"2026-01-29T14:05:51.071Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
-{"timestamp":"2026-01-29T14:05:54.500Z","event":"game_cancelled","turn":1,"data":{"reason":"Testing cancel functionality"}}
