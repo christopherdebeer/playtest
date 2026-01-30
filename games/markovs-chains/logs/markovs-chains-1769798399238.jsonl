@@ -1,0 +1,13 @@
+{"timestamp":"2026-01-30T18:39:59.241Z","event":"game_init","data":{"gameId":"markovs-chains-1769798399238","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-30T18:41:26.551Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-30T18:41:44.832Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"play_card","card":"Catalyst","reasoning":"Preparing for next move with +20% boost to reach intermediate state with 85% success"}}
+{"timestamp":"2026-01-30T18:42:16.773Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T18:42:37.216Z","event":"action_submitted","turn":1,"player":"player-2","data":{"type":"draw"}}
+{"timestamp":"2026-01-30T18:42:52.827Z","event":"roll","turn":1,"player":"player-2","data":{"probability":0.65,"roll":0.6053035888955296,"success":true,"context":"probability check"}}
+{"timestamp":"2026-01-30T18:43:20.630Z","event":"action_submitted","turn":2,"player":"player-1","data":{"type":"move","target":"A","reasoning":"Moving to intermediate state A with Catalyst boost (65% + 20% = 85% success)"}}
+{"timestamp":"2026-01-30T18:44:14.109Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"A"}}
+{"timestamp":"2026-01-30T18:44:24.658Z","event":"roll","turn":2,"player":"player-2","data":{"probability":0.85,"roll":0.4722547847281502,"success":true,"context":"probability check"}}
+{"timestamp":"2026-01-30T18:44:31.032Z","event":"action_submitted","turn":2,"player":"player-2","data":{"type":"play_card","card":"Block"}}
+{"timestamp":"2026-01-30T18:45:00.346Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"move","target":"Victory"}}
+{"timestamp":"2026-01-30T18:45:25.901Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-30T18:46:21.349Z","event":"game_end","turn":4,"data":{"winner":"player-1","reason":"Reached Victory state on turn 3"}}
