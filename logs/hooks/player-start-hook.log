@@ -232,3 +232,42 @@ Extracted GAME: ''
 Warning: Could not extract game name from prompt
 Extracted GAME: ''
 Warning: Could not extract game name from prompt
+=== HOOK START ===
+Timestamp: 2026-01-30T23:39:23.937Z
+Hook: player-start-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"66ac9367-7820-4098-bca8-d114ccbd0160","transcript_path":"/root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl","cwd":"/home/user/playtest","hook_event_name":"SubagentStart","agent_id":"ae58de1","agent_type":"player"}
+=== HOOK START ===
+Timestamp: 2026-01-30T23:39:23.960Z
+Hook: player-start-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"66ac9367-7820-4098-bca8-d114ccbd0160","transcript_path":"/root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl","cwd":"/home/user/playtest","hook_event_name":"SubagentStart","agent_id":"ac8cfac","agent_type":"player"}
+Transcript path: /root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl
+Transcript path: /root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl
+Extracted agent prompt:
+
+
+Extracted agent prompt:
+
+
+Extracted GAME: ''
+Warning: Could not extract game name from prompt
+Extracted GAME: ''
+Warning: Could not extract game name from prompt
+=== HOOK START ===
+Timestamp: 2026-01-30T23:53:04.465Z
+Hook: player-start-hook
+Working Dir: /home/user/playtest
+
+Received input JSON:
+{"session_id":"66ac9367-7820-4098-bca8-d114ccbd0160","transcript_path":"/root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl","cwd":"/home/user/playtest","hook_event_name":"SubagentStart","agent_id":"ac8cfac","agent_type":"player"}
+Transcript path: /root/.claude/projects/-home-user-playtest/66ac9367-7820-4098-bca8-d114ccbd0160.jsonl
+Extracted agent prompt:
+
+
+Extracted GAME: ''
+Warning: Could not extract game name from prompt
