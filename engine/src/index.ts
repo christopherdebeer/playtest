@@ -3,7 +3,7 @@
 // Playtest Engine CLI
 
 import { Command } from 'commander';
-import { rmSync, existsSync } from 'fs';
+import { rmSync, existsSync, readFileSync } from 'fs';
 import {
   initGame,
   loadState,
@@ -34,7 +34,10 @@ import {
   setDebugMode,
   checkAllWinConditions,
   getAvailableActions,
-  listGameInstances
+  listGameInstances,
+  submitAnalysis,
+  skipAnalysis,
+  submitAnalysisMarkdown
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -666,7 +669,7 @@ program
 
 program
   .command('gm:pending <game>')
-  .description('[GM] Wait for pending contest, resignation, or victory claim')
+  .description('[GM] Wait for pending contest, resignation, victory claim, or analysis needed')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { timeout: string }) => {
     try {
@@ -703,6 +706,17 @@ program
           console.log(JSON.stringify({
             status: 'game_over',
             winner: state.shared.winner
+          }));
+          return;
+        }
+
+        if (state.status === 'pending_analysis') {
+          console.log(JSON.stringify({
+            status: 'analysis_needed',
+            winner: state.shared.winner,
+            endReason: state.shared.endReason,
+            turn: state.turn,
+            gameId: state.gameId
           }));
           return;
         }
@@ -1174,6 +1188,79 @@ program
         winner: options.winner,
         totalTurns: state.turn,
         reason: options.reason
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gm:analyze <game>')
+  .description('[GM] Submit post-game analysis markdown (transitions from pending_analysis to completed)')
+  .requiredOption('-v, --version <version>', 'Analysis version (e.g., v1.0)')
+  .option('-f, --file <path>', 'Path to markdown file (if not provided, reads from stdin)')
+  .option('-m, --markdown <content>', 'Markdown content directly (alternative to file/stdin)')
+  .action(async (game: string, options: {
+    version: string;
+    file?: string;
+    markdown?: string;
+  }) => {
+    try {
+      let markdownContent: string;
+
+      if (options.markdown) {
+        // Direct markdown content provided
+        markdownContent = options.markdown;
+      } else if (options.file) {
+        // Read from file
+        markdownContent = readFileSync(options.file, 'utf-8');
+      } else {
+        // Read from stdin
+        const chunks: Buffer[] = [];
+        for await (const chunk of process.stdin) {
+          chunks.push(chunk);
+        }
+        markdownContent = Buffer.concat(chunks).toString('utf-8');
+      }
+
+      if (!markdownContent.trim()) {
+        throw new Error('No markdown content provided. Use -f <file>, -m <content>, or pipe via stdin.');
+      }
+
+      const state = submitAnalysisMarkdown(game, options.version, markdownContent);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: state.status,
+        analysisFile: state.shared.analysisFile,
+        version: options.version
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gm:skip-analysis <game>')
+  .description('[GM] Skip analysis and mark game as completed directly')
+  .action((game: string) => {
+    try {
+      const state = skipAnalysis(game);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: state.status,
+        message: 'Analysis skipped, game marked as completed'
       }));
     } catch (e) {
       console.log(JSON.stringify({

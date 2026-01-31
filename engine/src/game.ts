@@ -41,7 +41,17 @@ import type {
   ResignationEntry,
   ContestState,
   AvailableAction,
-  AvailableActionsResult
+  AvailableActionsResult,
+  BidAction,
+  SpendAction,
+  CollectSetAction,
+  SetDefinition,
+  RollAction,
+  BankAction,
+  DraftAction,
+  PlayerPower,
+  GameAnalysis,
+  KeyMoment
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -496,11 +506,54 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     }
     // else undefined = random assignment at registration
 
+    // Initialize resources if configured
+    let resources: Record<string, number> | undefined;
+    if (config.engine_mechanics?.resources) {
+      resources = {};
+      for (const res of config.engine_mechanics.resources) {
+        resources[res.name] = res.starting_amount;
+      }
+    }
+
+    // Initialize action points if configured
+    let actionPoints: number | undefined;
+    if (config.engine_mechanics?.action_points) {
+      actionPoints = config.engine_mechanics.action_points.points_per_turn;
+    }
+
+    // Assign player power if variable powers enabled
+    let powerId: string | undefined;
+    if (config.engine_mechanics?.variable_powers) {
+      const powers = config.engine_mechanics.variable_powers.powers;
+      if (config.engine_mechanics.variable_powers.assignment === 'random') {
+        // Random assignment - each player gets a different power
+        const availablePowers = powers.filter(p =>
+          !Object.values(players).some(pl => pl.powerId === p.id)
+        );
+        if (availablePowers.length > 0) {
+          powerId = availablePowers[Math.floor(Math.random() * availablePowers.length)].id;
+        }
+      } else if (config.engine_mechanics.variable_powers.assignment === 'fixed') {
+        // Fixed assignment by player index
+        const playerIndex = parseInt(playerId.replace('player-', '')) - 1;
+        if (playerIndex < powers.length) {
+          powerId = powers[playerIndex].id;
+        }
+      }
+    }
+
     players[playerId] = {
       state: config.board?.start ?? 'start',
       hand: [],
       effects: [],
-      persona
+      persona,
+      resources,
+      actionPoints,
+      actionPointsUsed: actionPoints !== undefined ? 0 : undefined,
+      collectedSets: [],
+      rollAccumulator: 0,
+      rollCount: 0,
+      powerId
     };
   }
 
@@ -524,6 +577,13 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     discardPile = [topCard];
     shared.topCard = topCard;
     shared.currentColor = topCard.effect?.color ?? null;
+  }
+
+  // Initialize draft display if open drafting enabled
+  if (config.engine_mechanics?.open_drafting && deck.length > 0) {
+    const displaySize = config.engine_mechanics.open_drafting.display_size;
+    const draftDisplay = deck.splice(0, Math.min(displaySize, deck.length));
+    shared.draftDisplay = draftDisplay;
   }
 
   const logPath = getLogPath(gameName, gameId);
@@ -781,13 +841,43 @@ export function advanceTurn(state: GameState): void {
   const previousPlayer = state.currentPlayer!;
   const currentIndex = state.turnOrder.indexOf(previousPlayer);
   const nextIndex = (currentIndex + 1) % state.turnOrder.length;
+  const isNewRound = nextIndex === 0;
 
   // If we wrapped around, increment turn number
-  if (nextIndex === 0) {
+  if (isNewRound) {
     state.turn++;
+
+    // Check max_turns limit
+    if (state.config.max_turns && state.turn > state.config.max_turns) {
+      // Game over - determine winner by highest score
+      let highestScore = -Infinity;
+      let winner = 'none';
+
+      for (const [playerId, player] of Object.entries(state.players)) {
+        const score = player.score ?? 0;
+        if (score > highestScore) {
+          highestScore = score;
+          winner = playerId;
+        }
+      }
+
+      state.status = 'pending_analysis';
+      state.shared.winner = winner;
+      state.shared.endReason = `Max turns (${state.config.max_turns}) reached. ${winner} wins with ${highestScore} points.`;
+
+      logEvent(state, {
+        event: 'game_end',
+        turn: state.turn,
+        data: { winner, reason: state.shared.endReason }
+      });
+
+      saveState(state);
+      return;
+    }
   }
 
   state.currentPlayer = state.turnOrder[nextIndex];
+  const nextPlayer = state.players[state.currentPlayer];
 
   // Decrement effect durations ONLY for the player whose turn just ended
   // This ensures effects like "Block for 1 turn" last until the blocked player's turn
@@ -799,13 +889,65 @@ export function advanceTurn(state: GameState): void {
       .filter(e => e.duration > 0);
   }
 
+  // === NEW MECHANICS: Income generation ===
+  if (state.config.engine_mechanics?.income && nextPlayer.resources) {
+    const income = state.config.engine_mechanics.income;
+
+    // Per-turn income
+    if (income.per_turn) {
+      for (const [resource, amount] of Object.entries(income.per_turn)) {
+        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
+
+        // Apply resource cap if configured
+        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
+        if (resourceConfig?.max !== undefined) {
+          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
+        }
+      }
+
+      logEvent(state, {
+        event: 'income_generated',
+        turn: state.turn,
+        player: state.currentPlayer,
+        data: { income: income.per_turn }
+      });
+    }
+
+    // Per-round income (only at start of new round)
+    if (isNewRound && income.per_round) {
+      for (const [resource, amount] of Object.entries(income.per_round)) {
+        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
+
+        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
+        if (resourceConfig?.max !== undefined) {
+          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
+        }
+      }
+
+      logEvent(state, {
+        event: 'round_income_generated',
+        turn: state.turn,
+        player: state.currentPlayer,
+        data: { income: income.per_round }
+      });
+    }
+  }
+
+  // === NEW MECHANICS: Action points refresh ===
+  if (state.config.engine_mechanics?.action_points) {
+    const apConfig = state.config.engine_mechanics.action_points;
+    const rollover = apConfig.rollover ? (nextPlayer.actionPoints || 0) : 0;
+    nextPlayer.actionPoints = apConfig.points_per_turn + rollover;
+    nextPlayer.actionPointsUsed = 0;
+  }
+
   saveState(state);
 }
 
 export function endGame(gameName: string, winner: string, reason: string): GameState {
   const state = loadState(gameName);
 
-  state.status = 'completed';
+  state.status = 'pending_analysis';
   state.shared.winner = winner;
   state.shared.endReason = reason;
   saveState(state);
@@ -830,6 +972,105 @@ export function cancelGame(gameName: string, reason: string): GameState {
     event: 'game_cancelled',
     turn: state.turn,
     data: { reason }
+  });
+
+  return state;
+}
+
+/**
+ * Submit gamemaster analysis for a completed game.
+ * Transitions status from 'pending_analysis' to 'completed'.
+ */
+export function submitAnalysis(gameName: string, analysis: GameAnalysis): GameState {
+  const state = loadState(gameName);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot submit analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  // Store analysis in shared state
+  state.shared.analysis = analysis;
+  state.status = 'completed';
+  saveState(state);
+
+  logEvent(state, {
+    event: 'analysis_submitted',
+    turn: state.turn,
+    data: {
+      summary: analysis.summary,
+      winner: analysis.winner,
+      mechanicsUsed: analysis.mechanicsObserved
+    }
+  });
+
+  return state;
+}
+
+/**
+ * Skip analysis and mark game as completed directly.
+ * Use when no analysis is needed or GM is unavailable.
+ */
+export function skipAnalysis(gameName: string): GameState {
+  const state = loadState(gameName);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot skip analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  state.status = 'completed';
+  saveState(state);
+
+  return state;
+}
+
+/**
+ * Submit gamemaster analysis as markdown file.
+ * Writes to: games/{gameName}/logs/playtest-analysis-{version}-{timestamp}.md
+ * Transitions status from 'pending_analysis' to 'completed'.
+ */
+export function submitAnalysisMarkdown(gameNameOrId: string, version: string, markdownContent: string): GameState {
+  const state = loadState(gameNameOrId);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot submit analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  // Extract timestamp from gameId (e.g., "fortune-seekers-1769871590604" -> "1769871590604")
+  const timestampMatch = state.gameId.match(/(\d{13})$/);
+  if (!timestampMatch) {
+    throw new Error(`Cannot extract timestamp from gameId: ${state.gameId}`);
+  }
+  const timestamp = timestampMatch[1];
+
+  // Ensure version starts with 'v' for consistency
+  const normalizedVersion = version.startsWith('v') ? version : `v${version}`;
+
+  // Build analysis file path
+  const logsDir = join(GAMES_DIR, state.gameName, 'logs');
+  const analysisFilename = `playtest-analysis-${normalizedVersion}-${timestamp}.md`;
+  const analysisPath = join(logsDir, analysisFilename);
+
+  // Ensure logs directory exists
+  if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
+  }
+
+  // Write markdown file
+  writeFileSync(analysisPath, markdownContent, 'utf-8');
+
+  // Store reference in game state
+  state.shared.analysisFile = analysisFilename;
+  state.shared.analysisVersion = normalizedVersion;
+  state.status = 'completed';
+  saveState(state);
+
+  logEvent(state, {
+    event: 'analysis_submitted',
+    turn: state.turn,
+    data: {
+      file: analysisFilename,
+      version: normalizedVersion
+    }
   });
 
   return state;
@@ -1307,6 +1548,135 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'pass' }]
   });
 
+  // === NEW MECHANICS: BID action (for auction games) ===
+  const auctionConfig = state.config.engine_mechanics?.auction;
+  if (auctionConfig && player.resources) {
+    const currency = auctionConfig.currency;
+    const available = player.resources[currency] ?? 0;
+    const currentHighBid = (state.shared.currentBid as number) ?? 0;
+    const minBid = auctionConfig.type === 'english'
+      ? currentHighBid + (auctionConfig.min_increment ?? 1)
+      : 1;
+    const canBid = isYourTurn && !isBlocked && available >= minBid;
+
+    actions.push({
+      type: 'bid',
+      description: `Place a bid using ${currency} (${auctionConfig.type} auction)`,
+      enabled: canBid,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              available < minBid ? `Not enough ${currency} (need ${minBid}, have ${available})` :
+              undefined,
+      required: { amount: `Bid amount in ${currency}` },
+      optional: { item: 'What you are bidding on' },
+      examples: [{ type: 'bid' as const, amount: minBid }]
+    });
+  }
+
+  // === NEW MECHANICS: SPEND action (for resource management) ===
+  if (player.resources) {
+    const resourceNames = Object.keys(player.resources);
+    const canSpend = isYourTurn && !isBlocked && resourceNames.some(r => (player.resources?.[r] ?? 0) > 0);
+
+    if (resourceNames.length > 0) {
+      actions.push({
+        type: 'spend',
+        description: 'Spend resources for effects or purchases',
+        enabled: canSpend,
+        reason: !isYourTurn ? 'Not your turn' :
+                isBlocked ? 'You are blocked this turn' :
+                !canSpend ? 'No resources to spend' :
+                undefined,
+        required: {
+          resource: `Resource type (${resourceNames.join(', ')})`,
+          amount: 'Amount to spend'
+        },
+        optional: { target: 'What to spend on' },
+        examples: resourceNames
+          .filter(r => (player.resources?.[r] ?? 0) > 0)
+          .slice(0, 2)
+          .map(r => ({ type: 'spend' as const, resource: r, amount: 1 }))
+      });
+    }
+  }
+
+  // === NEW MECHANICS: COLLECT_SET action (for set collection games) ===
+  const setConfig = state.config.engine_mechanics?.set_collection;
+  if (setConfig && handCards.length >= Math.min(...setConfig.sets.map(s => s.size))) {
+    const canCollect = isYourTurn && !isBlocked;
+
+    actions.push({
+      type: 'collect_set',
+      description: 'Claim a set of cards for points',
+      enabled: canCollect,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required: {
+        cards: 'Array of card names that form the set',
+        setType: `Set definition (${setConfig.sets.map(s => s.name).join(', ')})`
+      },
+      examples: setConfig.sets.slice(0, 1).map(setDef => ({
+        type: 'collect_set' as const,
+        cards: handCards.slice(0, setDef.size),
+        setType: setDef.name
+      }))
+    });
+  }
+
+  // === NEW MECHANICS: ROLL action (for push your luck) ===
+  const pylConfig = state.config.engine_mechanics?.push_your_luck;
+  if (pylConfig) {
+    const accumulated = player.rollAccumulator ?? 0;
+    const rollCount = player.rollCount ?? 0;
+    const canRoll = isYourTurn && !isBlocked && (!pylConfig.max_rolls || rollCount < pylConfig.max_rolls);
+    const canBank = isYourTurn && !isBlocked && accumulated > 0;
+
+    actions.push({
+      type: 'roll',
+      description: `Roll the dice (bust on ${pylConfig.bust_threshold} or less, gain ${pylConfig.points_per_success} pts on success)`,
+      enabled: canRoll,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              !canRoll ? `Max rolls (${pylConfig.max_rolls}) reached` :
+              undefined,
+      required: {},
+      examples: [{ type: 'roll' as const }]
+    });
+
+    actions.push({
+      type: 'bank',
+      description: `Bank your ${accumulated} accumulated points`,
+      enabled: canBank,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              accumulated === 0 ? 'No points to bank' :
+              undefined,
+      required: {},
+      examples: [{ type: 'bank' as const }]
+    });
+  }
+
+  // === NEW MECHANICS: DRAFT action (for open drafting) ===
+  const draftConfig = state.config.engine_mechanics?.open_drafting;
+  if (draftConfig) {
+    const display = (state.shared.draftDisplay || []) as Card[];
+    const canDraft = isYourTurn && !isBlocked && display.length > 0;
+
+    actions.push({
+      type: 'draft',
+      description: 'Draft a card from the display',
+      enabled: canDraft,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              display.length === 0 ? 'No cards in display' :
+              undefined,
+      required: { card: 'Card name to draft' },
+      examples: display.slice(0, 2).map(c => ({ type: 'draft' as const, card: c.name })),
+      cards: display.map(c => c.name)
+    });
+  }
+
   // === RESIGN action (always available) ===
   actions.push({
     type: 'resign',
@@ -1317,7 +1687,8 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
 
-  return {
+  // Add resource and action point info to result
+  const result: AvailableActionsResult = {
     playerId,
     isYourTurn,
     currentState: player.state,
@@ -1326,6 +1697,40 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     placedCards,
     activeEffects: player.effects
   };
+
+  // Add extended info for new mechanics
+  if (player.resources) {
+    (result as any).resources = player.resources;
+  }
+  if (player.actionPoints !== undefined) {
+    (result as any).actionPoints = player.actionPoints;
+    (result as any).actionPointsUsed = player.actionPointsUsed ?? 0;
+  }
+  if (player.collectedSets && player.collectedSets.length > 0) {
+    (result as any).collectedSets = player.collectedSets;
+  }
+
+  // Push your luck state
+  if (state.config.engine_mechanics?.push_your_luck) {
+    (result as any).rollAccumulator = player.rollAccumulator ?? 0;
+    (result as any).rollCount = player.rollCount ?? 0;
+  }
+
+  // Draft display
+  if (state.config.engine_mechanics?.open_drafting) {
+    const display = (state.shared.draftDisplay || []) as Card[];
+    (result as any).draftDisplay = display.map(c => c.name);
+  }
+
+  // Player power
+  if (player.powerId && state.config.engine_mechanics?.variable_powers) {
+    const power = state.config.engine_mechanics.variable_powers.powers.find(p => p.id === player.powerId);
+    if (power) {
+      (result as any).power = { id: power.id, name: power.name, description: power.description };
+    }
+  }
+
+  return result;
 }
 
 // ============ Contest-Based Adjudication Functions ============
@@ -1362,7 +1767,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign'];
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft'];
   if (!validTypes.includes(act.type)) {
     return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
   }
@@ -1406,6 +1811,48 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     case 'resign':
       if (!act.reason || typeof act.reason !== 'string' || act.reason.trim().length === 0) {
         errors.push('resign action requires "reason" field (non-empty string) - explanation for resignation');
+      }
+      break;
+
+    // === NEW MECHANIC ACTIONS ===
+
+    case 'bid':
+      if (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 0) {
+        errors.push('bid action requires "amount" field (non-negative number)');
+      }
+      break;
+
+    case 'spend':
+      if (!act.resource || typeof act.resource !== 'string') {
+        errors.push('spend action requires "resource" field (string) - the resource type to spend');
+      }
+      if (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 1) {
+        errors.push('spend action requires "amount" field (positive number)');
+      }
+      break;
+
+    case 'collect_set':
+      if (!act.cards || !Array.isArray(act.cards) || act.cards.length === 0) {
+        errors.push('collect_set action requires "cards" field (array of card names)');
+      }
+      if (!act.setType || typeof act.setType !== 'string') {
+        errors.push('collect_set action requires "setType" field (string) - which set definition to use');
+      }
+      break;
+
+    // === NEW MECHANIC ACTIONS ===
+
+    case 'roll':
+      // No additional fields required - just roll the dice
+      break;
+
+    case 'bank':
+      // No additional fields required - bank accumulated points
+      break;
+
+    case 'draft':
+      if (!act.card || typeof act.card !== 'string') {
+        errors.push('draft action requires "card" field (string) - the card name to draft from display');
       }
       break;
   }
@@ -1480,11 +1927,126 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
   // ============ NEW: Check for multiple actions per turn ============
   // Prevent players from submitting multiple actions in the same turn
-  if (player.lastActionTurn === state.turn && action.type !== 'pass') {
+  // UNLESS action_points is enabled (which allows multiple actions per turn)
+  const apConfig = state.config.engine_mechanics?.action_points;
+  if (!apConfig && player.lastActionTurn === state.turn && action.type !== 'pass') {
     return {
       valid: false,
       errors: ['You have already acted this turn. Wait for your next turn.']
     };
+  }
+
+  // ============ NEW: Action Points validation ============
+  if (apConfig) {
+    const actionCost = apConfig.action_costs[action.type] ?? 1;
+    const remainingAP = player.actionPoints ?? 0;
+
+    if (actionCost > remainingAP) {
+      return {
+        valid: false,
+        errors: [`Not enough action points. Action "${action.type}" costs ${actionCost} AP, you have ${remainingAP} AP remaining.`]
+      };
+    }
+  }
+
+  // ============ NEW: Resource spending validation ============
+  if (action.type === 'spend') {
+    const spendAction = action as SpendAction;
+    const available = player.resources?.[spendAction.resource] ?? 0;
+    if (spendAction.amount > available) {
+      return {
+        valid: false,
+        errors: [`Not enough ${spendAction.resource}. You have ${available}, trying to spend ${spendAction.amount}.`]
+      };
+    }
+  }
+
+  // ============ NEW: Bid validation ============
+  if (action.type === 'bid') {
+    const bidAction = action as BidAction;
+    const auctionConfig = state.config.engine_mechanics?.auction;
+    if (!auctionConfig) {
+      return { valid: false, errors: ['Bidding is not enabled for this game.'] };
+    }
+    const currency = auctionConfig.currency;
+    const available = player.resources?.[currency] ?? 0;
+    if (bidAction.amount > available) {
+      return {
+        valid: false,
+        errors: [`Not enough ${currency} to bid. You have ${available}, trying to bid ${bidAction.amount}.`]
+      };
+    }
+    // Check minimum increment for English auctions
+    const currentHighBid = (state.shared.currentBid as number) ?? 0;
+    if (auctionConfig.type === 'english' && bidAction.amount <= currentHighBid) {
+      const minBid = currentHighBid + (auctionConfig.min_increment ?? 1);
+      return {
+        valid: false,
+        errors: [`Bid too low. Current high bid is ${currentHighBid}. Minimum bid: ${minBid}.`]
+      };
+    }
+  }
+
+  // ============ NEW: Set collection validation ============
+  if (action.type === 'collect_set') {
+    const collectAction = action as CollectSetAction;
+    const setConfig = state.config.engine_mechanics?.set_collection;
+    if (!setConfig) {
+      return { valid: false, errors: ['Set collection is not enabled for this game.'] };
+    }
+    const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
+    if (!setDef) {
+      return {
+        valid: false,
+        errors: [`Unknown set type "${collectAction.setType}". Available: ${setConfig.sets.map(s => s.name).join(', ')}`]
+      };
+    }
+    // Verify player has all the cards
+    for (const cardName of collectAction.cards) {
+      if (!player.hand.find(c => c.name === cardName)) {
+        return {
+          valid: false,
+          errors: [`Card "${cardName}" not in your hand.`]
+        };
+      }
+    }
+    // Verify set size matches
+    if (collectAction.cards.length !== setDef.size) {
+      return {
+        valid: false,
+        errors: [`Set "${collectAction.setType}" requires exactly ${setDef.size} cards, you provided ${collectAction.cards.length}.`]
+      };
+    }
+  }
+
+  // ============ NEW: Push Your Luck validation ============
+  if (action.type === 'roll' || action.type === 'bank') {
+    const pylConfig = state.config.engine_mechanics?.push_your_luck;
+    if (!pylConfig) {
+      return { valid: false, errors: ['Push your luck is not enabled for this game.'] };
+    }
+    if (action.type === 'bank' && (player.rollAccumulator ?? 0) === 0) {
+      return { valid: false, errors: ['No accumulated points to bank. Roll first!'] };
+    }
+    if (action.type === 'roll' && pylConfig.max_rolls && (player.rollCount ?? 0) >= pylConfig.max_rolls) {
+      return { valid: false, errors: [`Maximum rolls (${pylConfig.max_rolls}) reached. You must bank.`] };
+    }
+  }
+
+  // ============ NEW: Draft validation ============
+  if (action.type === 'draft') {
+    const draftAction = action as DraftAction;
+    const draftConfig = state.config.engine_mechanics?.open_drafting;
+    if (!draftConfig) {
+      return { valid: false, errors: ['Open drafting is not enabled for this game.'] };
+    }
+    const display = (state.shared.draftDisplay || []) as Card[];
+    if (!display.find(c => c.name === draftAction.card)) {
+      return {
+        valid: false,
+        errors: [`Card "${draftAction.card}" not in draft display. Available: ${display.map(c => c.name).join(', ')}`]
+      };
+    }
   }
 
   // Action-specific validation
@@ -1635,8 +2197,16 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   const player = state.players[playerId];
   const contestState = ensureContestState(state);
 
-  // Mark that player has acted this turn (prevents multiple actions)
+  // Mark that player has acted this turn (prevents multiple actions without action points)
   player.lastActionTurn = state.turn;
+
+  // === NEW: Deduct action points if enabled ===
+  const apConfig = state.config.engine_mechanics?.action_points;
+  if (apConfig && player.actionPoints !== undefined) {
+    const cost = apConfig.action_costs[action.type] ?? 1;
+    player.actionPoints -= cost;
+    player.actionPointsUsed = (player.actionPointsUsed ?? 0) + cost;
+  }
 
   try {
     switch (action.type) {
@@ -1722,7 +2292,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
           // Auto-end the game
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -1901,7 +2471,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
           // Auto-end the game
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -1993,12 +2563,416 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         };
       }
 
+      // === NEW MECHANIC ACTIONS ===
+
+      case 'bid': {
+        const bidAction = action as BidAction;
+        const auctionConfig = state.config.engine_mechanics?.auction;
+        if (!auctionConfig) {
+          return { success: false, error: 'Auction not configured for this game' };
+        }
+
+        const currency = auctionConfig.currency;
+        const previousHighBid = (state.shared.currentBid as number) ?? 0;
+        const previousHighBidder = state.shared.highBidder as string | undefined;
+
+        // Update current bid
+        state.shared.currentBid = bidAction.amount;
+        state.shared.highBidder = playerId;
+        player.currentBid = bidAction.amount;
+
+        // For sealed bids, don't reveal until all bids are in
+        if (auctionConfig.type !== 'sealed') {
+          logEvent(state, {
+            event: 'bid_placed',
+            turn: state.turn,
+            player: playerId,
+            data: {
+              amount: bidAction.amount,
+              item: bidAction.item,
+              previousBid: previousHighBid,
+              previousBidder: previousHighBidder
+            }
+          });
+        }
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { amount: bidAction.amount } }
+        };
+
+        // For once-around auctions, advance turn; for English, player can bid again
+        if (auctionConfig.type === 'once-around' || auctionConfig.type === 'sealed') {
+          advanceTurn(state);
+        } else {
+          saveState(state);
+        }
+
+        return {
+          success: true,
+          effect: {
+            type: 'bid',
+            details: { amount: bidAction.amount, isHighBid: true }
+          }
+        };
+      }
+
+      case 'spend': {
+        const spendAction = action as SpendAction;
+        if (!player.resources) {
+          return { success: false, error: 'Resources not configured for this game' };
+        }
+
+        // Deduct resource
+        player.resources[spendAction.resource] -= spendAction.amount;
+
+        logEvent(state, {
+          event: 'resource_spent',
+          turn: state.turn,
+          player: playerId,
+          data: {
+            resource: spendAction.resource,
+            amount: spendAction.amount,
+            target: spendAction.target,
+            remaining: player.resources[spendAction.resource]
+          }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { spent: spendAction.amount } }
+        };
+
+        // Spending doesn't end your turn (allows multi-action turns with action points)
+        saveState(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'spend',
+            details: {
+              resource: spendAction.resource,
+              amount: spendAction.amount,
+              remaining: player.resources[spendAction.resource]
+            }
+          }
+        };
+      }
+
+      case 'collect_set': {
+        const collectAction = action as CollectSetAction;
+        const setConfig = state.config.engine_mechanics?.set_collection;
+        if (!setConfig) {
+          return { success: false, error: 'Set collection not configured for this game' };
+        }
+
+        const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
+        if (!setDef) {
+          return { success: false, error: `Unknown set type: ${collectAction.setType}` };
+        }
+
+        // Remove cards from hand
+        const collectedCards: Card[] = [];
+        for (const cardName of collectAction.cards) {
+          const cardIndex = player.hand.findIndex(c => c.name === cardName);
+          if (cardIndex !== -1) {
+            const [card] = player.hand.splice(cardIndex, 1);
+            collectedCards.push(card);
+          }
+        }
+
+        // Validate the set matches the definition
+        const isValidSet = validateSet(collectedCards, setDef);
+        if (!isValidSet) {
+          // Put cards back
+          player.hand.push(...collectedCards);
+          return { success: false, error: `Cards do not form a valid "${collectAction.setType}" set` };
+        }
+
+        // Add to collected sets
+        if (!player.collectedSets) player.collectedSets = [];
+        player.collectedSets.push(collectAction.setType);
+
+        // Award points if configured
+        if (setConfig.points_per_set) {
+          player.score = (player.score ?? 0) + setConfig.points_per_set;
+        }
+
+        // Move cards to discard
+        state.discardPile.push(...collectedCards);
+
+        logEvent(state, {
+          event: 'set_collected',
+          turn: state.turn,
+          player: playerId,
+          data: {
+            setType: collectAction.setType,
+            cards: collectAction.cards,
+            points: setConfig.points_per_set,
+            totalSets: player.collectedSets.length
+          }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { setType: collectAction.setType } }
+        };
+
+        // Check win condition
+        const winCheck = checkAllWinConditions(state);
+        if (winCheck) {
+          state.status = 'pending_analysis';
+          state.shared.winner = winCheck.winner;
+          state.shared.endReason = winCheck.reason;
+          saveState(state);
+          return {
+            success: true,
+            gameOver: true,
+            winner: winCheck.winner,
+            effect: { type: 'collect_set', details: { setType: collectAction.setType } }
+          };
+        }
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'collect_set',
+            details: {
+              setType: collectAction.setType,
+              points: setConfig.points_per_set,
+              totalSets: player.collectedSets.length
+            }
+          }
+        };
+      }
+
+      // === NEW MECHANICS: Push Your Luck ===
+
+      case 'roll': {
+        const pylConfig = state.config.engine_mechanics?.push_your_luck;
+        if (!pylConfig) {
+          return { success: false, error: 'Push your luck not configured' };
+        }
+
+        // Roll the dice
+        const rollValue = Math.floor(Math.random() * pylConfig.dice_sides) + 1;
+        const isBust = rollValue <= pylConfig.bust_threshold;
+
+        player.rollCount = (player.rollCount ?? 0) + 1;
+
+        if (isBust) {
+          // Bust! Lose all accumulated points
+          const lostPoints = player.rollAccumulator ?? 0;
+          player.rollAccumulator = 0;
+          player.rollCount = 0;
+
+          logEvent(state, {
+            event: 'push_your_luck_bust',
+            turn: state.turn,
+            player: playerId,
+            data: { roll: rollValue, lostPoints }
+          });
+
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
+          };
+
+          advanceTurn(state);
+
+          return {
+            success: true,
+            effect: {
+              type: 'roll',
+              details: { roll: rollValue, bust: true, lostPoints, accumulated: 0 }
+            }
+          };
+        } else {
+          // Success! Add points to accumulator
+          player.rollAccumulator = (player.rollAccumulator ?? 0) + pylConfig.points_per_success;
+
+          logEvent(state, {
+            event: 'push_your_luck_roll',
+            turn: state.turn,
+            player: playerId,
+            data: { roll: rollValue, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
+          });
+
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: { success: true, details: { roll: rollValue, accumulated: player.rollAccumulator } }
+          };
+
+          // Don't advance turn - player can roll again or bank
+          saveState(state);
+
+          return {
+            success: true,
+            effect: {
+              type: 'roll',
+              details: { roll: rollValue, bust: false, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
+            }
+          };
+        }
+      }
+
+      case 'bank': {
+        const bankedPoints = player.rollAccumulator ?? 0;
+        player.score = (player.score ?? 0) + bankedPoints;
+        player.rollAccumulator = 0;
+        player.rollCount = 0;
+
+        logEvent(state, {
+          event: 'push_your_luck_bank',
+          turn: state.turn,
+          player: playerId,
+          data: { bankedPoints, totalScore: player.score }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { bankedPoints, totalScore: player.score } }
+        };
+
+        // Check win condition
+        const winCheck = checkAllWinConditions(state);
+        if (winCheck) {
+          state.status = 'pending_analysis';
+          state.shared.winner = winCheck.winner;
+          state.shared.endReason = winCheck.reason;
+          saveState(state);
+          return {
+            success: true,
+            gameOver: true,
+            winner: winCheck.winner,
+            effect: { type: 'bank', details: { bankedPoints, totalScore: player.score } }
+          };
+        }
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'bank',
+            details: { bankedPoints, totalScore: player.score }
+          }
+        };
+      }
+
+      // === NEW MECHANICS: Open Drafting ===
+
+      case 'draft': {
+        const draftAction = action as DraftAction;
+        const draftConfig = state.config.engine_mechanics?.open_drafting;
+        if (!draftConfig) {
+          return { success: false, error: 'Open drafting not configured' };
+        }
+
+        const display = (state.shared.draftDisplay || []) as Card[];
+        const cardIndex = display.findIndex(c => c.name === draftAction.card);
+        if (cardIndex === -1) {
+          return { success: false, error: `Card "${draftAction.card}" not in display` };
+        }
+
+        // Remove card from display and add to player's hand
+        const [draftedCard] = display.splice(cardIndex, 1);
+        player.hand.push(draftedCard);
+        state.shared.draftDisplay = display;
+
+        // Refill display if configured
+        if (draftConfig.refill === 'immediate' && state.deck.length > 0) {
+          const newCard = state.deck.shift()!;
+          display.push(newCard);
+          state.shared.draftDisplay = display;
+        }
+
+        logEvent(state, {
+          event: 'card_drafted',
+          turn: state.turn,
+          player: playerId,
+          data: { card: draftedCard.name, displayRemaining: display.length }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { card: draftedCard.name } }
+        };
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'draft',
+            details: { card: draftedCard.name, handSize: player.hand.length }
+          }
+        };
+      }
+
       default:
         return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
     }
   } catch (e) {
     return { success: false, error: (e as Error).message };
   }
+}
+
+// Helper function to validate a set matches its definition
+function validateSet(cards: Card[], setDef: SetDefinition): boolean {
+  if (cards.length !== setDef.size) return false;
+
+  // Get the field values to match
+  const getFieldValue = (card: Card, field: string): unknown => {
+    const parts = field.split('.');
+    let value: unknown = card;
+    for (const part of parts) {
+      if (value && typeof value === 'object') {
+        value = (value as Record<string, unknown>)[part];
+      } else {
+        return undefined;
+      }
+    }
+    return value;
+  };
+
+  const values = cards.map(c => getFieldValue(c, setDef.match_field));
+
+  // All values must be the same for a matching set
+  const firstValue = values[0];
+  const allMatch = values.every(v => v === firstValue);
+
+  // If unique is required, all cards must be different
+  if (setDef.unique) {
+    const cardNames = cards.map(c => c.name);
+    const uniqueNames = new Set(cardNames);
+    if (uniqueNames.size !== cards.length) return false;
+  }
+
+  return allMatch;
 }
 
 // File a contest against the previous action
@@ -2135,7 +3109,7 @@ export function adjudicateResignation(
     const otherPlayers = state.turnOrder.filter(p => p !== resignation.player);
     const winner = otherPlayers.length === 1 ? otherPlayers[0] : 'none';
 
-    state.status = 'completed';
+    state.status = 'pending_analysis';
     state.shared.winner = winner;
     state.shared.endReason = `${resignation.player} resigned: ${resignation.reason}`;
 
@@ -2196,7 +3170,7 @@ export function adjudicateVictory(
   });
 
   if (accepted) {
-    state.status = 'completed';
+    state.status = 'pending_analysis';
     state.shared.winner = claim.player;
     state.shared.endReason = `Victory claim accepted: ${rulingReason}`;
 

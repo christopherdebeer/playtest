@@ -11,6 +11,7 @@ export interface ExtendedWaitResult extends WaitResult {
     pendingContest?: boolean;
     pendingResignation?: boolean;
   };
+  pendingAnalysis?: boolean;  // True if game ended but awaiting GM analysis
 }
 
 const DEFAULT_TIMEOUT = 0; // 0 = no timeout (block indefinitely)
@@ -77,13 +78,14 @@ export async function waitForTurn(
       try {
         const state = loadState(instanceId || gameName);
 
-        // Game completed
-        if (state.status === 'completed') {
+        // Game completed or pending analysis
+        if (state.status === 'completed' || state.status === 'pending_analysis') {
           cleanup();
           resolve({
             status: 'game_over',
             winner: state.shared.winner as string,
-            reason: state.shared.endReason as string
+            reason: state.shared.endReason as string,
+            pendingAnalysis: state.status === 'pending_analysis'
           });
           return;
         }
