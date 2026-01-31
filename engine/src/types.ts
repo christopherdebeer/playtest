@@ -32,6 +32,11 @@ export interface PlayerState {
   actionPointsUsed?: number;              // Action points used this turn
   collectedSets?: string[];               // Names of completed sets
   currentBid?: number;                    // Current bid in auction
+
+  // Additional mechanic state
+  rollAccumulator?: number;               // Accumulated points from push-your-luck rolls
+  rollCount?: number;                     // Number of rolls this turn
+  powerId?: string;                       // Assigned player power ID
 }
 
 export interface Effect {
@@ -54,6 +59,12 @@ export interface EngineMechanics {
   set_collection?: SetCollectionConfig; // Set detection and scoring
   auction?: AuctionConfig;              // Auction/bidding system
   turn_order?: TurnOrderConfig;         // Turn order determination
+
+  // Additional mechanics
+  push_your_luck?: PushYourLuckConfig;  // Risk/reward dice rolling
+  variable_powers?: VariablePlayerPowersConfig;  // Asymmetric player abilities
+  open_drafting?: OpenDraftingConfig;   // Draft from visible card pool
+  simultaneous?: SimultaneousActionConfig;  // All players act at once
 }
 
 // Action Points mechanic (slug: action-points)
@@ -103,6 +114,46 @@ export interface TurnOrderConfig {
   type: 'fixed' | 'random' | 'stat-based' | 'bid' | 'pass-order';
   stat?: string;                     // For stat-based: which stat determines order
   shuffle_frequency?: 'never' | 'per_round' | 'per_turn';
+}
+
+// Push Your Luck mechanic (slug: push-your-luck)
+export interface PushYourLuckConfig {
+  dice_sides: number;                // Sides on the die (e.g., 6)
+  bust_threshold: number;            // Roll this or below = bust (e.g., 1)
+  points_per_success: number;        // Points gained per successful roll
+  max_rolls?: number;                // Optional cap on rolls per turn
+}
+
+// Variable Player Powers mechanic (slug: variable-player-powers)
+export interface VariablePlayerPowersConfig {
+  powers: PlayerPower[];             // Available powers
+  assignment: 'random' | 'draft' | 'fixed';  // How powers are assigned
+}
+
+export interface PlayerPower {
+  id: string;                        // Unique identifier
+  name: string;                      // Display name
+  description: string;               // What it does
+  effect: PowerEffect;               // Mechanical effect
+}
+
+export interface PowerEffect {
+  type: 'bonus_action_points' | 'bonus_draw' | 'bonus_income' | 'discount' | 'reroll' | 'immunity' | 'extra_cards';
+  value?: number;                    // Effect magnitude
+  condition?: string;                // When it applies
+}
+
+// Open Drafting mechanic (slug: open-drafting)
+export interface OpenDraftingConfig {
+  display_size: number;              // Cards visible in the draft pool
+  picks_per_turn: number;            // How many cards player can pick per turn
+  refill: 'immediate' | 'end_of_round' | 'never';  // When to refill display
+}
+
+// Simultaneous Action mechanic (slug: simultaneous-action-selection)
+export interface SimultaneousActionConfig {
+  enabled: boolean;                  // Use simultaneous resolution
+  resolution_order: 'random' | 'clockwise' | 'priority';  // How to resolve conflicts
 }
 
 export interface GameConfig {
@@ -260,7 +311,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign' | 'bid' | 'spend' | 'collect_set';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
 
 export interface BaseAction {
   type: ActionType;
@@ -317,6 +368,23 @@ export interface CollectSetAction extends BaseAction {
   setType: string;                   // Which set definition to use
 }
 
+// Push Your Luck actions
+export interface RollAction extends BaseAction {
+  type: 'roll';
+  // No additional fields - just roll the dice
+}
+
+export interface BankAction extends BaseAction {
+  type: 'bank';
+  // Bank current accumulated points and end rolling
+}
+
+// Open Drafting action
+export interface DraftAction extends BaseAction {
+  type: 'draft';
+  card: string;                      // Card name to draft from display
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -346,7 +414,7 @@ export interface PlaceCardAction extends BaseAction {
   targetState: string;        // Board state to place the card on
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction | BidAction | SpendAction | CollectSetAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
 
 // Action validation result
 export interface ActionValidationResult {

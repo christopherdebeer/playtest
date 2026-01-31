@@ -45,7 +45,11 @@ import type {
   BidAction,
   SpendAction,
   CollectSetAction,
-  SetDefinition
+  SetDefinition,
+  RollAction,
+  BankAction,
+  DraftAction,
+  PlayerPower
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -515,6 +519,27 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       actionPoints = config.engine_mechanics.action_points.points_per_turn;
     }
 
+    // Assign player power if variable powers enabled
+    let powerId: string | undefined;
+    if (config.engine_mechanics?.variable_powers) {
+      const powers = config.engine_mechanics.variable_powers.powers;
+      if (config.engine_mechanics.variable_powers.assignment === 'random') {
+        // Random assignment - each player gets a different power
+        const availablePowers = powers.filter(p =>
+          !Object.values(players).some(pl => pl.powerId === p.id)
+        );
+        if (availablePowers.length > 0) {
+          powerId = availablePowers[Math.floor(Math.random() * availablePowers.length)].id;
+        }
+      } else if (config.engine_mechanics.variable_powers.assignment === 'fixed') {
+        // Fixed assignment by player index
+        const playerIndex = parseInt(playerId.replace('player-', '')) - 1;
+        if (playerIndex < powers.length) {
+          powerId = powers[playerIndex].id;
+        }
+      }
+    }
+
     players[playerId] = {
       state: config.board?.start ?? 'start',
       hand: [],
@@ -523,7 +548,10 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       resources,
       actionPoints,
       actionPointsUsed: actionPoints !== undefined ? 0 : undefined,
-      collectedSets: []
+      collectedSets: [],
+      rollAccumulator: 0,
+      rollCount: 0,
+      powerId
     };
   }
 
@@ -547,6 +575,13 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     discardPile = [topCard];
     shared.topCard = topCard;
     shared.currentColor = topCard.effect?.color ?? null;
+  }
+
+  // Initialize draft display if open drafting enabled
+  if (config.engine_mechanics?.open_drafting && deck.length > 0) {
+    const displaySize = config.engine_mechanics.open_drafting.display_size;
+    const draftDisplay = deck.splice(0, Math.min(displaySize, deck.length));
+    shared.draftDisplay = draftDisplay;
   }
 
   const logPath = getLogPath(gameName, gameId);
@@ -1460,6 +1495,59 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     });
   }
 
+  // === NEW MECHANICS: ROLL action (for push your luck) ===
+  const pylConfig = state.config.engine_mechanics?.push_your_luck;
+  if (pylConfig) {
+    const accumulated = player.rollAccumulator ?? 0;
+    const rollCount = player.rollCount ?? 0;
+    const canRoll = isYourTurn && !isBlocked && (!pylConfig.max_rolls || rollCount < pylConfig.max_rolls);
+    const canBank = isYourTurn && !isBlocked && accumulated > 0;
+
+    actions.push({
+      type: 'roll',
+      description: `Roll the dice (bust on ${pylConfig.bust_threshold} or less, gain ${pylConfig.points_per_success} pts on success)`,
+      enabled: canRoll,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              !canRoll ? `Max rolls (${pylConfig.max_rolls}) reached` :
+              undefined,
+      required: {},
+      examples: [{ type: 'roll' as const }]
+    });
+
+    actions.push({
+      type: 'bank',
+      description: `Bank your ${accumulated} accumulated points`,
+      enabled: canBank,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              accumulated === 0 ? 'No points to bank' :
+              undefined,
+      required: {},
+      examples: [{ type: 'bank' as const }]
+    });
+  }
+
+  // === NEW MECHANICS: DRAFT action (for open drafting) ===
+  const draftConfig = state.config.engine_mechanics?.open_drafting;
+  if (draftConfig) {
+    const display = (state.shared.draftDisplay || []) as Card[];
+    const canDraft = isYourTurn && !isBlocked && display.length > 0;
+
+    actions.push({
+      type: 'draft',
+      description: 'Draft a card from the display',
+      enabled: canDraft,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              display.length === 0 ? 'No cards in display' :
+              undefined,
+      required: { card: 'Card name to draft' },
+      examples: display.slice(0, 2).map(c => ({ type: 'draft' as const, card: c.name })),
+      cards: display.map(c => c.name)
+    });
+  }
+
   // === RESIGN action (always available) ===
   actions.push({
     type: 'resign',
@@ -1491,6 +1579,26 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   }
   if (player.collectedSets && player.collectedSets.length > 0) {
     (result as any).collectedSets = player.collectedSets;
+  }
+
+  // Push your luck state
+  if (state.config.engine_mechanics?.push_your_luck) {
+    (result as any).rollAccumulator = player.rollAccumulator ?? 0;
+    (result as any).rollCount = player.rollCount ?? 0;
+  }
+
+  // Draft display
+  if (state.config.engine_mechanics?.open_drafting) {
+    const display = (state.shared.draftDisplay || []) as Card[];
+    (result as any).draftDisplay = display.map(c => c.name);
+  }
+
+  // Player power
+  if (player.powerId && state.config.engine_mechanics?.variable_powers) {
+    const power = state.config.engine_mechanics.variable_powers.powers.find(p => p.id === player.powerId);
+    if (power) {
+      (result as any).power = { id: power.id, name: power.name, description: power.description };
+    }
   }
 
   return result;
@@ -1530,7 +1638,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign', 'bid', 'spend', 'collect_set'];
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft'];
   if (!validTypes.includes(act.type)) {
     return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
   }
@@ -1600,6 +1708,22 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
       }
       if (!act.setType || typeof act.setType !== 'string') {
         errors.push('collect_set action requires "setType" field (string) - which set definition to use');
+      }
+      break;
+
+    // === NEW MECHANIC ACTIONS ===
+
+    case 'roll':
+      // No additional fields required - just roll the dice
+      break;
+
+    case 'bank':
+      // No additional fields required - bank accumulated points
+      break;
+
+    case 'draft':
+      if (!act.card || typeof act.card !== 'string') {
+        errors.push('draft action requires "card" field (string) - the card name to draft from display');
       }
       break;
   }
@@ -1762,6 +1886,36 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       return {
         valid: false,
         errors: [`Set "${collectAction.setType}" requires exactly ${setDef.size} cards, you provided ${collectAction.cards.length}.`]
+      };
+    }
+  }
+
+  // ============ NEW: Push Your Luck validation ============
+  if (action.type === 'roll' || action.type === 'bank') {
+    const pylConfig = state.config.engine_mechanics?.push_your_luck;
+    if (!pylConfig) {
+      return { valid: false, errors: ['Push your luck is not enabled for this game.'] };
+    }
+    if (action.type === 'bank' && (player.rollAccumulator ?? 0) === 0) {
+      return { valid: false, errors: ['No accumulated points to bank. Roll first!'] };
+    }
+    if (action.type === 'roll' && pylConfig.max_rolls && (player.rollCount ?? 0) >= pylConfig.max_rolls) {
+      return { valid: false, errors: [`Maximum rolls (${pylConfig.max_rolls}) reached. You must bank.`] };
+    }
+  }
+
+  // ============ NEW: Draft validation ============
+  if (action.type === 'draft') {
+    const draftAction = action as DraftAction;
+    const draftConfig = state.config.engine_mechanics?.open_drafting;
+    if (!draftConfig) {
+      return { valid: false, errors: ['Open drafting is not enabled for this game.'] };
+    }
+    const display = (state.shared.draftDisplay || []) as Card[];
+    if (!display.find(c => c.name === draftAction.card)) {
+      return {
+        valid: false,
+        errors: [`Card "${draftAction.card}" not in draft display. Available: ${display.map(c => c.name).join(', ')}`]
       };
     }
   }
@@ -2470,6 +2624,182 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               points: setConfig.points_per_set,
               totalSets: player.collectedSets.length
             }
+          }
+        };
+      }
+
+      // === NEW MECHANICS: Push Your Luck ===
+
+      case 'roll': {
+        const pylConfig = state.config.engine_mechanics?.push_your_luck;
+        if (!pylConfig) {
+          return { success: false, error: 'Push your luck not configured' };
+        }
+
+        // Roll the dice
+        const rollValue = Math.floor(Math.random() * pylConfig.dice_sides) + 1;
+        const isBust = rollValue <= pylConfig.bust_threshold;
+
+        player.rollCount = (player.rollCount ?? 0) + 1;
+
+        if (isBust) {
+          // Bust! Lose all accumulated points
+          const lostPoints = player.rollAccumulator ?? 0;
+          player.rollAccumulator = 0;
+          player.rollCount = 0;
+
+          logEvent(state, {
+            event: 'push_your_luck_bust',
+            turn: state.turn,
+            player: playerId,
+            data: { roll: rollValue, lostPoints }
+          });
+
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
+          };
+
+          advanceTurn(state);
+
+          return {
+            success: true,
+            effect: {
+              type: 'roll',
+              details: { roll: rollValue, bust: true, lostPoints, accumulated: 0 }
+            }
+          };
+        } else {
+          // Success! Add points to accumulator
+          player.rollAccumulator = (player.rollAccumulator ?? 0) + pylConfig.points_per_success;
+
+          logEvent(state, {
+            event: 'push_your_luck_roll',
+            turn: state.turn,
+            player: playerId,
+            data: { roll: rollValue, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
+          });
+
+          contestState.lastAction = {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            turn: state.turn,
+            result: { success: true, details: { roll: rollValue, accumulated: player.rollAccumulator } }
+          };
+
+          // Don't advance turn - player can roll again or bank
+          saveState(state);
+
+          return {
+            success: true,
+            effect: {
+              type: 'roll',
+              details: { roll: rollValue, bust: false, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
+            }
+          };
+        }
+      }
+
+      case 'bank': {
+        const bankedPoints = player.rollAccumulator ?? 0;
+        player.score = (player.score ?? 0) + bankedPoints;
+        player.rollAccumulator = 0;
+        player.rollCount = 0;
+
+        logEvent(state, {
+          event: 'push_your_luck_bank',
+          turn: state.turn,
+          player: playerId,
+          data: { bankedPoints, totalScore: player.score }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { bankedPoints, totalScore: player.score } }
+        };
+
+        // Check win condition
+        const winCheck = checkAllWinConditions(state);
+        if (winCheck) {
+          state.status = 'completed';
+          state.shared.winner = winCheck.winner;
+          state.shared.endReason = winCheck.reason;
+          saveState(state);
+          return {
+            success: true,
+            gameOver: true,
+            winner: winCheck.winner,
+            effect: { type: 'bank', details: { bankedPoints, totalScore: player.score } }
+          };
+        }
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'bank',
+            details: { bankedPoints, totalScore: player.score }
+          }
+        };
+      }
+
+      // === NEW MECHANICS: Open Drafting ===
+
+      case 'draft': {
+        const draftAction = action as DraftAction;
+        const draftConfig = state.config.engine_mechanics?.open_drafting;
+        if (!draftConfig) {
+          return { success: false, error: 'Open drafting not configured' };
+        }
+
+        const display = (state.shared.draftDisplay || []) as Card[];
+        const cardIndex = display.findIndex(c => c.name === draftAction.card);
+        if (cardIndex === -1) {
+          return { success: false, error: `Card "${draftAction.card}" not in display` };
+        }
+
+        // Remove card from display and add to player's hand
+        const [draftedCard] = display.splice(cardIndex, 1);
+        player.hand.push(draftedCard);
+        state.shared.draftDisplay = display;
+
+        // Refill display if configured
+        if (draftConfig.refill === 'immediate' && state.deck.length > 0) {
+          const newCard = state.deck.shift()!;
+          display.push(newCard);
+          state.shared.draftDisplay = display;
+        }
+
+        logEvent(state, {
+          event: 'card_drafted',
+          turn: state.turn,
+          player: playerId,
+          data: { card: draftedCard.name, displayRemaining: display.length }
+        });
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          turn: state.turn,
+          result: { success: true, details: { card: draftedCard.name } }
+        };
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'draft',
+            details: { card: draftedCard.name, handSize: player.hand.length }
           }
         };
       }
