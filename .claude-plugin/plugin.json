@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event SessionStart"
+            "command": "./playtest hook-event --event SessionStart"
           }
         ]
       }
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event UserPromptSubmit"
+            "command": "./playtest hook-event --event UserPromptSubmit"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PreToolUse --matcher Task"
+            "command": "./playtest hook-event --event PreToolUse --matcher Task"
           }
         ]
       },
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PreToolUse --matcher all"
+            "command": "./playtest hook-event --event PreToolUse --matcher all"
           }
         ]
       }
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PostToolUse --matcher all"
+            "command": "./playtest hook-event --event PostToolUse --matcher all"
           }
         ]
       }
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook --name start --agent player"
+            "command": "./playtest hook --name start --agent player"
           }
         ]
       },
@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook --name start --agent gamemaster"
+            "command": "./playtest hook --name start --agent gamemaster"
           }
         ]
       },
@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event SubagentStart"
+            "command": "./playtest hook-event --event SubagentStart"
           }
         ]
       }
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook --name stop --agent player"
+            "command": "./playtest hook --name stop --agent player"
           }
         ]
       },
@@ -103,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook --name stop --agent gamemaster"
+            "command": "./playtest hook --name stop --agent gamemaster"
           }
         ]
       },
@@ -111,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event SubagentStop"
+            "command": "./playtest hook-event --event SubagentStop"
           }
         ]
       }
@@ -121,7 +121,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event Stop"
+            "command": "./playtest hook-event --event Stop"
           }
         ]
       }
@@ -131,7 +131,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PreCompact"
+            "command": "./playtest hook-event --event PreCompact"
           }
         ]
       }
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event SessionEnd"
+            "command": "./playtest hook-event --event SessionEnd"
           }
         ]
       }
@@ -151,7 +151,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event Notification"
+            "command": "./playtest hook-event --event Notification"
           }
         ]
       }
@@ -161,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PermissionRequest"
+            "command": "./playtest hook-event --event PermissionRequest"
           }
         ]
       }
@@ -171,7 +171,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx playtest hook-event --event PostToolUseFailure"
+            "command": "./playtest hook-event --event PostToolUseFailure"
           }
         ]
       }
