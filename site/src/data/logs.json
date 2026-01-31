@@ -1,20 +1,1435 @@
 {
-  "generatedAt": "2026-01-31T00:02:32.078Z",
+  "generatedAt": "2026-01-31T15:29:41.029Z",
   "games": {
-    "markovs-chains": {
-      "totalLogs": 39,
-      "completedGames": 11,
-      "cancelledGames": 1,
-      "totalTurns": 56
-    },
-    "uno": {
-      "totalLogs": 9,
-      "completedGames": 3,
+    "fortune-seekers": {
+      "totalLogs": 1,
+      "completedGames": 1,
       "cancelledGames": 0,
       "totalTurns": 23
+    },
+    "markovs-chains": {
+      "totalLogs": 36,
+      "completedGames": 17,
+      "cancelledGames": 0,
+      "totalTurns": 58
+    },
+    "treasure-hunters": {
+      "totalLogs": 1,
+      "completedGames": 0,
+      "cancelledGames": 0,
+      "totalTurns": 10
+    },
+    "uno": {
+      "totalLogs": 5,
+      "completedGames": 3,
+      "cancelledGames": 0,
+      "totalTurns": 11
     }
   },
   "logs": [
+    {
+      "gameId": "fortune-seekers-1769871590604",
+      "gameName": "fortune-seekers",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-31T14:59:50.608Z",
+      "endTime": "2026-01-31T15:14:36.562Z",
+      "duration": 886,
+      "totalTurns": 23,
+      "totalEvents": 54,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "card_drafted": 16,
+        "action_executed": 21,
+        "push_your_luck_roll": 7,
+        "push_your_luck_bank": 7,
+        "game_end": 1
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "Max turns (20) reached. player-1 wins with 40 points.",
+      "fileSize": 8099,
+      "events": [
+        {
+          "timestamp": "2026-01-31T14:59:50.608Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "fortune-seekers-1769871590604",
+            "playerCount": 2,
+            "config": "Fortune Seekers"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:00:19.978Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:00:46.646Z",
+          "event": "card_drafted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "card": "Silver Bar",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:00:59.129Z",
+          "event": "card_drafted",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "card": "Double Down",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:01:11.493Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Silver Bar",
+            "effect": {
+              "type": "points",
+              "value": 10
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:01:22.988Z",
+          "event": "card_drafted",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "card": "Crown Jewel",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:01:36.827Z",
+          "event": "card_drafted",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "card": "Lucky Dice",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:01:56.078Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Crown Jewel",
+            "effect": {
+              "type": "points",
+              "value": 30
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:02:10.728Z",
+          "event": "push_your_luck_roll",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "roll": 5,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:03:32.270Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:03:44.719Z",
+          "event": "push_your_luck_roll",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "roll": 4,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:05:12.012Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:05:21.805Z",
+          "event": "push_your_luck_bank",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:05:30.016Z",
+          "event": "push_your_luck_bank",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:05:43.027Z",
+          "event": "card_drafted",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "card": "Silver Bar",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:05:53.950Z",
+          "event": "card_drafted",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "card": "Gold Coin",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:06:05.735Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Silver Bar",
+            "effect": {
+              "type": "points",
+              "value": 10
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:06:17.036Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Gold Coin",
+            "effect": {
+              "type": "points",
+              "value": 5
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:06:28.070Z",
+          "event": "card_drafted",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "card": "Diamond",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:06:40.063Z",
+          "event": "card_drafted",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "card": "Silver Bar",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:06:51.422Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Diamond",
+            "effect": {
+              "type": "points",
+              "value": 20
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:07:02.300Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Silver Bar",
+            "effect": {
+              "type": "points",
+              "value": 10
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:07:18.811Z",
+          "event": "card_drafted",
+          "turn": 10,
+          "player": "player-1",
+          "data": {
+            "card": "Extra Roll",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:07:30.175Z",
+          "event": "card_drafted",
+          "turn": 10,
+          "player": "player-2",
+          "data": {
+            "card": "Gold Coin",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:07:40.516Z",
+          "event": "card_drafted",
+          "turn": 11,
+          "player": "player-1",
+          "data": {
+            "card": "Diamond",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:07:51.416Z",
+          "event": "action_executed",
+          "turn": 11,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Gold Coin",
+            "effect": {
+              "type": "points",
+              "value": 5
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:08:00.659Z",
+          "event": "action_executed",
+          "turn": 12,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Diamond",
+            "effect": {
+              "type": "points",
+              "value": 20
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:08:12.586Z",
+          "event": "card_drafted",
+          "turn": 12,
+          "player": "player-2",
+          "data": {
+            "card": "Gold Coin",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:08:23.619Z",
+          "event": "push_your_luck_roll",
+          "turn": 13,
+          "player": "player-1",
+          "data": {
+            "roll": 3,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:08:56.625Z",
+          "event": "action_executed",
+          "turn": 13,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:09:05.866Z",
+          "event": "action_executed",
+          "turn": 13,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Gold Coin",
+            "effect": {
+              "type": "points",
+              "value": 5
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:09:15.846Z",
+          "event": "push_your_luck_bank",
+          "turn": 14,
+          "player": "player-1",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 20
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:09:25.914Z",
+          "event": "card_drafted",
+          "turn": 14,
+          "player": "player-2",
+          "data": {
+            "card": "Gold Coin",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:09:41.974Z",
+          "event": "card_drafted",
+          "turn": 15,
+          "player": "player-1",
+          "data": {
+            "card": "Diamond",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:09:52.145Z",
+          "event": "action_executed",
+          "turn": 15,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Gold Coin",
+            "effect": {
+              "type": "points",
+              "value": 5
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:10:01.023Z",
+          "event": "action_executed",
+          "turn": 16,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Diamond",
+            "effect": {
+              "type": "points",
+              "value": 20
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:10:12.089Z",
+          "event": "push_your_luck_roll",
+          "turn": 16,
+          "player": "player-2",
+          "data": {
+            "roll": 5,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:10:38.364Z",
+          "event": "action_executed",
+          "turn": 17,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:10:49.516Z",
+          "event": "push_your_luck_roll",
+          "turn": 17,
+          "player": "player-1",
+          "data": {
+            "roll": 6,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:11:12.732Z",
+          "event": "action_executed",
+          "turn": 17,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:11:21.942Z",
+          "event": "push_your_luck_bank",
+          "turn": 17,
+          "player": "player-2",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 20
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:11:30.790Z",
+          "event": "push_your_luck_bank",
+          "turn": 18,
+          "player": "player-1",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 30
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:11:42.913Z",
+          "event": "card_drafted",
+          "turn": 18,
+          "player": "player-2",
+          "data": {
+            "card": "Diamond",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:11:57.065Z",
+          "event": "action_executed",
+          "turn": 19,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:12:06.930Z",
+          "event": "action_executed",
+          "turn": 19,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Diamond",
+            "effect": {
+              "type": "points",
+              "value": 20
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:12:18.147Z",
+          "event": "action_executed",
+          "turn": 20,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Gold Coin",
+            "effect": {
+              "type": "points",
+              "value": 5
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:12:38.582Z",
+          "event": "push_your_luck_roll",
+          "turn": 20,
+          "player": "player-2",
+          "data": {
+            "roll": 4,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:13:20.119Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:13:38.986Z",
+          "event": "push_your_luck_roll",
+          "turn": 21,
+          "player": "player-1",
+          "data": {
+            "roll": 3,
+            "points": 10,
+            "accumulated": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:14:04.530Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:14:13.510Z",
+          "event": "push_your_luck_bank",
+          "turn": 21,
+          "player": "player-2",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 30
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:14:23.966Z",
+          "event": "push_your_luck_bank",
+          "turn": 22,
+          "player": "player-1",
+          "data": {
+            "bankedPoints": 10,
+            "totalScore": 40
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:14:36.561Z",
+          "event": "card_drafted",
+          "turn": 22,
+          "player": "player-2",
+          "data": {
+            "card": "Extra Roll",
+            "displayRemaining": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:14:36.562Z",
+          "event": "game_end",
+          "turn": 23,
+          "data": {
+            "winner": "player-1",
+            "reason": "Max turns (20) reached. player-1 wins with 40 points."
+          }
+        }
+      ],
+      "analysis": {
+        "version": "v1.0",
+        "filename": "playtest-analysis-v1.0-1769871590604.md",
+        "content": "# Fortune Seekers - Game Analysis\n\n## Summary\n\nA 22-turn push-your-luck drafting game where **player-1** won with 40 points after the max turn limit was reached. Both players employed conservative strategies, banking dice rolls early and focusing on card drafting over risk-taking. The game showcased the tension between safe play and the push-your-luck mechanic.\n\n## Winner\n\n**player-1** - Score: 40 points\n\n## Win Condition\n\nGame ended at **max turns (20)** without either player reaching the 100-point target. Player-1 won by having the higher score (40 vs 30).\n\n## Key Moments\n\n| Turn | Player | Action | Significance |\n|------|--------|--------|--------------|\n| 3 | player-2 | Played Crown Jewel (+30 pts) | Highest single-card score, early lead |\n| 5 | Both | Banked 10 points each | Conservative pattern established |\n| 9 | player-1 | Played Diamond (+20 pts) | Caught up in card-based scoring |\n| 12 | player-1 | Played Diamond (+20 pts) | Took the lead |\n| 16 | player-1 | Played Diamond (+20 pts) | Extended lead to eventual victory |\n| 22 | player-1 | Banked final 10 points | Secured 40-point total for victory |\n\n## Mechanics Observed\n\n- **Push Your Luck**: Dice rolling with bust risk - players consistently chose to bank after single successful rolls (6 roll events, 6 bank events)\n- **Open Drafting**: Card selection from visible display worked smoothly - 14 cards drafted throughout game\n- **Variable Player Powers**:\n  - player-1: \"Lucky\" (never bust on 1) - power unused due to conservative play\n  - player-2: \"Cautious\" (can bank anytime) - aligned with their strategy\n\n## Player Strategies\n\n### player-1 (40 points - Winner)\n- Focused on high-value treasure cards (3 Diamonds played = 60 pts)\n- Conservative dice rolling - always banked after first success\n- \"Lucky\" power was wasted due to never pushing luck far enough to risk bust\n- Final scoring: ~70 pts from cards, 30 pts from dice\n\n### player-2 (30 points)\n- Drafted Crown Jewel early for quick 30-point boost\n- Matched conservative dice strategy\n- \"Cautious\" power complemented safe play style\n- Lower card values selected overall\n\n## Recommendations\n\n1. **Scoring threshold**: 100 points may be too high for 20 turns - consider reducing to 75 or increasing max turns\n2. **Push incentives**: Players never pushed their luck beyond 1 roll - consider bonus for consecutive successful rolls\n3. **Variable power impact**: Powers didn't significantly affect gameplay due to conservative meta - consider more impactful abilities\n4. **Draft display**: All 5 cards were consistently treasure/modifiers - risk cards (Gambler's Ruin) rarely drafted\n\n## Statistics\n\n- **Duration**: ~15 minutes (14:59:50 to 15:14:36)\n- **Total Events**: 55\n- **Dice Rolls**: 6 (all successful, no busts)\n- **Cards Drafted**: 14\n- **Cards Played**: 11\n- **Highest Single Score**: Crown Jewel (+30 pts) by player-2\n"
+      }
+    },
+    {
+      "gameId": "treasure-hunters-1769870631204",
+      "gameName": "treasure-hunters",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-31T14:43:51.207Z",
+      "endTime": "2026-01-31T14:48:07.079Z",
+      "duration": 256,
+      "totalTurns": 10,
+      "totalEvents": 41,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 14,
+        "income_generated": 19,
+        "set_collected": 6
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 5770,
+      "events": [
+        {
+          "timestamp": "2026-01-31T14:43:51.207Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "treasure-hunters-1769870631204",
+            "playerCount": 2,
+            "config": "Treasure Hunters"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:44:20.363Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:44:48.446Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Treasure Map",
+            "effect": {
+              "type": "draw",
+              "value": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:44:48.447Z",
+          "event": "income_generated",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:03.069Z",
+          "event": "set_collected",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Diamond Ring",
+              "Emerald Ring",
+              "Sapphire Ring"
+            ],
+            "points": 15,
+            "totalSets": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:03.070Z",
+          "event": "income_generated",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:18.988Z",
+          "event": "income_generated",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:19.001Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:28.896Z",
+          "event": "income_generated",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:28.898Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:30.845Z",
+          "event": "income_generated",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:30.847Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:48.075Z",
+          "event": "income_generated",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:48.086Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:58.204Z",
+          "event": "set_collected",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Diamond Crown",
+              "Sapphire Crown",
+              "Emerald Crown"
+            ],
+            "points": 15,
+            "totalSets": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:58.205Z",
+          "event": "income_generated",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:59.895Z",
+          "event": "set_collected",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Ruby Goblet",
+              "Sapphire Goblet",
+              "Emerald Goblet"
+            ],
+            "points": 15,
+            "totalSets": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:45:59.896Z",
+          "event": "income_generated",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:08.480Z",
+          "event": "income_generated",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:08.482Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:21.599Z",
+          "event": "income_generated",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:21.611Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:32.273Z",
+          "event": "income_generated",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:32.275Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:44.000Z",
+          "event": "income_generated",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:44.002Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:44.999Z",
+          "event": "income_generated",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:45.001Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:53.972Z",
+          "event": "set_collected",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Ruby Crown",
+              "Diamond Crown",
+              "Sapphire Crown"
+            ],
+            "points": 15,
+            "totalSets": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:46:53.973Z",
+          "event": "income_generated",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:07.086Z",
+          "event": "income_generated",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:07.098Z",
+          "event": "action_executed",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:17.134Z",
+          "event": "income_generated",
+          "turn": 9,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:17.135Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:19.220Z",
+          "event": "set_collected",
+          "turn": 9,
+          "player": "player-1",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Diamond Ring",
+              "Ruby Ring",
+              "Emerald Ring"
+            ],
+            "points": 15,
+            "totalSets": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:19.221Z",
+          "event": "income_generated",
+          "turn": 9,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:36.484Z",
+          "event": "income_generated",
+          "turn": 10,
+          "player": "player-1",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:36.486Z",
+          "event": "action_executed",
+          "turn": 10,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:58.690Z",
+          "event": "income_generated",
+          "turn": 10,
+          "player": "player-2",
+          "data": {
+            "income": {
+              "gold": 2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:47:58.701Z",
+          "event": "action_executed",
+          "turn": 10,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:48:07.079Z",
+          "event": "set_collected",
+          "turn": 10,
+          "player": "player-2",
+          "data": {
+            "setType": "Type Set",
+            "cards": [
+              "Sapphire Ring",
+              "Emerald Ring",
+              "Diamond Ring"
+            ],
+            "points": 15,
+            "totalSets": 4
+          }
+        }
+      ],
+      "analysis": {
+        "version": "v1.0",
+        "filename": "playtest-analysis-v1.0-1769870631204.md",
+        "content": "# Treasure Hunters - Game Analysis\n\n## Summary\n\nA 10-turn set collection game where **player-2** achieved victory with 60 points through aggressive Type Set collection, outpacing player-1 who scored 30 points with 2 Type Sets.\n\n## Winner\n\n**player-2** - Score: 60 points (4 Type Sets)\n\n## Win Condition\n\nFirst player to reach **score >= 50** via set collection. Player-2 reached 60 points on turn 10.\n\n## Key Moments\n\n| Turn | Player | Action | Significance |\n|------|--------|--------|--------------|\n| 1 | player-2 | Collected Ring Type Set | Early 15-point lead, set aggressive pace |\n| 4 | player-2 | Collected Goblet Type Set | Extended lead to 30 points |\n| 4 | player-1 | Collected Crown Type Set | First set for player-1, playing catch-up |\n| 7 | player-2 | Collected Crown Type Set | Built commanding 45-point lead |\n| 10 | player-2 | Collected Ring Type Set | Victory - reached 60 points |\n\n## Mechanics Observed\n\n- **Set Collection**: Core mechanic - both players actively pursued Type Sets (3 cards of same type, different gems)\n- **Resources (Gold)**: Income generated each turn but largely unused - players focused on drawing cards\n- **Income**: 2 gold per turn for each player enabled consistent economy\n- **Action Points**: 3 action points per turn structured decision-making\n\n## Player Strategies\n\n### player-1 (30 points, 2 sets)\n- Cautious approach with more drawing and passing\n- Collected Crown and Ring Type Sets\n- Fell behind early and couldn't catch up\n\n### player-2 (60 points, 4 sets)\n- Aggressive set collection from turn 1\n- Efficiently identified and completed matching sets\n- Dominated with double the sets of opponent\n\n## Recommendations\n\n1. **Balance consideration**: The first player to collect a set gains significant momentum - consider reducing Type Set value from 15 to 12 points\n2. **Resource utilization**: Gold accumulation was largely unused - consider adding compelling ways to spend resources\n3. **Action point economy**: Drawing cards was the dominant strategy - consider making other actions more attractive\n\n## Statistics\n\n- **Duration**: ~4 minutes (14:43:51 to 14:48:07)\n- **Total Events**: 43\n- **Sets Collected**: 6 total (4 by player-2, 2 by player-1)\n- **Income Events**: 20 (consistent per-turn generation)\n"
+      }
+    },
+    {
+      "gameId": "markovs-chains-1769869555102",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-31T14:25:55.106Z",
+      "endTime": "2026-01-31T14:30:08.004Z",
+      "duration": 253,
+      "totalTurns": 4,
+      "totalEvents": 11,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 7,
+        "effect_applied": 1,
+        "game_end": 1
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "player-1 reached Victory state",
+      "fileSize": 1944,
+      "events": [
+        {
+          "timestamp": "2026-01-31T14:25:55.106Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769869555102",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:27:04.536Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:27:54.350Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:28:12.265Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "place_card",
+            "card": "Hazard",
+            "targetState": "Checkpoint-X",
+            "targetMode": "opponents",
+            "effect": {
+              "type": "probability_penalty",
+              "value": -0.2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:28:38.565Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Checkpoint-Y",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:28:54.904Z",
+          "event": "effect_applied",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "effectType": "probability_penalty",
+            "appliedBy": "player-2",
+            "card": "Friction",
+            "duration": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:28:54.904Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Friction",
+            "effect": {
+              "type": "probability_penalty",
+              "value": -0.25
+            },
+            "effectTarget": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:29:40.088Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Catalyst",
+            "effect": {
+              "type": "probability_boost",
+              "value": 0.2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:29:54.919Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "C",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:30:08.001Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Victory",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T14:30:08.004Z",
+          "event": "game_end",
+          "turn": 4,
+          "data": {
+            "winner": "player-1",
+            "reason": "player-1 reached Victory state",
+            "autoDetected": true
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "markovs-chains-1769863246087",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-31T12:40:46.091Z",
+      "endTime": "2026-01-31T12:43:21.095Z",
+      "duration": 155,
+      "totalTurns": 3,
+      "totalEvents": 8,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 5,
+        "game_end": 1
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "player-1 reached Victory state",
+      "fileSize": 1255,
+      "events": [
+        {
+          "timestamp": "2026-01-31T12:40:46.091Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769863246087",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:41:37.875Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:42:00.410Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:42:16.130Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:42:33.766Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Checkpoint-X",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:42:57.767Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Checkpoint-X",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:43:21.093Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Victory",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T12:43:21.095Z",
+          "event": "game_end",
+          "turn": 3,
+          "data": {
+            "winner": "player-1",
+            "reason": "player-1 reached Victory state",
+            "autoDetected": true
+          }
+        }
+      ],
+      "analysis": {
+        "version": "v2.3",
+        "filename": "playtest-analysis-v2.3-1769863246087.md",
+        "content": "# MARKOV'S CHAINS v2.3 PLAYTEST ANALYSIS\n\n**Game ID:** markovs-chains-1769863246087\n**Version:** v2.3 (State Cards mechanic)\n**Winner:** player-1 (turn 3)\n**Duration:** 3 turns (2.5 minutes)\n**Date:** 2026-01-31\n\n## Executive Summary\n\nThis playtest represents the **shortest Markov's Chains game on record** and reveals critical issues with v2.3 balance. Player-1 achieved victory in the theoretical minimum path length (3 moves) with perfect success on all probabilistic rolls, despite facing base probabilities of 55%, 40%, and 25%. The combined probability of this outcome was approximately **5.5%** - an extreme statistical outlier.\n\n**Critical Finding:** Zero cards played. Zero state cards placed. Zero strategic interaction. The game was purely a luck-based race.\n\n## Version Comparison\n\n| Metric | v2.1 | v2.2 | v2.3 (prev) | v2.3 (this) | Target |\n|--------|------|------|-------------|-------------|--------|\n| Total Turns | 3 | 4 | 5 | **3** | 8-12 |\n| Cards Played | 2 | 3 | 4 | **0** | 8+ |\n| State Cards Used | - | - | 0 | **0** | 3+ |\n| Defensive Cards Used | 0 | 1 | 0 | **0** | Multiple |\n| Winner's Success Rate | 100% | 100% | Mixed | **100%** | - |\n| Strategic Depth | Low | Low | Low | **None** | High |\n\n## Game Flow Analysis\n\n| Turn | Player-1 | Player-2 | Analysis |\n|------|----------|----------|----------|\n| **1** | Start → A (success) | Start → B (success) | Both succeed on 55% base rolls. No cards played. |\n| **2** | A → Checkpoint-X (success) | B → Checkpoint-X (success) | Both succeed on 40% base rolls. No cards played. Players converge at same checkpoint. |\n| **3** | Checkpoint-X → Victory (success) | - | P1 wins on 25% base roll. Game over. |\n\n### Probability Analysis\n\nPlayer-1's victory path required succeeding on three consecutive probabilistic moves:\n- Move 1: 55% chance (Start → A)\n- Move 2: 40% chance (A → Checkpoint-X)\n- Move 3: 25% chance (Checkpoint-X → Victory)\n\n**Combined probability of this outcome:** 0.55 × 0.40 × 0.25 = **0.055 (5.5%)**\n\nThis is a **1-in-18 chance** - an extreme statistical outlier. Player-1 experienced exceptional luck.\n\nPlayer-2's path also showed high success:\n- Move 1: 55% chance (Start → B) - success\n- Move 2: 40% chance (B → Checkpoint-X) - success\n- Combined: 22% probability achieved\n\nBoth players succeeded on their first two moves, suggesting either:\n1. Statistical outlier (unlikely given both players succeeded)\n2. RNG implementation may need review\n3. Pure luck (possible but noteworthy)\n\n## Critical Issues\n\n### Issue 1: Zero Card Usage (Regression from Previous Playtest)\n\n**Severity: CRITICAL**\n\nThe previous v2.3 playtest saw 4 cards played (2 Catalyst, 1 Certainty). This playtest saw **zero cards played** by either player.\n\n**Why no cards were played:**\n\n1. **Game too short:** With only 3 turns total, players had no opportunity to develop card strategies\n2. **Perfect luck:** Both players succeeded on early rolls, so boost cards weren't needed\n3. **Turn order advantage:** Player-1 went first and maintained a 1-turn lead throughout\n4. **No defensive incentive:** Player-2 couldn't use defensive cards because they were also succeeding\n\n**Evidence from game log:**\n```json\n{\"event\":\"action_executed\",\"turn\":1,\"player\":\"player-1\",\"data\":{\"type\":\"move\",\"target\":\"A\",\"placedCardEffects\":[]}}\n{\"event\":\"action_executed\",\"turn\":1,\"player\":\"player-2\",\"data\":{\"type\":\"move\",\"target\":\"B\",\"placedCardEffects\":[]}}\n{\"event\":\"action_executed\",\"turn\":2,\"player\":\"player-1\",\"data\":{\"type\":\"move\",\"target\":\"Checkpoint-X\",\"placedCardEffects\":[]}}\n{\"event\":\"action_executed\",\"turn\":2,\"player\":\"player-2\",\"data\":{\"type\":\"move\",\"target\":\"Checkpoint-X\",\"placedCardEffects\":[]}}\n{\"event\":\"action_executed\",\"turn\":3,\"player\":\"player-1\",\"data\":{\"type\":\"move\",\"target\":\"Victory\",\"placedCardEffects\":[]}}\n```\n\nAll actions were pure `move` commands. No `play_card` or `place_card` actions attempted.\n\n### Issue 2: State Cards - Still Zero Usage\n\n**Severity: CRITICAL**\n\nDespite being the headline feature of v2.3, state cards remain completely unused:\n- Previous v2.3 playtest: 0 state cards placed\n- This playtest: **0 state cards placed**\n\n**Why state cards weren't placed:**\n\n1. **Game length:** 3 turns is far too short for delayed-effect mechanics\n2. **Opportunity cost:** Spending a turn placing a card means not moving toward Victory\n3. **Turn economy:** In a 3-turn game, every turn spent NOT moving is a guaranteed loss\n4. **Predictability doesn't matter:** Even though both players had to pass through checkpoints, no one had time to place traps\n\n**Mathematical reality:**\n- State card placement cost: 1 full turn\n- Game duration: 3 turns\n- If Player-1 placed a state card on Turn 1, they would have lost (no time to reach Victory)\n\n**Conclusion:** State cards are **structurally impossible to use** in games shorter than 6 turns.\n\n### Issue 3: Game Length Catastrophically Short\n\n**Severity: CRITICAL**\n\nTarget game length: 8-12 turns\nActual game length: **3 turns**\nGap: **-62% to -75%**\n\nThis is the worst performance across all playtests:\n- v2.1: 3 turns (tied)\n- v2.2: 4 turns\n- v2.3 (previous): 5 turns\n- v2.3 (this): **3 turns** ⬅ regression!\n\n**The v2.3 probability reductions (55%/40%/25%) failed to extend game length in this instance.**\n\n### Issue 4: Turn Order Advantage Too Strong\n\n**Severity: HIGH**\n\nPlayer-1 won purely due to first-player advantage:\n- Turn 1: Both players succeeded (tie)\n- Turn 2: Both players succeeded (tie)\n- Turn 3: Player-1 moved first, won immediately\n\nIf turn order were reversed, Player-2 would have won instead.\n\n**This suggests:**\n- Winning is more about turn order than strategy\n- No comeback mechanics exist\n- No way for Player-2 to slow Player-1 down (game too fast)\n\n## Strategic Observations\n\n### Zero Strategic Decisions Made\n\nThis game had **no strategic decisions** by either player:\n- No cards played\n- No card draw actions\n- No defensive moves\n- No path choices (both players took optimal paths)\n- No risk/reward calculations (both players just attempted every move)\n\nThe game was a **pure probability race** with zero player agency beyond \"attempt to move forward each turn.\"\n\n### Card Economy: Non-Existent\n\nWith zero cards played, we cannot evaluate:\n- Boost card effectiveness\n- Interference card value\n- State card viability\n- Utility card usage\n\nThe entire card system was unused.\n\n### Risk-Taking: No Choice\n\nBoth players took the \"optimal\" path (Start → intermediate → checkpoint → Victory) because:\n1. It's the shortest path\n2. There was no time to consider alternatives\n3. Boost cards weren't needed (luck was sufficient)\n\n## Engine Performance\n\n### Positive: Clean Execution\n\nThe game engine performed flawlessly:\n- All moves executed correctly\n- Probability rolls calculated properly\n- Victory detection worked (auto-detected)\n- State tracking accurate\n- Game log complete and parsable\n\n**Grade: A+** (no bugs detected)\n\n### Concern: RNG Validation\n\nBoth players succeeded on 5 out of 5 total move attempts (100% success rate across the game). Given the probabilities involved:\n- Expected failures: ~2-3 moves should have failed\n- Actual failures: 0\n\n**Recommendation:** Validate RNG implementation to ensure proper distribution.\n\nExample validation:\n```javascript\n// Run 10,000 trials of 0.25 probability\n// Expected: ~2,500 successes (25%)\n// If actual is >3,000 or <2,000, RNG may be biased\n```\n\n## Recommendations for v2.4\n\n### Priority 1: DRASTICALLY Reduce Probabilities\n\n**Current probabilities are far too high.**\n\nSuggested probabilities for v2.4:\n- Start → A/B/C: 55% → **35%** (20 point reduction)\n- A/B/C → Checkpoint: 40% → **25%** (15 point reduction)\n- Checkpoint → Victory: 25% → **15%** (10 point reduction)\n\n**Expected outcome with these changes:**\n- Optimal path combined probability: 0.35 × 0.25 × 0.15 = **1.3%** (vs current 5.5%)\n- Multiple failed attempts expected\n- Boost cards become **mandatory** (Catalyst would bring 15% → 35%, Momentum → 45%)\n- Game extends to 8-12 turns\n\n### Priority 2: Make Boost Cards Mandatory\n\n**Change card mechanics to require strategic usage:**\n\n1. **Nerf base probabilities to near-impossible levels** (as above)\n2. **Guarantee boost cards in starting hands:**\n   - Each player starts with at least 1 Catalyst or Momentum\n   - Ensures players can make progress\n\n3. **Increase boost card count in deck:**\n   - Current: 6 boost cards (2 Catalyst, 2 Momentum, 2 Certainty)\n   - Suggested: 10 boost cards (4 Catalyst, 4 Momentum, 2 Certainty)\n\n### Priority 3: Fix State Cards or Remove Them\n\n**State cards are fundamentally incompatible with current game length.**\n\n**Option A: Buff State Cards to Instant-Use**\n```yaml\n# New design: State cards activate immediately\nHazard:\n  - Place on any state\n  - Opponents currently on that state get -30% immediately\n  - Opponents entering get -30% ongoing\n\nSafe Haven:\n  - Place on any state\n  - You get +25% immediately if on that state\n  - You get +25% ongoing when on that state\n```\n\n**Option B: Make State Cards \"Free Actions\"**\n```yaml\n# When you draw a state card, you MAY place it for free\n- Draw phase: Draw card\n- If state card: Option to place immediately (doesn't use action)\n- Action phase: Still perform your normal move/play\n```\n\n**Option C: Remove State Cards from v2.4**\n- Acknowledge the mechanic failed\n- Remove all 8 state cards from deck\n- Replace with more boost/interference cards\n- Re-add state cards in v3.0 after fixing game length\n\n**Recommendation: Option C.** State cards need a longer game to work. Fix game length first, then reintroduce state cards.\n\n### Priority 4: Add Minimum Turn Count Before Victory\n\n**Prevent turn-3 victories:**\n\n```yaml\n# New rule: Victory state locked until turn 6\nwin_condition: \"First player to reach Victory state after turn 6\"\n```\n\n**Effect:**\n- Forces players to spend turns 1-5 positioning and playing cards\n- Creates time for state card placement\n- Allows defensive cards to matter\n- Enables comeback mechanics\n\n**Alternative: Add more states (Layer 1.5)**\n```\n         [Start]\n         /  |  \\\n       [A] [B] [C]         Layer 1 (35%)\n         \\  |  /\n       [D] [E] [F]         Layer 1.5 (30%) - NEW\n         \\  |  /\n   [Checkpoint-X]──[Checkpoint-Y]   Layer 2 (25%)\n            \\    /\n          [Victory]        Layer 3 (15%)\n```\n\nMinimum path: 4 moves (Start → A → D → Checkpoint → Victory)\nCombined probability: 0.35 × 0.30 × 0.25 × 0.15 = **0.4%** (would require boost cards)\n\n### Priority 5: Balance First-Player Advantage\n\n**Current:** First player has massive advantage (won 100% of this game)\n\n**Options:**\n1. **Second player gets extra card:** Player-2 starts with 6 cards (vs 5)\n2. **First player draws later:** Player-1 cannot draw on turn 1\n3. **Simultaneous turns:** Both players submit moves, resolve simultaneously\n4. **Victory requires TWO visits:** Must reach Victory, leave, and return\n\n**Recommendation:** Option 1 (simple, effective)\n\n## Grades\n\n| Category | Grade | Rationale |\n|----------|-------|-----------|\n| **State Card Mechanic** | **F** | 0% usage - second consecutive failure |\n| **Probability Balance** | **F** | 100% success rate, 5.5% outcome occurred |\n| **Game Length** | **F** | 3 turns (62-75% short of target) |\n| **Strategic Depth** | **F** | Zero strategic decisions made |\n| **Card System Usage** | **F** | Zero cards played |\n| **Engine Performance** | **A+** | Flawless execution, clean logs |\n| **Player Agency** | **F** | Pure luck race, no meaningful choices |\n| **Overall v2.3** | **F** | Complete system failure |\n\n## Conclusion\n\nThis playtest represents a **catastrophic failure** of v2.3 game design. The game:\n\n**What Failed:**\n- Game ended in 3 turns (50% faster than even v2.1)\n- Zero cards played (regression from previous playtest's 4 cards)\n- Zero state cards placed (headline feature unused)\n- Zero strategic decisions (pure luck race)\n- Zero defensive play (no time to defend)\n- 100% success rate on all moves (probability balance broken)\n- First-player advantage decided outcome (strategy irrelevant)\n\n**What Worked:**\n- Engine performed flawlessly (A+ technical execution)\n- Game completed without errors\n- Victory detection worked\n\n**Root Causes:**\n1. **Probabilities too high:** 55%/40%/25% allows lucky wins with zero boost cards\n2. **Game too short:** 3 turns prevents any card strategy from developing\n3. **Turn order dominance:** First player wins by default if both succeed equally\n4. **State cards impossible:** No time to place delayed-effect cards\n5. **No comeback mechanics:** Once ahead, stay ahead\n\n**Critical Path Forward:**\n\nv2.4 must make **radical changes** or the game is unsalvageable:\n\n1. **Slash probabilities to 35%/25%/15%** (force boost card usage)\n2. **Remove state cards entirely** (reintroduce in v3.0 after game length fixed)\n3. **Add minimum turn requirement** (Victory locked until turn 6)\n4. **Buff second player** (extra starting card to balance turn order)\n5. **Increase boost cards** (4 Catalyst, 4 Momentum to ensure availability)\n6. **Add Layer 1.5** (4 moves minimum path vs current 3)\n\n**Without these changes, Markov's Chains is a broken coin-flip game, not a strategic board game.**\n\nThe previous v2.3 playtest (5 turns, 4 cards played) was poor but showed some promise. This playtest (3 turns, 0 cards played) is a complete regression and proves the current balance is fundamentally unsalvageable.\n\n---\n\n## Next Playtest Goals (v2.4 - CRITICAL REDESIGN REQUIRED)\n\n- [ ] Game length MINIMUM 8 turns (not aspirational - REQUIRED)\n- [ ] At least 6 cards played total (2+ per player)\n- [ ] At least 1 defensive card used (Friction, Block, or Sabotage)\n- [ ] At least 2 failed move attempts (proves probabilities are working)\n- [ ] Winner does NOT have 100% success rate\n- [ ] Second player has reasonable chance to win (not just turn order)\n\n**Success Metric:** If v2.4 fails to reach 8 turns or has zero cards played, the game design should be scrapped and rebuilt from scratch.\n\n**This is the last chance for the current design philosophy. V2.4 must succeed or Markov's Chains needs a complete redesign.**\n"
+      }
+    },
     {
       "gameId": "markovs-chains-1769816283703",
       "gameName": "markovs-chains",
@@ -47308,6 +48723,637 @@
       }
     },
     {
+      "gameId": "uno-1769782297402",
+      "gameName": "uno",
+      "playerCount": 3,
+      "players": [],
+      "startTime": "2026-01-30T14:11:37.406Z",
+      "endTime": "2026-01-30T14:11:37.406Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 130,
+      "events": [
+        {
+          "timestamp": "2026-01-30T14:11:37.406Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769782297402",
+            "playerCount": 3,
+            "config": "UNO"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "uno-1769782142436",
+      "gameName": "uno",
+      "playerCount": 2,
+      "players": [],
+      "startTime": "2026-01-30T14:09:02.440Z",
+      "endTime": "2026-01-30T14:09:02.440Z",
+      "duration": null,
+      "totalTurns": 0,
+      "totalEvents": 1,
+      "eventCounts": {
+        "game_init": 1
+      },
+      "outcome": "in_progress",
+      "winner": null,
+      "endReason": null,
+      "fileSize": 130,
+      "events": [
+        {
+          "timestamp": "2026-01-30T14:09:02.440Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "uno-1769782142436",
+            "playerCount": 2,
+            "config": "UNO"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "markovs-chains-1769774713331",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-30T12:05:13.333Z",
+      "endTime": "2026-01-30T12:07:05.487Z",
+      "duration": 112,
+      "totalTurns": 4,
+      "totalEvents": 16,
+      "eventCounts": {
+        "game_init": 1,
+        "probability_roll": 5,
+        "move_failed": 2,
+        "state_transition": 3,
+        "action_executed": 4,
+        "game_end": 1
+      },
+      "outcome": "ended",
+      "winner": null,
+      "endReason": "Manual stop by user",
+      "fileSize": 3281,
+      "events": [
+        {
+          "timestamp": "2026-01-30T12:05:13.333Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769774713331",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:05:55.851Z",
+          "event": "probability_roll",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "fromState": "Start",
+            "toState": "A",
+            "baseProbability": 0.65,
+            "boost": null,
+            "effectiveProbability": 0.65,
+            "roll": 0.9283322934231063,
+            "success": false
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:05:55.852Z",
+          "event": "move_failed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "fromState": "Start",
+            "toState": "A",
+            "probability": 0.65,
+            "reasoning": "Use Momentum to boost probability of moving from Start to A, which has a 0.55 probability of reaching Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:04.450Z",
+          "event": "probability_roll",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "fromState": "Start",
+            "toState": "A",
+            "baseProbability": 0.65,
+            "boost": null,
+            "effectiveProbability": 0.65,
+            "roll": 0.3146880663626088,
+            "success": true
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:04.450Z",
+          "event": "state_transition",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "fromState": "Start",
+            "toState": "A"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:04.451Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "success": true,
+            "reasoning": "Attempt to move from Start to A with base 0.65 probability"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:11.245Z",
+          "event": "probability_roll",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "fromState": "Start",
+            "toState": "C",
+            "baseProbability": 0.65,
+            "boost": null,
+            "effectiveProbability": 0.65,
+            "roll": 0.06683599421542397,
+            "success": true
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:11.245Z",
+          "event": "state_transition",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "fromState": "Start",
+            "toState": "C"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:11.246Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "C",
+            "success": true,
+            "reasoning": "Use Catalyst to boost probability of moving from Start to C, which has a path to Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:11.838Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:23.202Z",
+          "event": "probability_roll",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "fromState": "C",
+            "toState": "Victory",
+            "baseProbability": 0.55,
+            "boost": null,
+            "effectiveProbability": 0.55,
+            "roll": 0.9200185857473722,
+            "success": false
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:23.202Z",
+          "event": "move_failed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "fromState": "C",
+            "toState": "Victory",
+            "probability": 0.55,
+            "reasoning": "Use Certainty to guarantee move from C to Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:30.726Z",
+          "event": "probability_roll",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "fromState": "A",
+            "toState": "Victory",
+            "baseProbability": 0.55,
+            "boost": null,
+            "effectiveProbability": 0.55,
+            "roll": 0.5102502510092145,
+            "success": true
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:30.726Z",
+          "event": "state_transition",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "fromState": "A",
+            "toState": "Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:06:30.727Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Victory",
+            "success": true,
+            "reasoning": "Use Certainty to guarantee move from A to Victory, which has a base 0.55 probability"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T12:07:05.487Z",
+          "event": "game_end",
+          "turn": 4,
+          "data": {
+            "winner": "none",
+            "reason": "Manual stop by user"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "markovs-chains-1769772933121",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-30T11:35:33.123Z",
+      "endTime": "2026-01-30T11:37:27.456Z",
+      "duration": 114,
+      "totalTurns": 2,
+      "totalEvents": 7,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 3,
+        "game_end": 2
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "Reached Victory state in 2 turns",
+      "fileSize": 976,
+      "events": [
+        {
+          "timestamp": "2026-01-30T11:35:33.123Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769772933121",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:36:07.195Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:36:15.504Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:36:24.040Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:36:32.667Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:37:08.739Z",
+          "event": "game_end",
+          "turn": 2,
+          "data": {
+            "winner": "player-1",
+            "reason": "Reached Victory state in 2 turns"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:37:27.456Z",
+          "event": "game_end",
+          "turn": 2,
+          "data": {
+            "winner": "player-1",
+            "reason": "Player-1 reached Victory state"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "markovs-chains-1769772029870",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-30T11:20:29.873Z",
+      "endTime": "2026-01-30T11:23:00.184Z",
+      "duration": 150,
+      "totalTurns": 1,
+      "totalEvents": 7,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_submitted": 4,
+        "game_end": 1
+      },
+      "outcome": "ended",
+      "winner": null,
+      "endReason": "Manual stop due to game state issues",
+      "fileSize": 1339,
+      "events": [
+        {
+          "timestamp": "2026-01-30T11:20:29.873Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769772029870",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:21:16.750Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:21:27.096Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "targetState": "A",
+            "boostCard": "Momentum",
+            "reasoning": "Use Momentum to increase probability of moving from Start to A from 0.65 to 0.95"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:21:40.903Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "reasoning": "Failed to move, drawing a card to improve options"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:21:54.227Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "targetState": "B",
+            "boostCard": "Momentum",
+            "reasoning": "Attempt to move to B state with Momentum boost after previous failed attempt to move to A"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:22:36.716Z",
+          "event": "action_submitted",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "pass",
+            "reasoning": "Unable to execute other actions due to potential game state issue"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:23:00.184Z",
+          "event": "game_end",
+          "turn": 1,
+          "data": {
+            "winner": "none",
+            "reason": "Manual stop due to game state issues"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
+      "gameId": "markovs-chains-1769770972006",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-30T11:02:52.009Z",
+      "endTime": "2026-01-30T11:05:48.811Z",
+      "duration": 177,
+      "totalTurns": 6,
+      "totalEvents": 13,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 10,
+        "game_end": 1
+      },
+      "outcome": "ended",
+      "winner": null,
+      "endReason": "Manual stop by user",
+      "fileSize": 1681,
+      "events": [
+        {
+          "timestamp": "2026-01-30T11:02:52.009Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769770972006",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:03:44.160Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:03:59.801Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "A"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:04:09.048Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:04:16.112Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:04:16.399Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "B"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:01.532Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:09.003Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Victory"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:16.084Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:24.389Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:33.297Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:45.787Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-30T11:05:48.811Z",
+          "event": "game_end",
+          "turn": 6,
+          "data": {
+            "winner": "none",
+            "reason": "Manual stop by user"
+          }
+        }
+      ],
+      "analysis": null
+    },
+    {
       "gameId": "markovs-chains-1769707311476",
       "gameName": "markovs-chains",
       "playerCount": 2,
@@ -47405,236 +49451,6 @@
       "analysis": null
     },
     {
-      "gameId": "markovs-chains-1769705423358",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T16:50:23.367Z",
-      "endTime": "2026-01-29T16:50:32.698Z",
-      "duration": 9,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T16:50:23.367Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769705423358",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T16:50:32.698Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769705394614",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T16:49:54.618Z",
-      "endTime": "2026-01-29T16:50:05.284Z",
-      "duration": 11,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T16:49:54.618Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769705394614",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T16:50:05.284Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769705066666",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T16:44:26.669Z",
-      "endTime": "2026-01-29T16:44:36.341Z",
-      "duration": 10,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T16:44:26.669Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769705066666",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T16:44:36.341Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769704833064",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T16:40:33.065Z",
-      "endTime": "2026-01-29T16:40:43.790Z",
-      "duration": 11,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T16:40:33.065Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769704833064",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T16:40:43.790Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769704760097",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T16:39:20.099Z",
-      "endTime": "2026-01-29T16:39:29.182Z",
-      "duration": 9,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T16:39:20.099Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769704760097",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T16:39:29.182Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
       "gameId": "markovs-chains-1769700740155",
       "gameName": "markovs-chains",
       "playerCount": 2,
@@ -47669,153 +49485,6 @@
           "data": {
             "winner": "none",
             "reason": "Manual stop by user - observing agent ergonomics"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769695547760",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T14:05:47.762Z",
-      "endTime": "2026-01-29T14:05:54.500Z",
-      "duration": 7,
-      "totalTurns": 1,
-      "totalEvents": 3,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1,
-        "game_cancelled": 1
-      },
-      "outcome": "cancelled",
-      "winner": null,
-      "endReason": "Testing cancel functionality",
-      "fileSize": 416,
-      "events": [
-        {
-          "timestamp": "2026-01-29T14:05:47.762Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769695547760",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T14:05:51.071Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T14:05:54.500Z",
-          "event": "game_cancelled",
-          "turn": 1,
-          "data": {
-            "reason": "Testing cancel functionality"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769694901808",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T13:55:01.810Z",
-      "endTime": "2026-01-29T13:55:06.079Z",
-      "duration": 4,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T13:55:01.810Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769694901808",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T13:55:06.079Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769694784446",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T13:53:04.448Z",
-      "endTime": "2026-01-29T13:53:04.830Z",
-      "duration": 0,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "game_start": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 292,
-      "events": [
-        {
-          "timestamp": "2026-01-29T13:53:04.448Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769694784446",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T13:53:04.830Z",
-          "event": "game_start",
-          "turn": 1,
-          "data": {
-            "players": [
-              "player-1",
-              "player-2"
-            ],
-            "firstPlayer": "player-1"
           }
         }
       ],
@@ -49888,64 +51557,6 @@
       "analysis": null
     },
     {
-      "gameId": "uno-1769645618744",
-      "gameName": "uno",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-29T00:13:38.745Z",
-      "endTime": "2026-01-29T00:14:08.725Z",
-      "duration": 30,
-      "totalTurns": 2,
-      "totalEvents": 3,
-      "eventCounts": {
-        "game_init": 1,
-        "action_executed": 2
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 444,
-      "events": [
-        {
-          "timestamp": "2026-01-29T00:13:38.745Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769645618744",
-            "playerCount": 2,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T00:14:00.994Z",
-          "event": "action_executed",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Wild",
-            "effect": {
-              "type": "wild"
-            },
-            "declaredColor": "Red"
-          }
-        },
-        {
-          "timestamp": "2026-01-29T00:14:08.725Z",
-          "event": "action_executed",
-          "turn": 2,
-          "player": "player-2",
-          "data": {
-            "type": "draw",
-            "count": 1
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
       "gameId": "uno-1769645548149",
       "gameName": "uno",
       "playerCount": 2,
@@ -50049,957 +51660,6 @@
             "player": "player-2",
             "accepted": true,
             "rulingReason": "Valid resignation"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "uno-1769644177930",
-      "gameName": "uno",
-      "playerCount": 2,
-      "players": [
-        "player-1"
-      ],
-      "startTime": "2026-01-28T23:49:37.931Z",
-      "endTime": "2026-01-28T23:50:15.404Z",
-      "duration": 37,
-      "totalTurns": 1,
-      "totalEvents": 2,
-      "eventCounts": {
-        "game_init": 1,
-        "play_card": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 368,
-      "events": [
-        {
-          "timestamp": "2026-01-28T23:49:37.931Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769644177930",
-            "playerCount": 2,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:50:15.404Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "card": "Yellow Skip",
-            "newTopCard": {
-              "name": "Yellow Skip",
-              "type": "action",
-              "effect": {
-                "type": "skip",
-                "color": "Yellow"
-              }
-            },
-            "currentColor": "Yellow"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "uno-1769643078109",
-      "gameName": "uno",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-28T23:31:18.110Z",
-      "endTime": "2026-01-28T23:39:42.746Z",
-      "duration": 505,
-      "totalTurns": 5,
-      "totalEvents": 21,
-      "eventCounts": {
-        "game_init": 1,
-        "action_submitted": 10,
-        "draw": 5,
-        "play_card": 5
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 4060,
-      "events": [
-        {
-          "timestamp": "2026-01-28T23:31:18.110Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769643078109",
-            "playerCount": 2,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:32:09.646Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "draw",
-            "reasoning": "No playable cards matching Blue 2. Must draw a card."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:32:44.216Z",
-          "event": "draw",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Wild Draw Four"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:33:16.963Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Green 2",
-            "reasoning": "Matches number on top card, saves wild cards for critical moments"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:33:34.914Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "card": "Green 2",
-            "newTopCard": {
-              "name": "Green 2",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 2
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:34:02.810Z",
-          "event": "action_submitted",
-          "turn": 2,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Green Reverse",
-            "reasoning": "In 2-player game, Reverse acts as Skip. This skips player-2 and gives me another turn."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:34:20.254Z",
-          "event": "play_card",
-          "turn": 2,
-          "player": "player-1",
-          "data": {
-            "card": "Green Reverse",
-            "newTopCard": {
-              "name": "Green Reverse",
-              "type": "action",
-              "effect": {
-                "type": "reverse",
-                "color": "Green"
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:35:07.131Z",
-          "event": "action_submitted",
-          "turn": 3,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Green 9",
-            "reasoning": "Matches Green color. Advancing the game."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:35:21.712Z",
-          "event": "play_card",
-          "turn": 3,
-          "player": "player-1",
-          "data": {
-            "card": "Green 9",
-            "newTopCard": {
-              "name": "Green 9",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 9
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:35:49.138Z",
-          "event": "action_submitted",
-          "turn": 3,
-          "player": "player-2",
-          "data": {
-            "type": "draw",
-            "reasoning": "No Green cards or 9s in hand, must draw"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:36:02.074Z",
-          "event": "draw",
-          "turn": 3,
-          "player": "player-2",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Blue 7"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:36:28.423Z",
-          "event": "action_submitted",
-          "turn": 4,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Green 4",
-            "reasoning": "Matches Green 9. Reducing hand toward victory."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:36:42.416Z",
-          "event": "play_card",
-          "turn": 4,
-          "player": "player-1",
-          "data": {
-            "card": "Green 4",
-            "newTopCard": {
-              "name": "Green 4",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 4
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:37:24.000Z",
-          "event": "action_submitted",
-          "turn": 4,
-          "player": "player-2",
-          "data": {
-            "type": "draw",
-            "reasoning": "No playable cards, opponent at 5 cards so need to build hand"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:37:40.238Z",
-          "event": "draw",
-          "turn": 4,
-          "player": "player-2",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Yellow 1"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:38:07.768Z",
-          "event": "action_submitted",
-          "turn": 5,
-          "player": "player-1",
-          "data": {
-            "type": "draw",
-            "reasoning": "No playable cards matching Green 4. Must draw."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:38:21.364Z",
-          "event": "draw",
-          "turn": 5,
-          "player": "player-1",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Red 3"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:38:50.242Z",
-          "event": "action_submitted",
-          "turn": 5,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Wild Draw Four",
-            "new_color": "Yellow",
-            "reasoning": "Force opponent to 10 cards and switch to Yellow where I have 5 cards for advantage"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:39:08.534Z",
-          "event": "play_card",
-          "turn": 5,
-          "player": "player-2",
-          "data": {
-            "card": "Wild Draw Four",
-            "newTopCard": {
-              "name": "Wild Draw Four",
-              "type": "wild",
-              "effect": {
-                "type": "wild_draw",
-                "value": 4
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:39:25.883Z",
-          "event": "draw",
-          "turn": 5,
-          "player": "player-1",
-          "data": {
-            "count": 4,
-            "cards": [
-              "Blue 5",
-              "Green 1",
-              "Yellow Skip",
-              "Red 4"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:39:42.746Z",
-          "event": "action_submitted",
-          "turn": 5,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Yellow 2",
-            "reasoning": "Safe number card play, preserves action cards"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "uno-1769641032531",
-      "gameName": "uno",
-      "playerCount": 3,
-      "players": [
-        "player-1",
-        "player-2",
-        "player-3"
-      ],
-      "startTime": "2026-01-28T22:57:12.532Z",
-      "endTime": "2026-01-28T23:03:11.503Z",
-      "duration": 359,
-      "totalTurns": 2,
-      "totalEvents": 11,
-      "eventCounts": {
-        "game_init": 1,
-        "action_submitted": 5,
-        "play_card": 3,
-        "draw": 2
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 2179,
-      "events": [
-        {
-          "timestamp": "2026-01-28T22:57:12.532Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769641032531",
-            "playerCount": 3,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:59:15.408Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Green 3",
-            "reasoning": "Matches current color (Green). Reduces hand size and no special effects on this card."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:59:37.112Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "card": "Green 3",
-            "newTopCard": {
-              "name": "Green 3",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 3
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:00:30.088Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Green 5",
-            "reasoning": "Matches current color Green to reduce my hand size"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:00:54.062Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "card": "Green 5",
-            "newTopCard": {
-              "name": "Green 5",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 5
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:01:29.204Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-3",
-          "data": {
-            "type": "play_card",
-            "card": "Green 5",
-            "reasoning": "Perfect match - matches both color (Green) and number (5) on top card. Strong play to reduce hand size."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:01:41.341Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-3",
-          "data": {
-            "card": "Green 5",
-            "newTopCard": {
-              "name": "Green 5",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Green",
-                "value": 5
-              }
-            },
-            "currentColor": "Green"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:02:06.750Z",
-          "event": "action_submitted",
-          "turn": 2,
-          "player": "player-1",
-          "data": {
-            "type": "draw",
-            "reasoning": "No cards match current top card (Green 5). Must draw a card."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:02:24.885Z",
-          "event": "draw",
-          "turn": 2,
-          "player": "player-1",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Red Reverse"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:02:57.265Z",
-          "event": "action_submitted",
-          "turn": 2,
-          "player": "player-2",
-          "data": {
-            "type": "draw",
-            "reasoning": "No playable cards matching Green or number 5"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T23:03:11.503Z",
-          "event": "draw",
-          "turn": 2,
-          "player": "player-2",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Green 8"
-            ]
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "uno-1769640541075",
-      "gameName": "uno",
-      "playerCount": 3,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-28T22:49:01.077Z",
-      "endTime": "2026-01-28T22:51:17.667Z",
-      "duration": 137,
-      "totalTurns": 1,
-      "totalEvents": 5,
-      "eventCounts": {
-        "game_init": 1,
-        "play_card": 1,
-        "action_submitted": 2,
-        "discard": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 933,
-      "events": [
-        {
-          "timestamp": "2026-01-28T22:49:01.077Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769640541075",
-            "playerCount": 3,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:49:48.789Z",
-          "event": "play_card",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "card": "Red 2",
-            "newTopCard": {
-              "name": "Red 2",
-              "type": "number",
-              "effect": {
-                "type": "none",
-                "color": "Red",
-                "value": 2
-              }
-            },
-            "currentColor": "Red"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:49:58.001Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Red 2",
-            "reasoning": "Matches red color, keeping color active for next player"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:50:16.691Z",
-          "event": "discard",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "card": "Blue 9"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:51:17.667Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Blue 2",
-            "reasoning": "Matches the color Blue. Eliminates a non-green card while I have multiple green cards in hand."
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "uno-1769640173221",
-      "gameName": "uno",
-      "playerCount": 3,
-      "players": [
-        "player-1",
-        "player-2",
-        "player-3"
-      ],
-      "startTime": "2026-01-28T22:42:53.223Z",
-      "endTime": "2026-01-28T22:48:55.256Z",
-      "duration": 362,
-      "totalTurns": 1,
-      "totalEvents": 6,
-      "eventCounts": {
-        "game_init": 1,
-        "action_submitted": 3,
-        "discard": 2
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 969,
-      "events": [
-        {
-          "timestamp": "2026-01-28T22:42:53.223Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "uno-1769640173221",
-            "playerCount": 3,
-            "config": "UNO"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:45:50.184Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Green 4",
-            "reasoning": "Opening with a number card"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:46:48.379Z",
-          "event": "discard",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "card": "Green 4"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:47:37.574Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Red 4",
-            "reasoning": "Matches the number 4 on the discard pile"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:48:08.666Z",
-          "event": "discard",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "card": "Red 4"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:48:55.256Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-3",
-          "data": {
-            "type": "play_card",
-            "card": "Green Draw Two",
-            "reasoning": "Force next player to draw 2 cards and skip turn to build card advantage"
-          }
-        }
-      ],
-      "analysis": null
-    },
-    {
-      "gameId": "markovs-chains-1769639459518",
-      "gameName": "markovs-chains",
-      "playerCount": 2,
-      "players": [
-        "player-1",
-        "player-2"
-      ],
-      "startTime": "2026-01-28T22:30:59.520Z",
-      "endTime": "2026-01-28T22:38:18.612Z",
-      "duration": 439,
-      "totalTurns": 10,
-      "totalEvents": 21,
-      "eventCounts": {
-        "game_init": 1,
-        "action_submitted": 19,
-        "draw": 1
-      },
-      "outcome": "in_progress",
-      "winner": null,
-      "endReason": null,
-      "fileSize": 5584,
-      "events": [
-        {
-          "timestamp": "2026-01-28T22:30:59.520Z",
-          "event": "game_init",
-          "data": {
-            "gameId": "markovs-chains-1769639459518",
-            "playerCount": 2,
-            "config": "Markov's Chains"
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:33:08.128Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "A",
-            "reasoning": "Moving toward Victory. I will save my Certainty card for the final victory move to guarantee the win."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:33:55.726Z",
-          "event": "action_submitted",
-          "turn": 1,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "reasoning": "Moving to intermediate state B to progress toward Victory. Using base 65% success probability to advance along the direct path to victory."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:34:06.321Z",
-          "event": "action_submitted",
-          "turn": 2,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "reasoning": "My previous move to A failed. Attempting state B with same 65% probability."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:34:20.922Z",
-          "event": "action_submitted",
-          "turn": 2,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "card": "Certainty",
-            "reasoning": "Using Certainty to guarantee reaching intermediate state B after my initial move failed. This secures board position and puts me one step closer to Victory while building momentum."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:34:34.076Z",
-          "event": "action_submitted",
-          "turn": 3,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "C",
-            "reasoning": "Third attempt to leave Start. All three paths have same 65% probability - trying C."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:35:18.989Z",
-          "event": "action_submitted",
-          "turn": 3,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "A",
-            "reasoning": "Attempting alternative path. Moving to state A with 65% base probability. Diversifying attempts across different intermediate states."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:35:28.591Z",
-          "event": "action_submitted",
-          "turn": 4,
-          "player": "player-1",
-          "data": {
-            "type": "play_card",
-            "card": "Certainty",
-            "reasoning": "After three failed movement attempts, using Certainty to guarantee my next move will succeed."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:35:38.428Z",
-          "event": "action_submitted",
-          "turn": 4,
-          "player": "player-2",
-          "data": {
-            "type": "play_card",
-            "card": "Friction",
-            "target": "player-1",
-            "reasoning": "Playing Friction to penalize opponent's next move probability. This defensive play aims to slow their progress toward Victory while I prepare my own advancement."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:35:49.610Z",
-          "event": "action_submitted",
-          "turn": 5,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "A",
-            "reasoning": "Making a move with Certainty boost active to guarantee success."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:36:09.246Z",
-          "event": "action_submitted",
-          "turn": 5,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "Victory",
-            "reasoning": "After establishing presence at intermediate state (conceptually), now attempting final push to Victory state with 55% base success probability."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:36:51.177Z",
-          "event": "action_submitted",
-          "turn": 6,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "A",
-            "reasoning": "Attempting to leave Start. Base 65% probability. Need to progress toward Victory before turn limit."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:36:59.111Z",
-          "event": "draw",
-          "turn": 6,
-          "player": "player-2",
-          "data": {
-            "count": 1,
-            "cards": [
-              "Friction"
-            ]
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:37:06.698Z",
-          "event": "action_submitted",
-          "turn": 6,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "C",
-            "reasoning": "Attempting state C to diversify my path options. With 65% success rate and preparation from drawing additional Friction card, building strategic position for next turn's victory push."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:37:17.455Z",
-          "event": "action_submitted",
-          "turn": 7,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "reasoning": "Continuing attempts to leave Start. Probability still 65% base, trying different intermediate state."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:37:25.741Z",
-          "event": "action_submitted",
-          "turn": 7,
-          "player": "player-2",
-          "data": {
-            "type": "pass",
-            "reasoning": "Conserving resources and analyzing opponent position. With hand now at capacity and multiple defensive cards available, waiting for optimal moment to deploy them."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:37:34.774Z",
-          "event": "action_submitted",
-          "turn": 8,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "A",
-            "card": "Certainty",
-            "reasoning": "Using Certainty boost combined with move to guarantee reaching state A and finally progressing toward Victory."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:37:42.687Z",
-          "event": "action_submitted",
-          "turn": 8,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "reasoning": "Committing to clear path forward: Start -> B -> Victory. With Certainty card available for final push, focusing on reaching intermediate state B to position myself for victory condition attainment."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:38:00.257Z",
-          "event": "action_submitted",
-          "turn": 9,
-          "player": "player-1",
-          "data": {
-            "type": "pass",
-            "reasoning": "Resetting strategy. Drawing card next phase instead of attempting more failed moves. Need fresh cards for better options."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:38:08.022Z",
-          "event": "action_submitted",
-          "turn": 9,
-          "player": "player-2",
-          "data": {
-            "type": "move",
-            "target": "B",
-            "reasoning": "Final strategic push toward Victory. Continuing aggressive strategy to reach intermediate state B, positioning for final victory move with Certainty card ready as backup."
-          }
-        },
-        {
-          "timestamp": "2026-01-28T22:38:18.612Z",
-          "event": "action_submitted",
-          "turn": 10,
-          "player": "player-1",
-          "data": {
-            "type": "move",
-            "target": "C",
-            "reasoning": "Turn 10 out of 15 max. Attempting another move to leave Start with 65% probability. This must succeed soon given the odds."
           }
         }
       ],
