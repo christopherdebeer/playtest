@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-31T15:29:41.029Z",
+  "generatedAt": "2026-01-31T15:52:18.851Z",
   "games": {
     "fortune-seekers": {
       "totalLogs": 1,
@@ -8,10 +8,10 @@
       "totalTurns": 23
     },
     "markovs-chains": {
-      "totalLogs": 36,
-      "completedGames": 17,
+      "totalLogs": 37,
+      "completedGames": 18,
       "cancelledGames": 0,
-      "totalTurns": 58
+      "totalTurns": 62
     },
     "treasure-hunters": {
       "totalLogs": 1,
@@ -27,6 +27,211 @@
     }
   },
   "logs": [
+    {
+      "gameId": "markovs-chains-1769874326719",
+      "gameName": "markovs-chains",
+      "playerCount": 2,
+      "players": [
+        "player-1",
+        "player-2"
+      ],
+      "startTime": "2026-01-31T15:45:26.723Z",
+      "endTime": "2026-01-31T15:51:43.229Z",
+      "duration": 377,
+      "totalTurns": 4,
+      "totalEvents": 14,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 8,
+        "effect_applied": 1,
+        "placed_card_triggered": 1,
+        "game_end": 1,
+        "analysis_submitted": 1
+      },
+      "outcome": "completed",
+      "winner": "player-2",
+      "endReason": "player-2 reached Victory state",
+      "fileSize": 2582,
+      "events": [
+        {
+          "timestamp": "2026-01-31T15:45:26.723Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "markovs-chains-1769874326719",
+            "playerCount": 2,
+            "config": "Markov's Chains"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:46:04.625Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:46:54.571Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "place_card",
+            "card": "Hazard",
+            "targetState": "Victory",
+            "targetMode": "opponents",
+            "effect": {
+              "type": "probability_penalty",
+              "value": -0.2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:47:13.901Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "A",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:47:31.541Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:47:46.657Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Checkpoint-X",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:48:01.244Z",
+          "event": "effect_applied",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "effectType": "probability_penalty",
+            "appliedBy": "player-1",
+            "card": "Friction",
+            "duration": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:48:01.244Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Friction",
+            "effect": {
+              "type": "probability_penalty",
+              "value": -0.25
+            },
+            "effectTarget": "player-2"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:48:28.545Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Catalyst",
+            "effect": {
+              "type": "probability_boost",
+              "value": 0.2
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:48:44.181Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "place_card",
+            "card": "Safe Haven",
+            "targetState": "Checkpoint-X",
+            "targetMode": "owner",
+            "effect": {
+              "type": "probability_boost",
+              "value": 0.15
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:49:04.356Z",
+          "event": "placed_card_triggered",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "targetState": "Victory",
+            "effects": [
+              "Hazard: -20% probability (placed by player-1)"
+            ],
+            "probabilityModifier": -0.2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:49:04.356Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "move",
+            "target": "Victory",
+            "placedCardEffects": [
+              "Hazard: -20% probability (placed by player-1)"
+            ]
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:49:04.359Z",
+          "event": "game_end",
+          "turn": 4,
+          "data": {
+            "winner": "player-2",
+            "reason": "player-2 reached Victory state",
+            "autoDetected": true
+          }
+        },
+        {
+          "timestamp": "2026-01-31T15:51:43.229Z",
+          "event": "analysis_submitted",
+          "turn": 4,
+          "data": {
+            "file": "playtest-analysis-v1.0-1769874326719.md",
+            "version": "v1.0"
+          }
+        }
+      ],
+      "analysis": {
+        "version": "v1.0",
+        "filename": "playtest-analysis-v1.0-1769874326719.md",
+        "content": "# Markov's Chains - Game Analysis\n\n## Summary\n\nA swift 4-turn game where **player-2** achieved victory through aggressive movement strategy, reaching the Victory state despite player-1's defensive Hazard placement.\n\n## Winner\n\n**player-2** - Reached Victory state in 4 turns\n\n## Win Condition\n\nFirst player to reach the Victory state (probability-based movement game).\n\n## Key Moments\n\n| Turn | Player | Action | Significance |\n|------|--------|--------|--------------|\n| 1 | player-1 | Placed Hazard on Victory | Defensive trap, -20% for opponents entering Victory |\n| 1 | player-2 | Moved to A | First movement, started racing |\n| 2 | player-2 | Moved to Checkpoint-X | Bypassed intermediate states efficiently |\n| 3 | player-1 | Played Friction on player-2 | -25% penalty attempt to slow leader |\n| 3 | player-2 | Played Catalyst | +20% boost to counter Friction |\n| 4 | player-2 | Moved to Victory | Won despite Hazard (-20%) - luck + strategy |\n\n## Mechanics Observed\n\n- **probability_movement**: Core mechanic - all moves succeeded despite reduced probabilities\n- **card_boosts**: Catalyst (+20%) used effectively by player-2\n- **state_cards**: Hazard placed on Victory by player-1 (defensive)\n- **interference**: Friction used by player-1 to slow player-2\n- **victory_declaration**: Auto-detected by engine when player-2 reached Victory\n\n## Player Strategies\n\n### player-1 (Lost - stayed at Start)\n- Defensive strategy: Placed Hazard and Safe Haven cards\n- Used Friction to slow opponent\n- Drew cards instead of moving early - fell behind\n- Never attempted movement, over-invested in defense\n\n### player-2 (Won - reached Victory)\n- Aggressive movement strategy\n- Successfully moved every turn (Start → A → Checkpoint-X → Victory)\n- Used Catalyst to offset Friction penalty\n- Won despite facing Hazard on Victory state\n\n## Recommendations\n\n1. **Player-1's strategy was too passive** - drawing cards while opponent races ahead is losing strategy\n2. **Hazard on Victory is good** but insufficient alone - need to also move\n3. **Card timing matters** - player-2's Catalyst perfectly countered Friction\n4. **4 turns is fast** - game balance may need review if wins this quick are common\n\n## Statistics\n\n- **Duration**: ~3 minutes (15:45:26 to 15:49:04)\n- **Total Events**: 11\n- **Successful Moves**: 3 (all by player-2)\n- **Cards Played**: 4 (Hazard, Safe Haven, Friction, Catalyst)\n"
+      }
+    },
     {
       "gameId": "fortune-seekers-1769871590604",
       "gameName": "fortune-seekers",
