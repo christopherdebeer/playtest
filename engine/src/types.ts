@@ -25,6 +25,13 @@ export interface PlayerState {
   effects: Effect[];
   score?: number;
   lastActionTurn?: number;  // Track last turn player acted (prevents multiple actions per turn)
+
+  // New mechanic state
+  resources?: Record<string, number>;     // Resource amounts (e.g., { "gold": 10 })
+  actionPoints?: number;                  // Remaining action points this turn
+  actionPointsUsed?: number;              // Action points used this turn
+  collectedSets?: string[];               // Names of completed sets
+  currentBid?: number;                    // Current bid in auction
 }
 
 export interface Effect {
@@ -39,6 +46,63 @@ export interface EngineMechanics {
   probability_movement?: boolean;  // Moves use edge probabilities (default: true if board.edges have probability)
   card_boosts?: boolean;           // Cards can modify move probability (default: true if deck exists)
   victory_declaration?: boolean;   // Players must declare victory for GM adjudication (default: false)
+
+  // New mechanics from mechanics library
+  action_points?: ActionPointsConfig;   // Action points budget per turn
+  resources?: ResourceConfig[];         // Resource types to track
+  income?: IncomeConfig;                // Per-turn resource generation
+  set_collection?: SetCollectionConfig; // Set detection and scoring
+  auction?: AuctionConfig;              // Auction/bidding system
+  turn_order?: TurnOrderConfig;         // Turn order determination
+}
+
+// Action Points mechanic (slug: action-points)
+export interface ActionPointsConfig {
+  points_per_turn: number;           // How many action points per turn
+  action_costs: Record<string, number>; // Cost per action type (e.g., { "move": 1, "play_card": 1, "draw": 1 })
+  rollover?: boolean;                // Do unused points carry over? (default: false)
+}
+
+// Resource mechanic (slug: income, commodity-speculation)
+export interface ResourceConfig {
+  name: string;                      // e.g., "gold", "mana", "wood"
+  starting_amount: number;           // How much each player starts with
+  max?: number;                      // Optional cap
+}
+
+// Income mechanic (slug: income)
+export interface IncomeConfig {
+  per_turn: Record<string, number>;  // Resources generated per turn (e.g., { "gold": 2 })
+  per_round?: Record<string, number>; // Resources generated per full round
+}
+
+// Set Collection mechanic (slug: set-collection)
+export interface SetCollectionConfig {
+  sets: SetDefinition[];             // Define what constitutes a set
+  scoring: 'per_set' | 'largest_set' | 'most_sets';
+  points_per_set?: number;           // Points awarded per complete set
+}
+
+export interface SetDefinition {
+  name: string;                      // e.g., "Color Set", "Number Run"
+  match_field: string;               // Card field to match (e.g., "effect.color", "type")
+  size: number;                      // How many cards needed for a set
+  unique?: boolean;                  // Must cards be unique?
+}
+
+// Auction mechanic (slug: auction-english, auction-sealed-bid, etc.)
+export interface AuctionConfig {
+  type: 'english' | 'sealed' | 'dutch' | 'once-around';
+  currency: string;                  // Resource used for bidding (e.g., "gold")
+  min_increment?: number;            // Minimum bid increase (for english)
+  time_limit?: number;               // Seconds per auction (optional)
+}
+
+// Turn Order mechanic (slug: turn-order-*)
+export interface TurnOrderConfig {
+  type: 'fixed' | 'random' | 'stat-based' | 'bid' | 'pass-order';
+  stat?: string;                     // For stat-based: which stat determines order
+  shuffle_frequency?: 'never' | 'per_round' | 'per_turn';
 }
 
 export interface GameConfig {
@@ -196,7 +260,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign' | 'bid' | 'spend' | 'collect_set';
 
 export interface BaseAction {
   type: ActionType;
@@ -232,6 +296,27 @@ export interface ResignAction extends BaseAction {
   reason: string;  // Required: why player is resigning
 }
 
+// New mechanic actions
+
+export interface BidAction extends BaseAction {
+  type: 'bid';
+  amount: number;                    // Bid amount
+  item?: string;                     // Optional: what you're bidding on
+}
+
+export interface SpendAction extends BaseAction {
+  type: 'spend';
+  resource: string;                  // Resource to spend (e.g., "gold")
+  amount: number;                    // Amount to spend
+  target?: string;                   // Optional: what to spend on
+}
+
+export interface CollectSetAction extends BaseAction {
+  type: 'collect_set';
+  cards: string[];                   // Card names to claim as a set
+  setType: string;                   // Which set definition to use
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -261,7 +346,7 @@ export interface PlaceCardAction extends BaseAction {
   targetState: string;        // Board state to place the card on
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction | BidAction | SpendAction | CollectSetAction;
 
 // Action validation result
 export interface ActionValidationResult {
