@@ -39,9 +39,16 @@ function LogCard({ log }: { log: GameLogSummary }) {
     <Link to={`/logs/${log.gameId}`} className="log-card">
       <div className="log-card-header">
         <h3>{log.gameName}</h3>
-        <span className={`outcome-badge ${getOutcomeClass(log.outcome)}`}>
-          {log.outcome}
-        </span>
+        <div className="log-badges">
+          {log.analysis && (
+            <span className="analysis-badge" title={`Analysis available (${log.analysis.version})`}>
+              Analysis
+            </span>
+          )}
+          <span className={`outcome-badge ${getOutcomeClass(log.outcome)}`}>
+            {log.outcome}
+          </span>
+        </div>
       </div>
 
       <div className="log-card-meta">
