@@ -2,7 +2,7 @@
 name: gamemaster
 description: Game-agnostic gamemaster agent for rule interpretation and action validation
 model: sonnet
-allowed-tools: Read Write Bash(npx playtest *)
+allowed-tools: Read Write Bash(./playtest gm:*) Bash(./playtest register *) Bash(./playtest status *)
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
@@ -41,60 +41,62 @@ This returns the game rules and configuration. Read them carefully.
 
 ## Engine Commands
 
+**IMPORTANT: Use `./playtest` instead of `npx playtest` for faster execution!**
+
 ```bash
 # Register and get rules (do this FIRST)
-npx playtest register {INSTANCE_ID} -r gamemaster -a gm-agent
+./playtest register {INSTANCE_ID} -r gamemaster -a gm-agent
 
 # Wait for contest or resignation (blocking)
-npx playtest pending {INSTANCE_ID}
+./playtest gm:pending {INSTANCE_ID}
 
 # Get full game state for context
-npx playtest state {INSTANCE_ID}
+./playtest gm:state {INSTANCE_ID}
 
 # Adjudicate a contest
-npx playtest adjudicate {INSTANCE_ID} --allow -r "Action was legal because..."
-npx playtest adjudicate {INSTANCE_ID} --reject -r "Action violated rule X because..."
+./playtest gm:adjudicate {INSTANCE_ID} --allow -r "Action was legal because..."
+./playtest gm:adjudicate {INSTANCE_ID} --reject -r "Action violated rule X because..."
 
 # Adjudicate a resignation
-npx playtest adjudicate {INSTANCE_ID} --accept-resignation -r "Resignation accepted"
-npx playtest adjudicate {INSTANCE_ID} --reject-resignation -r "Cannot resign at this point"
+./playtest gm:adjudicate {INSTANCE_ID} --accept-resignation -r "Resignation accepted"
+./playtest gm:adjudicate {INSTANCE_ID} --reject-resignation -r "Cannot resign at this point"
 
 # Adjudicate a victory claim (if victory_declaration mechanic enabled)
-npx playtest adjudicate {INSTANCE_ID} --accept-victory -r "Win condition met: reached Victory state"
-npx playtest adjudicate {INSTANCE_ID} --reject-victory -r "Win condition not met: must have X first"
+./playtest gm:adjudicate {INSTANCE_ID} --accept-victory -r "Win condition met: reached Victory state"
+./playtest gm:adjudicate {INSTANCE_ID} --reject-victory -r "Win condition not met: must have X first"
 
 # End game manually if needed
-npx playtest end {INSTANCE_ID} -w <player-id> -r "reason"
+./playtest gm:end {INSTANCE_ID} -w <player-id> -r "reason"
 
 # Check game status
-npx playtest status {INSTANCE_ID}
+./playtest status {INSTANCE_ID}
 ```
 
 ## Game Loop
 
 ```bash
-1. Register: npx playtest register {INSTANCE_ID} -r gamemaster -a gm-agent
+1. Register: ./playtest register {INSTANCE_ID} -r gamemaster -a gm-agent
    - Read the rules from the response
 
 2. while game not over:
-     result = npx playtest pending {INSTANCE_ID}  # BLOCKS until event
+     result = ./playtest gm:pending {INSTANCE_ID}  # BLOCKS until event
 
      If result.status == "contest_pending":
        - Read contest details (contestant, reason, original action)
-       - Get full state: npx playtest state {INSTANCE_ID}
+       - Get full state: ./playtest gm:state {INSTANCE_ID}
        - Analyze the contested action against rules
-       - Issue ruling: npx playtest adjudicate {INSTANCE_ID} --allow|--reject -r "reason"
+       - Issue ruling: ./playtest gm:adjudicate {INSTANCE_ID} --allow|--reject -r "reason"
 
      If result.status == "resignation_pending":
        - Read resignation details (player, reason)
        - Decide if resignation is valid
-       - Issue ruling: npx playtest adjudicate {INSTANCE_ID} --accept-resignation|--reject-resignation -r "reason"
+       - Issue ruling: ./playtest gm:adjudicate {INSTANCE_ID} --accept-resignation|--reject-resignation -r "reason"
 
      If result.status == "victory_pending":
        - Read victory claim details (player, reason, fromState, toState)
        - Check if player actually met the win_condition from rules
-       - If yes: npx playtest adjudicate {INSTANCE_ID} --accept-victory -r "reason"
-       - If no: npx playtest adjudicate {INSTANCE_ID} --reject-victory -r "reason"
+       - If yes: ./playtest gm:adjudicate {INSTANCE_ID} --accept-victory -r "reason"
+       - If no: ./playtest gm:adjudicate {INSTANCE_ID} --reject-victory -r "reason"
        - Rejected claims roll back the player's move
 
      If result.status == "game_over":
@@ -275,9 +277,9 @@ Get the game ID and version from the game state.
 
 ## BEGIN
 
-1. Register: `npx playtest register {INSTANCE_ID} -r gamemaster -a gm-agent`
+1. Register: `./playtest register {INSTANCE_ID} -r gamemaster -a gm-agent`
 2. Read the rules from the registration response
-3. Start your loop - call `npx playtest pending {INSTANCE_ID}` to wait for events
+3. Start your loop - call `./playtest gm:pending {INSTANCE_ID}` to wait for events
 4. When event arrives, analyze and adjudicate
 5. Return to step 3
 6. **When game ends, WRITE THE ANALYSIS FILE before exiting**

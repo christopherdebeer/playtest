@@ -1,7 +1,7 @@
 // Turn management - handles blocking waits for player turns
 
 import { watch, existsSync, type FSWatcher } from 'fs';
-import { loadState, getStateFile, getPlayerView, ensureContestState } from './game.js';
+import { loadState, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
 import type { WaitResult, GameState, ContestState, LastAction } from './types.js';
 
 // Extended wait result with contest info
@@ -14,23 +14,33 @@ export interface ExtendedWaitResult extends WaitResult {
 }
 
 const DEFAULT_TIMEOUT = 0; // 0 = no timeout (block indefinitely)
-const POLL_INTERVAL = 500; // Check every 500ms
+const POLL_INTERVAL = 100; // Check every 100ms (reduced from 500ms for faster response)
 
 export async function waitForTurn(
-  gameName: string,
+  gameNameOrInstanceId: string,
   playerId: string,
   timeoutMs: number = DEFAULT_TIMEOUT
 ): Promise<ExtendedWaitResult> {
   const startTime = Date.now();
 
   return new Promise((resolve) => {
-    const stateFile = getStateFile(gameName);
+    // Resolve instance ID to get proper game name and instance
+    const resolved = resolveGameInstance(gameNameOrInstanceId);
+    if (!resolved) {
+      resolve({
+        status: 'game_not_found',
+        error: `No active game found for ${gameNameOrInstanceId}`
+      });
+      return;
+    }
+    const { gameName, instanceId } = resolved;
+    const stateFile = getStateFile(gameName, instanceId);
 
     // Check if game exists before setting up watcher
     if (!existsSync(stateFile)) {
       resolve({
         status: 'game_not_found',
-        error: `No active game found for ${gameName}`
+        error: `No active game found for ${gameNameOrInstanceId}`
       });
       return;
     }
@@ -65,7 +75,7 @@ export async function waitForTurn(
     // Check current state
     function checkState() {
       try {
-        const state = loadState(gameName);
+        const state = loadState(instanceId || gameName);
 
         // Game completed
         if (state.status === 'completed') {
