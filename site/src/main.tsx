@@ -6,6 +6,7 @@ import GamePage from './pages/GamePage'
 import MechanicsPage from './pages/MechanicsPage'
 import LogsPage from './pages/LogsPage'
 import LogDetailPage from './pages/LogDetailPage'
+import DocsPage from './pages/DocsPage'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -17,6 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/mechanics" element={<MechanicsPage />} />
         <Route path="/logs" element={<LogsPage />} />
         <Route path="/logs/:logId" element={<LogDetailPage />} />
+        <Route path="/docs" element={<DocsPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

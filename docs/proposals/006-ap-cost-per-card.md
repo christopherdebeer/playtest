@@ -1,6 +1,6 @@
 # Proposal 006: Action Point Cost Per Card
 
-**Status**: Draft
+**Status**: Implemented
 **Category**: Engine Mechanics
 **Priority**: Critical
 **Discovered**: AAOTE Playtest v0.1 (2026-01-31)

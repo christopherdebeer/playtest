@@ -416,7 +416,9 @@ program
   .description('[Player] Execute action directly (contest-based system)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-a, --action <json>', 'Action JSON')
-  .action((game: string, options: { player: string; action: string }) => {
+  .option('--wait', 'For resign actions: wait for GM adjudication result (Proposal 009)')
+  .option('--wait-timeout <ms>', 'Adjudication wait timeout in milliseconds', '120000')
+  .action(async (game: string, options: { player: string; action: string; wait?: boolean; waitTimeout?: string }) => {
     try {
       const state = loadState(game);
 
@@ -471,9 +473,88 @@ program
       }
 
       // Reload state to get updated values
-      const updatedState = loadState(game);
+      let updatedState = loadState(game);
       const player = updatedState.players[options.player];
       const playerView = getPlayerView(updatedState, options.player);
+
+      // Proposal 009: Wait for adjudication on resign actions
+      if (action.type === 'resign' && options.wait) {
+        const timeout = parseInt(options.waitTimeout || '120000', 10);
+        const pollInterval = 500;
+        const startTime = Date.now();
+
+        // Poll for adjudication result
+        while (Date.now() - startTime < timeout) {
+          const currentState = loadState(game);
+          const contestState = ensureContestState(currentState);
+
+          // Check if resignation has been adjudicated (accepted or rejected)
+          const adjudication = contestState.resignations?.find(
+            (r: { player: string; accepted?: boolean }) =>
+              r.player === options.player && r.accepted !== undefined
+          );
+
+          if (adjudication) {
+            // Resignation was adjudicated - return result
+            console.log(JSON.stringify({
+              success: true,
+              action,
+              effect: execResult.effect,
+              validation: ruleResult,
+              resignation: {
+                accepted: adjudication.accepted,
+                reason: adjudication.rulingReason
+              },
+              handSize: currentState.players[options.player]?.hand.length,
+              nextPlayer: currentState.currentPlayer,
+              gameStatus: currentState.status,
+              gameOver: adjudication.accepted || currentState.status === 'completed',
+              winner: currentState.shared.winner as string | undefined,
+              yourTurn: currentState.currentPlayer === options.player,
+              view: getPlayerView(currentState, options.player)
+            }));
+            return;
+          }
+
+          // Also check if game has ended by other means
+          if (currentState.status === 'completed' || currentState.status === 'cancelled') {
+            console.log(JSON.stringify({
+              success: true,
+              action,
+              effect: execResult.effect,
+              validation: ruleResult,
+              handSize: currentState.players[options.player]?.hand.length,
+              nextPlayer: currentState.currentPlayer,
+              gameStatus: currentState.status,
+              gameOver: true,
+              winner: currentState.shared.winner as string | undefined,
+              view: getPlayerView(currentState, options.player)
+            }));
+            return;
+          }
+
+          // Wait before next poll
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+        }
+
+        // Timeout - return current state with warning
+        updatedState = loadState(game);
+        console.log(JSON.stringify({
+          success: true,
+          action,
+          effect: execResult.effect,
+          validation: ruleResult,
+          warning: `Adjudication timeout after ${timeout}ms. Check game status manually.`,
+          handSize: updatedState.players[options.player]?.hand.length,
+          nextPlayer: updatedState.currentPlayer,
+          gameStatus: updatedState.status,
+          gameOver: updatedState.status === 'completed' || updatedState.status === 'cancelled',
+          winner: updatedState.shared.winner as string | undefined,
+          yourTurn: updatedState.currentPlayer === options.player,
+          view: getPlayerView(updatedState, options.player)
+        }));
+        return;
+      }
 
       // Return result with gameOver info if applicable
       console.log(JSON.stringify({

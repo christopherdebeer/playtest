@@ -1,6 +1,6 @@
 # Proposal 008: Hand Limits and Card Type Restrictions
 
-**Status**: Draft
+**Status**: Implemented
 **Category**: Engine Mechanics
 **Priority**: High
 **Discovered**: AAOTE Playtest v0.1 (2026-01-31)

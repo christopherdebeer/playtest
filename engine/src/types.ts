@@ -37,6 +37,14 @@ export interface PlayerState {
   rollAccumulator?: number;               // Accumulated points from push-your-luck rolls
   rollCount?: number;                     // Number of rolls this turn
   powerId?: string;                       // Assigned player power ID
+
+  // Proposal 010: Hidden objectives for role-based games
+  objective?: {
+    name: string;        // Objective name (e.g., "The Enemy", "The Collector")
+    type: string;        // Objective type (e.g., "enemy", "regular")
+    condition?: string;  // Win condition description
+    revealed?: boolean;  // Whether the objective has been revealed
+  };
 }
 
 export interface Effect {
@@ -65,6 +73,38 @@ export interface EngineMechanics {
   variable_powers?: VariablePlayerPowersConfig;  // Asymmetric player abilities
   open_drafting?: OpenDraftingConfig;   // Draft from visible card pool
   simultaneous?: SimultaneousActionConfig;  // All players act at once
+
+  // Proposal 008: Hand limits and card type restrictions
+  hand_limit?: number;                 // Maximum cards in hand
+  hand_limit_policy?: 'cannot_draw' | 'discard_choice' | 'discard_oldest';  // What happens when limit exceeded
+  card_type_rules?: Record<string, CardTypeRules>;  // Per-type playability rules
+
+  // Proposal 010: Configurable default winner on timeout
+  timeout_winner?: TimeoutWinnerConfig;  // Who wins when max_turns is reached
+}
+
+// Proposal 008: Card type rules
+export interface CardTypeRules {
+  playable?: boolean;     // Can this card type be played with play_card action?
+  tradeable?: boolean;    // Can this card type be traded?
+  holdable?: boolean;     // Can this card type be held in hand?
+  placeable?: boolean;    // Can this card type be placed on the grid/board?
+}
+
+// Proposal 010: Timeout winner configuration
+export interface TimeoutWinnerConfig {
+  type: 'role' | 'highest_score' | 'specific_player' | 'no_winner';  // How to determine winner
+  role?: string;           // For type "role": the role/objective type that wins
+  role_name?: string;      // For type "role": match by objective name
+  player_condition?: string;  // For type "specific_player": condition to evaluate
+  reveal_role?: boolean;   // Whether to reveal the winner's hidden role
+  reason?: string;         // Custom reason message (for "no_winner")
+}
+
+export interface TimeoutResult {
+  winner: string | null;
+  reason: string;
+  revealRole: boolean;
 }
 
 // Action Points mechanic (slug: action-points)

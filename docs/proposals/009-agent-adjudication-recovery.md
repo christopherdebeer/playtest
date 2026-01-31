@@ -1,6 +1,6 @@
 # Proposal 009: Agent Recovery After Adjudication
 
-**Status**: Draft
+**Status**: Implemented
 **Category**: Agent Ergonomics
 **Priority**: High
 **Discovered**: AAOTE Playtest v0.1 (2026-01-31)

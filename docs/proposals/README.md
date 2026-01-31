@@ -8,11 +8,11 @@ Design proposals and improvement plans for the Playtest framework.
 |----|-------|--------|----------|--------|
 | [001](./001-agent-loop-ergonomics.md) | Agent Loop Ergonomics | Draft | P0 | markovs-chains |
 | [002](./002-duplicate-command-execution.md) | Duplicate Command Execution | Investigation | P1 | markovs-chains |
-| [006](./006-ap-cost-per-card.md) | AP Cost Per Card | Draft | P0 | AAOTE v0.1 |
-| [007](./007-grid-movement-validation.md) | Grid Movement Validation | Draft | P0 | AAOTE v0.1 |
-| [008](./008-hand-limits-card-types.md) | Hand Limits & Card Type Restrictions | Draft | P1 | AAOTE v0.1 |
-| [009](./009-agent-adjudication-recovery.md) | Agent Recovery After Adjudication | Draft | P1 | AAOTE v0.1 |
-| [010](./010-default-winner-config.md) | Configurable Default Winner | Draft | P2 | AAOTE v0.1 |
+| [006](./006-ap-cost-per-card.md) | AP Cost Per Card | Implemented | P0 | AAOTE v0.1 |
+| [007](./007-grid-movement-validation.md) | Grid Movement Validation | Implemented | P0 | AAOTE v0.1 |
+| [008](./008-hand-limits-card-types.md) | Hand Limits & Card Type Restrictions | Implemented | P1 | AAOTE v0.1 |
+| [009](./009-agent-adjudication-recovery.md) | Agent Recovery After Adjudication | Implemented | P1 | AAOTE v0.1 |
+| [010](./010-default-winner-config.md) | Configurable Default Winner | Implemented | P2 | AAOTE v0.1 |
 
 ## Proposal Status Definitions
 

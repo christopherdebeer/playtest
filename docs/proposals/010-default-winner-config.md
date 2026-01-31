@@ -1,6 +1,6 @@
 # Proposal 010: Configurable Default Winner
 
-**Status**: Draft
+**Status**: Implemented
 **Category**: Engine Mechanics
 **Priority**: Medium
 **Discovered**: AAOTE Playtest v0.1 (2026-01-31)
