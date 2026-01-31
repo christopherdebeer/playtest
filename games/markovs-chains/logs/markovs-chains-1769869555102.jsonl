@@ -6,3 +6,6 @@
 {"timestamp":"2026-01-31T14:28:54.904Z","event":"effect_applied","turn":2,"player":"player-1","data":{"effectType":"probability_penalty","appliedBy":"player-2","card":"Friction","duration":1}}
 {"timestamp":"2026-01-31T14:28:54.904Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"play_card","card":"Friction","effect":{"type":"probability_penalty","value":-0.25},"effectTarget":"player-1"}}
 {"timestamp":"2026-01-31T14:29:40.088Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"play_card","card":"Catalyst","effect":{"type":"probability_boost","value":0.2}}}
+{"timestamp":"2026-01-31T14:29:54.919Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"C","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T14:30:08.001Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T14:30:08.004Z","event":"game_end","turn":4,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}
