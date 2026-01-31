@@ -1,6 +1,6 @@
 ---
 name: "AAOTE: An Agent of the Enemy"
-version: "0.1"
+version: "0.2"
 players: 3-5
 starting_cards: 5
 win_condition: "objective_completed"
@@ -17,28 +17,53 @@ mechanics:
 
 # Engine mechanics configuration
 engine_mechanics:
-  # Action points system
+  # Action points system (Proposal 006: cost multiplied by count)
   action_points:
     points_per_turn: 3
     action_costs:
       move: 1
       place_location: 1
-      play_event: 1
+      play_card: 1      # Events cost 1 AP each
       trade_offer: 1
-      draw: 1
+      draw: 1           # Each card drawn costs 1 AP
       pass: 0
     rollover: false
 
-  # Grid/board system - starts with single origin tile
+  # Grid/board system - starts with single origin tile (Proposal 007: grid validation)
   grid:
     type: "infinite"
     starting_tile: "origin"
     adjacency: "orthogonal"  # 4 directions (N/S/E/W)
 
+  # Hand limits (Proposal 008)
+  hand_limit: 7
+  hand_limit_policy: "cannot_draw"  # Cannot draw if at limit
+
+  # Card type restrictions (Proposal 008)
+  card_type_rules:
+    item:
+      playable: false     # Items cannot be played - must be held/traded
+      tradeable: true
+      holdable: true
+    event:
+      playable: true      # Events can be played
+      tradeable: false
+      holdable: true
+    location:
+      playable: false     # Locations use place_location action
+      placeable: true
+      holdable: true
+
+  # Default winner on timeout (Proposal 010)
+  timeout_winner:
+    type: "role"
+    role: "enemy"
+    reveal_role: true
+
   # Trading system
   trading:
     items_only: true
-    require_adjacency: false  # Can trade from anywhere? Or must be on same/adjacent tile?
+    require_adjacency: false  # Can trade from anywhere
     mutual_consent: true
 
   # Hidden objectives system
@@ -148,9 +173,10 @@ Players explore an ever-expanding world, placing locations, collecting items, an
 - Some require items to enter (Lantern for caves, Rope for mountains)
 
 ### Items (Green Border)
-- **Held in hand** until used or traded
+- **Held in hand** — cannot be "played" like events
 - Can be traded with other players
 - Some required for event cards or location entry
+- Items stay in your hand until traded or discarded
 - **Forbidden Items**: Special items for The Enemy's objective
 
 ### Events (Red Border)
@@ -168,8 +194,10 @@ Each turn you have **3 Action Points (AP)** to spend:
 | Place Location | 1 AP | Add a location card to the grid |
 | Play Event | 1 AP | Play an event card for its effect |
 | Trade | 1 AP | Offer an item trade to another player |
-| Draw | 1 AP | Draw 1 card from the deck |
+| Draw | 1 AP per card | Draw cards from the deck (max hand size: 7) |
 | Pass | 0 AP | End your turn |
+
+**Hand Limit**: You may hold a maximum of 7 cards. You cannot draw if at the limit.
 
 ### Movement Rules
 - You may only move to orthogonally adjacent tiles
@@ -254,17 +282,21 @@ The Enemy wins by either:
 
 ## Design Notes (Remove before finalizing)
 
+### Resolved in v0.2
+- **Hand limits**: Maximum 7 cards (cannot draw at limit)
+- **Trade distance**: Can trade from anywhere
+- **Card types**: Items held/traded only, cannot be "played"
+- **Timeout winner**: The Enemy wins by default at turn 40
+
 ### Open Questions
 1. **Grid visibility**: Can players see the whole grid or only explored areas?
-2. **Hand limits**: Should there be a maximum hand size?
-3. **Item dropping**: Can items be dropped on locations for others to pick up?
-4. **Multiple enemies**: Scale to 2 enemies for 5+ players?
-5. **Forbidden Item distribution**: How do they enter the game? Shuffled in deck or placed on specific locations?
-6. **Trade distance**: Must players be adjacent to trade, or anywhere?
+2. **Item dropping**: Can items be dropped on locations for others to pick up?
+3. **Multiple enemies**: Scale to 2 enemies for 5+ players?
+4. **Forbidden Item distribution**: How do they enter the game? Shuffled in deck or placed on specific locations?
 
 ### Playtest Goals
 - Is 3 AP per turn enough? Too much?
-- Are regular objectives achievable in 40 turns?
+- Are regular objectives achievable in 40 turns with 7-card hand limit?
 - Is The Enemy too powerful/weak?
 - Do the special locations create interesting choices?
 - Is trading meaningful or ignored?
