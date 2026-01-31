@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import docsData from '../data/docs.json'
 import './DocsPage.css'
@@ -64,21 +64,8 @@ function DocsPage() {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
-  const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set())
 
   const data = docsData as DocsData
-
-  const toggleExpanded = useCallback((slug: string) => {
-    setExpandedDocs(prev => {
-      const next = new Set(prev)
-      if (next.has(slug)) {
-        next.delete(slug)
-      } else {
-        next.add(slug)
-      }
-      return next
-    })
-  }, [])
 
   // Get unique statuses from docs
   const statuses = [...new Set(data.docs
@@ -119,7 +106,7 @@ function DocsPage() {
   return (
     <div className="docs-page">
       <div className="container">
-        <Link to="/" className="back-link">Back to home</Link>
+        <Link to="/" className="back-link">← Back to home</Link>
 
         <div className="docs-header">
           <h1>Documentation</h1>
@@ -219,15 +206,15 @@ function DocsPage() {
 
                 <div className="docs-grid">
                   {docs.map(doc => {
-                    const isExpanded = expandedDocs.has(doc.slug)
                     const statusColor = doc.metadata.status ? statusColors[doc.metadata.status] || '#6b7280' : null
                     const priority = doc.metadata.priority ? priorityLabels[doc.metadata.priority] : null
 
                     return (
-                      <div
+                      <Link
                         key={doc.slug}
+                        to={`/docs/${doc.slug}`}
                         id={`doc-${doc.slug}`}
-                        className={`doc-card ${highlightSlug === doc.slug ? 'highlight' : ''} ${isExpanded ? 'expanded' : ''}`}
+                        className={`doc-card ${highlightSlug === doc.slug ? 'highlight' : ''}`}
                         style={{ '--cat-color': color } as React.CSSProperties}
                       >
                         <div className="doc-card-header">
@@ -252,27 +239,11 @@ function DocsPage() {
                           </div>
                         </div>
                         <p className="doc-summary">{doc.summary}</p>
-
-                        {isExpanded && doc.contentHtml && (
-                          <div
-                            className="doc-content markdown-body"
-                            dangerouslySetInnerHTML={{ __html: doc.contentHtml }}
-                          />
-                        )}
-
-                        <div className="doc-actions">
-                          <button
-                            className="expand-toggle"
-                            onClick={() => toggleExpanded(doc.slug)}
-                          >
-                            {isExpanded ? 'Show less' : 'Show more'}
-                          </button>
-                        </div>
-
                         <div className="doc-footer">
                           <code className="doc-path">{doc.path}</code>
+                          <span className="view-link">View →</span>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
                 </div>
