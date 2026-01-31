@@ -1023,6 +1023,59 @@ export function skipAnalysis(gameName: string): GameState {
   return state;
 }
 
+/**
+ * Submit gamemaster analysis as markdown file.
+ * Writes to: games/{gameName}/logs/playtest-analysis-{version}-{timestamp}.md
+ * Transitions status from 'pending_analysis' to 'completed'.
+ */
+export function submitAnalysisMarkdown(gameNameOrId: string, version: string, markdownContent: string): GameState {
+  const state = loadState(gameNameOrId);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot submit analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  // Extract timestamp from gameId (e.g., "fortune-seekers-1769871590604" -> "1769871590604")
+  const timestampMatch = state.gameId.match(/(\d{13})$/);
+  if (!timestampMatch) {
+    throw new Error(`Cannot extract timestamp from gameId: ${state.gameId}`);
+  }
+  const timestamp = timestampMatch[1];
+
+  // Ensure version starts with 'v' for consistency
+  const normalizedVersion = version.startsWith('v') ? version : `v${version}`;
+
+  // Build analysis file path
+  const logsDir = join(GAMES_DIR, state.gameName, 'logs');
+  const analysisFilename = `playtest-analysis-${normalizedVersion}-${timestamp}.md`;
+  const analysisPath = join(logsDir, analysisFilename);
+
+  // Ensure logs directory exists
+  if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
+  }
+
+  // Write markdown file
+  writeFileSync(analysisPath, markdownContent, 'utf-8');
+
+  // Store reference in game state
+  state.shared.analysisFile = analysisFilename;
+  state.shared.analysisVersion = normalizedVersion;
+  state.status = 'completed';
+  saveState(state);
+
+  logEvent(state, {
+    event: 'analysis_submitted',
+    turn: state.turn,
+    data: {
+      file: analysisFilename,
+      version: normalizedVersion
+    }
+  });
+
+  return state;
+}
+
 // Randomization functions (engine-controlled)
 
 export function roll(probability: number): { roll: number; success: boolean } {

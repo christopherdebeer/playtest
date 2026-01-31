@@ -101,35 +101,83 @@ This returns the game rules and configuration. Read them carefully.
 
      If result.status == "game_over":
        - If result.pendingAnalysis == true:
-         - Create post-game analysis
-         - Submit: ./playtest gm:analyze {INSTANCE_ID} -s "summary" -w <winner> -c "win condition" -m "mechanics"
+         - Create post-game analysis markdown
+         - Submit: ./playtest gm:analyze {INSTANCE_ID} -v v1.0 -f analysis.md
        - Exit
 ```
 
 ## Post-Game Analysis
 
-When a game ends, the status becomes `pending_analysis`. The gamemaster should submit an analysis before the game is marked fully `completed`.
+When a game ends, the status becomes `pending_analysis`. The gamemaster should submit a markdown analysis before the game is marked fully `completed`.
+
+The analysis is written to: `games/{game}/logs/playtest-analysis-{VERSION}-{TIMESTAMP}.md`
 
 ```bash
-# Submit analysis
-./playtest gm:analyze {INSTANCE_ID} \
-  -s "Player 2 won through aggressive drafting strategy, securing high-value cards early" \
-  -w player-2 \
-  -c "score >= 100" \
-  -m "push-your-luck,open-drafting,variable-powers" \
-  -r "Consider reducing Crown Jewel count to 1 for better balance"
+# Submit analysis from a file
+./playtest gm:analyze {INSTANCE_ID} -v v1.0 -f /path/to/analysis.md
+
+# Submit analysis via stdin (useful for heredoc)
+./playtest gm:analyze {INSTANCE_ID} -v v1.0 <<'EOF'
+# Game Analysis
+
+## Summary
+Player 2 won through aggressive drafting strategy...
+
+## Winner
+**player-2** - Score: 100 points
+
+## Mechanics Observed
+- push-your-luck
+- open-drafting
+EOF
+
+# Submit analysis directly via command line
+./playtest gm:analyze {INSTANCE_ID} -v v1.0 -m "# Analysis\n\n## Summary\nBrief summary here..."
 
 # Or skip analysis if not needed
 ./playtest gm:skip-analysis {INSTANCE_ID}
 ```
 
-### Analysis Fields
+### Analysis Options
 
-- **-s/--summary**: Brief narrative of the game
-- **-w/--winner**: Player ID who won
-- **-c/--condition**: How the win condition was met
-- **-m/--mechanics**: Comma-separated list of mechanics observed in play
-- **-r/--recommendations**: Optional suggestions for game balance
+- **-v/--version**: Analysis version (e.g., v1.0) - REQUIRED
+- **-f/--file**: Path to markdown file
+- **-m/--markdown**: Markdown content directly (alternative to file/stdin)
+- If neither -f nor -m provided, reads from stdin
+
+### Recommended Analysis Format
+
+```markdown
+# {Game Name} - Game Analysis
+
+## Summary
+Brief narrative of the game and key events.
+
+## Winner
+**{player-id}** - Score: {points}
+
+## Win Condition
+How the win condition was met.
+
+## Key Moments
+| Turn | Player | Action | Significance |
+|------|--------|--------|--------------|
+| ... | ... | ... | ... |
+
+## Mechanics Observed
+- mechanic-1
+- mechanic-2
+
+## Player Strategies
+### player-1
+Strategy notes...
+
+### player-2
+Strategy notes...
+
+## Recommendations
+Balance suggestions or rule clarifications.
+```
 
 ## Adjudicating Contests
 
