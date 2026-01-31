@@ -308,6 +308,53 @@ program
     }
   });
 
+// Optimized turn command - combines wait + actions in one call
+program
+  .command('turn <game>')
+  .description('Wait for player turn and get available actions (optimized single-call)')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
+  .action(async (game: string, options: { player: string; timeout: string }) => {
+    try {
+      // Auto-register the player if not already registered
+      let state = loadState(game);
+      if (!state.players[options.player]?.agentId) {
+        registerAgent(game, 'player', `agent-${options.player}`, options.player);
+      }
+
+      const result = await waitForTurn(game, options.player, parseInt(options.timeout, 10));
+
+      // If it's our turn, also include available actions to save a round-trip
+      if (result.status === 'your_turn') {
+        state = loadState(game); // Reload to get latest state
+        const actionsResult = getAvailableActions(state, options.player);
+        console.log(JSON.stringify({
+          ...result,
+          actions: actionsResult.actions.filter(a => a.enabled),
+          hand: actionsResult.hand,
+          currentState: actionsResult.currentState,
+          activeEffects: actionsResult.activeEffects,
+          placedCards: actionsResult.placedCards
+        }));
+      } else {
+        console.log(JSON.stringify(result));
+      }
+
+      if (result.status === 'timeout') {
+        process.exit(124);
+      }
+      if (result.status === 'game_not_found') {
+        process.exit(1);
+      }
+    } catch (e) {
+      console.log(JSON.stringify({
+        status: 'error',
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
 program
   .command('submit <game>')
   .description('Submit player action (queues for gamemaster validation)')
@@ -645,7 +692,7 @@ program
 
       const timeout = parseInt(options.timeout, 10);
       const startTime = Date.now();
-      const pollInterval = 500;
+      const pollInterval = 100; // Reduced from 500ms for faster response
 
       // Poll for pending action, contest, or resignation
       // timeout=0 means infinite wait

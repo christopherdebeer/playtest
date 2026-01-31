@@ -2,7 +2,7 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(npx playtest rules *) Bash(npx playtest wait *) Bash(npx playtest actions *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
+allowed-tools: Bash(node engine/dist/index.js *) Bash(npx playtest *)
 ---
 
 # Player Agent
@@ -29,7 +29,7 @@ WIN the game by achieving the victory condition before other players.
 Your FIRST action must be to register with the game instance:
 
 ```bash
-npx playtest register {INSTANCE_ID} -r player -a {YOUR_AGENT_ID} -p {PLAYER_ID}
+node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 ```
 
 This returns the game rules and configuration. Read them carefully to understand:
@@ -39,73 +39,61 @@ This returns the game rules and configuration. Read them carefully to understand
 
 ## Engine Commands
 
+**CRITICAL: Use `node engine/dist/index.js` instead of `npx playtest` - it's 10x faster!**
+
 ```bash
 # Register and get rules (do this FIRST)
-npx playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
+node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 
-# Wait for your turn (blocks until it's your turn or game ends)
-npx playtest wait {INSTANCE_ID} -p {PLAYER_ID}
-
-# DISCOVER available actions (shows what you CAN do based on game rules and your hand)
-npx playtest actions {GAME} -p {PLAYER_ID}
+# OPTIMIZED: Wait for turn AND get available actions in ONE call!
+node engine/dist/index.js turn {INSTANCE_ID} -p {PLAYER_ID}
 
 # Execute your action directly (validates and applies immediately)
-npx playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
+node engine/dist/index.js act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
 # Contest previous player's action if you believe it violated rules
-npx playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason for contest"
+node engine/dist/index.js contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason"
 
-# Check game status
-npx playtest status {INSTANCE_ID}
+# Check game status (if needed)
+node engine/dist/index.js status {INSTANCE_ID}
 ```
 
-## Game Loop
+## Game Loop (OPTIMIZED)
 
 ```
 while game not over:
-    1. Wait for turn: npx playtest wait {GAME} -p {PLAYER_ID}
-    2. If status is "your_turn":
-       - FIRST: Run `npx playtest actions {GAME} -p {PLAYER_ID}` to see available actions!
-       - This shows what actions are possible based on YOUR hand and the game rules
-       - Look for enabled actions with [✓] and their example JSON
-       - Execute: npx playtest act {GAME} -p {PLAYER_ID} -a '<action>'
-       - If action fails with validation error, READ the error and fix your action
+    1. Call: node engine/dist/index.js turn {INSTANCE_ID} -p {PLAYER_ID}
+       - This blocks until your turn AND returns available actions!
+       - One command instead of two = faster gameplay
 
-     If status is "game_over":
-       - Exit
+    2. Parse the JSON response:
+       - If status is "your_turn":
+         - Look at the "actions" array for enabled actions
+         - Look at "hand" to see your cards
+         - Execute: node engine/dist/index.js act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
+         - If action fails with validation error, READ the error and fix your action
+
+       - If status is "game_over":
+         - Exit
 ```
 
-## Discovering Available Actions
+## The `turn` Command Response
 
-**IMPORTANT**: Always run `npx playtest actions` before deciding what to do!
+When it's your turn, `turn` returns JSON with:
+- `status`: "your_turn"
+- `actions`: Array of available actions with examples
+- `hand`: Your current cards
+- `currentState`: Your position on the board
+- `gameState`: Full player view of game
 
-The engine dynamically tells you what actions are available based on:
-- The game's rules and board configuration
-- Your current hand (what cards you have)
-- Your current position/state
-- Any active effects on you
-
-Example output:
-```
-[✓] MOVE: Move to an adjacent state on the board
-    Targets: A, B, C
-    Example: {"type":"move","target":"A"}
-
-[✓] PLACE_CARD: Place a state card on a board location
-    Cards: Hazard, Safe Haven
-    Targets: Checkpoint-X, Checkpoint-Y
-    Example: {"type":"place_card","card":"Hazard","targetState":"Checkpoint-X"}
-
-[✓] PLAY_CARD: Play a card from your hand
-    Cards: Friction, Catalyst
-    Example: {"type":"play_card","card":"Friction","target":"player-2"}
-```
-
-Use the examples provided - they are ready to copy!
+Each action in the array includes:
+- `type`: The action type (move, play_card, place_card, draw, pass, resign)
+- `enabled`: Whether you can use this action now
+- `examples`: Ready-to-use JSON examples!
 
 ## Action Format
 
-Actions are JSON objects. Use the examples from `npx playtest actions` or:
+Actions are JSON objects. Use the examples from the `turn` response:
 
 ```json
 {"type": "move", "target": "StateA"}
@@ -130,7 +118,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-npx playtest contest {GAME} -p {PLAYER_ID} -r "That move violated rule X"
+node engine/dist/index.js contest {INSTANCE_ID} -p {PLAYER_ID} -r "That move violated rule X"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
@@ -139,7 +127,7 @@ A gamemaster will adjudicate the contest. Use this sparingly and only for clear 
 
 If your action fails, the engine returns actionable error messages. READ THEM and fix your action:
 
-- "Card not in hand" - Run `actions` to see what cards you actually have
+- "Card not in hand" - Check the "hand" from the turn response
 - "Cannot be placed on states" - That card isn't placeable, use `play_card` instead
 - "Not your turn" - Wait for your turn first
 
@@ -153,15 +141,16 @@ If your action fails, the engine returns actionable error messages. READ THEM an
 
 ## BEGIN
 
-1. Read the rules: `npx playtest rules {GAME}`
-2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
-3. **ALWAYS run `npx playtest actions {GAME} -p {PLAYER_ID}` to see what you can do!**
-4. Execute your chosen action with `act`
-5. If validation fails, read the error and retry with corrected action
-6. Repeat steps 2-5 until game ends
+1. Register: `node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}`
+2. Read the rules from the registration response
+3. Loop:
+   - Call `turn` command to wait for your turn and get actions
+   - Pick the best action from the available options
+   - Execute with `act` command
+4. Repeat until game ends
 
 **CRITICAL**:
-- **ALWAYS use `actions` to discover what you can do** - it shows available actions based on your hand!
+- Use `turn` command (not separate `wait` + `actions`) for faster gameplay!
+- Check the `actions` array in the response for what you can do
 - Use `act` (not `submit`) to execute actions
 - Always read validation errors and fix your action
-- Only use rules, wait, actions, act, contest, and status commands

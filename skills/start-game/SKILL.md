@@ -51,7 +51,8 @@ GAME_NAME="$0"
 NUM_PLAYERS="${1:-2}"
 
 # Initialize game - returns instanceId and spawn instructions
-npx playtest init "$GAME_NAME" --players "$NUM_PLAYERS"
+# Use node directly for ~10x faster execution than npx
+node engine/dist/index.js init "$GAME_NAME" --players "$NUM_PLAYERS"
 ```
 
 The init command returns JSON with:
@@ -106,8 +107,8 @@ for (const player of spawnInstructions.players) {
 - player-1 through player-{NUM_PLAYERS} (will register and compete to win)
 
 **Monitor:**
-- Status: `npx playtest status {instanceId}`
-- List instances: `npx playtest list {gameName}`
+- Status: `node engine/dist/index.js status {instanceId}`
+- List instances: `node engine/dist/index.js list {gameName}`
 - Logs: `games/{gameName}/logs/{instanceId}.jsonl`
 
 **Key Change**: Agents now call `register` as their first command to receive rules.
