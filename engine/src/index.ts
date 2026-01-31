@@ -32,8 +32,8 @@ import {
   adjudicateVictory,
   ensureContestState,
   setDebugMode,
-  resolveGameInstance,
-  listGameInstances
+  checkAllWinConditions,
+  getAvailableActions
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -419,16 +419,12 @@ program
         return;
       }
 
-      // Check for win condition (hand empty for card games)
-      const player = state.players[options.player];
-      if (player && player.hand.length === 0 && action.type === 'play_card') {
-        endGame(game, options.player, `${options.player} emptied their hand`);
-      }
-
       // Reload state to get updated values
       const updatedState = loadState(game);
+      const player = updatedState.players[options.player];
       const playerView = getPlayerView(updatedState, options.player);
 
+      // Return result with gameOver info if applicable
       console.log(JSON.stringify({
         success: true,
         action,
@@ -437,6 +433,8 @@ program
         handSize: player?.hand.length,
         nextPlayer: updatedState.currentPlayer,
         gameStatus: updatedState.status,
+        gameOver: execResult.gameOver || false,
+        winner: execResult.winner,
         view: playerView
       }));
     } catch (e) {
@@ -928,6 +926,85 @@ program
             discardSize: state.discardPile.length
           }
         }));
+      }
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('actions <game>')
+  .description('Get available actions for a player (procedurally generated based on game rules)')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .option('--enabled-only', 'Only show currently enabled actions')
+  .option('--json', 'Output as JSON (default is human-readable)')
+  .action((game: string, options: { player: string; enabledOnly?: boolean; json?: boolean }) => {
+    try {
+      const state = loadState(game);
+      const result = getAvailableActions(state, options.player);
+
+      // Filter to enabled-only if requested
+      if (options.enabledOnly) {
+        result.actions = result.actions.filter(a => a.enabled);
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify({ success: true, ...result }));
+      } else {
+        // Human-readable format for agents
+        console.log(`\n=== Available Actions for ${options.player} ===`);
+        console.log(`Current State: ${result.currentState}`);
+        console.log(`Your Turn: ${result.isYourTurn ? 'YES' : 'NO'}`);
+        console.log(`Hand: ${result.hand.join(', ') || '(empty)'}`);
+
+        if (result.activeEffects.length > 0) {
+          console.log(`\nActive Effects:`);
+          for (const eff of result.activeEffects) {
+            console.log(`  - ${eff.type}${eff.value ? ` (${eff.value})` : ''} [${eff.duration} turns remaining]`);
+          }
+        }
+
+        if (result.placedCards.length > 0) {
+          console.log(`\nPlaced Cards on Board:`);
+          for (const pc of result.placedCards) {
+            console.log(`  - ${pc.cardName} on ${pc.state} (by ${pc.placedBy}, affects ${pc.targetMode})`);
+          }
+        }
+
+        console.log(`\n--- Actions ---`);
+        for (const action of result.actions) {
+          const status = action.enabled ? '✓' : '✗';
+          console.log(`\n[${status}] ${action.type.toUpperCase()}: ${action.description}`);
+
+          if (!action.enabled && action.reason) {
+            console.log(`    (Disabled: ${action.reason})`);
+          }
+
+          if (action.enabled) {
+            if (action.cards && action.cards.length > 0) {
+              console.log(`    Cards: ${action.cards.join(', ')}`);
+            }
+            if (action.targets && action.targets.length > 0) {
+              console.log(`    Targets: ${action.targets.join(', ')}`);
+            }
+
+            // Show required fields
+            const reqFields = Object.entries(action.required);
+            if (reqFields.length > 0) {
+              console.log(`    Required: ${reqFields.map(([k, v]) => `${k}`).join(', ')}`);
+            }
+
+            // Show examples
+            if (action.examples.length > 0) {
+              console.log(`    Example: ${JSON.stringify(action.examples[0])}`);
+            }
+          }
+        }
+        console.log('');
       }
     } catch (e) {
       console.log(JSON.stringify({

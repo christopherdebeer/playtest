@@ -2,7 +2,7 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(npx playtest register *) Bash(npx playtest wait *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
+allowed-tools: Bash(npx playtest rules *) Bash(npx playtest wait *) Bash(npx playtest actions *) Bash(npx playtest act *) Bash(npx playtest contest *) Bash(npx playtest status *)
 ---
 
 # Player Agent
@@ -46,6 +46,9 @@ npx playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 # Wait for your turn (blocks until it's your turn or game ends)
 npx playtest wait {INSTANCE_ID} -p {PLAYER_ID}
 
+# DISCOVER available actions (shows what you CAN do based on game rules and your hand)
+npx playtest actions {GAME} -p {PLAYER_ID}
+
 # Execute your action directly (validates and applies immediately)
 npx playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
@@ -58,73 +61,59 @@ npx playtest status {INSTANCE_ID}
 
 ## Game Loop
 
-```bash
-1. Register: npx playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
-   - Read the rules from the response
-   - Understand the win condition
-
-2. while game not over:
-     Wait for turn: npx playtest wait {INSTANCE_ID} -p {PLAYER_ID}
-
-     If status is "your_turn":
-       - Analyze the game state returned
-       - Review lastAction if you want to contest
-       - Decide best action based on rules
-       - Execute: npx playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
+```
+while game not over:
+    1. Wait for turn: npx playtest wait {GAME} -p {PLAYER_ID}
+    2. If status is "your_turn":
+       - FIRST: Run `npx playtest actions {GAME} -p {PLAYER_ID}` to see available actions!
+       - This shows what actions are possible based on YOUR hand and the game rules
+       - Look for enabled actions with [✓] and their example JSON
+       - Execute: npx playtest act {GAME} -p {PLAYER_ID} -a '<action>'
        - If action fails with validation error, READ the error and fix your action
 
      If status is "game_over":
        - Exit
 ```
 
-## Action Types
+## Discovering Available Actions
 
-Available action types depend on the game. Check the rules for which apply.
+**IMPORTANT**: Always run `npx playtest actions` before deciding what to do!
 
-### Move (board games)
-```json
-{
-  "type": "move",
-  "target": "<state_name>",
-  "boost": "<card_name>",        // Optional: card to boost probability
-  "declareVictory": true,        // Set if you believe you've won
-  "victoryReason": "<why>",      // Required if declareVictory is true
-  "reasoning": "Your strategy explanation"
-}
+The engine dynamically tells you what actions are available based on:
+- The game's rules and board configuration
+- Your current hand (what cards you have)
+- Your current position/state
+- Any active effects on you
+
+Example output:
+```
+[✓] MOVE: Move to an adjacent state on the board
+    Targets: A, B, C
+    Example: {"type":"move","target":"A"}
+
+[✓] PLACE_CARD: Place a state card on a board location
+    Cards: Hazard, Safe Haven
+    Targets: Checkpoint-X, Checkpoint-Y
+    Example: {"type":"place_card","card":"Hazard","targetState":"Checkpoint-X"}
+
+[✓] PLAY_CARD: Play a card from your hand
+    Cards: Friction, Catalyst
+    Example: {"type":"play_card","card":"Friction","target":"player-2"}
 ```
 
-### Play a Card (card games)
-```json
-{
-  "type": "play_card",
-  "card": "<card_name>",
-  "declaredColor": "<color>",    // For wild cards
-  "reasoning": "Your strategy explanation"
-}
-```
+Use the examples provided - they are ready to copy!
 
-### Draw a Card
-```json
-{
-  "type": "draw",
-  "reasoning": "No playable cards in hand"
-}
-```
+## Action Format
 
-### Pass Turn
-```json
-{
-  "type": "pass",
-  "reasoning": "No valid action available"
-}
-```
+Actions are JSON objects. Use the examples from `npx playtest actions` or:
 
-### Resign
 ```json
-{
-  "type": "resign",
-  "reason": "Cannot win from this position"
-}
+{"type": "move", "target": "StateA"}
+{"type": "play_card", "card": "CardName", "target": "player-2"}
+{"type": "place_card", "card": "Hazard", "targetState": "Checkpoint-X"}
+{"type": "draw"}
+{"type": "pass"}
+{"type": "resign", "reason": "Cannot win"}
 ```
 
 ## Declaring Victory
@@ -141,7 +130,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-npx playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "Wild Draw Four can only be played when no other card matches"
+npx playtest contest {GAME} -p {PLAYER_ID} -r "That move violated rule X"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
@@ -150,30 +139,29 @@ A gamemaster will adjudicate the contest. Use this sparingly and only for clear 
 
 If your action fails, the engine returns actionable error messages. READ THEM and fix your action:
 
-- "Card not in hand" - Check your actual cards in the game state
-- "Doesn't match current color" - Play a different card or draw
-- "Wild cards require declaredColor" - Add the declaredColor field
+- "Card not in hand" - Run `actions` to see what cards you actually have
+- "Cannot be placed on states" - That card isn't placeable, use `play_card` instead
 - "Not your turn" - Wait for your turn first
 
 ## Strategy Tips
 
 1. **Win Check**: Can I win this turn? Go for it.
-2. **Block Check**: Is opponent about to win? Stop them.
-3. **Advance**: Move toward victory condition.
-4. **Resource**: Build up cards/advantages.
-5. **Position**: Set up for future turns.
+2. **Block Check**: Is opponent about to win? Stop them with interference cards.
+3. **Board Control**: Place state cards (Hazard, etc.) on strategic locations.
+4. **Advance**: Move toward victory condition.
+5. **Resource**: Draw cards to get better options.
 
 ## BEGIN
 
-1. Register: `npx playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}`
-2. Read the rules from the registration response
-3. Wait for your turn: `npx playtest wait {INSTANCE_ID} -p {PLAYER_ID}`
-4. When your turn comes, analyze and execute your action with `act`
+1. Read the rules: `npx playtest rules {GAME}`
+2. Wait for your turn: `npx playtest wait {GAME} -p {PLAYER_ID}`
+3. **ALWAYS run `npx playtest actions {GAME} -p {PLAYER_ID}` to see what you can do!**
+4. Execute your chosen action with `act`
 5. If validation fails, read the error and retry with corrected action
-6. Repeat steps 3-5 until game ends
+6. Repeat steps 2-5 until game ends
 
-**IMPORTANT**:
+**CRITICAL**:
+- **ALWAYS use `actions` to discover what you can do** - it shows available actions based on your hand!
 - Use `act` (not `submit`) to execute actions
 - Always read validation errors and fix your action
-- You can contest suspicious opponent moves
-- Only use register, wait, act, contest, and status commands
+- Only use rules, wait, actions, act, contest, and status commands

@@ -1,10 +1,18 @@
 import { useParams, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { marked } from 'marked'
 import { LogsData } from '../types/logs'
 import LogViewer from '../components/LogViewer'
 import logsDataRaw from '../data/logs.json'
 import './LogDetailPage.css'
 
 const logsData = logsDataRaw as unknown as LogsData
+
+// Configure marked for safe rendering
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+})
 
 function formatDuration(seconds: number | null): string {
   if (seconds === null) return 'N/A'
@@ -39,6 +47,10 @@ function getOutcomeClass(outcome: string): string {
 function LogDetailPage() {
   const { logId } = useParams<{ logId: string }>()
   const log = logsData.logs.find(l => l.gameId === logId)
+  const [activeTab, setActiveTab] = useState<'analysis' | 'events'>(
+    // Default to analysis if available, otherwise events
+    log?.analysis ? 'analysis' : 'events'
+  )
 
   if (!log) {
     return (
@@ -135,9 +147,46 @@ function LogDetailPage() {
           </div>
         </div>
 
-        <div className="log-detail-events">
-          <h2>Event Log</h2>
-          <LogViewer events={log.events} />
+        {/* Tab navigation for Analysis and Event Log */}
+        <div className="log-detail-tabs">
+          <div className="tab-buttons">
+            {log.analysis && (
+              <button
+                className={`tab-button ${activeTab === 'analysis' ? 'active' : ''}`}
+                onClick={() => setActiveTab('analysis')}
+              >
+                Analysis ({log.analysis.version})
+              </button>
+            )}
+            <button
+              className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
+              onClick={() => setActiveTab('events')}
+            >
+              Event Log ({log.totalEvents})
+            </button>
+          </div>
+
+          <div className="tab-content">
+            {activeTab === 'analysis' && log.analysis && (
+              <div className="log-analysis">
+                <div className="analysis-meta">
+                  <span className="analysis-file">{log.analysis.filename}</span>
+                </div>
+                <div
+                  className="analysis-content markdown-body"
+                  dangerouslySetInnerHTML={{
+                    __html: marked(log.analysis.content) as string
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === 'events' && (
+              <div className="log-detail-events">
+                <LogViewer events={log.events} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
