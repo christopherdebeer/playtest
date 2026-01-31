@@ -9,3 +9,29 @@
 {"timestamp":"2026-01-31T15:02:10.728Z","event":"push_your_luck_roll","turn":4,"player":"player-1","data":{"roll":5,"points":10,"accumulated":10}}
 {"timestamp":"2026-01-31T15:03:32.270Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"pass"}}
 {"timestamp":"2026-01-31T15:03:44.719Z","event":"push_your_luck_roll","turn":4,"player":"player-2","data":{"roll":4,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:05:12.012Z","event":"action_executed","turn":5,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:05:21.805Z","event":"push_your_luck_bank","turn":5,"player":"player-1","data":{"bankedPoints":10,"totalScore":10}}
+{"timestamp":"2026-01-31T15:05:30.016Z","event":"push_your_luck_bank","turn":5,"player":"player-2","data":{"bankedPoints":10,"totalScore":10}}
+{"timestamp":"2026-01-31T15:05:43.027Z","event":"card_drafted","turn":6,"player":"player-1","data":{"card":"Silver Bar","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:05:53.950Z","event":"card_drafted","turn":6,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:06:05.735Z","event":"action_executed","turn":7,"player":"player-1","data":{"type":"play_card","card":"Silver Bar","effect":{"type":"points","value":10}}}
+{"timestamp":"2026-01-31T15:06:17.036Z","event":"action_executed","turn":7,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-01-31T15:06:28.070Z","event":"card_drafted","turn":8,"player":"player-1","data":{"card":"Diamond","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:06:40.063Z","event":"card_drafted","turn":8,"player":"player-2","data":{"card":"Silver Bar","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:06:51.422Z","event":"action_executed","turn":9,"player":"player-1","data":{"type":"play_card","card":"Diamond","effect":{"type":"points","value":20}}}
+{"timestamp":"2026-01-31T15:07:02.300Z","event":"action_executed","turn":9,"player":"player-2","data":{"type":"play_card","card":"Silver Bar","effect":{"type":"points","value":10}}}
+{"timestamp":"2026-01-31T15:07:18.811Z","event":"card_drafted","turn":10,"player":"player-1","data":{"card":"Extra Roll","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:07:30.175Z","event":"card_drafted","turn":10,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:07:40.516Z","event":"card_drafted","turn":11,"player":"player-1","data":{"card":"Diamond","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:07:51.416Z","event":"action_executed","turn":11,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-01-31T15:08:00.659Z","event":"action_executed","turn":12,"player":"player-1","data":{"type":"play_card","card":"Diamond","effect":{"type":"points","value":20}}}
+{"timestamp":"2026-01-31T15:08:12.586Z","event":"card_drafted","turn":12,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:08:23.619Z","event":"push_your_luck_roll","turn":13,"player":"player-1","data":{"roll":3,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:08:56.625Z","event":"action_executed","turn":13,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:09:05.866Z","event":"action_executed","turn":13,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-01-31T15:09:15.846Z","event":"push_your_luck_bank","turn":14,"player":"player-1","data":{"bankedPoints":10,"totalScore":20}}
+{"timestamp":"2026-01-31T15:09:25.914Z","event":"card_drafted","turn":14,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:09:41.974Z","event":"card_drafted","turn":15,"player":"player-1","data":{"card":"Diamond","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:09:52.145Z","event":"action_executed","turn":15,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-01-31T15:10:01.023Z","event":"action_executed","turn":16,"player":"player-1","data":{"type":"play_card","card":"Diamond","effect":{"type":"points","value":20}}}
+{"timestamp":"2026-01-31T15:10:12.089Z","event":"push_your_luck_roll","turn":16,"player":"player-2","data":{"roll":5,"points":10,"accumulated":10}}
