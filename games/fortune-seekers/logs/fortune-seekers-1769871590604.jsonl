@@ -35,3 +35,20 @@
 {"timestamp":"2026-01-31T15:09:52.145Z","event":"action_executed","turn":15,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
 {"timestamp":"2026-01-31T15:10:01.023Z","event":"action_executed","turn":16,"player":"player-1","data":{"type":"play_card","card":"Diamond","effect":{"type":"points","value":20}}}
 {"timestamp":"2026-01-31T15:10:12.089Z","event":"push_your_luck_roll","turn":16,"player":"player-2","data":{"roll":5,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:10:38.364Z","event":"action_executed","turn":17,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:10:49.516Z","event":"push_your_luck_roll","turn":17,"player":"player-1","data":{"roll":6,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:11:12.732Z","event":"action_executed","turn":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:11:21.942Z","event":"push_your_luck_bank","turn":17,"player":"player-2","data":{"bankedPoints":10,"totalScore":20}}
+{"timestamp":"2026-01-31T15:11:30.790Z","event":"push_your_luck_bank","turn":18,"player":"player-1","data":{"bankedPoints":10,"totalScore":30}}
+{"timestamp":"2026-01-31T15:11:42.913Z","event":"card_drafted","turn":18,"player":"player-2","data":{"card":"Diamond","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:11:57.065Z","event":"action_executed","turn":19,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T15:12:06.930Z","event":"action_executed","turn":19,"player":"player-2","data":{"type":"play_card","card":"Diamond","effect":{"type":"points","value":20}}}
+{"timestamp":"2026-01-31T15:12:18.147Z","event":"action_executed","turn":20,"player":"player-1","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-01-31T15:12:38.582Z","event":"push_your_luck_roll","turn":20,"player":"player-2","data":{"roll":4,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:13:20.119Z","event":"action_executed","turn":21,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:13:38.986Z","event":"push_your_luck_roll","turn":21,"player":"player-1","data":{"roll":3,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:14:04.530Z","event":"action_executed","turn":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:14:13.510Z","event":"push_your_luck_bank","turn":21,"player":"player-2","data":{"bankedPoints":10,"totalScore":30}}
+{"timestamp":"2026-01-31T15:14:23.966Z","event":"push_your_luck_bank","turn":22,"player":"player-1","data":{"bankedPoints":10,"totalScore":40}}
+{"timestamp":"2026-01-31T15:14:36.561Z","event":"card_drafted","turn":22,"player":"player-2","data":{"card":"Extra Roll","displayRemaining":5}}
+{"timestamp":"2026-01-31T15:14:36.562Z","event":"game_end","turn":23,"data":{"winner":"player-1","reason":"Max turns (20) reached. player-1 wins with 40 points."}}

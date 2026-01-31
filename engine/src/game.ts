@@ -844,6 +844,34 @@ export function advanceTurn(state: GameState): void {
   // If we wrapped around, increment turn number
   if (isNewRound) {
     state.turn++;
+
+    // Check max_turns limit
+    if (state.config.max_turns && state.turn > state.config.max_turns) {
+      // Game over - determine winner by highest score
+      let highestScore = -Infinity;
+      let winner = 'none';
+
+      for (const [playerId, player] of Object.entries(state.players)) {
+        const score = player.score ?? 0;
+        if (score > highestScore) {
+          highestScore = score;
+          winner = playerId;
+        }
+      }
+
+      state.status = 'completed';
+      state.shared.winner = winner;
+      state.shared.endReason = `Max turns (${state.config.max_turns}) reached. ${winner} wins with ${highestScore} points.`;
+
+      logEvent(state, {
+        event: 'game_end',
+        turn: state.turn,
+        data: { winner, reason: state.shared.endReason }
+      });
+
+      saveState(state);
+      return;
+    }
   }
 
   state.currentPlayer = state.turnOrder[nextIndex];
