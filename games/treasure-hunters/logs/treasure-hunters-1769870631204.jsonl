@@ -1,0 +1,24 @@
+{"timestamp":"2026-01-31T14:43:51.207Z","event":"game_init","data":{"gameId":"treasure-hunters-1769870631204","playerCount":2,"config":"Treasure Hunters"}}
+{"timestamp":"2026-01-31T14:44:20.363Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-31T14:44:48.446Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"play_card","card":"Treasure Map","effect":{"type":"draw","value":2}}}
+{"timestamp":"2026-01-31T14:44:48.447Z","event":"income_generated","turn":1,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:03.069Z","event":"set_collected","turn":1,"player":"player-2","data":{"setType":"Type Set","cards":["Diamond Ring","Emerald Ring","Sapphire Ring"],"points":15,"totalSets":1}}
+{"timestamp":"2026-01-31T14:45:03.070Z","event":"income_generated","turn":2,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:18.988Z","event":"income_generated","turn":2,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:19.001Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T14:45:28.896Z","event":"income_generated","turn":3,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:28.898Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T14:45:30.845Z","event":"income_generated","turn":3,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:30.847Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T14:45:48.075Z","event":"income_generated","turn":4,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:48.086Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T14:45:58.204Z","event":"set_collected","turn":4,"player":"player-1","data":{"setType":"Type Set","cards":["Diamond Crown","Sapphire Crown","Emerald Crown"],"points":15,"totalSets":1}}
+{"timestamp":"2026-01-31T14:45:58.205Z","event":"income_generated","turn":4,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:45:59.895Z","event":"set_collected","turn":4,"player":"player-2","data":{"setType":"Type Set","cards":["Ruby Goblet","Sapphire Goblet","Emerald Goblet"],"points":15,"totalSets":2}}
+{"timestamp":"2026-01-31T14:45:59.896Z","event":"income_generated","turn":5,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:46:08.480Z","event":"income_generated","turn":5,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:46:08.482Z","event":"action_executed","turn":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T14:46:21.599Z","event":"income_generated","turn":6,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:46:21.611Z","event":"action_executed","turn":6,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T14:46:32.273Z","event":"income_generated","turn":6,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:46:32.275Z","event":"action_executed","turn":6,"player":"player-1","data":{"type":"draw","count":3}}
