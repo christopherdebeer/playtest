@@ -97,6 +97,45 @@
   color: var(--cat-color, var(--accent));
 }
 
+/* Implementation filters */
+.implementation-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-right: 0.5rem;
+}
+
+.status-filter {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-filter:hover {
+  border-color: var(--status-color, var(--accent));
+  color: var(--status-color, var(--accent));
+}
+
+.status-filter.active {
+  background: color-mix(in srgb, var(--status-color, var(--accent)) 20%, transparent);
+  border-color: var(--status-color, var(--accent));
+  color: var(--status-color, var(--accent));
+}
+
 /* Results */
 .mechanics-results {
   margin-bottom: 1.5rem;
@@ -181,10 +220,42 @@
   color: var(--text-primary);
 }
 
+.mechanic-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .mechanic-id {
   font-size: 0.75rem;
   color: var(--text-secondary);
   font-family: monospace;
+}
+
+.implementation-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--impl-color, var(--accent)) 15%, transparent);
+  color: var(--impl-color, var(--accent));
+  border: 1px solid var(--impl-color, var(--accent));
+  cursor: help;
+}
+
+.implementation-badge.implemented {
+  --impl-color: #22c55e;
+}
+
+.implementation-badge.partial {
+  --impl-color: #f59e0b;
+}
+
+.implementation-badge.not_implemented {
+  --impl-color: #6b7280;
 }
 
 .mechanic-summary {

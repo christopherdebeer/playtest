@@ -1,0 +1,83 @@
+{
+  "generated": null,
+  "description": "Mapping of mechanics library slugs to engine implementation status",
+  "implemented": {
+    "action-points": {
+      "config_key": "action_points",
+      "since": "2.0.0",
+      "description": "Points budget per turn with configurable costs per action type"
+    },
+    "income": {
+      "config_key": "income",
+      "since": "2.0.0",
+      "description": "Per-turn resource generation"
+    },
+    "set-collection": {
+      "config_key": "set_collection",
+      "since": "2.0.0",
+      "description": "Set detection and scoring"
+    },
+    "auction-english": {
+      "config_key": "auction",
+      "since": "2.0.0",
+      "description": "Ascending bid auction system"
+    },
+    "turn-order-progressive": {
+      "config_key": "turn_order",
+      "since": "2.0.0",
+      "description": "Dynamic turn order determination"
+    },
+    "push-your-luck": {
+      "config_key": "push_your_luck",
+      "since": "2.0.0",
+      "description": "Risk/reward dice rolling mechanics"
+    },
+    "variable-player-powers": {
+      "config_key": "variable_powers",
+      "since": "2.0.0",
+      "description": "Asymmetric player abilities"
+    },
+    "open-drafting": {
+      "config_key": "open_drafting",
+      "since": "2.0.0",
+      "description": "Draft from visible card pool"
+    },
+    "simultaneous-action-selection": {
+      "config_key": "simultaneous",
+      "since": "2.0.0",
+      "description": "All players act at once"
+    },
+    "hand-management": {
+      "config_key": "hand_limit",
+      "since": "0.2.0",
+      "description": "Hand size limits and card type restrictions"
+    },
+    "traitor-game": {
+      "config_key": "timeout_winner",
+      "since": "0.2.0",
+      "description": "Role-based victory on timeout (traitor wins if not discovered)"
+    }
+  },
+  "partial": {
+    "grid-movement": {
+      "notes": "Board edges support movement but no dedicated grid mechanic config",
+      "related_config": "board.edges"
+    },
+    "tile-placement": {
+      "notes": "Board system supports placement but no dedicated tile mechanic config",
+      "related_config": "board"
+    },
+    "trading": {
+      "notes": "Trade action exists in action_executed but no dedicated trading config",
+      "related_config": "none"
+    },
+    "hidden-roles": {
+      "notes": "Hidden objectives exist in game state but no dedicated mechanic config",
+      "related_config": "hidden_objectives in gameState"
+    },
+    "commodity-speculation": {
+      "notes": "Resources system exists but no market/trading mechanics",
+      "related_config": "resources"
+    }
+  }
+}
