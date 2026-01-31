@@ -39,3 +39,14 @@
 {"timestamp":"2026-01-31T18:21:44.300Z","event":"action_executed","turn":12,"player":"player-2","data":{"type":"draw","count":2}}
 {"timestamp":"2026-01-31T18:22:45.863Z","event":"action_executed","turn":12,"player":"player-3","data":{"type":"play_card","card":"Interrogate","effect":{"type":"peek_objective","description":"Peek at target's objective"}}}
 {"timestamp":"2026-01-31T18:23:16.738Z","event":"action_executed","turn":13,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T18:24:18.446Z","event":"action_executed","turn":13,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:33:16.783Z","event":"action_executed","turn":13,"player":"player-3","data":{"type":"play_card","card":"Shortcut","effect":{"type":"teleport_adjacent","description":"Move to any tile adjacent to any player"}}}
+{"timestamp":"2026-01-31T18:35:52.885Z","event":"action_executed","turn":14,"player":"player-1","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-01-31T18:36:11.596Z","event":"action_executed","turn":14,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T18:36:42.843Z","event":"action_executed","turn":14,"player":"player-3","data":{"type":"play_card","card":"Village Square","effect":{"type":"trade_bonus"}}}
+{"timestamp":"2026-01-31T18:37:01.602Z","event":"action_executed","turn":15,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:37:14.588Z","event":"action_executed","turn":15,"player":"player-2","data":{"type":"play_card","card":"Watchtower","effect":{"type":"reveal","description":"See all player positions"}}}
+{"timestamp":"2026-01-31T18:37:30.389Z","event":"action_executed","turn":16,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:37:47.915Z","event":"action_executed","turn":16,"player":"player-1","data":{"type":"play_card","card":"Shortcut","effect":{"type":"teleport_adjacent","description":"Move to any tile adjacent to any player"}}}
+{"timestamp":"2026-01-31T18:38:01.102Z","event":"action_executed","turn":16,"player":"player-2","data":{"type":"play_card","card":"Interrogate","effect":{"type":"peek_objective","description":"Peek at target's objective"}}}
+{"timestamp":"2026-01-31T18:38:17.067Z","event":"action_executed","turn":16,"player":"player-3","data":{"type":"play_card","card":"Lantern","effect":{"type":"utility","description":"Required for cave locations"}}}
