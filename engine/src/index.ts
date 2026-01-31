@@ -3,7 +3,7 @@
 // Playtest Engine CLI
 
 import { Command } from 'commander';
-import { rmSync, existsSync, readFileSync } from 'fs';
+import { rmSync, existsSync, readFileSync, copyFileSync, mkdirSync } from 'fs';
 import {
   initGame,
   loadState,
@@ -1808,7 +1808,70 @@ program
         const gameStatus = state.status;
 
         // Allow stop if game is completed or cancelled
-        if (gameStatus === 'completed' || gameStatus === 'cancelled') {
+        if (gameStatus === 'completed' || gameStatus === 'cancelled' || gameStatus === 'pending_analysis') {
+          // Backup transcript before exiting
+          const agentTranscriptPath = (inputJson as { agent_transcript_path?: string }).agent_transcript_path || targetTranscript;
+          if (agentTranscriptPath && existsSync(agentTranscriptPath)) {
+            try {
+              log(`Backing up transcript from: ${agentTranscriptPath}`);
+
+              // Extract timestamp from gameId (format: gameName-timestamp)
+              const timestampMatch = state.gameId.match(/(\d{13})$/);
+              if (timestampMatch) {
+                const timestamp = timestampMatch[1];
+
+                // For players, extract the player number from transcript
+                let finalAgentType: string = agentType;
+                if (agentType === 'player') {
+                  const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
+                  const lines = transcriptContent.split('\n');
+                  for (const line of lines.slice(0, 50)) {
+                    if (!line.trim()) continue;
+                    try {
+                      const entry = JSON.parse(line);
+                      // Check user messages for PLAYER_ID
+                      const getText = (e: unknown): string => {
+                        const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
+                        if (typedEntry.role === 'user' && typedEntry.type === 'message') {
+                          return typeof typedEntry.content === 'string'
+                            ? typedEntry.content
+                            : Array.isArray(typedEntry.content)
+                              ? typedEntry.content.find(c => c.type === 'text')?.text || ''
+                              : '';
+                        }
+                        if (typedEntry.message?.role === 'user') {
+                          return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
+                        }
+                        return '';
+                      };
+                      const text = getText(entry);
+                      const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                      if (playerMatch) {
+                        // Normalize "player-1" to "player1"
+                        finalAgentType = playerMatch[1].replace('-', '');
+                        log(`Detected player type: ${finalAgentType}`);
+                        break;
+                      }
+                    } catch {
+                      // Skip invalid JSON lines
+                    }
+                  }
+                }
+
+                const destDir = `${process.cwd()}/games/${gameName}/logs`;
+                const destPath = `${destDir}/${finalAgentType}-transcript-${timestamp}.jsonl`;
+
+                // Ensure destination directory exists
+                try { mkdirSync(destDir, { recursive: true }); } catch { /* ignore */ }
+
+                // Copy transcript
+                copyFileSync(agentTranscriptPath, destPath);
+                log(`Transcript backed up to: ${destPath}`);
+              }
+            } catch (backupErr) {
+              log(`Error backing up transcript: ${backupErr}`);
+            }
+          }
           process.exit(0);
         }
 
@@ -1987,6 +2050,117 @@ program
         log(`SubagentStop - agent finished`);
         log(`Agent ID: ${inputJson.agent_id}`);
         log(`Agent transcript: ${inputJson.agent_transcript_path}`);
+
+        // Backup transcript to expected location if game is completed/cancelled
+        const agentTranscriptPath = (inputJson.agent_transcript_path as string) || '';
+        if (agentTranscriptPath && existsSync(agentTranscriptPath)) {
+          try {
+            const transcriptContent = fs.readFileSync(agentTranscriptPath, 'utf8');
+            log(`Transcript read: ${transcriptContent.length} bytes`);
+
+            // Extract game name from transcript (GAME: <name>)
+            let detectedGameName = '';
+            let detectedAgentType = '';
+
+            const lines = transcriptContent.split('\n');
+            for (const line of lines.slice(0, 100)) {
+              if (!line.trim()) continue;
+              try {
+                const entry = JSON.parse(line);
+
+                // Check user messages for GAME: and ROLE:/PLAYER_ID:
+                if (entry.role === 'user' && entry.type === 'message') {
+                  const text = typeof entry.content === 'string'
+                    ? entry.content
+                    : Array.isArray(entry.content)
+                      ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
+                      : '';
+
+                  // Extract game name
+                  const gameMatch = text.match(/^GAME:\s*(\S+)/m);
+                  if (gameMatch && !detectedGameName) {
+                    detectedGameName = gameMatch[1];
+                    log(`Found game name: ${detectedGameName}`);
+                  }
+
+                  // Extract agent type
+                  const gmMatch = text.match(/^ROLE:\s*gamemaster/m);
+                  if (gmMatch && !detectedAgentType) {
+                    detectedAgentType = 'gamemaster';
+                    log(`Found agent type: gamemaster`);
+                  }
+
+                  const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                  if (playerMatch && !detectedAgentType) {
+                    // Normalize "player-1" to "player1"
+                    detectedAgentType = playerMatch[1].replace('-', '');
+                    log(`Found agent type: ${detectedAgentType}`);
+                  }
+                }
+
+                // Also check message.content format (alternative transcript format)
+                if (entry.message?.role === 'user' && entry.message?.content) {
+                  const text = typeof entry.message.content === 'string' ? entry.message.content : '';
+
+                  const gameMatch = text.match(/^GAME:\s*(\S+)/m);
+                  if (gameMatch && !detectedGameName) {
+                    detectedGameName = gameMatch[1];
+                    log(`Found game name (alt format): ${detectedGameName}`);
+                  }
+
+                  const gmMatch = text.match(/^ROLE:\s*gamemaster/m);
+                  if (gmMatch && !detectedAgentType) {
+                    detectedAgentType = 'gamemaster';
+                    log(`Found agent type (alt format): gamemaster`);
+                  }
+
+                  const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                  if (playerMatch && !detectedAgentType) {
+                    detectedAgentType = playerMatch[1].replace('-', '');
+                    log(`Found agent type (alt format): ${detectedAgentType}`);
+                  }
+                }
+
+                // Stop early if we found both
+                if (detectedGameName && detectedAgentType) break;
+              } catch {
+                // Skip invalid JSON lines
+              }
+            }
+
+            log(`Detection results - game: ${detectedGameName}, agent: ${detectedAgentType}`);
+
+            // Only proceed if we have both game name and agent type
+            if (detectedGameName && detectedAgentType && stateExists(detectedGameName)) {
+              const gameState = loadState(detectedGameName);
+
+              // Only backup if game is completed or cancelled (not during active gameplay)
+              if (gameState.status === 'completed' || gameState.status === 'cancelled' || gameState.status === 'pending_analysis') {
+                // Extract timestamp from gameId (format: gameName-timestamp)
+                const timestampMatch = gameState.gameId.match(/(\d{13})$/);
+                if (timestampMatch) {
+                  const timestamp = timestampMatch[1];
+                  const destDir = `${process.cwd()}/games/${detectedGameName}/logs`;
+                  const destPath = `${destDir}/${detectedAgentType}-transcript-${timestamp}.jsonl`;
+
+                  // Ensure destination directory exists
+                  try { fs.mkdirSync(destDir, { recursive: true }); } catch { /* ignore */ }
+
+                  // Copy transcript
+                  fs.copyFileSync(agentTranscriptPath, destPath);
+                  log(`Transcript backed up to: ${destPath}`);
+                }
+              } else {
+                log(`Game status is ${gameState.status}, skipping transcript backup`);
+              }
+            } else {
+              log(`Missing info for backup - game: ${detectedGameName}, agent: ${detectedAgentType}, stateExists: ${detectedGameName ? stateExists(detectedGameName) : 'N/A'}`);
+            }
+          } catch (e) {
+            log(`Error backing up transcript: ${e}`);
+          }
+        }
+
         process.exit(0);
         break;
       }
