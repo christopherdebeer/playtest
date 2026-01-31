@@ -2,7 +2,7 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(node engine/dist/index.js *) Bash(npx playtest *)
+allowed-tools: Bash(./playtest *)
 ---
 
 # Player Agent
@@ -29,7 +29,7 @@ WIN the game by achieving the victory condition before other players.
 Your FIRST action must be to register with the game instance:
 
 ```bash
-node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
+./playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 ```
 
 This returns the game rules and configuration. Read them carefully to understand:
@@ -39,30 +39,30 @@ This returns the game rules and configuration. Read them carefully to understand
 
 ## Engine Commands
 
-**CRITICAL: Use `node engine/dist/index.js` instead of `npx playtest` - it's 10x faster!**
+**CRITICAL: Use `./playtest` instead of `npx playtest` - it's 10x faster!**
 
 ```bash
 # Register and get rules (do this FIRST)
-node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
+./playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 
 # OPTIMIZED: Wait for turn AND get available actions in ONE call!
-node engine/dist/index.js turn {INSTANCE_ID} -p {PLAYER_ID}
+./playtest turn {INSTANCE_ID} -p {PLAYER_ID}
 
 # Execute your action directly (validates and applies immediately)
-node engine/dist/index.js act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
+./playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
 # Contest previous player's action if you believe it violated rules
-node engine/dist/index.js contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason"
+./playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason"
 
 # Check game status (if needed)
-node engine/dist/index.js status {INSTANCE_ID}
+./playtest status {INSTANCE_ID}
 ```
 
 ## Game Loop (OPTIMIZED)
 
 ```
 while game not over:
-    1. Call: node engine/dist/index.js turn {INSTANCE_ID} -p {PLAYER_ID}
+    1. Call: ./playtest turn {INSTANCE_ID} -p {PLAYER_ID}
        - This blocks until your turn AND returns available actions!
        - One command instead of two = faster gameplay
 
@@ -70,7 +70,7 @@ while game not over:
        - If status is "your_turn":
          - Look at the "actions" array for enabled actions
          - Look at "hand" to see your cards
-         - Execute: node engine/dist/index.js act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
+         - Execute: ./playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
          - If action fails with validation error, READ the error and fix your action
 
        - If status is "game_over":
@@ -118,7 +118,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-node engine/dist/index.js contest {INSTANCE_ID} -p {PLAYER_ID} -r "That move violated rule X"
+./playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "That move violated rule X"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
@@ -141,7 +141,7 @@ If your action fails, the engine returns actionable error messages. READ THEM an
 
 ## BEGIN
 
-1. Register: `node engine/dist/index.js register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}`
+1. Register: `./playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}`
 2. Read the rules from the registration response
 3. Loop:
    - Call `turn` command to wait for your turn and get actions
