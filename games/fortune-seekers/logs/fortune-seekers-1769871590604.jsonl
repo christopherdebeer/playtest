@@ -7,3 +7,5 @@
 {"timestamp":"2026-01-31T15:01:36.827Z","event":"card_drafted","turn":3,"player":"player-1","data":{"card":"Lucky Dice","displayRemaining":5}}
 {"timestamp":"2026-01-31T15:01:56.078Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"play_card","card":"Crown Jewel","effect":{"type":"points","value":30}}}
 {"timestamp":"2026-01-31T15:02:10.728Z","event":"push_your_luck_roll","turn":4,"player":"player-1","data":{"roll":5,"points":10,"accumulated":10}}
+{"timestamp":"2026-01-31T15:03:32.270Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T15:03:44.719Z","event":"push_your_luck_roll","turn":4,"player":"player-2","data":{"roll":4,"points":10,"accumulated":10}}
