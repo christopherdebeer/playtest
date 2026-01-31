@@ -100,8 +100,36 @@ This returns the game rules and configuration. Read them carefully.
        - Rejected claims roll back the player's move
 
      If result.status == "game_over":
+       - If result.pendingAnalysis == true:
+         - Create post-game analysis
+         - Submit: ./playtest gm:analyze {INSTANCE_ID} -s "summary" -w <winner> -c "win condition" -m "mechanics"
        - Exit
 ```
+
+## Post-Game Analysis
+
+When a game ends, the status becomes `pending_analysis`. The gamemaster should submit an analysis before the game is marked fully `completed`.
+
+```bash
+# Submit analysis
+./playtest gm:analyze {INSTANCE_ID} \
+  -s "Player 2 won through aggressive drafting strategy, securing high-value cards early" \
+  -w player-2 \
+  -c "score >= 100" \
+  -m "push-your-luck,open-drafting,variable-powers" \
+  -r "Consider reducing Crown Jewel count to 1 for better balance"
+
+# Or skip analysis if not needed
+./playtest gm:skip-analysis {INSTANCE_ID}
+```
+
+### Analysis Fields
+
+- **-s/--summary**: Brief narrative of the game
+- **-w/--winner**: Player ID who won
+- **-c/--condition**: How the win condition was met
+- **-m/--mechanics**: Comma-separated list of mechanics observed in play
+- **-r/--recommendations**: Optional suggestions for game balance
 
 ## Adjudicating Contests
 

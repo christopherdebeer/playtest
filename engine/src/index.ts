@@ -34,7 +34,9 @@ import {
   setDebugMode,
   checkAllWinConditions,
   getAvailableActions,
-  listGameInstances
+  listGameInstances,
+  submitAnalysis,
+  skipAnalysis
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
@@ -1174,6 +1176,74 @@ program
         winner: options.winner,
         totalTurns: state.turn,
         reason: options.reason
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gm:analyze <game>')
+  .description('[GM] Submit post-game analysis (transitions from pending_analysis to completed)')
+  .requiredOption('-s, --summary <text>', 'Brief game summary')
+  .requiredOption('-w, --winner <id>', 'Winner player ID')
+  .requiredOption('-c, --condition <text>', 'How they won (win condition)')
+  .option('-m, --mechanics <list>', 'Comma-separated list of mechanics observed')
+  .option('-r, --recommendations <text>', 'Balance/rules recommendations')
+  .action((game: string, options: {
+    summary: string;
+    winner: string;
+    condition: string;
+    mechanics?: string;
+    recommendations?: string;
+  }) => {
+    try {
+      const analysis = {
+        summary: options.summary,
+        winner: options.winner,
+        winCondition: options.condition,
+        keyMoments: [],  // Can be extended to accept via JSON file
+        mechanicsObserved: options.mechanics ? options.mechanics.split(',').map(m => m.trim()) : [],
+        recommendations: options.recommendations ? [options.recommendations] : undefined
+      };
+
+      const state = submitAnalysis(game, analysis);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: state.status,
+        analysis: {
+          summary: analysis.summary,
+          winner: analysis.winner,
+          mechanicsObserved: analysis.mechanicsObserved
+        }
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('gm:skip-analysis <game>')
+  .description('[GM] Skip analysis and mark game as completed directly')
+  .action((game: string) => {
+    try {
+      const state = skipAnalysis(game);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        status: state.status,
+        message: 'Analysis skipped, game marked as completed'
       }));
     } catch (e) {
       console.log(JSON.stringify({

@@ -1,6 +1,6 @@
 // Core game types
 
-export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'completed' | 'cancelled';
+export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'pending_analysis' | 'completed' | 'cancelled';
 export type Role = 'gamemaster' | 'player';
 
 export interface Card {
@@ -574,4 +574,29 @@ export interface AvailableActionsResult {
   actions: AvailableAction[];
   placedCards: PlacedCard[];     // Cards placed on board (if any)
   activeEffects: Effect[];       // Effects currently on this player
+}
+
+// ============ Game Analysis Types ============
+
+/**
+ * A notable moment during the game (for analysis).
+ */
+export interface KeyMoment {
+  turn: number;
+  player: string;
+  action: string;
+  significance: string;          // Why this moment mattered
+}
+
+/**
+ * Gamemaster analysis of a completed game.
+ */
+export interface GameAnalysis {
+  summary: string;               // Brief game summary
+  winner: string;                // Winner player ID
+  winCondition: string;          // How they won
+  keyMoments: KeyMoment[];       // Notable moments/decisions
+  mechanicsObserved: string[];   // Which mechanics were used
+  playerStrategies?: Record<string, string>;  // Brief strategy notes per player
+  recommendations?: string[];    // Suggestions for game balance/rules
 }

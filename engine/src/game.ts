@@ -49,7 +49,9 @@ import type {
   RollAction,
   BankAction,
   DraftAction,
-  PlayerPower
+  PlayerPower,
+  GameAnalysis,
+  KeyMoment
 } from './types.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
@@ -859,7 +861,7 @@ export function advanceTurn(state: GameState): void {
         }
       }
 
-      state.status = 'completed';
+      state.status = 'pending_analysis';
       state.shared.winner = winner;
       state.shared.endReason = `Max turns (${state.config.max_turns}) reached. ${winner} wins with ${highestScore} points.`;
 
@@ -945,7 +947,7 @@ export function advanceTurn(state: GameState): void {
 export function endGame(gameName: string, winner: string, reason: string): GameState {
   const state = loadState(gameName);
 
-  state.status = 'completed';
+  state.status = 'pending_analysis';
   state.shared.winner = winner;
   state.shared.endReason = reason;
   saveState(state);
@@ -971,6 +973,52 @@ export function cancelGame(gameName: string, reason: string): GameState {
     turn: state.turn,
     data: { reason }
   });
+
+  return state;
+}
+
+/**
+ * Submit gamemaster analysis for a completed game.
+ * Transitions status from 'pending_analysis' to 'completed'.
+ */
+export function submitAnalysis(gameName: string, analysis: GameAnalysis): GameState {
+  const state = loadState(gameName);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot submit analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  // Store analysis in shared state
+  state.shared.analysis = analysis;
+  state.status = 'completed';
+  saveState(state);
+
+  logEvent(state, {
+    event: 'analysis_submitted',
+    turn: state.turn,
+    data: {
+      summary: analysis.summary,
+      winner: analysis.winner,
+      mechanicsUsed: analysis.mechanicsObserved
+    }
+  });
+
+  return state;
+}
+
+/**
+ * Skip analysis and mark game as completed directly.
+ * Use when no analysis is needed or GM is unavailable.
+ */
+export function skipAnalysis(gameName: string): GameState {
+  const state = loadState(gameName);
+
+  if (state.status !== 'pending_analysis') {
+    throw new Error(`Cannot skip analysis: game status is '${state.status}', expected 'pending_analysis'`);
+  }
+
+  state.status = 'completed';
+  saveState(state);
 
   return state;
 }
@@ -2191,7 +2239,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
           // Auto-end the game
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -2370,7 +2418,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
           // Auto-end the game
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -2629,7 +2677,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         // Check win condition
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -2756,7 +2804,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         // Check win condition
         const winCheck = checkAllWinConditions(state);
         if (winCheck) {
-          state.status = 'completed';
+          state.status = 'pending_analysis';
           state.shared.winner = winCheck.winner;
           state.shared.endReason = winCheck.reason;
           saveState(state);
@@ -3008,7 +3056,7 @@ export function adjudicateResignation(
     const otherPlayers = state.turnOrder.filter(p => p !== resignation.player);
     const winner = otherPlayers.length === 1 ? otherPlayers[0] : 'none';
 
-    state.status = 'completed';
+    state.status = 'pending_analysis';
     state.shared.winner = winner;
     state.shared.endReason = `${resignation.player} resigned: ${resignation.reason}`;
 
@@ -3069,7 +3117,7 @@ export function adjudicateVictory(
   });
 
   if (accepted) {
-    state.status = 'completed';
+    state.status = 'pending_analysis';
     state.shared.winner = claim.player;
     state.shared.endReason = `Victory claim accepted: ${rulingReason}`;
 
