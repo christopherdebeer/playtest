@@ -22,6 +22,12 @@ export interface GameLogSummary {
   endReason: string | null
   fileSize: number
   events: LogEvent[]
+  // Analysis (if available)
+  analysis?: {
+    version: string
+    filename: string
+    content: string  // Raw markdown content
+  }
 }
 
 export interface GameStats {

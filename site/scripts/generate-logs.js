@@ -28,6 +28,46 @@ function parseJsonlFile(content, filename) {
 }
 
 /**
+ * Find analysis file for a given game ID
+ * Analysis files are named: playtest-analysis-{VERSION}-{TIMESTAMP}.md
+ * Game IDs are like: markovs-chains-1769816283703
+ * So we extract the timestamp and match against that
+ */
+async function findAnalysis(logsDir, gameId) {
+  try {
+    const files = await readdir(logsDir)
+
+    // Extract timestamp from gameId (e.g., "markovs-chains-1769816283703" -> "1769816283703")
+    const timestampMatch = gameId.match(/(\d{13})$/)
+    if (!timestampMatch) return null
+    const timestamp = timestampMatch[1]
+
+    // Look for analysis files matching this timestamp
+    // Pattern: playtest-analysis-{VERSION}-{TIMESTAMP}.md or playtest-analysis-{TIMESTAMP}.md
+    const analysisFile = files.find(f =>
+      f.startsWith('playtest-analysis-') &&
+      f.endsWith(`${timestamp}.md`)
+    )
+
+    if (!analysisFile) return null
+
+    const content = await readFile(join(logsDir, analysisFile), 'utf-8')
+
+    // Extract version from filename: playtest-analysis-v2.4-timestamp.md
+    const versionMatch = analysisFile.match(/playtest-analysis-(v[\d.]+)-/)
+    const version = versionMatch ? versionMatch[1] : 'unknown'
+
+    return {
+      version,
+      filename: analysisFile,
+      content,
+    }
+  } catch (err) {
+    return null
+  }
+}
+
+/**
  * Extract summary info from events
  */
 function extractSummary(events, gameId, gameName) {
@@ -165,13 +205,18 @@ async function main() {
         }
         gameStats[gameDir].totalTurns += summary.totalTurns
 
+        // Look for analysis file
+        const analysis = await findAnalysis(logsDir, gameId)
+
         allLogs.push({
           ...summary,
           fileSize: fileStat.size,
           events, // Include full events for detailed view
+          analysis, // Include analysis if available
         })
 
-        console.log(`  Parsed: ${logFile} (${events.length} events)`)
+        const analysisNote = analysis ? ` + analysis (${analysis.version})` : ''
+        console.log(`  Parsed: ${logFile} (${events.length} events)${analysisNote}`)
       } catch (err) {
         console.warn(`  Skipped: ${logFile} (${err.message})`)
       }
