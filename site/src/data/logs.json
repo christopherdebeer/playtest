@@ -1,6 +1,12 @@
 {
-  "generatedAt": "2026-01-31T15:52:18.851Z",
+  "generatedAt": "2026-01-31T22:53:31.459Z",
   "games": {
+    "aaote": {
+      "totalLogs": 1,
+      "completedGames": 1,
+      "cancelledGames": 0,
+      "totalTurns": 41
+    },
     "fortune-seekers": {
       "totalLogs": 1,
       "completedGames": 1,
@@ -27,6 +33,1494 @@
     }
   },
   "logs": [
+    {
+      "gameId": "aaote-1769882818599",
+      "gameName": "aaote",
+      "playerCount": 3,
+      "players": [
+        "player-1",
+        "player-2",
+        "player-3"
+      ],
+      "startTime": "2026-01-31T18:06:58.604Z",
+      "endTime": "2026-01-31T19:16:08.864Z",
+      "duration": 4150,
+      "totalTurns": 41,
+      "totalEvents": 127,
+      "eventCounts": {
+        "game_init": 1,
+        "game_start": 1,
+        "action_executed": 120,
+        "resignation_submitted": 2,
+        "resignation_adjudicated": 2,
+        "game_end": 1
+      },
+      "outcome": "completed",
+      "winner": "player-1",
+      "endReason": "Max turns (40) reached. player-1 wins with 0 points.",
+      "fileSize": 21664,
+      "events": [
+        {
+          "timestamp": "2026-01-31T18:06:58.604Z",
+          "event": "game_init",
+          "data": {
+            "gameId": "aaote-1769882818599",
+            "playerCount": 3,
+            "config": "AAOTE: An Agent of the Enemy"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:07:31.664Z",
+          "event": "game_start",
+          "turn": 1,
+          "data": {
+            "players": [
+              "player-1",
+              "player-2",
+              "player-3"
+            ],
+            "firstPlayer": "player-1"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:07:54.801Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Forest Clearing",
+            "effect": {
+              "type": "safe"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:08:12.423Z",
+          "event": "action_executed",
+          "turn": 1,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:08:28.673Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:08:40.768Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:08:52.811Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:09:06.775Z",
+          "event": "action_executed",
+          "turn": 2,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:09:30.011Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:09:41.381Z",
+          "event": "action_executed",
+          "turn": 3,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:09:53.197Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:10:05.667Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Village Square",
+            "effect": {
+              "type": "trade_bonus"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:10:14.008Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:10:29.207Z",
+          "event": "action_executed",
+          "turn": 4,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Forest Clearing",
+            "effect": {
+              "type": "safe"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:10:43.427Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:10:56.199Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:11:11.077Z",
+          "event": "action_executed",
+          "turn": 5,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Forbidden Temple",
+            "effect": {
+              "type": "enemy_only",
+              "description": "Only The Enemy may enter"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:11:26.485Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Hidden Cave",
+            "effect": {
+              "type": "hide",
+              "description": "Avatar cannot be seen by others"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:11:37.933Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:11:51.110Z",
+          "event": "action_executed",
+          "turn": 6,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Dark Tome",
+            "effect": {
+              "type": "enemy_item",
+              "description": "Forbidden Item 2/3"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:12:03.916Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:12:15.573Z",
+          "event": "action_executed",
+          "turn": 7,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:12:26.884Z",
+          "event": "action_executed",
+          "turn": 8,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:12:52.318Z",
+          "event": "action_executed",
+          "turn": 8,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Forest Clearing",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:13:03.667Z",
+          "event": "action_executed",
+          "turn": 8,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 4
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:13:16.473Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:13:28.213Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-1",
+          "data": {
+            "type": "move",
+            "target": "Fake Location",
+            "placedCardEffects": []
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:13:43.548Z",
+          "event": "action_executed",
+          "turn": 9,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:13:54.747Z",
+          "event": "action_executed",
+          "turn": 10,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:14:10.530Z",
+          "event": "action_executed",
+          "turn": 10,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:14:25.402Z",
+          "event": "action_executed",
+          "turn": 10,
+          "player": "player-2",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:14:48.763Z",
+          "event": "resignation_submitted",
+          "turn": 10,
+          "player": "player-3",
+          "data": {
+            "reason": "Player-2 won by collecting all 3 Forbidden Items as The Enemy"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:15:27.879Z",
+          "event": "resignation_adjudicated",
+          "turn": 10,
+          "data": {
+            "player": "player-3",
+            "accepted": false,
+            "rulingReason": "Resignation rejected. Player-2's victory claim is false - they only possess 1 of 3 Forbidden Items (Shadow Key). Dark Tome is in discard, Cursed Amulet location unknown. Game continues."
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:19:15.841Z",
+          "event": "action_executed",
+          "turn": 11,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:19:31.794Z",
+          "event": "action_executed",
+          "turn": 11,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:19:49.896Z",
+          "event": "action_executed",
+          "turn": 11,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:20:57.236Z",
+          "event": "action_executed",
+          "turn": 12,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:21:31.671Z",
+          "event": "action_executed",
+          "turn": 12,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 10
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:21:44.300Z",
+          "event": "action_executed",
+          "turn": 12,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:22:45.863Z",
+          "event": "action_executed",
+          "turn": 12,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Interrogate",
+            "effect": {
+              "type": "peek_objective",
+              "description": "Peek at target's objective"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:23:16.738Z",
+          "event": "action_executed",
+          "turn": 13,
+          "player": "player-1",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:24:18.446Z",
+          "event": "action_executed",
+          "turn": 13,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:33:16.783Z",
+          "event": "action_executed",
+          "turn": 13,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:35:52.885Z",
+          "event": "action_executed",
+          "turn": 14,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:36:11.596Z",
+          "event": "action_executed",
+          "turn": 14,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:36:42.843Z",
+          "event": "action_executed",
+          "turn": 14,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Village Square",
+            "effect": {
+              "type": "trade_bonus"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:37:01.602Z",
+          "event": "action_executed",
+          "turn": 15,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:37:14.588Z",
+          "event": "action_executed",
+          "turn": 15,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Watchtower",
+            "effect": {
+              "type": "reveal",
+              "description": "See all player positions"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:37:30.389Z",
+          "event": "action_executed",
+          "turn": 16,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:37:47.915Z",
+          "event": "action_executed",
+          "turn": 16,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:38:01.102Z",
+          "event": "action_executed",
+          "turn": 16,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Interrogate",
+            "effect": {
+              "type": "peek_objective",
+              "description": "Peek at target's objective"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:38:17.067Z",
+          "event": "action_executed",
+          "turn": 16,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Lantern",
+            "effect": {
+              "type": "utility",
+              "description": "Required for cave locations"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:38:29.997Z",
+          "event": "action_executed",
+          "turn": 17,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:38:50.222Z",
+          "event": "action_executed",
+          "turn": 17,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:39:06.249Z",
+          "event": "action_executed",
+          "turn": 17,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Evasion",
+            "effect": {
+              "type": "counter",
+              "description": "Cancel an event targeting you"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:39:20.575Z",
+          "event": "action_executed",
+          "turn": 18,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:39:33.532Z",
+          "event": "action_executed",
+          "turn": 18,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Ancient Ruins",
+            "effect": {
+              "type": "draw_on_enter",
+              "value": 1
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:39:48.163Z",
+          "event": "action_executed",
+          "turn": 18,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "River Crossing",
+            "effect": {
+              "type": "safe"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:40:09.851Z",
+          "event": "action_executed",
+          "turn": 19,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:40:26.379Z",
+          "event": "action_executed",
+          "turn": 19,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 5
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:40:43.233Z",
+          "event": "action_executed",
+          "turn": 19,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Watchtower",
+            "effect": {
+              "type": "reveal",
+              "description": "See all player positions"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:40:59.988Z",
+          "event": "action_executed",
+          "turn": 20,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Hidden Path",
+            "effect": {
+              "type": "secret_move",
+              "description": "Move without revealing destination"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:41:11.878Z",
+          "event": "action_executed",
+          "turn": 20,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:41:25.315Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:41:45.016Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Forbidden Temple",
+            "effect": {
+              "type": "enemy_only",
+              "description": "Only The Enemy may enter"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:42:02.692Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Village Square",
+            "effect": {
+              "type": "trade_bonus"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:42:16.069Z",
+          "event": "action_executed",
+          "turn": 21,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:42:28.937Z",
+          "event": "action_executed",
+          "turn": 22,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Hidden Cave",
+            "effect": {
+              "type": "hide",
+              "description": "Avatar cannot be seen by others"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:42:42.186Z",
+          "event": "action_executed",
+          "turn": 22,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 7
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:42:56.940Z",
+          "event": "action_executed",
+          "turn": 23,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:43:10.935Z",
+          "event": "action_executed",
+          "turn": 23,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:43:26.164Z",
+          "event": "action_executed",
+          "turn": 23,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:43:45.011Z",
+          "event": "action_executed",
+          "turn": 23,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Supplies",
+            "effect": {
+              "type": "currency",
+              "description": "Used for certain events"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:43:59.694Z",
+          "event": "action_executed",
+          "turn": 24,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:44:12.868Z",
+          "event": "action_executed",
+          "turn": 24,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:44:36.118Z",
+          "event": "action_executed",
+          "turn": 24,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Forbidden Temple",
+            "effect": {
+              "type": "enemy_only",
+              "description": "Only The Enemy may enter"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:44:49.243Z",
+          "event": "action_executed",
+          "turn": 25,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:45:04.927Z",
+          "event": "action_executed",
+          "turn": 25,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:45:25.590Z",
+          "event": "action_executed",
+          "turn": 26,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:45:48.077Z",
+          "event": "action_executed",
+          "turn": 26,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Dark Tome",
+            "effect": {
+              "type": "enemy_item",
+              "description": "Forbidden Item 2/3"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:46:05.114Z",
+          "event": "action_executed",
+          "turn": 26,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Interrogate",
+            "effect": {
+              "type": "peek_objective",
+              "description": "Peek at target's objective"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:46:23.925Z",
+          "event": "action_executed",
+          "turn": 26,
+          "player": "player-3",
+          "data": {
+            "type": "play_card",
+            "card": "Cursed Amulet",
+            "effect": {
+              "type": "enemy_item",
+              "description": "Forbidden Item 1/3"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:46:51.761Z",
+          "event": "action_executed",
+          "turn": 27,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:47:17.207Z",
+          "event": "action_executed",
+          "turn": 27,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:47:29.017Z",
+          "event": "action_executed",
+          "turn": 28,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:47:42.126Z",
+          "event": "action_executed",
+          "turn": 28,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:47:52.986Z",
+          "event": "action_executed",
+          "turn": 28,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 0
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:50:38.125Z",
+          "event": "action_executed",
+          "turn": 29,
+          "player": "player-3",
+          "data": {
+            "type": "draw",
+            "count": 0
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:50:52.514Z",
+          "event": "action_executed",
+          "turn": 29,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:51:23.551Z",
+          "event": "action_executed",
+          "turn": 29,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:52:50.310Z",
+          "event": "action_executed",
+          "turn": 30,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:53:03.203Z",
+          "event": "action_executed",
+          "turn": 30,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:53:30.984Z",
+          "event": "action_executed",
+          "turn": 30,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:54:45.542Z",
+          "event": "action_executed",
+          "turn": 31,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:54:57.416Z",
+          "event": "action_executed",
+          "turn": 31,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:55:18.016Z",
+          "event": "action_executed",
+          "turn": 31,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Hidden Path",
+            "effect": {
+              "type": "secret_move",
+              "description": "Move without revealing destination"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:55:47.701Z",
+          "event": "action_executed",
+          "turn": 32,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:56:08.822Z",
+          "event": "action_executed",
+          "turn": 32,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T18:56:41.114Z",
+          "event": "resignation_submitted",
+          "turn": 32,
+          "player": "player-2",
+          "data": {
+            "reason": "Player-1 has 2 of 3 Forbidden Items, I have 1. Victory is impossible."
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:02:21.916Z",
+          "event": "resignation_adjudicated",
+          "turn": 32,
+          "data": {
+            "player": "player-2",
+            "accepted": false,
+            "rulingReason": "Resignation rejected. Victory is not impossible. Player-2 holds the Shadow Key, preventing Player-1 from immediate victory. With 8 turns remaining, 2 Evasion cards for defense, and 10 location cards in hand, player-2 has multiple paths to victory depending on their objective. The resignation is premature."
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:04:44.462Z",
+          "event": "action_executed",
+          "turn": 32,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Interrogate",
+            "effect": {
+              "type": "peek_objective",
+              "description": "Peek at target's objective"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:05:59.487Z",
+          "event": "action_executed",
+          "turn": 33,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:08:32.998Z",
+          "event": "action_executed",
+          "turn": 33,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:09:06.843Z",
+          "event": "action_executed",
+          "turn": 33,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:10:03.741Z",
+          "event": "action_executed",
+          "turn": 34,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:10:15.349Z",
+          "event": "action_executed",
+          "turn": 34,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:10:40.524Z",
+          "event": "action_executed",
+          "turn": 34,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Hidden Cave",
+            "effect": {
+              "type": "hide",
+              "description": "Avatar cannot be seen by others"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:10:53.703Z",
+          "event": "action_executed",
+          "turn": 35,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:11:04.691Z",
+          "event": "action_executed",
+          "turn": 35,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:11:20.864Z",
+          "event": "action_executed",
+          "turn": 35,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:11:44.073Z",
+          "event": "action_executed",
+          "turn": 36,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:11:58.260Z",
+          "event": "action_executed",
+          "turn": 36,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:12:16.248Z",
+          "event": "action_executed",
+          "turn": 36,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Interrogate",
+            "effect": {
+              "type": "peek_objective",
+              "description": "Peek at target's objective"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:12:35.840Z",
+          "event": "action_executed",
+          "turn": 37,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:12:47.063Z",
+          "event": "action_executed",
+          "turn": 37,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:13:00.957Z",
+          "event": "action_executed",
+          "turn": 37,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Shortcut",
+            "effect": {
+              "type": "teleport_adjacent",
+              "description": "Move to any tile adjacent to any player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:13:27.316Z",
+          "event": "action_executed",
+          "turn": 38,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:13:40.788Z",
+          "event": "action_executed",
+          "turn": 38,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Ancient Ruins",
+            "effect": {
+              "type": "draw_on_enter",
+              "value": 1
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:14:02.086Z",
+          "event": "action_executed",
+          "turn": 38,
+          "player": "player-2",
+          "data": {
+            "type": "play_card",
+            "card": "Theft",
+            "effect": {
+              "type": "steal_item",
+              "description": "Steal random item from adjacent player"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:14:18.720Z",
+          "event": "action_executed",
+          "turn": 39,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:14:27.086Z",
+          "event": "action_executed",
+          "turn": 39,
+          "player": "player-1",
+          "data": {
+            "type": "draw",
+            "count": 1
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:14:40.918Z",
+          "event": "action_executed",
+          "turn": 39,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 2
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:15:10.300Z",
+          "event": "action_executed",
+          "turn": 40,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:15:25.859Z",
+          "event": "action_executed",
+          "turn": 40,
+          "player": "player-1",
+          "data": {
+            "type": "play_card",
+            "card": "Spy",
+            "effect": {
+              "type": "peek_hand",
+              "description": "Look at target player's hand"
+            }
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:15:44.974Z",
+          "event": "action_executed",
+          "turn": 40,
+          "player": "player-2",
+          "data": {
+            "type": "draw",
+            "count": 3
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:16:08.861Z",
+          "event": "game_end",
+          "turn": 41,
+          "data": {
+            "winner": "player-1",
+            "reason": "Max turns (40) reached. player-1 wins with 0 points."
+          }
+        },
+        {
+          "timestamp": "2026-01-31T19:16:08.864Z",
+          "event": "action_executed",
+          "turn": 41,
+          "player": "player-3",
+          "data": {
+            "type": "pass"
+          }
+        }
+      ],
+      "analysis": null
+    },
     {
       "gameId": "markovs-chains-1769874326719",
       "gameName": "markovs-chains",
