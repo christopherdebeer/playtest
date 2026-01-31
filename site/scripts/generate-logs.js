@@ -9,6 +9,63 @@ const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'logs.json')
 
 /**
+ * Transcript naming conventions (for backup/archival):
+ *
+ * Expected patterns:
+ *   - gamemaster-transcript-{TIMESTAMP}.jsonl   (gamemaster agent)
+ *   - player1-transcript-{TIMESTAMP}.jsonl      (player 1 agent)
+ *   - player2-transcript-{TIMESTAMP}.jsonl      (player 2 agent)
+ *   - playerN-transcript-{TIMESTAMP}.jsonl      (player N agent)
+ *
+ * The TIMESTAMP should match the game log timestamp, e.g.:
+ *   - markovs-chains-1769816283703.jsonl        (game log)
+ *   - gamemaster-transcript-1769816283703.jsonl (matching transcript)
+ *   - player1-transcript-1769816283703.jsonl    (matching transcript)
+ *
+ * Non-timestamped transcripts (e.g., player1-transcript.jsonl) are
+ * considered "current/active" and not linked to any specific game.
+ *
+ * To backup transcripts after a playtest session, copy from:
+ *   ~/.claude/projects/-home-user-playtest/{session-id}/subagents/agent-{id}.jsonl
+ * To:
+ *   games/{game}/logs/{agent-type}-transcript-{timestamp}.jsonl
+ */
+
+/**
+ * Check if a file is a transcript (player or gamemaster transcript)
+ */
+function isTranscriptFile(filename) {
+  // Match patterns like:
+  // - gamemaster-transcript.jsonl
+  // - gamemaster-transcript-1769816283703.jsonl
+  // - player1-transcript.jsonl
+  // - player1-transcript-1769816283703.jsonl
+  // - player2-transcript-1769816283703.jsonl
+  return /^(gamemaster|player\d+)-transcript(-\d+)?\.jsonl$/.test(filename)
+}
+
+/**
+ * Check if a file is a game log (not a transcript)
+ */
+function isGameLogFile(filename) {
+  if (!filename.endsWith('.jsonl')) return false
+  if (isTranscriptFile(filename)) return false
+  // Game logs should have a timestamp and game name
+  // e.g., markovs-chains-1769816283703.jsonl, uno-1769645846611.jsonl
+  return /^[a-z][\w-]+-\d{13}\.jsonl$/.test(filename)
+}
+
+/**
+ * Extract timestamp from filename
+ * e.g., "markovs-chains-1769816283703" -> "1769816283703"
+ * e.g., "player1-transcript-1769816283703" -> "1769816283703"
+ */
+function extractTimestamp(filename) {
+  const match = filename.match(/(\d{13})/)
+  return match ? match[1] : null
+}
+
+/**
  * Parse a JSONL file and extract game log data
  */
 function parseJsonlFile(content, filename) {
@@ -25,6 +82,103 @@ function parseJsonlFile(content, filename) {
   }
 
   return events
+}
+
+/**
+ * Parse transcript file and extract summary
+ */
+function parseTranscriptFile(content, filename) {
+  const events = parseJsonlFile(content, filename)
+
+  // Extract agent info from events
+  let agentType = 'unknown'
+  let agentId = null
+  let messageCount = 0
+  let toolUseCount = 0
+  let thinkingCount = 0
+
+  for (const event of events) {
+    // Determine agent type from filename or content
+    if (filename.startsWith('gamemaster')) {
+      agentType = 'gamemaster'
+    } else if (filename.startsWith('player1')) {
+      agentType = 'player1'
+    } else if (filename.startsWith('player2')) {
+      agentType = 'player2'
+    } else if (filename.includes('player')) {
+      const match = filename.match(/player(\d+)/)
+      if (match) agentType = `player${match[1]}`
+    }
+
+    // Get agent ID
+    if (event.agentId && !agentId) {
+      agentId = event.agentId
+    }
+
+    // Count message types
+    if (event.type === 'user' || event.type === 'assistant') {
+      messageCount++
+    }
+
+    // Count tool uses
+    if (event.message?.content) {
+      const content = event.message.content
+      if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block.type === 'tool_use') toolUseCount++
+          if (block.type === 'thinking') thinkingCount++
+        }
+      }
+    }
+  }
+
+  return {
+    agentType,
+    agentId,
+    messageCount,
+    toolUseCount,
+    thinkingCount,
+    eventCount: events.length,
+    events, // Include full events for detailed view
+  }
+}
+
+/**
+ * Find transcripts for a given game timestamp
+ */
+async function findTranscripts(logsDir, timestamp, allFiles) {
+  const transcripts = []
+
+  for (const file of allFiles) {
+    if (!isTranscriptFile(file)) continue
+    if (!file.endsWith('.jsonl')) continue
+
+    const fileTimestamp = extractTimestamp(file)
+    if (fileTimestamp !== timestamp) continue
+
+    try {
+      const content = await readFile(join(logsDir, file), 'utf-8')
+      const fileStat = await stat(join(logsDir, file))
+      const parsed = parseTranscriptFile(content, file)
+
+      transcripts.push({
+        filename: file,
+        fileSize: fileStat.size,
+        ...parsed,
+      })
+    } catch (err) {
+      console.warn(`  Warning: Failed to parse transcript ${file}: ${err.message}`)
+    }
+  }
+
+  // Sort by agent type (gamemaster first, then players in order)
+  transcripts.sort((a, b) => {
+    if (a.agentType === 'gamemaster') return -1
+    if (b.agentType === 'gamemaster') return 1
+    return a.agentType.localeCompare(b.agentType)
+  })
+
+  return transcripts
 }
 
 /**
@@ -165,13 +319,15 @@ async function main() {
       continue
     }
 
-    let logFiles
+    let allFiles
     try {
-      logFiles = await readdir(logsDir)
-      logFiles = logFiles.filter(f => f.endsWith('.jsonl'))
+      allFiles = await readdir(logsDir)
     } catch (err) {
       continue
     }
+
+    // Filter to only game log files (not transcripts)
+    const logFiles = allFiles.filter(f => isGameLogFile(f))
 
     if (logFiles.length === 0) continue
 
@@ -208,15 +364,23 @@ async function main() {
         // Look for analysis file
         const analysis = await findAnalysis(logsDir, gameId)
 
+        // Look for associated transcripts (matching timestamp)
+        const timestamp = extractTimestamp(gameId)
+        const transcripts = timestamp
+          ? await findTranscripts(logsDir, timestamp, allFiles)
+          : []
+
         allLogs.push({
           ...summary,
           fileSize: fileStat.size,
           events, // Include full events for detailed view
           analysis, // Include analysis if available
+          transcripts, // Include agent transcripts if available
         })
 
         const analysisNote = analysis ? ` + analysis (${analysis.version})` : ''
-        console.log(`  Parsed: ${logFile} (${events.length} events)${analysisNote}`)
+        const transcriptNote = transcripts.length > 0 ? ` + ${transcripts.length} transcripts` : ''
+        console.log(`  Parsed: ${logFile} (${events.length} events)${analysisNote}${transcriptNote}`)
       } catch (err) {
         console.warn(`  Skipped: ${logFile} (${err.message})`)
       }

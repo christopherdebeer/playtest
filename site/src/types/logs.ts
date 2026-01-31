@@ -256,6 +256,38 @@ export interface LogEvent {
   data?: Record<string, unknown>
 }
 
+// Transcript event from agent session
+export interface TranscriptEvent {
+  parentUuid?: string
+  type: 'user' | 'assistant' | 'progress' | 'tool_result'
+  timestamp: string
+  message?: {
+    role: 'user' | 'assistant'
+    content: string | Array<{
+      type: 'text' | 'thinking' | 'tool_use' | 'tool_result'
+      text?: string
+      thinking?: string
+      name?: string
+      input?: Record<string, unknown>
+    }>
+  }
+  agentId?: string
+  sessionId?: string
+}
+
+// Summary of an agent transcript
+export interface TranscriptSummary {
+  filename: string
+  fileSize: number
+  agentType: 'gamemaster' | 'player1' | 'player2' | string  // playerN
+  agentId: string | null
+  messageCount: number
+  toolUseCount: number
+  thinkingCount: number
+  eventCount: number
+  events: TranscriptEvent[]  // Full transcript events for detailed view
+}
+
 export interface GameLogSummary {
   gameId: string
   gameName: string
@@ -278,6 +310,8 @@ export interface GameLogSummary {
     filename: string
     content: string  // Raw markdown content
   }
+  // Agent transcripts (if available)
+  transcripts?: TranscriptSummary[]
 }
 
 export interface GameStats {
