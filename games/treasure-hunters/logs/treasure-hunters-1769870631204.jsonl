@@ -34,3 +34,8 @@
 {"timestamp":"2026-01-31T14:47:17.135Z","event":"action_executed","turn":9,"player":"player-2","data":{"type":"draw","count":1}}
 {"timestamp":"2026-01-31T14:47:19.220Z","event":"set_collected","turn":9,"player":"player-1","data":{"setType":"Type Set","cards":["Diamond Ring","Ruby Ring","Emerald Ring"],"points":15,"totalSets":2}}
 {"timestamp":"2026-01-31T14:47:19.221Z","event":"income_generated","turn":9,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:47:36.484Z","event":"income_generated","turn":10,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:47:36.486Z","event":"action_executed","turn":10,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T14:47:58.690Z","event":"income_generated","turn":10,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-01-31T14:47:58.701Z","event":"action_executed","turn":10,"player":"player-1","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T14:48:07.079Z","event":"set_collected","turn":10,"player":"player-2","data":{"setType":"Type Set","cards":["Sapphire Ring","Emerald Ring","Diamond Ring"],"points":15,"totalSets":4}}
