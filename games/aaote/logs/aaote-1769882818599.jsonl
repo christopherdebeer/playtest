@@ -1,0 +1,41 @@
+{"timestamp":"2026-01-31T18:06:58.604Z","event":"game_init","data":{"gameId":"aaote-1769882818599","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-01-31T18:07:31.664Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-31T18:07:54.801Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"play_card","card":"Forest Clearing","effect":{"type":"safe"}}}
+{"timestamp":"2026-01-31T18:08:12.423Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:08:28.673Z","event":"action_executed","turn":2,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:08:40.768Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T18:08:52.811Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-01-31T18:09:06.775Z","event":"action_executed","turn":2,"player":"player-3","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-01-31T18:09:30.011Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"play_card","card":"Theft","effect":{"type":"steal_item","description":"Steal random item from adjacent player"}}}
+{"timestamp":"2026-01-31T18:09:41.381Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:09:53.197Z","event":"action_executed","turn":4,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:10:05.667Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"play_card","card":"Village Square","effect":{"type":"trade_bonus"}}}
+{"timestamp":"2026-01-31T18:10:14.008Z","event":"action_executed","turn":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:10:29.207Z","event":"action_executed","turn":4,"player":"player-3","data":{"type":"play_card","card":"Forest Clearing","effect":{"type":"safe"}}}
+{"timestamp":"2026-01-31T18:10:43.427Z","event":"action_executed","turn":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:10:56.199Z","event":"action_executed","turn":5,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T18:11:11.077Z","event":"action_executed","turn":5,"player":"player-3","data":{"type":"play_card","card":"Forbidden Temple","effect":{"type":"enemy_only","description":"Only The Enemy may enter"}}}
+{"timestamp":"2026-01-31T18:11:26.485Z","event":"action_executed","turn":6,"player":"player-1","data":{"type":"play_card","card":"Hidden Cave","effect":{"type":"hide","description":"Avatar cannot be seen by others"}}}
+{"timestamp":"2026-01-31T18:11:37.933Z","event":"action_executed","turn":6,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-01-31T18:11:51.110Z","event":"action_executed","turn":6,"player":"player-3","data":{"type":"play_card","card":"Dark Tome","effect":{"type":"enemy_item","description":"Forbidden Item 2/3"}}}
+{"timestamp":"2026-01-31T18:12:03.916Z","event":"action_executed","turn":7,"player":"player-1","data":{"type":"draw","count":5}}
+{"timestamp":"2026-01-31T18:12:15.573Z","event":"action_executed","turn":7,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:12:26.884Z","event":"action_executed","turn":8,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:12:52.318Z","event":"action_executed","turn":8,"player":"player-1","data":{"type":"move","target":"Forest Clearing","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T18:13:03.667Z","event":"action_executed","turn":8,"player":"player-2","data":{"type":"draw","count":4}}
+{"timestamp":"2026-01-31T18:13:16.473Z","event":"action_executed","turn":9,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:13:28.213Z","event":"action_executed","turn":9,"player":"player-1","data":{"type":"move","target":"Fake Location","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T18:13:43.548Z","event":"action_executed","turn":9,"player":"player-2","data":{"type":"draw","count":5}}
+{"timestamp":"2026-01-31T18:13:54.747Z","event":"action_executed","turn":10,"player":"player-3","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T18:14:10.530Z","event":"action_executed","turn":10,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T18:14:25.402Z","event":"action_executed","turn":10,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T18:14:48.763Z","event":"resignation_submitted","turn":10,"player":"player-3","data":{"reason":"Player-2 won by collecting all 3 Forbidden Items as The Enemy"}}
+{"timestamp":"2026-01-31T18:15:27.879Z","event":"resignation_adjudicated","turn":10,"data":{"player":"player-3","accepted":false,"rulingReason":"Resignation rejected. Player-2's victory claim is false - they only possess 1 of 3 Forbidden Items (Shadow Key). Dark Tome is in discard, Cursed Amulet location unknown. Game continues."}}
+{"timestamp":"2026-01-31T18:19:15.841Z","event":"action_executed","turn":11,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T18:19:31.794Z","event":"action_executed","turn":11,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-01-31T18:19:49.896Z","event":"action_executed","turn":11,"player":"player-2","data":{"type":"play_card","card":"Theft","effect":{"type":"steal_item","description":"Steal random item from adjacent player"}}}
+{"timestamp":"2026-01-31T18:20:57.236Z","event":"action_executed","turn":12,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-01-31T18:21:31.671Z","event":"action_executed","turn":12,"player":"player-1","data":{"type":"draw","count":10}}
+{"timestamp":"2026-01-31T18:21:44.300Z","event":"action_executed","turn":12,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-01-31T18:22:45.863Z","event":"action_executed","turn":12,"player":"player-3","data":{"type":"play_card","card":"Interrogate","effect":{"type":"peek_objective","description":"Peek at target's objective"}}}
+{"timestamp":"2026-01-31T18:23:16.738Z","event":"action_executed","turn":13,"player":"player-1","data":{"type":"pass"}}
