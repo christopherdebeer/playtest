@@ -266,8 +266,8 @@ program
 // ============ Turn Management Commands ============
 
 program
-  .command('wait <game>')
-  .description('Wait for player turn (blocking)')
+  .command('player:wait <game>')
+  .description('[Player] Wait for your turn (blocking)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { player: string; timeout: string }) => {
@@ -310,8 +310,8 @@ program
 
 // Optimized turn command - combines wait + actions in one call
 program
-  .command('turn <game>')
-  .description('Wait for player turn and get available actions (optimized single-call)')
+  .command('player:turn <game>')
+  .description('[Player] Wait for turn and get available actions (optimized)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { player: string; timeout: string }) => {
@@ -409,8 +409,8 @@ program
 // ============ Contest-Based Adjudication Commands ============
 
 program
-  .command('act <game>')
-  .description('Execute action directly (contest-based system)')
+  .command('player:act <game>')
+  .description('[Player] Execute action directly (contest-based system)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .requiredOption('-a, --action <json>', 'Action JSON')
   .action((game: string, options: { player: string; action: string }) => {
@@ -495,8 +495,8 @@ program
   });
 
 program
-  .command('contest <game>')
-  .description('Contest the previous player\'s action')
+  .command('player:contest <game>')
+  .description('[Player] Contest the previous player\'s action')
   .requiredOption('-p, --player <id>', 'Contesting player ID')
   .requiredOption('-r, --reason <text>', 'Reason for contest')
   .action((game: string, options: { player: string; reason: string }) => {
@@ -530,8 +530,8 @@ program
   });
 
 program
-  .command('adjudicate <game>')
-  .description('Adjudicate a pending contest, resignation, or victory claim (gamemaster only)')
+  .command('gm:adjudicate <game>')
+  .description('[GM] Adjudicate a pending contest, resignation, or victory claim')
   .option('--allow', 'Allow the contested action (reject the contest)')
   .option('--reject', 'Reject the contested action (uphold the contest)')
   .option('--accept-resignation', 'Accept a pending resignation')
@@ -665,8 +665,8 @@ program
   });
 
 program
-  .command('pending <game>')
-  .description('Wait for pending action, contest, or resignation (gamemaster use)')
+  .command('gm:pending <game>')
+  .description('[GM] Wait for pending contest, resignation, or victory claim')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { timeout: string }) => {
     try {
@@ -948,8 +948,8 @@ program
 // ============ Gamemaster Commands ============
 
 program
-  .command('state <game>')
-  .description('Get full game state (gamemaster only)')
+  .command('gm:state <game>')
+  .description('[GM] Get full game state')
   .option('-p, --player <id>', 'Get player-filtered view instead')
   .action((game: string, options: { player?: string }) => {
     try {
@@ -985,8 +985,8 @@ program
   });
 
 program
-  .command('actions <game>')
-  .description('Get available actions for a player (procedurally generated based on game rules)')
+  .command('player:actions <game>')
+  .description('[Player] Get available actions (procedurally generated)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('--enabled-only', 'Only show currently enabled actions')
   .option('--json', 'Output as JSON (default is human-readable)')
@@ -1160,8 +1160,8 @@ program
   });
 
 program
-  .command('end <game>')
-  .description('End game and declare winner')
+  .command('gm:end <game>')
+  .description('[GM] End game and declare winner')
   .requiredOption('-w, --winner <id>', 'Winner player ID')
   .requiredOption('-r, --reason <text>', 'End reason')
   .action((game: string, options: { winner: string; reason: string }) => {

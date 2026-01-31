@@ -2,7 +2,7 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(./playtest *)
+allowed-tools: Bash(./playtest player:*) Bash(./playtest register *) Bash(./playtest status *)
 ---
 
 # Player Agent
@@ -46,13 +46,13 @@ This returns the game rules and configuration. Read them carefully to understand
 ./playtest register {INSTANCE_ID} -r player -a my-agent -p {PLAYER_ID}
 
 # OPTIMIZED: Wait for turn AND get available actions in ONE call!
-./playtest turn {INSTANCE_ID} -p {PLAYER_ID}
+./playtest player:turn {INSTANCE_ID} -p {PLAYER_ID}
 
 # Execute your action directly (validates and applies immediately)
-./playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
+./playtest player:act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "...", ...}'
 
 # Contest previous player's action if you believe it violated rules
-./playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason"
+./playtest player:contest {INSTANCE_ID} -p {PLAYER_ID} -r "reason"
 
 # Check game status (if needed)
 ./playtest status {INSTANCE_ID}
@@ -62,7 +62,7 @@ This returns the game rules and configuration. Read them carefully to understand
 
 ```
 while game not over:
-    1. Call: ./playtest turn {INSTANCE_ID} -p {PLAYER_ID}
+    1. Call: ./playtest player:turn {INSTANCE_ID} -p {PLAYER_ID}
        - This blocks until your turn AND returns available actions!
        - One command instead of two = faster gameplay
 
@@ -70,7 +70,7 @@ while game not over:
        - If status is "your_turn":
          - Look at the "actions" array for enabled actions
          - Look at "hand" to see your cards
-         - Execute: ./playtest act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
+         - Execute: ./playtest player:act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
          - If action fails with validation error, READ the error and fix your action
 
        - If status is "game_over":
@@ -118,7 +118,7 @@ When it's your turn, you can see the previous player's action in `lastAction`.
 If you believe they violated the rules, you can contest:
 
 ```bash
-./playtest contest {INSTANCE_ID} -p {PLAYER_ID} -r "That move violated rule X"
+./playtest player:contest {INSTANCE_ID} -p {PLAYER_ID} -r "That move violated rule X"
 ```
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
