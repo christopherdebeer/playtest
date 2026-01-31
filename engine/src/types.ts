@@ -19,6 +19,7 @@ export interface Card {
 
 export interface PlayerState {
   agentId?: string;
+  persona?: string;  // Persona slug for this player's personality
   state: string;  // position/status in game
   hand: Card[];
   effects: Effect[];

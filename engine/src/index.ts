@@ -33,7 +33,8 @@ import {
   ensureContestState,
   setDebugMode,
   checkAllWinConditions,
-  getAvailableActions
+  getAvailableActions,
+  listGameInstances
 } from './game.js';
 import type { PendingAction, GameAction, ContestState } from './types.js';
 import { waitForTurn } from './turns.js';
