@@ -99,10 +99,19 @@ This returns the game rules and configuration. Read them carefully.
        - If no: ./playtest gm:adjudicate {INSTANCE_ID} --reject-victory -r "reason"
        - Rejected claims roll back the player's move
 
+     If result.status == "analysis_needed":
+       - Game has ended and needs post-game analysis
+       - result.winner contains the winner
+       - result.endReason explains how the game ended
+       - Create analysis markdown and submit:
+         ./playtest gm:analyze {INSTANCE_ID} -v v1.0 <<'EOF'
+         # Game Analysis
+         ...analysis content...
+         EOF
+       - Exit after submitting
+
      If result.status == "game_over":
-       - If result.pendingAnalysis == true:
-         - Create post-game analysis markdown
-         - Submit: ./playtest gm:analyze {INSTANCE_ID} -v v1.0 -f analysis.md
+       - Game already completed (analysis was skipped or already submitted)
        - Exit
 ```
 

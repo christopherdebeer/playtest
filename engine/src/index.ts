@@ -669,7 +669,7 @@ program
 
 program
   .command('gm:pending <game>')
-  .description('[GM] Wait for pending contest, resignation, or victory claim')
+  .description('[GM] Wait for pending contest, resignation, victory claim, or analysis needed')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
   .action(async (game: string, options: { timeout: string }) => {
     try {
@@ -706,6 +706,17 @@ program
           console.log(JSON.stringify({
             status: 'game_over',
             winner: state.shared.winner
+          }));
+          return;
+        }
+
+        if (state.status === 'pending_analysis') {
+          console.log(JSON.stringify({
+            status: 'analysis_needed',
+            winner: state.shared.winner,
+            endReason: state.shared.endReason,
+            turn: state.turn,
+            gameId: state.gameId
           }));
           return;
         }
