@@ -1,0 +1,8 @@
+{"timestamp":"2026-01-31T12:40:46.091Z","event":"game_init","data":{"gameId":"markovs-chains-1769863246087","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-01-31T12:41:37.875Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-01-31T12:42:00.410Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T12:42:16.130Z","event":"action_executed","turn":1,"player":"player-2","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T12:42:33.766Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T12:42:57.767Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T12:43:21.093Z","event":"action_executed","turn":3,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-01-31T12:43:21.095Z","event":"game_end","turn":3,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}
