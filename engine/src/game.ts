@@ -51,6 +51,105 @@ const PROJECT_ROOT = join(__dirname, '..', '..');
 const GAMES_DIR = join(PROJECT_ROOT, 'games');
 const PERSONAS_DIR = join(PROJECT_ROOT, '.claude', 'agents', 'personas');
 
+// ============ Auto-Adjudication Configuration ============
+// If a contest/resignation is pending for longer than this, auto-adjudicate (allow)
+// This prevents games from deadlocking when the gamemaster agent times out
+const AUTO_ADJUDICATION_TIMEOUT_MS = 60000; // 60 seconds
+
+/**
+ * Check if a pending contest has timed out and should be auto-adjudicated.
+ * Returns true if auto-adjudication was performed, false otherwise.
+ */
+export function checkAndAutoAdjudicateContest(state: GameState): boolean {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingContest) {
+    return false;
+  }
+
+  const contestTimestamp = new Date(contestState.pendingContest.timestamp).getTime();
+  const elapsed = Date.now() - contestTimestamp;
+
+  if (elapsed >= AUTO_ADJUDICATION_TIMEOUT_MS) {
+    // Auto-adjudicate: allow the contested action (reject the contest)
+    const contest = contestState.pendingContest;
+    const originalAction = contest.originalAction;
+
+    // Record in history with auto-adjudication note
+    contestState.contestHistory.push({
+      turn: originalAction.turn,
+      action: originalAction.action,
+      player: originalAction.player,
+      contestedBy: contest.contestedBy,
+      contestReason: contest.reason,
+      ruling: 'allowed',
+      rulingReason: `[AUTO-ADJUDICATED] Gamemaster did not respond within ${AUTO_ADJUDICATION_TIMEOUT_MS / 1000}s. Action allowed by default.`,
+      timestamp: new Date().toISOString()
+    });
+
+    // Clear pending contest
+    delete contestState.pendingContest;
+    saveState(state);
+
+    // Log the auto-adjudication
+    logEvent(state, {
+      event: 'contest_auto_adjudicated',
+      turn: state.turn,
+      player: originalAction.player,
+      data: {
+        contestedBy: contest.contestedBy,
+        reason: contest.reason,
+        ruling: 'allowed',
+        autoReason: 'Gamemaster timeout - action allowed by default',
+        elapsedMs: elapsed
+      }
+    });
+
+    debug(`[AUTO-ADJUDICATION] Contest timed out after ${elapsed}ms. Action allowed.`);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check if a pending resignation has timed out and should be auto-adjudicated.
+ * Returns true if auto-adjudication was performed, false otherwise.
+ */
+export function checkAndAutoAdjudicateResignation(state: GameState): boolean {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingResignation) {
+    return false;
+  }
+
+  const resignTimestamp = new Date(contestState.pendingResignation.timestamp).getTime();
+  const elapsed = Date.now() - resignTimestamp;
+
+  if (elapsed >= AUTO_ADJUDICATION_TIMEOUT_MS) {
+    // Auto-adjudicate: accept the resignation
+    const resignation = contestState.pendingResignation;
+
+    // Record in history
+    contestState.resignations.push({
+      player: resignation.player,
+      reason: resignation.reason,
+      accepted: true,
+      rulingReason: `[AUTO-ADJUDICATED] Gamemaster did not respond within ${AUTO_ADJUDICATION_TIMEOUT_MS / 1000}s. Resignation accepted by default.`,
+      timestamp: new Date().toISOString()
+    });
+
+    // Clear pending resignation
+    delete contestState.pendingResignation;
+    saveState(state);
+
+    debug(`[AUTO-ADJUDICATION] Resignation timed out after ${elapsed}ms. Resignation accepted.`);
+    return true;
+  }
+
+  return false;
+}
+
 // ============ Persona Management ============
 
 /**
@@ -1338,13 +1437,29 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     return { valid: false, errors: [`Game is not in progress. Status: ${state.status}`] };
   }
 
-  // Check for pending contest/resignation
+  // Check for pending contest/resignation (with auto-adjudication timeout)
   const contestState = ensureContestState(state);
   if (contestState.pendingContest) {
-    return { valid: false, errors: ['Cannot act while a contest is pending. Wait for adjudication.'] };
+    // Check if contest has timed out and should be auto-adjudicated
+    const wasAutoAdjudicated = checkAndAutoAdjudicateContest(state);
+    if (!wasAutoAdjudicated) {
+      // Still pending - block the action
+      const elapsed = Date.now() - new Date(contestState.pendingContest.timestamp).getTime();
+      const remainingMs = AUTO_ADJUDICATION_TIMEOUT_MS - elapsed;
+      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      return {
+        valid: false,
+        errors: [`Cannot act while a contest is pending. Wait for adjudication (auto-adjudication in ${remainingSec}s).`]
+      };
+    }
+    // Auto-adjudicated - continue with validation
   }
   if (contestState.pendingResignation) {
-    return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
+    // Check if resignation has timed out and should be auto-adjudicated
+    const wasAutoAdjudicated = checkAndAutoAdjudicateResignation(state);
+    if (!wasAutoAdjudicated) {
+      return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
+    }
   }
 
   // ============ NEW: Check for blocking effects ============
@@ -1769,141 +1884,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               placedCardEffects: placedCardEffects.effectsApplied
             }
           }
-
-          effectiveProbability = Math.min(1.0, baseProbability + boostValue);
-          const rollResult = roll(effectiveProbability);
-          rollValue = rollResult.roll;
-          moveSucceeded = rollResult.success;
-
-          // Log probability roll
-          logEvent(state, {
-            event: 'probability_roll',
-            turn: state.turn,
-            player: playerId,
-            data: {
-              fromState,
-              toState,
-              baseProbability,
-              boost: boostCard ? { card: boostCard.name, value: boostValue } : null,
-              effectiveProbability,
-              roll: rollValue,
-              success: moveSucceeded
-            }
-          });
-        }
-
-        if (moveSucceeded) {
-          // Apply state change
-          player.state = toState;
-
-          // Consume boost card if used
-          if (boostCard) {
-            removeCardFromHand(player, boostCard.name);
-            state.discardPile.push(boostCard);
-          }
-
-          // Log state transition
-          logEvent(state, {
-            event: 'state_transition',
-            turn: state.turn,
-            player: playerId,
-            data: { fromState, toState }
-          });
-
-          // Handle victory declaration if mechanic is enabled
-          if (useVictoryDeclaration && moveAction.declareVictory) {
-            contestState.pendingVictoryClaim = {
-              player: playerId,
-              reason: moveAction.victoryReason || `Reached ${toState}`,
-              fromState,
-              toState,
-              action: moveAction,
-              timestamp: new Date().toISOString()
-            };
-
-            logEvent(state, {
-              event: 'victory_claimed',
-              turn: state.turn,
-              player: playerId,
-              data: {
-                reason: moveAction.victoryReason,
-                state: toState
-              }
-            });
-
-            contestState.lastAction = {
-              player: playerId,
-              action,
-              timestamp: new Date().toISOString(),
-              turn: state.turn,
-              result: {
-                success: true,
-                details: { newState: toState, victoryPending: true }
-              }
-            };
-
-            // Don't advance turn - wait for gamemaster adjudication
-            saveState(state);
-
-            return {
-              success: true,
-              effect: {
-                type: 'victory_pending',
-                details: {
-                  newState: toState,
-                  awaitingAdjudication: true
-                }
-              }
-            };
-          }
-
-          // Record last action
-          contestState.lastAction = {
-            player: playerId,
-            action,
-            timestamp: new Date().toISOString(),
-            turn: state.turn,
-            result: {
-              success: true,
-              details: { newState: toState }
-            }
-          };
-
-          advanceTurn(state);
-
-          // Log action with reasoning
-          logEvent(state, {
-            event: 'action_executed',
-            turn: state.turn,
-            player: playerId,
-            data: {
-              type: 'move',
-              target: toState,
-              success: true,
-              reasoning: moveAction.reasoning
-            }
-          });
-
-          return {
-            success: true,
-            effect: {
-              type: 'move',
-              details: { newState: player.state }
-            }
-          };
-        } else {
-          // Move failed (probability roll failed)
-          logEvent(state, {
-            event: 'move_failed',
-            turn: state.turn,
-            player: playerId,
-            data: {
-              fromState,
-              toState,
-              probability: effectiveProbability,
-              reasoning: moveAction.reasoning
-            }
-          });
+        };
 
         logEvent(state, {
           event: 'action_executed',
