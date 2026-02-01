@@ -1,0 +1,16 @@
+{"timestamp":"2026-02-01T10:59:40.194Z","event":"game_init","data":{"gameId":"markovs-chains-1769943580190","playerCount":3,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-01T11:00:09.699Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-01T11:00:39.426Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T11:00:57.596Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Momentum","effect":{"type":"probability_boost","value":0.3}}}
+{"timestamp":"2026-02-01T11:01:24.492Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:01:48.178Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:02:00.661Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"move","target":"C","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:02:23.035Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"place_card","card":"Safe Haven","targetState":"Checkpoint-X","targetMode":"owner","effect":{"type":"probability_boost","value":0.15}}}
+{"timestamp":"2026-02-01T11:02:42.913Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T11:03:05.311Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"move","target":"Checkpoint-Y","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:03:24.483Z","event":"placed_card_triggered","round":3,"turnNumber":9,"player":"player-3","data":{"targetState":"Checkpoint-X","effects":["Safe Haven: +15% probability (placed by player-3)"],"probabilityModifier":0.15}}
+{"timestamp":"2026-02-01T11:03:24.484Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":["Safe Haven: +15% probability (placed by player-3)"]}}
+{"timestamp":"2026-02-01T11:04:03.159Z","event":"action_executed","round":4,"turnNumber":10,"player":"player-1","data":{"type":"move","target":"Checkpoint-Y","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:04:38.092Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T11:04:38.095Z","event":"game_end","round":4,"turnNumber":11,"data":{"winner":"player-2","reason":"player-2 reached Victory state","autoDetected":true}}
+{"timestamp":"2026-02-01T11:06:28.468Z","event":"analysis_submitted","round":4,"turnNumber":11,"data":{"file":"playtest-analysis-v2.3-1769943580190.md","version":"v2.3"}}

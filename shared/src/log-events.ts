@@ -67,7 +67,8 @@ export interface PlayerStateSnapshot {
 }
 
 export interface GameStateSnapshot {
-  turn: number;
+  round: number;
+  turnNumber: number;
   currentPlayer: string;
   players: Record<string, PlayerStateSnapshot>;
   deckSize: number;
@@ -206,7 +207,8 @@ export interface LogEventDataSchemas {
 export type TypedLogEvent<T extends LogEventType> = {
   timestamp: string;
   event: T;
-  turn?: number;
+  round?: number;
+  turnNumber?: number;
   player?: string;
   data: LogEventDataSchemas[T];
 };
@@ -218,7 +220,7 @@ export type AnyLogEvent = {
 
 // Type guard for checking event types
 export function isEventType<T extends LogEventType>(
-  event: AnyLogEvent,
+  event: { event: string },
   type: T
 ): event is TypedLogEvent<T> {
   return event.event === type;

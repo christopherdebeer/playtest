@@ -24,7 +24,7 @@ export interface PlayerState {
   hand: Card[];
   effects: Effect[];
   score?: number;
-  lastActionTurn?: number;  // Track last turn player acted (prevents multiple actions per turn)
+  lastActionRound?: number;  // Track last round player acted (prevents multiple actions per round)
 
   // New mechanic state
   resources?: Record<string, number>;     // Resource amounts (e.g., { "gold": 10 })
@@ -50,7 +50,7 @@ export interface PlayerState {
 export interface Effect {
   type: string;
   value?: number;
-  duration: number;  // turns remaining
+  duration: number;  // player turns remaining (decrements when effect holder's turn ends)
   source?: string;   // who applied it
 }
 
@@ -201,7 +201,7 @@ export interface GameConfig {
   version: string;
   players: number | { min: number; max: number };
   win_condition: string;
-  max_turns: number;
+  max_rounds: number;
   starting_cards?: number;
   deck?: DeckConfig[];
   board?: BoardConfig;
@@ -256,7 +256,7 @@ export interface EdgeConfig {
 
 export interface PendingAction {
   player: string;
-  turn: number;
+  round: number;
   action: Record<string, unknown>;
   submittedAt: string;
 }
@@ -265,7 +265,8 @@ export interface GameState {
   gameId: string;
   gameName: string;
   status: GameStatus;
-  turn: number;
+  round: number;
+  turnNumber: number;
   currentPlayer: string | null;
   turnOrder: string[];
   players: Record<string, PlayerState>;
@@ -287,7 +288,8 @@ export interface WaitResult {
 
 export interface PlayerView {
   gameId: string;
-  turn: number;
+  round: number;
+  turnNumber: number;
   currentPlayer: string;
   myState: {
     state: string;
@@ -343,7 +345,8 @@ export interface RollResult {
 export interface LogEvent {
   timestamp: string;
   event: string;
-  turn?: number;
+  round?: number;
+  turnNumber?: number;
   player?: string;
   data?: Record<string, unknown>;
 }
@@ -468,7 +471,8 @@ export interface LastAction {
   player: string;
   action: GameAction;
   timestamp: string;
-  turn: number;
+  round: number;
+  turnNumber: number;
   result?: {
     success: boolean;
     details?: Record<string, unknown>;
@@ -511,7 +515,8 @@ export interface VictoryClaimEntry {
 
 // Contest history entry
 export interface ContestHistoryEntry {
-  turn: number;
+  round: number;
+  turnNumber: number;
   action: GameAction;
   player: string;
   contestedBy: string;
@@ -622,7 +627,8 @@ export interface AvailableActionsResult {
  * A notable moment during the game (for analysis).
  */
 export interface KeyMoment {
-  turn: number;
+  round: number;
+  turnNumber: number;
   player: string;
   action: string;
   significance: string;          // Why this moment mattered

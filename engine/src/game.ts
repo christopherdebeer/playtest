@@ -87,7 +87,8 @@ export function checkAndAutoAdjudicateContest(state: GameState): boolean {
 
     // Record in history with auto-adjudication note
     contestState.contestHistory.push({
-      turn: originalAction.turn,
+      round: originalAction.round,
+      turnNumber: originalAction.turnNumber,
       action: originalAction.action,
       player: originalAction.player,
       contestedBy: contest.contestedBy,
@@ -104,7 +105,8 @@ export function checkAndAutoAdjudicateContest(state: GameState): boolean {
     // Log the auto-adjudication
     logEvent(state, {
       event: 'contest_auto_adjudicated',
-      turn: state.turn,
+      round: state.round,
+      turnNumber: state.turnNumber,
       player: originalAction.player,
       data: {
         contestedBy: contest.contestedBy,
@@ -395,7 +397,7 @@ function saveStateUnsafe(state: GameState, instanceId?: string): void {
   const stateFile = getStateFile(state.gameName, effectiveInstanceId);
 
   debug(`[SAVESTATE DEBUG] Saving state for ${state.gameName}/${effectiveInstanceId} to ${stateFile}`);
-  debug(`[SAVESTATE DEBUG] Status: ${state.status}, Turn: ${state.turn}`);
+  debug(`[SAVESTATE DEBUG] Status: ${state.status}, Round: ${state.round}, TurnNumber: ${state.turnNumber}`);
 
   if (!existsSync(stateDir)) {
     debug(`[SAVESTATE DEBUG] Creating state directory: ${stateDir}`);
@@ -592,7 +594,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     gameId,
     gameName,
     status: 'waiting_for_players',
-    turn: 0,
+    round: 0,
+    turnNumber: 0,
     currentPlayer: null,
     turnOrder,
     players,
@@ -772,7 +775,8 @@ function startGameUnsafe(gameName: string, instanceId?: string): void {
 
   debug(`[STARTGAME DEBUG] Changing status to in_progress`);
   state.status = 'in_progress';
-  state.turn = 1;
+  state.round = 1;
+  state.turnNumber = 1;
   state.currentPlayer = state.turnOrder[0];
   debug(`[STARTGAME DEBUG] First player: ${state.currentPlayer}`);
 
@@ -781,7 +785,8 @@ function startGameUnsafe(gameName: string, instanceId?: string): void {
 
   logEvent(state, {
     event: 'game_start',
-    turn: 1,
+    round: 1,
+    turnNumber: 1,
     data: {
       players: state.turnOrder,
       firstPlayer: state.currentPlayer
@@ -825,7 +830,8 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
 
   return {
     gameId: state.gameId,
-    turn: state.turn,
+    round: state.round,
+    turnNumber: state.turnNumber,
     currentPlayer: state.currentPlayer!,
     myState: {
       state: player.state,
@@ -843,12 +849,15 @@ export function advanceTurn(state: GameState): void {
   const nextIndex = (currentIndex + 1) % state.turnOrder.length;
   const isNewRound = nextIndex === 0;
 
-  // If we wrapped around, increment turn number
-  if (isNewRound) {
-    state.turn++;
+  // Always increment turnNumber (absolute action counter)
+  state.turnNumber++;
 
-    // Check max_turns limit
-    if (state.config.max_turns && state.turn > state.config.max_turns) {
+  // If we wrapped around, increment round number
+  if (isNewRound) {
+    state.round++;
+
+    // Check max_rounds limit
+    if (state.config.max_rounds && state.round > state.config.max_rounds) {
       // Proposal 010: Use configurable timeout winner
       const result = determineTimeoutWinner(state);
 
@@ -858,7 +867,8 @@ export function advanceTurn(state: GameState): void {
 
       logEvent(state, {
         event: 'game_end',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         data: {
           winner: result.winner,
           reason: result.reason,
@@ -903,7 +913,8 @@ export function advanceTurn(state: GameState): void {
 
       logEvent(state, {
         event: 'income_generated',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: state.currentPlayer,
         data: { income: income.per_turn }
       });
@@ -922,7 +933,8 @@ export function advanceTurn(state: GameState): void {
 
       logEvent(state, {
         event: 'round_income_generated',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: state.currentPlayer,
         data: { income: income.per_round }
       });
@@ -950,7 +962,8 @@ export function endGame(gameName: string, winner: string, reason: string): GameS
 
   logEvent(state, {
     event: 'game_end',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: { winner, reason }
   });
 
@@ -966,7 +979,8 @@ export function cancelGame(gameName: string, reason: string): GameState {
 
   logEvent(state, {
     event: 'game_cancelled',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: { reason }
   });
 
@@ -991,7 +1005,8 @@ export function submitAnalysis(gameName: string, analysis: GameAnalysis): GameSt
 
   logEvent(state, {
     event: 'analysis_submitted',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: {
       summary: analysis.summary,
       winner: analysis.winner,
@@ -1062,7 +1077,8 @@ export function submitAnalysisMarkdown(gameNameOrId: string, version: string, ma
 
   logEvent(state, {
     event: 'analysis_submitted',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: {
       file: analysisFilename,
       version: normalizedVersion
@@ -1163,12 +1179,12 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
 }
 
 /**
- * Proposal 010: Determine winner when game times out (max_turns reached).
+ * Proposal 010: Determine winner when game times out (max_rounds reached).
  * Uses configurable timeout_winner rules, falling back to highest score.
  */
 export function determineTimeoutWinner(state: GameState): { winner: string | null; reason: string; revealRole: boolean } {
   const config = state.config.engine_mechanics?.timeout_winner;
-  const maxTurns = state.config.max_turns;
+  const maxRounds = state.config.max_rounds;
 
   // Default fallback: highest score
   const defaultWinner = (): { winner: string | null; reason: string; revealRole: boolean } => {
@@ -1185,7 +1201,7 @@ export function determineTimeoutWinner(state: GameState): { winner: string | nul
 
     return {
       winner,
-      reason: `Max turns (${maxTurns}) reached. ${winner} wins with ${highestScore} points.`,
+      reason: `Max rounds (${maxRounds}) reached. ${winner} wins with ${highestScore} points.`,
       revealRole: false
     };
   };
@@ -2013,14 +2029,14 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     };
   }
 
-  // ============ NEW: Check for multiple actions per turn ============
-  // Prevent players from submitting multiple actions in the same turn
-  // UNLESS action_points is enabled (which allows multiple actions per turn)
+  // ============ NEW: Check for multiple actions per round ============
+  // Prevent players from submitting multiple actions in the same round
+  // UNLESS action_points is enabled (which allows multiple actions per round)
   const apConfig = state.config.engine_mechanics?.action_points;
-  if (!apConfig && player.lastActionTurn === state.turn && action.type !== 'pass') {
+  if (!apConfig && player.lastActionRound === state.round && action.type !== 'pass') {
     return {
       valid: false,
-      errors: ['You have already acted this turn. Wait for your next turn.']
+      errors: ['You have already acted this round. Wait for your next turn.']
     };
   }
 
@@ -2347,8 +2363,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   const player = state.players[playerId];
   const contestState = ensureContestState(state);
 
-  // Mark that player has acted this turn (prevents multiple actions without action points)
-  player.lastActionTurn = state.turn;
+  // Mark that player has acted this round (prevents multiple actions without action points)
+  player.lastActionRound = state.round;
 
   // === NEW: Deduct action points if enabled ===
   // Proposal 006: AP cost per card - multiply by count for quantified actions
@@ -2403,7 +2419,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             // Log effect application
             logEvent(state, {
               event: 'effect_applied',
-              turn: state.turn,
+              round: state.round,
+        turnNumber: state.turnNumber,
               player: effectTarget,
               data: {
                 effectType: card.effect.type,
@@ -2429,7 +2446,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: {
             success: true,
             details: {
@@ -2445,7 +2463,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'action_executed',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: {
             type: 'play_card',
@@ -2466,7 +2485,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           saveState(state);
           logEvent(state, {
             event: 'game_end',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             data: { winner: winCheck.winner, reason: winCheck.reason, autoDetected: true }
           });
           return {
@@ -2524,7 +2544,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             // For now, log a warning - the player should discard manually
             logEvent(state, {
               event: 'hand_limit_exceeded',
-              turn: state.turn,
+              round: state.round,
+        turnNumber: state.turnNumber,
               player: playerId,
               data: {
                 handSize: player.hand.length,
@@ -2542,22 +2563,25 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: {
             success: true,
             details: { drawnCount: cards.length, discarded: discardedCards.length || undefined }
           }
         };
 
-        // After drawing, advance turn
-        advanceTurn(state);
-
+        // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
           event: 'action_executed',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: { type: 'draw', count: cards.length }
         });
+
+        // After drawing, advance turn
+        advanceTurn(state);
 
         return {
           success: true,
@@ -2573,18 +2597,21 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true }
         };
 
-        advanceTurn(state);
-
+        // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
           event: 'action_executed',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: { type: 'pass' }
         });
+
+        advanceTurn(state);
 
         return {
           success: true,
@@ -2604,7 +2631,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'resignation_submitted',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: { reason: resignAction.reason }
         });
@@ -2629,7 +2657,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         if (placedCardEffects.effectsApplied.length > 0) {
           logEvent(state, {
             event: 'placed_card_triggered',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             player: playerId,
             data: {
               targetState: moveAction.target,
@@ -2645,7 +2674,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: {
             success: true,
             details: {
@@ -2657,7 +2687,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'action_executed',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: {
             type: 'move',
@@ -2676,7 +2707,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           saveState(state);
           logEvent(state, {
             event: 'game_end',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             data: { winner: winCheck.winner, reason: winCheck.reason, autoDetected: true }
           });
           return {
@@ -2721,7 +2753,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: {
             success: true,
             details: {
@@ -2735,7 +2768,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'action_executed',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: {
             type: 'place_card',
@@ -2784,7 +2818,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         if (auctionConfig.type !== 'sealed') {
           logEvent(state, {
             event: 'bid_placed',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             player: playerId,
             data: {
               amount: bidAction.amount,
@@ -2799,7 +2834,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true, details: { amount: bidAction.amount } }
         };
 
@@ -2830,7 +2866,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'resource_spent',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: {
             resource: spendAction.resource,
@@ -2844,7 +2881,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true, details: { spent: spendAction.amount } }
         };
 
@@ -2908,7 +2946,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'set_collected',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: {
             setType: collectAction.setType,
@@ -2922,7 +2961,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true, details: { setType: collectAction.setType } }
         };
 
@@ -2978,7 +3018,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
           logEvent(state, {
             event: 'push_your_luck_bust',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             player: playerId,
             data: { roll: rollValue, lostPoints }
           });
@@ -2987,7 +3028,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             player: playerId,
             action,
             timestamp: new Date().toISOString(),
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
           };
 
@@ -3006,7 +3048,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
           logEvent(state, {
             event: 'push_your_luck_roll',
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             player: playerId,
             data: { roll: rollValue, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
           });
@@ -3015,7 +3058,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             player: playerId,
             action,
             timestamp: new Date().toISOString(),
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             result: { success: true, details: { roll: rollValue, accumulated: player.rollAccumulator } }
           };
 
@@ -3040,7 +3084,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'push_your_luck_bank',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: { bankedPoints, totalScore: player.score }
         });
@@ -3049,7 +3094,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true, details: { bankedPoints, totalScore: player.score } }
         };
 
@@ -3108,7 +3154,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         logEvent(state, {
           event: 'card_drafted',
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           player: playerId,
           data: { card: draftedCard.name, displayRemaining: display.length }
         });
@@ -3117,7 +3164,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
-          turn: state.turn,
+          round: state.round,
+        turnNumber: state.turnNumber,
           result: { success: true, details: { card: draftedCard.name } }
         };
 
@@ -3208,7 +3256,8 @@ export function fileContest(state: GameState, contestingPlayer: string, reason: 
 
   logEvent(state, {
     event: 'contest_filed',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     player: contestingPlayer,
     data: {
       reason,
@@ -3241,7 +3290,8 @@ export function adjudicateContest(
 
   // Record in history
   contestState.contestHistory.push({
-    turn: originalAction.turn,
+    round: originalAction.round,
+    turnNumber: originalAction.turnNumber,
     action: originalAction.action,
     player: originalAction.player,
     contestedBy: contest.contestedBy,
@@ -3264,7 +3314,8 @@ export function adjudicateContest(
 
   logEvent(state, {
     event: 'contest_adjudicated',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: {
       ruling,
       rulingReason,
@@ -3314,7 +3365,8 @@ export function adjudicateResignation(
 
     logEvent(state, {
       event: 'game_end',
-      turn: state.turn,
+      round: state.round,
+        turnNumber: state.turnNumber,
       data: {
         winner,
         reason: `Resignation accepted: ${resignation.reason}`,
@@ -3329,7 +3381,8 @@ export function adjudicateResignation(
 
   logEvent(state, {
     event: 'resignation_adjudicated',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: {
       player: resignation.player,
       accepted,
@@ -3375,7 +3428,8 @@ export function adjudicateVictory(
 
     logEvent(state, {
       event: 'game_end',
-      turn: state.turn,
+      round: state.round,
+        turnNumber: state.turnNumber,
       data: {
         winner: claim.player,
         reason: rulingReason,
@@ -3389,7 +3443,8 @@ export function adjudicateVictory(
 
     logEvent(state, {
       event: 'victory_rejected',
-      turn: state.turn,
+      round: state.round,
+        turnNumber: state.turnNumber,
       player: claim.player,
       data: {
         reason: rulingReason,
@@ -3407,7 +3462,8 @@ export function adjudicateVictory(
 
   logEvent(state, {
     event: 'victory_adjudicated',
-    turn: state.turn,
+    round: state.round,
+        turnNumber: state.turnNumber,
     data: {
       player: claim.player,
       accepted,
@@ -3478,9 +3534,12 @@ function reverseTurn(state: GameState): void {
   const currentIndex = state.turnOrder.indexOf(state.currentPlayer!);
   const prevIndex = (currentIndex - 1 + state.turnOrder.length) % state.turnOrder.length;
 
-  // If we're at the start of a new round, decrement turn counter
+  // Always decrement turnNumber
+  state.turnNumber = Math.max(1, state.turnNumber - 1);
+
+  // If we're at the start of a new round, decrement round counter
   if (currentIndex === 0) {
-    state.turn = Math.max(1, state.turn - 1);
+    state.round = Math.max(1, state.round - 1);
   }
 
   state.currentPlayer = state.turnOrder[prevIndex];

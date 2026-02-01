@@ -4,7 +4,7 @@ version: "1.0"
 players: 2-4
 starting_cards: 0
 win_condition: "score >= 100"
-max_turns: 20
+max_rounds: 20
 
 # Reference mechanics from library
 mechanics:

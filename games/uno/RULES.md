@@ -3,7 +3,7 @@ name: "UNO"
 players: 2-4
 starting_cards: 7
 win_condition: "First player to empty their hand wins the round"
-max_turns: 200
+max_rounds: 200
 
 # Game mechanics (from mechanics/ folder)
 mechanics:

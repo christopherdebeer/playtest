@@ -4,6 +4,7 @@
   "description": "Multi-agent game playtesting framework with TypeScript engine",
   "private": true,
   "workspaces": [
+    "shared",
     "engine",
     "site"
   ],
@@ -11,7 +12,7 @@
     "playtest": "engine/dist/index.js"
   },
   "scripts": {
-    "build": "npm run build --workspace=engine",
+    "build": "npm run build --workspace=@playtest/shared && npm run build --workspace=engine && npm run build --workspace=site",
     "playtest": "node engine/dist/index.js",
     "pt": "node engine/dist/index.js",
     "pt:init": "node engine/dist/index.js init",

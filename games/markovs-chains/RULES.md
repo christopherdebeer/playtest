@@ -4,7 +4,7 @@ version: "2.3"
 players: 2-4
 starting_cards: 5
 win_condition: "First player to reach the Victory state"
-max_turns: 25
+max_rounds: 25
 
 # Engine mechanics - enable/disable engine capabilities for this game
 engine_mechanics:
@@ -352,6 +352,6 @@ Log every:
 
 **Future adjustments to consider**:
 - If games too short: Decrease base probabilities further or add more intermediate states
-- If games too long: Increase base probabilities or reduce max_turns
+- If games too long: Increase base probabilities or reduce max_rounds
 - If state cards unused: Increase their power or add more copies
 - If too luck-dependent: Increase card_boost_strength or starting_cards

@@ -196,7 +196,8 @@ program
         instanceId: state.gameId,
         gameName: state.gameName,
         status: state.status,
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         currentPlayer: state.currentPlayer,
         players: Object.fromEntries(
           Object.entries(state.players).map(([id, p]) => [
@@ -224,7 +225,7 @@ program
       const path = await import('path');
       const GAMES_DIR = path.join(process.cwd(), 'games');
 
-      const results: { gameName: string; instanceId: string; status: string; turn: number }[] = [];
+      const results: { gameName: string; instanceId: string; status: string; round: number; turnNumber: number }[] = [];
 
       // If game specified, list instances for that game only
       const gamesToCheck = game ? [game] : fs.readdirSync(GAMES_DIR).filter((f: string) => {
@@ -244,7 +245,8 @@ program
               gameName: state.gameName,
               instanceId: state.gameId,
               status: state.status,
-              turn: state.turn
+              round: state.round,
+              turnNumber: state.turnNumber
             });
           } catch {
             // Skip if can't load state
@@ -381,7 +383,8 @@ program
       // Queue the action for gamemaster validation (don't advance yet)
       state.shared.pendingAction = {
         player: options.player,
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         action,
         submittedAt: new Date().toISOString()
       };
@@ -390,7 +393,8 @@ program
       // Log the action
       logEvent(state, {
         event: 'action_submitted',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: options.player,
         data: action
       });
@@ -737,7 +741,8 @@ program
         reason: options.reason,
         actionReversed: result.reversed,
         currentPlayer: updatedState.currentPlayer,
-        turn: updatedState.turn
+        round: updatedState.round,
+        turnNumber: updatedState.turnNumber
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -796,7 +801,8 @@ program
             status: 'analysis_needed',
             winner: state.shared.winner,
             endReason: state.shared.endReason,
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             gameId: state.gameId
           }));
           return;
@@ -816,7 +822,8 @@ program
           console.log(JSON.stringify({
             status: 'contest_pending',
             contest: contestState.pendingContest,
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             currentPlayer: state.currentPlayer
           }));
           return;
@@ -827,7 +834,8 @@ program
           console.log(JSON.stringify({
             status: 'resignation_pending',
             resignation: contestState.pendingResignation,
-            turn: state.turn
+            round: state.round,
+            turnNumber: state.turnNumber
           }));
           return;
         }
@@ -837,7 +845,8 @@ program
           console.log(JSON.stringify({
             status: 'victory_pending',
             victoryClaim: contestState.pendingVictoryClaim,
-            turn: state.turn
+            round: state.round,
+            turnNumber: state.turnNumber
           }));
           return;
         }
@@ -852,7 +861,7 @@ program
           console.log(JSON.stringify({
             status: 'action_received',
             player: pending.player,
-            turn: pending.turn,
+            round: pending.round,
             action: pending.action,
             submittedAt: pending.submittedAt
           }));
@@ -897,7 +906,8 @@ program
 
       logEvent(state, {
         event: 'roll',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: state.currentPlayer ?? undefined,
         data: {
           probability,
@@ -936,7 +946,8 @@ program
 
       logEvent(state, {
         event: 'draw',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: options.player,
         data: { count, cards: cards.map(c => c.name) }
       });
@@ -973,7 +984,8 @@ program
 
       logEvent(state, {
         event: 'discard',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: options.player,
         data: { card: card.name }
       });
@@ -1013,7 +1025,8 @@ program
 
       logEvent(state, {
         event: 'play_card',
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         player: options.player,
         data: {
           card: card.name,
@@ -1060,7 +1073,8 @@ program
           state: {
             gameId: state.gameId,
             status: state.status,
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             currentPlayer: state.currentPlayer,
             turnOrder: state.turnOrder,
             players: state.players,
@@ -1182,7 +1196,8 @@ program
 
       logEvent(gameState, {
         event: 'state_update',
-        turn: gameState.turn,
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
         player: options.player,
         data: updates
       });
@@ -1217,7 +1232,8 @@ program
         success: true,
         gameId: state.gameId,
         status: state.status,
-        turn: state.turn,
+        round: state.round,
+        turnNumber: state.turnNumber,
         currentPlayer: state.currentPlayer,
         message: 'Game started successfully'
       }));
@@ -1243,7 +1259,8 @@ program
         success: true,
         previousPlayer,
         currentPlayer: state.currentPlayer,
-        turn: state.turn
+        round: state.round,
+        turnNumber: state.turnNumber
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -1267,7 +1284,8 @@ program
         success: true,
         gameId: state.gameId,
         winner: options.winner,
-        totalTurns: state.turn,
+        totalRounds: state.round,
+        totalTurnNumber: state.turnNumber,
         reason: options.reason
       }));
     } catch (e) {
@@ -1364,7 +1382,8 @@ program
         success: true,
         gameId: state.gameId,
         status: 'cancelled',
-        totalTurns: state.turn,
+        totalRounds: state.round,
+        totalTurnNumber: state.turnNumber,
         reason: options.reason
       }));
     } catch (e) {
@@ -1433,7 +1452,8 @@ program
 
         // Auto-start the game
         state.status = 'in_progress';
-        state.turn = 1;
+        state.round = 1;
+        state.turnNumber = 1;
         state.currentPlayer = state.turnOrder[0];
         saveState(state);
 
@@ -1770,7 +1790,8 @@ program
             success: true,
             gameId: state.gameId,
             status: state.status,
-            turn: state.turn,
+            round: state.round,
+        turnNumber: state.turnNumber,
             currentPlayer: state.currentPlayer,
             players: Object.fromEntries(
               Object.entries(state.players).map(([id, p]) => [
@@ -2020,7 +2041,7 @@ program
             const state = loadState(instanceId);
             console.log(`\n## Active Game: ${instanceId}`);
             console.log(`Status: ${state.status}`);
-            console.log(`Turn: ${state.turn}`);
+            console.log(`Round: ${state.round}, Turn: ${state.turnNumber}`);
             console.log(`Current Player: ${state.currentPlayer}`);
             log(`UserPromptSubmit - output game status for ${instanceId}`);
           } catch (e) {
@@ -2042,7 +2063,7 @@ program
             const output = {
               hookSpecificOutput: {
                 hookEventName: 'PreToolUse',
-                additionalContext: `\n## Game Rules for ${instanceId}\n${state.rulesMarkdown}\n\n## Current State\nTurn: ${state.turn}\nStatus: ${state.status}`
+                additionalContext: `\n## Game Rules for ${instanceId}\n${state.rulesMarkdown}\n\n## Current State\nRound: ${state.round}, Turn: ${state.turnNumber}\nStatus: ${state.status}`
               }
             };
             console.log(JSON.stringify(output));

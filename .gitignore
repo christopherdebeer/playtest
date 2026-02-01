@@ -49,3 +49,6 @@ node_modules/
 Thumbs.db
 *~
 *.swp
+
+# Shared package build output
+shared/dist/

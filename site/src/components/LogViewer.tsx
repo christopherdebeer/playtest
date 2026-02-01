@@ -49,7 +49,7 @@ function LogEventRow({ evt, index }: { evt: LogEvent; index: number }) {
         <span className={`event-icon ${cssClass}`}>
           {icon}
         </span>
-        {evt.turn && <span className="event-turn">T{evt.turn}</span>}
+        {evt.round && <span className="event-turn">R{evt.round}.{evt.turnNumber}</span>}
         <span className="event-content">{content}</span>
         {evt.data && (
           <button className="expand-btn" title="Toggle raw data">

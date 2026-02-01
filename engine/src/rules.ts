@@ -39,7 +39,7 @@ export function parseRules(rulesPath: string): ParsedRules {
   if (!config.win_condition) throw new Error('RULES.md missing required field: win_condition');
 
   // Set defaults
-  config.max_turns = config.max_turns ?? 50;
+  config.max_rounds = config.max_rounds ?? 50;
   config.starting_cards = config.starting_cards ?? 0;
 
   return { config, markdown };
