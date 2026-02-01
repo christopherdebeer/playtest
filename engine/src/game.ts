@@ -1957,17 +1957,34 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 export function ensureContestState(state: GameState): ContestState {
   if (!state.shared.contestState) {
     state.shared.contestState = {
+      actionHistory: [],
       contestHistory: [],
       resignations: [],
       victoryHistory: []
     };
   }
-  // Ensure victoryHistory exists for older game states
+  // Ensure arrays exist for older game states
   const cs = state.shared.contestState as ContestState;
   if (!cs.victoryHistory) {
     cs.victoryHistory = [];
   }
+  if (!cs.actionHistory) {
+    cs.actionHistory = [];
+  }
   return cs;
+}
+
+// Record an action in both lastAction and actionHistory
+const MAX_ACTION_HISTORY = 12;  // Keep last 12 actions (3 full rounds for 4 players)
+
+export function recordAction(contestState: ContestState, action: LastAction): void {
+  contestState.lastAction = action;
+
+  // Add to history and trim to max size
+  contestState.actionHistory.push(action);
+  if (contestState.actionHistory.length > MAX_ACTION_HISTORY) {
+    contestState.actionHistory = contestState.actionHistory.slice(-MAX_ACTION_HISTORY);
+  }
 }
 
 // Validate action schema/type
@@ -2733,7 +2750,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         }
 
         // Record last action
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -2750,7 +2767,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               currentColor: state.shared.currentColor
             }
           }
-        };
+        });
 
         logEvent(state, {
           event: 'action_executed',
@@ -2850,7 +2867,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           // 'cannot_draw' is handled in validation, should never reach here
         }
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -2860,7 +2877,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             success: true,
             details: { drawnCount: cards.length, discarded: discardedCards.length || undefined }
           }
-        };
+        });
 
         // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
@@ -2884,14 +2901,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
 
       case 'pass': {
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true }
-        };
+        });
 
         // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
@@ -2961,7 +2978,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         player.state = moveAction.target;
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -2974,7 +2991,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               placedCardEffects: placedCardEffects.effectsApplied
             }
           }
-        };
+        });
 
         logEvent(state, {
           event: 'action_executed',
@@ -3040,7 +3057,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           return { success: false, error: `Failed to place card "${placeAction.card}"` };
         }
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -3055,7 +3072,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               effect: placedCard.effect
             }
           }
-        };
+        });
 
         logEvent(state, {
           event: 'action_executed',
@@ -3110,7 +3127,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         }
         (state.shared.placedLocations as string[]).push(placeAction.card);
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -3123,7 +3140,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               adjacentTo: placeAction.adjacentTo
             }
           }
-        };
+        });
 
         logEvent(state, {
           event: 'action_executed',
@@ -3175,7 +3192,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         (state.shared.pendingTrades as Array<typeof pendingTrade>).push(pendingTrade);
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -3190,7 +3207,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               request: tradeAction.request
             }
           }
-        };
+        });
 
         logEvent(state, {
           event: 'trade_offered',
@@ -3289,7 +3306,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           });
         }
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
@@ -3303,7 +3320,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               from: trade.from
             }
           }
-        };
+        });
 
         return {
           success: true,
@@ -3353,14 +3370,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           });
         }
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true, details: { amount: bidAction.amount } }
-        };
+        });
 
         // For once-around auctions, advance turn; for English, player can bid again
         if (auctionConfig.type === 'once-around' || auctionConfig.type === 'sealed') {
@@ -3400,14 +3417,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         });
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true, details: { spent: spendAction.amount } }
-        };
+        });
 
         // Spending doesn't end your turn (allows multi-action turns with action points)
         saveState(state);
@@ -3480,14 +3497,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         });
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true, details: { setType: collectAction.setType } }
-        };
+        });
 
         // Check win condition
         const winCheck = checkAllWinConditions(state);
@@ -3547,14 +3564,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             data: { roll: rollValue, lostPoints }
           });
 
-          contestState.lastAction = {
+          recordAction(contestState, {
             player: playerId,
             action,
             timestamp: new Date().toISOString(),
             round: state.round,
         turnNumber: state.turnNumber,
             result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
-          };
+          });
 
           advanceTurn(state);
 
@@ -3577,14 +3594,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             data: { roll: rollValue, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
           });
 
-          contestState.lastAction = {
+          recordAction(contestState, {
             player: playerId,
             action,
             timestamp: new Date().toISOString(),
             round: state.round,
         turnNumber: state.turnNumber,
             result: { success: true, details: { roll: rollValue, accumulated: player.rollAccumulator } }
-          };
+          });
 
           // Don't advance turn - player can roll again or bank
           saveState(state);
@@ -3613,14 +3630,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           data: { bankedPoints, totalScore: player.score }
         });
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true, details: { bankedPoints, totalScore: player.score } }
-        };
+        });
 
         // Check win condition
         const winCheck = checkAllWinConditions(state);
@@ -3683,14 +3700,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           data: { card: draftedCard.name, displayRemaining: display.length }
         });
 
-        contestState.lastAction = {
+        recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
         turnNumber: state.turnNumber,
           result: { success: true, details: { card: draftedCard.name } }
-        };
+        });
 
         advanceTurn(state);
 

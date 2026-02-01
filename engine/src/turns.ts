@@ -7,6 +7,7 @@ import type { WaitResult, GameState, ContestState, LastAction } from './types.js
 // Extended wait result with contest info
 export interface ExtendedWaitResult extends WaitResult {
   lastAction?: LastAction;
+  recentActions?: LastAction[];  // Last N actions for player visibility
   contestState?: {
     pendingContest?: boolean;
     pendingResignation?: boolean;
@@ -115,6 +116,7 @@ export async function waitForTurn(
             status: 'your_turn',
             gameState: getPlayerView(state, playerId),
             lastAction: contestState.lastAction,
+            recentActions: contestState.actionHistory || [],  // Last N actions for player visibility
             contestState: {
               pendingContest: !!contestState.pendingContest,
               pendingResignation: !!contestState.pendingResignation

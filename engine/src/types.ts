@@ -593,6 +593,7 @@ export interface ResignationEntry {
 // Extended game state with contest system
 export interface ContestState {
   lastAction?: LastAction;
+  actionHistory: LastAction[];  // Recent actions for player visibility (last N turns)
   pendingContest?: PendingContest;
   pendingResignation?: PendingResignation;
   pendingVictoryClaim?: PendingVictoryClaim;
