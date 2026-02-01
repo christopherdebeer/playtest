@@ -150,7 +150,7 @@ function renderStateSnapshot(evt: StateSnapshotEvent): React.ReactNode {
   const playerCount = Object.keys(data.state.players).length
   return (
     <span>
-      State snapshot ({data.reason}): Turn {data.state.turn}, {playerCount} players,
+      State snapshot ({data.reason}): Round {data.state.round}, {playerCount} players,
       deck: {data.state.deckSize}, discard: {data.state.discardSize}
     </span>
   )

@@ -36,7 +36,7 @@ async function parseRulesFile(content) {
       name: config.name,
       players: config.players,
       winCondition: config.win_condition,
-      maxTurns: config.max_turns,
+      maxRounds: config.max_rounds,
       startingCards: config.starting_cards,
       deck: config.deck,
       board: config.board,

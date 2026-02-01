@@ -7,7 +7,7 @@ interface GameConfig {
   name: string
   players: string
   winCondition: string
-  maxTurns: number
+  maxRounds: number
   startingCards?: number
   deckSize?: number
   boardStates?: string[]
@@ -73,8 +73,8 @@ function GamesSection() {
                   </div>
                 )}
                 <div className="stat">
-                  <span className="stat-value">{game.config.maxTurns}</span>
-                  <span className="stat-label">max turns</span>
+                  <span className="stat-value">{game.config.maxRounds}</span>
+                  <span className="stat-label">max rounds</span>
                 </div>
               </div>
 

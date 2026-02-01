@@ -18,7 +18,7 @@ interface GameConfig {
   name: string
   players: string
   winCondition: string
-  maxTurns: number
+  maxRounds: number
   startingCards?: number
   deck?: CardDef[]
   board?: {
@@ -83,8 +83,8 @@ function GamePage() {
             </div>
           )}
           <div className="meta-item">
-            <span className="meta-label">Max Turns</span>
-            <span className="meta-value">{game.config.maxTurns}</span>
+            <span className="meta-label">Max Rounds</span>
+            <span className="meta-value">{game.config.maxRounds}</span>
           </div>
         </div>
 
