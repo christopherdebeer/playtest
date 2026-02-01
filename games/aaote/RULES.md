@@ -60,11 +60,14 @@ engine_mechanics:
     role: "enemy"
     reveal_role: true
 
-  # Trading system
-  trading:
-    items_only: true
-    require_adjacency: false  # Can trade from anywhere
-    mutual_consent: true
+  # Trading system (engine format)
+  trade:
+    enabled: true
+    item_types_only: true           # Only items can be traded
+    require_same_location: false    # Can trade from anywhere (AAOTE rule: "Can trade from anywhere")
+    require_adjacent_location: false
+    allow_gifts: true               # One-sided trades allowed
+    max_cards_per_trade: 3
 
   # Hidden objectives system
   hidden_objectives:

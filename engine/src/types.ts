@@ -37,6 +37,7 @@ export interface PlayerState {
   rollAccumulator?: number;               // Accumulated points from push-your-luck rolls
   rollCount?: number;                     // Number of rolls this turn
   powerId?: string;                       // Assigned player power ID
+  completedTrades?: number;               // Number of completed trades (for The Trader objective)
 
   // Proposal 010: Hidden objectives for role-based games
   objective?: {
@@ -77,6 +78,9 @@ export interface EngineMechanics {
   // Proposal 007: Grid-based movement
   grid?: GridConfig;                   // Grid configuration for tile-placement games
 
+  // Trading mechanic
+  trade?: TradeConfig;                 // Trading configuration
+
   // Proposal 008: Hand limits and card type restrictions
   hand_limit?: number;                 // Maximum cards in hand
   hand_limit_policy?: 'cannot_draw' | 'discard_choice' | 'discard_oldest';  // What happens when limit exceeded
@@ -92,6 +96,27 @@ export interface GridConfig {
   starting_tile: string;
   adjacency: 'orthogonal' | 'diagonal' | 'hexagonal';
   bounds?: { width: number; height: number };
+}
+
+// Trading configuration
+export interface TradeConfig {
+  enabled: boolean;                    // Whether trading is enabled
+  require_same_location?: boolean;     // Players must be at same location to trade
+  require_adjacent_location?: boolean; // Players must be at adjacent locations
+  item_types_only?: boolean;           // Only cards with type 'item' can be traded
+  allow_gifts?: boolean;               // Allow one-sided trades (giving without receiving)
+  max_cards_per_trade?: number;        // Maximum cards that can be exchanged in one trade
+}
+
+// Pending trade offer (stored in state.shared.pendingTrades)
+export interface PendingTrade {
+  id: string;                          // Unique offer ID
+  from: string;                        // Player ID offering
+  to: string;                          // Player ID receiving offer
+  offer: string[];                     // Card names being offered
+  request: string[];                   // Card names being requested (empty for gifts)
+  timestamp: string;                   // When offer was created
+  expiresAtTurn?: number;              // Optional expiration turn
 }
 
 // Proposal 008: Card type rules
@@ -365,7 +390,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
 
 export interface BaseAction {
   type: ActionType;
@@ -474,7 +499,20 @@ export interface PlaceLocationAction extends BaseAction {
   adjacentTo: string;         // Existing location to place adjacent to (e.g., "origin", "Forest Clearing")
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
+export interface TradeOfferAction extends BaseAction {
+  type: 'trade_offer';
+  target: string;             // Player ID to trade with
+  offer: string[];            // Card names you are offering
+  request: string[];          // Card names you want in return (empty for gifts)
+}
+
+export interface TradeRespondAction extends BaseAction {
+  type: 'trade_respond';
+  offerId: string;            // ID of the pending trade offer
+  accept: boolean;            // Whether to accept the trade
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
 
 // Action validation result
 export interface ActionValidationResult {

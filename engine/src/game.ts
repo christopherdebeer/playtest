@@ -1697,6 +1697,75 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'pass' }]
   });
 
+  // === TRADE_OFFER action (for trading games) ===
+  const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
+  if (tradeConfig?.enabled) {
+    const tradeableCards = tradeConfig.item_types_only
+      ? player.hand.filter(c => c.type === 'item').map(c => c.name)
+      : player.hand.map(c => c.name);
+    const tradeEnabled = isYourTurn && !isBlocked && tradeableCards.length > 0;
+
+    // Find valid trade targets based on location constraints
+    let validTradeTargets = opponents;
+    if (tradeConfig.require_same_location) {
+      validTradeTargets = opponents.filter(pid => state.players[pid].state === player.state);
+    }
+
+    actions.push({
+      type: 'trade_offer',
+      description: tradeConfig.require_same_location
+        ? 'Offer a trade to a player at your location'
+        : 'Offer a trade to another player',
+      enabled: tradeEnabled && validTradeTargets.length > 0,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              tradeableCards.length === 0 ? 'No tradeable cards in hand' :
+              validTradeTargets.length === 0 ? 'No valid trade targets at your location' :
+              undefined,
+      required: {
+        target: `Player to trade with (${validTradeTargets.join(', ')})`,
+        offer: 'Array of card names you are offering',
+        request: 'Array of card names you want in return (empty array for gifts)'
+      },
+      optional: { reasoning: 'Why you want this trade' },
+      examples: validTradeTargets.slice(0, 1).flatMap(target => {
+        const targetCards = state.players[target].hand
+          .filter(c => !tradeConfig.item_types_only || c.type === 'item')
+          .map(c => c.name);
+        return [{
+          type: 'trade_offer' as const,
+          target,
+          offer: tradeableCards.slice(0, 1),
+          request: targetCards.slice(0, 1)
+        }];
+      }),
+      cards: tradeableCards,
+      targets: validTradeTargets
+    });
+  }
+
+  // === TRADE_RESPOND action (for pending trades) ===
+  const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
+  const myPendingTrades = pendingTrades.filter(t => t.to === playerId);
+  if (myPendingTrades.length > 0) {
+    for (const trade of myPendingTrades) {
+      actions.push({
+        type: 'trade_respond',
+        description: `Respond to trade offer from ${trade.from}: offering [${trade.offer.join(', ')}] for [${trade.request.join(', ') || 'nothing (gift)'}]`,
+        enabled: true,  // Can respond anytime you have a pending trade
+        required: {
+          offerId: trade.id,
+          accept: 'true to accept, false to decline'
+        },
+        optional: { reasoning: 'Why you are accepting/declining' },
+        examples: [
+          { type: 'trade_respond' as const, offerId: trade.id, accept: true },
+          { type: 'trade_respond' as const, offerId: trade.id, accept: false }
+        ]
+      });
+    }
+  }
+
   // === NEW MECHANICS: BID action (for auction games) ===
   const auctionConfig = state.config.engine_mechanics?.auction;
   if (auctionConfig && player.resources) {
@@ -2011,6 +2080,27 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     case 'draft':
       if (!act.card || typeof act.card !== 'string') {
         errors.push('draft action requires "card" field (string) - the card name to draft from display');
+      }
+      break;
+
+    case 'trade_offer':
+      if (!act.target || typeof act.target !== 'string') {
+        errors.push('trade_offer action requires "target" field (string) - player ID to trade with');
+      }
+      if (!act.offer || !Array.isArray(act.offer)) {
+        errors.push('trade_offer action requires "offer" field (array) - card names you are offering');
+      }
+      if (!act.request || !Array.isArray(act.request)) {
+        errors.push('trade_offer action requires "request" field (array) - card names you want (empty array for gifts)');
+      }
+      break;
+
+    case 'trade_respond':
+      if (!act.offerId || typeof act.offerId !== 'string') {
+        errors.push('trade_respond action requires "offerId" field (string) - ID of the pending trade');
+      }
+      if (act.accept === undefined || typeof act.accept !== 'boolean') {
+        errors.push('trade_respond action requires "accept" field (boolean) - whether to accept the trade');
       }
       break;
   }
@@ -2429,6 +2519,118 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
       if (!validLocations.includes(placeAction.adjacentTo)) {
         errors.push(`Invalid adjacentTo target "${placeAction.adjacentTo}". Must be an existing location: ${validLocations.join(', ')}`);
+      }
+      break;
+    }
+
+    case 'trade_offer': {
+      const tradeAction = action as { target: string; offer: string[]; request: string[] };
+      const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; require_adjacent_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
+
+      // Check if trading is enabled
+      if (!tradeConfig?.enabled) {
+        errors.push('Trading is not enabled for this game.');
+        break;
+      }
+
+      // Validate target player exists
+      if (!state.players[tradeAction.target]) {
+        errors.push(`Invalid trade target "${tradeAction.target}". Player not found.`);
+        break;
+      }
+
+      if (tradeAction.target === playerId) {
+        errors.push('Cannot trade with yourself.');
+        break;
+      }
+
+      // Check location constraints
+      if (tradeConfig.require_same_location) {
+        const targetPlayer = state.players[tradeAction.target];
+        if (player.state !== targetPlayer.state) {
+          errors.push(`Cannot trade with ${tradeAction.target}. You must be at the same location. You are at "${player.state}", they are at "${targetPlayer.state}".`);
+        }
+      }
+
+      if (tradeConfig.require_adjacent_location) {
+        // For grid games, check if players are at adjacent locations
+        const gridConfig = state.config.engine_mechanics?.grid;
+        if (gridConfig) {
+          const targetPlayer = state.players[tradeAction.target];
+          // For now, allow if same location (adjacent includes same)
+          // Full adjacency check would need grid coordinate tracking
+          if (player.state !== targetPlayer.state) {
+            warnings.push(`Trading with non-adjacent player. Full adjacency validation not implemented yet.`);
+          }
+        }
+      }
+
+      // Validate offered cards exist in player's hand
+      for (const cardName of tradeAction.offer) {
+        const cardIndex = player.hand.findIndex(c => c.name === cardName);
+        if (cardIndex === -1) {
+          errors.push(`Card "${cardName}" not in your hand. Cannot offer it.`);
+        } else if (tradeConfig.item_types_only) {
+          const card = player.hand[cardIndex];
+          if (card.type !== 'item') {
+            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
+          }
+        }
+      }
+
+      // Validate requested cards exist in target's hand
+      const targetPlayer = state.players[tradeAction.target];
+      for (const cardName of tradeAction.request) {
+        const cardIndex = targetPlayer.hand.findIndex(c => c.name === cardName);
+        if (cardIndex === -1) {
+          errors.push(`Card "${cardName}" not in ${tradeAction.target}'s hand. Cannot request it.`);
+        } else if (tradeConfig.item_types_only) {
+          const card = targetPlayer.hand[cardIndex];
+          if (card.type !== 'item') {
+            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
+          }
+        }
+      }
+
+      // Check if gifts are allowed
+      if (tradeAction.request.length === 0 && !tradeConfig.allow_gifts) {
+        errors.push('One-sided trades (gifts) are not allowed. You must request something in return.');
+      }
+
+      if (tradeAction.offer.length === 0) {
+        errors.push('You must offer at least one card to trade.');
+      }
+      break;
+    }
+
+    case 'trade_respond': {
+      const respondAction = action as { offerId: string; accept: boolean };
+      const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
+      const trade = pendingTrades.find(t => t.id === respondAction.offerId);
+
+      if (!trade) {
+        errors.push(`Trade offer "${respondAction.offerId}" not found or has expired.`);
+        break;
+      }
+
+      if (trade.to !== playerId) {
+        errors.push(`This trade offer is not for you. It was sent to ${trade.to}.`);
+        break;
+      }
+
+      // If accepting, verify both players still have the cards
+      if (respondAction.accept) {
+        const fromPlayer = state.players[trade.from];
+        for (const cardName of trade.offer) {
+          if (!fromPlayer.hand.find(c => c.name === cardName)) {
+            errors.push(`Offerer no longer has card "${cardName}". Trade cannot be completed.`);
+          }
+        }
+        for (const cardName of trade.request) {
+          if (!player.hand.find(c => c.name === cardName)) {
+            errors.push(`You no longer have card "${cardName}". Trade cannot be completed.`);
+          }
+        }
       }
       break;
     }
@@ -2944,6 +3146,173 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             details: {
               card: placeAction.card,
               adjacentTo: placeAction.adjacentTo,
+              handSize: player.hand.length
+            }
+          }
+        };
+      }
+
+      case 'trade_offer': {
+        const tradeAction = action as { target: string; offer: string[]; request: string[] };
+
+        // Generate unique trade ID
+        const tradeId = `trade-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Initialize pending trades array if needed
+        if (!state.shared.pendingTrades) {
+          state.shared.pendingTrades = [];
+        }
+
+        const pendingTrade = {
+          id: tradeId,
+          from: playerId,
+          to: tradeAction.target,
+          offer: tradeAction.offer,
+          request: tradeAction.request,
+          timestamp: new Date().toISOString(),
+          expiresAtTurn: state.turnNumber + 8  // Expires in 2 full rounds (4 players * 2)
+        };
+
+        (state.shared.pendingTrades as Array<typeof pendingTrade>).push(pendingTrade);
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          round: state.round,
+          turnNumber: state.turnNumber,
+          result: {
+            success: true,
+            details: {
+              tradeId,
+              target: tradeAction.target,
+              offer: tradeAction.offer,
+              request: tradeAction.request
+            }
+          }
+        };
+
+        logEvent(state, {
+          event: 'trade_offered',
+          round: state.round,
+          turnNumber: state.turnNumber,
+          player: playerId,
+          data: {
+            tradeId,
+            target: tradeAction.target,
+            offer: tradeAction.offer,
+            request: tradeAction.request
+          }
+        });
+
+        // Don't advance turn - player may have more actions
+        // advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'trade_offer',
+            details: {
+              tradeId,
+              target: tradeAction.target,
+              offer: tradeAction.offer,
+              request: tradeAction.request
+            }
+          }
+        };
+      }
+
+      case 'trade_respond': {
+        const respondAction = action as { offerId: string; accept: boolean };
+        const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
+        const tradeIndex = pendingTrades.findIndex(t => t.id === respondAction.offerId);
+
+        if (tradeIndex === -1) {
+          return { success: false, error: `Trade offer "${respondAction.offerId}" not found` };
+        }
+
+        const trade = pendingTrades[tradeIndex];
+        const fromPlayer = state.players[trade.from];
+
+        // Remove the trade from pending
+        pendingTrades.splice(tradeIndex, 1);
+
+        if (respondAction.accept) {
+          // Execute the trade - swap cards between players
+          // Remove offered cards from offerer and add to responder
+          for (const cardName of trade.offer) {
+            const cardIndex = fromPlayer.hand.findIndex(c => c.name === cardName);
+            if (cardIndex !== -1) {
+              const [card] = fromPlayer.hand.splice(cardIndex, 1);
+              player.hand.push(card);
+            }
+          }
+
+          // Remove requested cards from responder and add to offerer
+          for (const cardName of trade.request) {
+            const cardIndex = player.hand.findIndex(c => c.name === cardName);
+            if (cardIndex !== -1) {
+              const [card] = player.hand.splice(cardIndex, 1);
+              fromPlayer.hand.push(card);
+            }
+          }
+
+          // Track completed trades for objectives
+          if (!player.completedTrades) player.completedTrades = 0;
+          if (!fromPlayer.completedTrades) fromPlayer.completedTrades = 0;
+          player.completedTrades++;
+          fromPlayer.completedTrades++;
+
+          logEvent(state, {
+            event: 'trade_completed',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: {
+              tradeId: trade.id,
+              from: trade.from,
+              to: trade.to,
+              offer: trade.offer,
+              request: trade.request
+            }
+          });
+        } else {
+          logEvent(state, {
+            event: 'trade_declined',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: {
+              tradeId: trade.id,
+              from: trade.from
+            }
+          });
+        }
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          round: state.round,
+          turnNumber: state.turnNumber,
+          result: {
+            success: true,
+            details: {
+              tradeId: trade.id,
+              accepted: respondAction.accept,
+              from: trade.from
+            }
+          }
+        };
+
+        return {
+          success: true,
+          effect: {
+            type: 'trade_respond',
+            details: {
+              tradeId: trade.id,
+              accepted: respondAction.accept,
+              from: trade.from,
               handSize: player.hand.length
             }
           }

@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-01T14:11:12.342Z","event":"game_init","data":{"gameId":"aaote-1769955072338","playerCount":4,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-01T14:11:39.527Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-01T14:13:48.850Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Shortcut","effect":{"type":"teleport_adjacent","description":"Move to any tile adjacent to any player"}}}
+{"timestamp":"2026-02-01T14:16:16.592Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Sabotage","effect":{"type":"destroy_location","description":"Remove a non-occupied location from grid"}}}
+{"timestamp":"2026-02-01T14:18:15.958Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":2}}
