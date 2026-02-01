@@ -163,7 +163,7 @@ Players explore an ever-expanding world, placing locations, collecting items, an
 
 2. **Objectives**: Shuffle and deal one face-down to each player. Look at your objective secretly.
 
-3. **Starting Location**: Place the "Origin" tile in the center. All player tokens start here.
+3. **Starting Location**: Place the "Origin" tile in the center. All player tokens start here. **This is the ONLY tile on the grid initially — you must place location cards to create new destinations!**
 
 4. **Starting Hand**: Deal 5 cards from the main deck to each player.
 
@@ -203,14 +203,20 @@ Each turn you have **3 Action Points (AP)** to spend:
 **Hand Limit**: You may hold a maximum of 7 cards. You cannot draw if at the limit.
 
 ### Movement Rules
+- **CRITICAL**: At game start, only "Origin" exists. You CANNOT move until locations are placed!
+- Use `place_location` to add tiles to the grid, creating destinations
 - You may only move to orthogonally adjacent tiles
-- Some locations require items to enter
+- **Tip**: Place a location (1 AP) then move to it (1 AP) = expand and explore for 2 AP
+- Some locations require items to enter (Lantern for caves, Rope for mountains)
 - Some player abilities modify movement
 
 ### Placing Locations
-- Must connect to at least one existing tile
+- **This is how you expand the world** — essential for movement and exploration!
+- Must connect orthogonally (N/S/E/W) to at least one existing tile
 - Cannot overlap existing tiles
 - You may place and immediately move to a new location (2 AP total)
+- The Builder objective requires placing 5 locations
+- Strategic placement can block or enable other players
 
 ### Trading
 - Propose a trade to any player (items only)
