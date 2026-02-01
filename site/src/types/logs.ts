@@ -287,6 +287,8 @@ export interface TranscriptEvent {
       thinking?: string
       name?: string
       input?: Record<string, unknown>
+      tool_use_id?: string
+      content?: unknown // tool result content (can be string or structured)
     }>
   }
   agentId?: string
@@ -315,6 +317,7 @@ export interface GameLogSummary {
   endTime: string
   duration: number | null
   totalTurns: number
+  totalRounds: number
   totalEvents: number
   eventCounts: Record<string, number>
   outcome: 'completed' | 'ended' | 'cancelled' | 'in_progress' | 'unknown'

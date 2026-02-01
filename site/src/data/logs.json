@@ -1,35 +1,35 @@
 {
-  "generatedAt": "2026-02-01T11:44:02.823Z",
+  "generatedAt": "2026-02-01T13:15:14.287Z",
   "games": {
     "aaote": {
       "totalLogs": 1,
       "completedGames": 1,
       "cancelledGames": 0,
-      "totalTurns": 41
+      "totalTurns": 0
     },
     "fortune-seekers": {
       "totalLogs": 1,
       "completedGames": 1,
       "cancelledGames": 0,
-      "totalTurns": 23
+      "totalTurns": 0
     },
     "markovs-chains": {
       "totalLogs": 30,
       "completedGames": 21,
       "cancelledGames": 0,
-      "totalTurns": 70
+      "totalTurns": 17
     },
     "treasure-hunters": {
       "totalLogs": 1,
       "completedGames": 0,
       "cancelledGames": 0,
-      "totalTurns": 10
+      "totalTurns": 0
     },
     "uno": {
       "totalLogs": 5,
       "completedGames": 3,
       "cancelledGames": 0,
-      "totalTurns": 11
+      "totalTurns": 0
     }
   },
   "logs": [
@@ -44,7 +44,8 @@
       "startTime": "2026-02-01T11:03:39.578Z",
       "endTime": "2026-02-01T11:04:51.820Z",
       "duration": 72,
-      "totalTurns": 0,
+      "totalTurns": 2,
+      "totalRounds": 1,
       "totalEvents": 4,
       "eventCounts": {
         "game_init": 1,
@@ -116,7 +117,8 @@
       "startTime": "2026-02-01T10:59:40.194Z",
       "endTime": "2026-02-01T11:06:28.468Z",
       "duration": 408,
-      "totalTurns": 0,
+      "totalTurns": 11,
+      "totalRounds": 4,
       "totalEvents": 16,
       "eventCounts": {
         "game_init": 1,
@@ -25783,7 +25785,8 @@
       "startTime": "2026-02-01T10:35:10.847Z",
       "endTime": "2026-02-01T10:37:17.358Z",
       "duration": 127,
-      "totalTurns": 0,
+      "totalTurns": 4,
+      "totalRounds": 2,
       "totalEvents": 5,
       "eventCounts": {
         "game_init": 1,
@@ -25864,7 +25867,8 @@
       "startTime": "2026-02-01T00:45:43.635Z",
       "endTime": "2026-02-01T00:55:32.004Z",
       "duration": 588,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 12,
       "eventCounts": {
         "game_init": 1,
@@ -46216,7 +46220,8 @@
       "startTime": "2026-02-01T00:04:14.812Z",
       "endTime": "2026-02-01T00:07:10.796Z",
       "duration": 176,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 10,
       "eventCounts": {
         "game_init": 1,
@@ -46359,7 +46364,8 @@
       "startTime": "2026-01-31T18:06:58.604Z",
       "endTime": "2026-01-31T19:16:08.864Z",
       "duration": 4150,
-      "totalTurns": 41,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 127,
       "eventCounts": {
         "game_init": 1,
@@ -47847,7 +47853,8 @@
       "startTime": "2026-01-31T15:45:26.723Z",
       "endTime": "2026-01-31T15:51:43.229Z",
       "duration": 377,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 14,
       "eventCounts": {
         "game_init": 1,
@@ -48053,7 +48060,8 @@
       "startTime": "2026-01-31T14:59:50.608Z",
       "endTime": "2026-01-31T15:14:36.562Z",
       "duration": 886,
-      "totalTurns": 23,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 54,
       "eventCounts": {
         "game_init": 1,
@@ -48680,7 +48688,8 @@
       "startTime": "2026-01-31T14:43:51.207Z",
       "endTime": "2026-01-31T14:48:07.079Z",
       "duration": 256,
-      "totalTurns": 10,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 41,
       "eventCounts": {
         "game_init": 1,
@@ -49181,7 +49190,8 @@
       "startTime": "2026-01-31T14:25:55.106Z",
       "endTime": "2026-01-31T14:30:08.004Z",
       "duration": 253,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 11,
       "eventCounts": {
         "game_init": 1,
@@ -49342,7 +49352,8 @@
       "startTime": "2026-01-31T12:40:46.091Z",
       "endTime": "2026-01-31T12:43:21.095Z",
       "duration": 155,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 8,
       "eventCounts": {
         "game_init": 1,
@@ -49460,7 +49471,8 @@
       "startTime": "2026-01-30T23:38:03.707Z",
       "endTime": "2026-01-30T23:54:44.418Z",
       "duration": 1001,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 12,
       "eventCounts": {
         "game_init": 1,
@@ -49632,7 +49644,8 @@
       "startTime": "2026-01-30T20:16:35.919Z",
       "endTime": "2026-01-30T20:20:40.653Z",
       "duration": 245,
-      "totalTurns": 5,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 12,
       "eventCounts": {
         "game_init": 1,
@@ -49801,7 +49814,8 @@
       "startTime": "2026-01-30T20:01:44.703Z",
       "endTime": "2026-01-30T20:05:17.747Z",
       "duration": 213,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 12,
       "eventCounts": {
         "game_init": 1,
@@ -61980,7 +61994,8 @@
       "startTime": "2026-01-30T19:40:54.783Z",
       "endTime": "2026-01-30T19:43:30.501Z",
       "duration": 156,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 9,
       "eventCounts": {
         "game_init": 1,
@@ -70558,7 +70573,8 @@
       "startTime": "2026-01-30T19:11:38.547Z",
       "endTime": "2026-01-30T19:12:42.895Z",
       "duration": 64,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 8,
       "eventCounts": {
         "game_init": 1,
@@ -76803,6 +76819,7 @@
       "endTime": "2026-01-30T19:11:32.216Z",
       "duration": null,
       "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 1,
       "eventCounts": {
         "game_init": 1
@@ -76834,6 +76851,7 @@
       "endTime": "2026-01-30T19:10:44.820Z",
       "duration": null,
       "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 1,
       "eventCounts": {
         "game_init": 1
@@ -76867,7 +76885,8 @@
       "startTime": "2026-01-30T19:05:06.639Z",
       "endTime": "2026-01-30T19:06:21.557Z",
       "duration": 75,
-      "totalTurns": 2,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 6,
       "eventCounts": {
         "game_init": 1,
@@ -76959,7 +76978,8 @@
       "startTime": "2026-01-30T19:04:44.523Z",
       "endTime": "2026-01-30T19:04:50.994Z",
       "duration": 6,
-      "totalTurns": 2,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 5,
       "eventCounts": {
         "game_init": 1,
@@ -77034,7 +77054,8 @@
       "startTime": "2026-01-30T19:04:25.349Z",
       "endTime": "2026-01-30T19:04:31.994Z",
       "duration": 7,
-      "totalTurns": 2,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 5,
       "eventCounts": {
         "game_init": 1,
@@ -77108,7 +77129,8 @@
       "startTime": "2026-01-30T19:03:33.556Z",
       "endTime": "2026-01-30T19:03:59.591Z",
       "duration": 26,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 2,
       "eventCounts": {
         "game_init": 1,
@@ -77153,7 +77175,8 @@
       "startTime": "2026-01-30T19:01:45.852Z",
       "endTime": "2026-01-30T19:02:30.309Z",
       "duration": 44,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 4,
       "eventCounts": {
         "game_init": 1,
@@ -77225,7 +77248,8 @@
       "startTime": "2026-01-30T19:00:55.092Z",
       "endTime": "2026-01-30T19:01:15.861Z",
       "duration": 21,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 2,
       "eventCounts": {
         "game_init": 1,
@@ -77269,7 +77293,8 @@
       "startTime": "2026-01-30T18:59:56.634Z",
       "endTime": "2026-01-30T19:00:18.994Z",
       "duration": 22,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 2,
       "eventCounts": {
         "game_init": 1,
@@ -77314,7 +77339,8 @@
       "startTime": "2026-01-30T18:39:59.241Z",
       "endTime": "2026-01-30T18:46:21.349Z",
       "duration": 382,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 13,
       "eventCounts": {
         "game_init": 1,
@@ -77480,6 +77506,7 @@
       "endTime": "2026-01-30T14:11:37.406Z",
       "duration": null,
       "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 1,
       "eventCounts": {
         "game_init": 1
@@ -77511,6 +77538,7 @@
       "endTime": "2026-01-30T14:09:02.440Z",
       "duration": null,
       "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 1,
       "eventCounts": {
         "game_init": 1
@@ -77544,7 +77572,8 @@
       "startTime": "2026-01-30T12:05:13.333Z",
       "endTime": "2026-01-30T12:07:05.487Z",
       "duration": 112,
-      "totalTurns": 4,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 16,
       "eventCounts": {
         "game_init": 1,
@@ -77767,7 +77796,8 @@
       "startTime": "2026-01-30T11:35:33.123Z",
       "endTime": "2026-01-30T11:37:27.456Z",
       "duration": 114,
-      "totalTurns": 2,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 7,
       "eventCounts": {
         "game_init": 1,
@@ -77864,7 +77894,8 @@
       "startTime": "2026-01-30T11:20:29.873Z",
       "endTime": "2026-01-30T11:23:00.184Z",
       "duration": 150,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 7,
       "eventCounts": {
         "game_init": 1,
@@ -77966,7 +77997,8 @@
       "startTime": "2026-01-30T11:02:52.009Z",
       "endTime": "2026-01-30T11:05:48.811Z",
       "duration": 177,
-      "totalTurns": 6,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 13,
       "eventCounts": {
         "game_init": 1,
@@ -78119,7 +78151,8 @@
       "startTime": "2026-01-29T17:21:51.479Z",
       "endTime": "2026-01-29T17:26:50.478Z",
       "duration": 299,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 7,
       "eventCounts": {
         "game_init": 1,
@@ -78215,6 +78248,7 @@
       "endTime": "2026-01-29T16:31:49.677Z",
       "duration": 3570,
       "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 2,
       "eventCounts": {
         "game_init": 1,
@@ -78258,7 +78292,8 @@
       "startTime": "2026-01-29T13:25:11.271Z",
       "endTime": "2026-01-29T13:33:38.455Z",
       "duration": 507,
-      "totalTurns": 3,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 10,
       "eventCounts": {
         "game_init": 1,
@@ -78422,7 +78457,8 @@
       "startTime": "2026-01-29T00:17:26.613Z",
       "endTime": "2026-01-29T00:32:59.241Z",
       "duration": 933,
-      "totalTurns": 9,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 168,
       "eventCounts": {
         "game_init": 1,
@@ -80251,7 +80287,8 @@
       "startTime": "2026-01-29T00:14:28.743Z",
       "endTime": "2026-01-29T00:17:06.706Z",
       "duration": 158,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 4,
       "eventCounts": {
         "game_init": 1,
@@ -80327,7 +80364,8 @@
       "startTime": "2026-01-29T00:12:28.151Z",
       "endTime": "2026-01-29T00:13:31.627Z",
       "duration": 63,
-      "totalTurns": 1,
+      "totalTurns": 0,
+      "totalRounds": 0,
       "totalEvents": 7,
       "eventCounts": {
         "game_init": 1,

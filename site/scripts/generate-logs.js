@@ -243,8 +243,9 @@ function extractSummary(events, gameId, gameName) {
     duration = Math.round((endTime - startTime) / 1000) // in seconds
   }
 
-  // Get max turn
-  const maxTurn = Math.max(...events.filter(e => e.turn).map(e => e.turn), 0)
+  // Get max turnNumber (absolute turn count) and max round
+  const maxTurnNumber = Math.max(...events.filter(e => e.turnNumber).map(e => e.turnNumber), 0)
+  const maxRound = Math.max(...events.filter(e => e.round).map(e => e.round), 0)
 
   // Count events by type
   const eventCounts = {}
@@ -281,7 +282,8 @@ function extractSummary(events, gameId, gameName) {
     startTime: events[0]?.timestamp,
     endTime: events[events.length - 1]?.timestamp,
     duration,
-    totalTurns: maxTurn,
+    totalTurns: maxTurnNumber,
+    totalRounds: maxRound,
     totalEvents: events.length,
     eventCounts,
     outcome,

@@ -6,6 +6,62 @@ import LogViewer from '../components/LogViewer'
 import logsDataRaw from '../data/logs.json'
 import './LogDetailPage.css'
 
+// Helper component for expandable text content
+function ExpandableText({ text, maxLength = 500, className = '' }: { text: string; maxLength?: number; className?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const needsTruncation = text.length > maxLength
+
+  if (!needsTruncation) {
+    return <span className={className}>{text}</span>
+  }
+
+  return (
+    <span className={className}>
+      {expanded ? text : text.substring(0, maxLength)}
+      <button
+        className="expand-text-btn"
+        onClick={(e) => {
+          e.stopPropagation()
+          setExpanded(!expanded)
+        }}
+      >
+        {expanded ? ' [show less]' : '... [show more]'}
+      </button>
+    </span>
+  )
+}
+
+// Helper to format tool input as readable text
+function formatToolInput(input: Record<string, unknown>): string {
+  try {
+    return JSON.stringify(input, null, 2)
+  } catch {
+    return String(input)
+  }
+}
+
+// Helper to parse tool result content (may be JSON string or array)
+function parseToolResultContent(content: unknown): string {
+  if (typeof content === 'string') {
+    // Try to parse as JSON for pretty printing
+    try {
+      const parsed = JSON.parse(content)
+      return JSON.stringify(parsed, null, 2)
+    } catch {
+      return content
+    }
+  }
+  if (Array.isArray(content)) {
+    return content.map(item => {
+      if (typeof item === 'object' && item !== null && 'text' in item) {
+        return (item as { text: string }).text
+      }
+      return JSON.stringify(item)
+    }).join('\n')
+  }
+  return JSON.stringify(content, null, 2)
+}
+
 const logsData = logsDataRaw as unknown as LogsData
 
 // Configure marked for safe rendering
@@ -33,6 +89,87 @@ function getAgentColor(agentType: string): string {
   return '#6b7280' // gray
 }
 
+// Extended block type to include tool_result fields
+interface ContentBlock {
+  type: 'text' | 'thinking' | 'tool_use' | 'tool_result'
+  text?: string
+  thinking?: string
+  name?: string
+  input?: Record<string, unknown>
+  tool_use_id?: string
+  content?: unknown
+}
+
+// Component for displaying a single content block with expand/collapse
+function ContentBlockDisplay({ block, index }: { block: ContentBlock; index: number }) {
+  const [expanded, setExpanded] = useState(false)
+
+  if (block.type === 'text' && block.text) {
+    return (
+      <div key={index} className="block-text">
+        <ExpandableText text={block.text} maxLength={500} />
+      </div>
+    )
+  }
+
+  if (block.type === 'thinking' && block.thinking) {
+    return (
+      <div key={index} className="block-thinking">
+        <em>Thinking: <ExpandableText text={block.thinking} maxLength={300} /></em>
+      </div>
+    )
+  }
+
+  if (block.type === 'tool_use' && block.name) {
+    const hasInput = block.input && Object.keys(block.input).length > 0
+    return (
+      <div key={index} className="block-tool-use">
+        <div className="tool-use-header">
+          <span>Tool: <code>{block.name}</code></span>
+          {hasInput && (
+            <button
+              className="tool-expand-btn"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Hide input' : 'Show input'}
+            </button>
+          )}
+        </div>
+        {expanded && hasInput && (
+          <pre className="tool-input">
+            <code>{formatToolInput(block.input!)}</code>
+          </pre>
+        )}
+      </div>
+    )
+  }
+
+  if (block.type === 'tool_result') {
+    const resultContent = block.content ? parseToolResultContent(block.content) : '(empty result)'
+    const isLong = resultContent.length > 200
+    return (
+      <div key={index} className="block-tool-result">
+        <div className="tool-result-header">
+          <span className="tool-result-label">Tool Result</span>
+          {isLong && (
+            <button
+              className="tool-expand-btn"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Collapse' : 'Expand'}
+            </button>
+          )}
+        </div>
+        <pre className={`tool-result-content ${expanded || !isLong ? 'expanded' : 'collapsed'}`}>
+          <code>{expanded || !isLong ? resultContent : resultContent.substring(0, 200) + '...'}</code>
+        </pre>
+      </div>
+    )
+  }
+
+  return null
+}
+
 // Format transcript event content for display
 function formatTranscriptContent(event: TranscriptEvent): React.ReactNode {
   if (!event.message?.content) {
@@ -42,28 +179,15 @@ function formatTranscriptContent(event: TranscriptEvent): React.ReactNode {
 
   const content = event.message.content
   if (typeof content === 'string') {
-    // Truncate long messages
-    const truncated = content.length > 500 ? content.substring(0, 500) + '...' : content
-    return <span className="event-text">{truncated}</span>
+    return <span className="event-text"><ExpandableText text={content} maxLength={500} /></span>
   }
 
-  // Array content (tool use, thinking, etc.)
+  // Array content (tool use, thinking, tool results, etc.)
   return (
     <div className="event-blocks">
-      {content.map((block, i) => {
-        if (block.type === 'text' && block.text) {
-          const truncated = block.text.length > 300 ? block.text.substring(0, 300) + '...' : block.text
-          return <div key={i} className="block-text">{truncated}</div>
-        }
-        if (block.type === 'thinking' && block.thinking) {
-          const truncated = block.thinking.length > 200 ? block.thinking.substring(0, 200) + '...' : block.thinking
-          return <div key={i} className="block-thinking"><em>Thinking: {truncated}</em></div>
-        }
-        if (block.type === 'tool_use' && block.name) {
-          return <div key={i} className="block-tool-use">Tool: <code>{block.name}</code></div>
-        }
-        return null
-      })}
+      {content.map((block, i) => (
+        <ContentBlockDisplay key={i} block={block as ContentBlock} index={i} />
+      ))}
     </div>
   )
 }
@@ -204,7 +328,11 @@ function LogDetailPage() {
               <span className="meta-value">{log.playerCount}</span>
             </div>
             <div className="meta-item">
-              <span className="meta-label">Turns</span>
+              <span className="meta-label">Rounds</span>
+              <span className="meta-value">{log.totalRounds}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Actions</span>
               <span className="meta-value">{log.totalTurns}</span>
             </div>
             <div className="meta-item">
