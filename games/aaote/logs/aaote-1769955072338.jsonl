@@ -3,3 +3,16 @@
 {"timestamp":"2026-02-01T14:13:48.850Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Shortcut","effect":{"type":"teleport_adjacent","description":"Move to any tile adjacent to any player"}}}
 {"timestamp":"2026-02-01T14:16:16.592Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Sabotage","effect":{"type":"destroy_location","description":"Remove a non-occupied location from grid"}}}
 {"timestamp":"2026-02-01T14:18:15.958Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-01T14:21:49.269Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T14:22:47.995Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T14:23:38.642Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T14:24:31.616Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-01T14:25:57.863Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"play_card","card":"Roadblock","effect":{"type":"block_tile","duration":1,"description":"Block a location for 1 round"}}}
+{"timestamp":"2026-02-01T14:26:26.372Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-01T14:27:07.769Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Roadblock","effect":{"type":"block_tile","duration":1,"description":"Block a location for 1 round"}}}
+{"timestamp":"2026-02-01T14:28:40.140Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"move","target":"origin","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T14:29:57.890Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T14:31:10.292Z","event":"action_executed","round":4,"turnNumber":13,"player":"player-1","data":{"type":"play_card","card":"Hidden Path","effect":{"type":"secret_move","description":"Move without revealing destination"}}}
+{"timestamp":"2026-02-01T14:31:47.691Z","event":"action_executed","round":4,"turnNumber":14,"player":"player-2","data":{"type":"move","target":"origin","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T14:33:31.428Z","event":"action_executed","round":4,"turnNumber":15,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-01T14:34:42.359Z","event":"action_executed","round":4,"turnNumber":16,"player":"player-4","data":{"type":"move","target":"origin","placedCardEffects":[]}}
