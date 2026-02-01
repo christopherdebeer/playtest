@@ -118,10 +118,54 @@ export function checkAndAutoAdjudicateContest(state: GameState): boolean {
     });
 
     debug(`[AUTO-ADJUDICATION] Contest timed out after ${elapsed}ms. Action allowed.`);
+
+    // Check if the allowed action includes a victory declaration
+    processVictoryDeclarationIfPresent(state, originalAction);
+
     return true;
   }
 
   return false;
+}
+
+/**
+ * Check if an allowed action includes a victory declaration and create pending claim.
+ * Called after a contest is resolved as 'allowed' to ensure victory claims are verified.
+ */
+function processVictoryDeclarationIfPresent(state: GameState, originalAction: LastAction): void {
+  const action = originalAction.action as GameAction & { declareVictory?: boolean; victoryReason?: string };
+
+  if (!action.declareVictory) {
+    return;
+  }
+
+  const contestState = ensureContestState(state);
+  const player = state.players[originalAction.player];
+
+  // Create pending victory claim for GM verification
+  contestState.pendingVictoryClaim = {
+    player: originalAction.player,
+    reason: action.victoryReason || 'Victory declared with action',
+    fromState: player?.state || 'unknown',
+    toState: player?.state || 'unknown',
+    action: action,
+    timestamp: new Date().toISOString()
+  };
+
+  saveState(state);
+
+  logEvent(state, {
+    event: 'victory_claim_pending',
+    round: state.round,
+    turnNumber: state.turnNumber,
+    player: originalAction.player,
+    data: {
+      reason: action.victoryReason || 'Victory declared with action',
+      note: 'Contest allowed - victory claim requires GM verification'
+    }
+  });
+
+  debug(`[VICTORY CLAIM] Created pending victory claim for ${originalAction.player} after contest allowed`);
 }
 
 /**
@@ -3864,6 +3908,11 @@ export function adjudicateContest(
       contestedBy: contest.contestedBy
     }
   });
+
+  // If ruling is 'allowed' and action includes victory declaration, create pending claim
+  if (ruling === 'allowed') {
+    processVictoryDeclarationIfPresent(state, originalAction);
+  }
 
   return { success: true, reversed };
 }
