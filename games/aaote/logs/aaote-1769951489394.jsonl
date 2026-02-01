@@ -1,2 +1,18 @@
 {"timestamp":"2026-02-01T13:11:29.398Z","event":"game_init","data":{"gameId":"aaote-1769951489394","playerCount":4,"config":"AAOTE: An Agent of the Enemy"}}
 {"timestamp":"2026-02-01T13:11:52.253Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-01T13:12:23.676Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-01T13:12:43.491Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Interrogate","effect":{"type":"peek_objective","description":"Peek at target's objective"}}}
+{"timestamp":"2026-02-01T13:13:35.247Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T13:14:22.299Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-01T13:16:03.285Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"play_card","card":"Evasion","effect":{"type":"counter","description":"Cancel an event targeting you"}}}
+{"timestamp":"2026-02-01T13:16:20.333Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-02-01T13:17:38.809Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T13:18:07.081Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T13:18:29.038Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T13:18:58.520Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Swift Journey","effect":{"type":"extra_movement","value":2}}}
+{"timestamp":"2026-02-01T13:19:20.203Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"play_card","card":"Shortcut","effect":{"type":"teleport_adjacent","description":"Move to any tile adjacent to any player"}}}
+{"timestamp":"2026-02-01T13:19:36.157Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T13:19:54.550Z","event":"action_executed","round":4,"turnNumber":13,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-01T13:20:12.436Z","event":"resignation_submitted","round":4,"turnNumber":14,"player":"player-2","data":{"reason":"Game mechanics incomplete: No movement, location placement, or trading actions available. Cannot play AAOTE as designed. No objective card revealed after 14 turns."}}
+{"timestamp":"2026-02-01T13:21:05.271Z","event":"game_end","round":4,"turnNumber":14,"data":{"winner":"none","reason":"Resignation accepted: Game mechanics incomplete: No movement, location placement, or trading actions available. Cannot play AAOTE as designed. No objective card revealed after 14 turns.","resignedPlayer":"player-2"}}
+{"timestamp":"2026-02-01T13:21:05.274Z","event":"resignation_adjudicated","round":4,"turnNumber":14,"data":{"player":"player-2","accepted":true,"rulingReason":"Resignation accepted. Core game mechanics (movement, location placement, trading, objective reveal) are not implemented in the engine. The game cannot proceed as designed. After 14 turns, all players remain at starting positions with no grid expansion possible."}}
