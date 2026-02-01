@@ -1,0 +1,220 @@
+.doc-detail-page {
+  min-height: 100vh;
+  padding: 2rem 0 4rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.doc-article {
+  max-width: 800px;
+}
+
+.doc-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-header h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.status-badge,
+.priority-badge,
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 4px;
+}
+
+.status-badge {
+  background: color-mix(in srgb, var(--status-color, var(--accent)) 20%, transparent);
+  color: var(--status-color, var(--accent));
+  border: 1px solid var(--status-color, var(--accent));
+}
+
+.priority-badge {
+  background: color-mix(in srgb, var(--priority-color, var(--accent)) 15%, transparent);
+  color: var(--priority-color, var(--accent));
+  border: 1px solid var(--priority-color, var(--accent));
+}
+
+.category-badge {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.doc-path {
+  margin-top: 0.5rem;
+}
+
+.doc-path code {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Markdown content styling */
+.doc-content.markdown-body {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.doc-content.markdown-body h1 {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-content.markdown-body h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.doc-content.markdown-body h3 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.doc-content.markdown-body h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.doc-content.markdown-body p {
+  margin-bottom: 1rem;
+}
+
+.doc-content.markdown-body ul,
+.doc-content.markdown-body ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.doc-content.markdown-body li {
+  margin-bottom: 0.25rem;
+}
+
+.doc-content.markdown-body code {
+  background: var(--code-bg);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.doc-content.markdown-body pre {
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.doc-content.markdown-body pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.doc-content.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.doc-content.markdown-body th,
+.doc-content.markdown-body td {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.doc-content.markdown-body th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.doc-content.markdown-body blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.doc-content.markdown-body blockquote p {
+  margin-bottom: 0;
+}
+
+.doc-content.markdown-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.doc-content.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.doc-content.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+.doc-content.markdown-body strong {
+  color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .doc-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .doc-content.markdown-body {
+    font-size: 0.95rem;
+  }
+
+  .doc-content.markdown-body pre {
+    padding: 0.75rem;
+  }
+}

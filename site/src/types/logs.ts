@@ -10,6 +10,28 @@
  * TODO: Set up npm workspaces to import shared types directly
  */
 
+// ============ STATE SNAPSHOT TYPES ============
+// Lightweight state representation for logging (not full game state)
+
+export interface PlayerStateSnapshot {
+  position: string           // Current location/state
+  handSize: number           // Number of cards in hand
+  hand?: string[]            // Card names (optional, for detailed logging)
+  score?: number
+  actionPoints?: number
+  resources?: Record<string, number>
+  effects?: Array<{ type: string; duration: number }>
+}
+
+export interface GameStateSnapshot {
+  turn: number
+  currentPlayer: string
+  players: Record<string, PlayerStateSnapshot>
+  deckSize: number
+  discardSize: number
+  shared?: Record<string, unknown>  // Game-specific shared state
+}
+
 // Base log event structure
 export interface BaseLogEvent {
   timestamp: string
@@ -24,6 +46,7 @@ export interface GameInitEvent extends BaseLogEvent {
     gameId: string
     playerCount: number
     config: string
+    mechanics?: string[]      // Referenced mechanics from library
   }
 }
 
@@ -32,16 +55,19 @@ export interface GameStartEvent extends BaseLogEvent {
   data: {
     players: string[]
     firstPlayer: string
+    initialState?: GameStateSnapshot  // Starting state
   }
 }
 
 export interface GameEndEvent extends BaseLogEvent {
   event: 'game_end'
   data: {
-    winner: string
+    winner: string | null  // null for draws
     reason: string
     resignedPlayer?: string
     claimedState?: string
+    finalState?: GameStateSnapshot    // End state
+    endType?: 'victory' | 'resignation' | 'timeout' | 'cancelled'
   }
 }
 
@@ -57,14 +83,20 @@ export interface ActionExecutedEvent extends BaseLogEvent {
   event: 'action_executed'
   player: string
   data: {
-    type: 'play_card' | 'draw' | 'pass' | 'move'
+    type: 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'trade' | 'resign' | 'draft'
     card?: string
     effect?: Record<string, unknown>
     declaredColor?: string
     count?: number
     target?: string
     success?: boolean
-    reasoning?: string
+
+    // Player reasoning/thinking (required for playtesting analysis)
+    reasoning: string
+
+    // State changes for traceability
+    stateBefore?: PlayerStateSnapshot   // Player state before action
+    stateAfter?: PlayerStateSnapshot    // Player state after action
   }
 }
 
@@ -110,6 +142,7 @@ export interface VictoryClaimedEvent extends BaseLogEvent {
   data: {
     reason: string
     state: string
+    evidence?: Record<string, unknown>  // Evidence for the claim
   }
 }
 
@@ -172,6 +205,28 @@ export interface ResignationAdjudicatedEvent extends BaseLogEvent {
   }
 }
 
+// Periodic full state snapshot for debugging/replay
+export interface StateSnapshotEvent extends BaseLogEvent {
+  event: 'state_snapshot'
+  data: {
+    reason: 'turn_start' | 'turn_end' | 'checkpoint' | 'debug'
+    state: GameStateSnapshot
+  }
+}
+
+// Hand limit enforcement (Proposal 008)
+export interface HandLimitExceededEvent extends BaseLogEvent {
+  event: 'hand_limit_exceeded'
+  player: string
+  data: {
+    handSize: number
+    limit: number
+    excess: number
+    policy: string
+    message: string
+  }
+}
+
 // Union type for all log events
 export type TypedLogEvent =
   | GameInitEvent
@@ -179,6 +234,7 @@ export type TypedLogEvent =
   | GameEndEvent
   | GameCancelledEvent
   | ActionExecutedEvent
+  | StateSnapshotEvent
   | ProbabilityRollEvent
   | StateTransitionEvent
   | MoveFailedEvent
@@ -189,6 +245,7 @@ export type TypedLogEvent =
   | ContestAdjudicatedEvent
   | ResignationSubmittedEvent
   | ResignationAdjudicatedEvent
+  | HandLimitExceededEvent
 
 // Generic log event for backwards compatibility
 export interface LogEvent {
@@ -197,6 +254,38 @@ export interface LogEvent {
   turn?: number
   player?: string
   data?: Record<string, unknown>
+}
+
+// Transcript event from agent session
+export interface TranscriptEvent {
+  parentUuid?: string
+  type: 'user' | 'assistant' | 'progress' | 'tool_result'
+  timestamp: string
+  message?: {
+    role: 'user' | 'assistant'
+    content: string | Array<{
+      type: 'text' | 'thinking' | 'tool_use' | 'tool_result'
+      text?: string
+      thinking?: string
+      name?: string
+      input?: Record<string, unknown>
+    }>
+  }
+  agentId?: string
+  sessionId?: string
+}
+
+// Summary of an agent transcript
+export interface TranscriptSummary {
+  filename: string
+  fileSize: number
+  agentType: 'gamemaster' | 'player1' | 'player2' | string  // playerN
+  agentId: string | null
+  messageCount: number
+  toolUseCount: number
+  thinkingCount: number
+  eventCount: number
+  events: TranscriptEvent[]  // Full transcript events for detailed view
 }
 
 export interface GameLogSummary {
@@ -221,6 +310,8 @@ export interface GameLogSummary {
     filename: string
     content: string  // Raw markdown content
   }
+  // Agent transcripts (if available)
+  transcripts?: TranscriptSummary[]
 }
 
 export interface GameStats {

@@ -14,6 +14,7 @@ function Header() {
           <a href="#games">Games</a>
           <Link to="/mechanics">Mechanics</Link>
           <Link to="/logs">Logs</Link>
+          <Link to="/docs">Docs</Link>
           <a href="#architecture">Architecture</a>
           <a
             href="https://github.com/christopherdebeer/playtest"

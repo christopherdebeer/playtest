@@ -161,6 +161,92 @@
   color: var(--text-secondary);
 }
 
+/* New event type icons from typed renderers */
+.event-icon.event-state {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+}
+
+.event-icon.event-roll {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+}
+
+.event-icon.event-transition {
+  background: rgba(20, 184, 166, 0.2);
+  color: #2dd4bf;
+}
+
+.event-icon.event-failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.event-icon.event-victory {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+.event-icon.event-adjudication {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.event-icon.event-rejected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.event-icon.event-contest {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+}
+
+.event-icon.event-resignation {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+.event-icon.event-limit {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.event-icon.event-unknown {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+/* Event content helpers */
+.event-success {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.event-failed {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.event-state,
+.event-type,
+.event-mechanics,
+.event-policy,
+.event-message {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+.event-rollback,
+.event-reversed {
+  color: #f59e0b;
+  font-size: 0.9em;
+}
+
+.event-unknown {
+  color: var(--text-secondary);
+}
+
 .event-turn {
   font-size: 0.75rem;
   color: var(--text-secondary);

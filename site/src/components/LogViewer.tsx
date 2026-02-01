@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import { LogEvent } from '../types/logs'
+import {
+  getEventIcon,
+  getEventClass,
+  renderEventContent,
+  isTypedLogEvent,
+} from './eventRenderers'
 import './LogViewer.css'
 
 interface LogViewerProps {
@@ -16,126 +22,35 @@ function formatTimestamp(ts: string): string {
   })
 }
 
-function getEventIcon(event: string): string {
-  switch (event) {
-    case 'game_init': return 'I'
-    case 'game_start': return 'S'
-    case 'game_end': return 'E'
-    case 'game_cancelled': return 'X'
-    case 'action_submitted': return 'A'
-    case 'play_card': return 'P'
-    case 'draw': return 'D'
-    case 'discard': return 'D'
-    default: return '?'
-  }
-}
-
-function getEventClass(event: string): string {
-  switch (event) {
-    case 'game_init':
-    case 'game_start':
-      return 'event-system'
-    case 'game_end':
-      return 'event-end'
-    case 'game_cancelled':
-      return 'event-cancelled'
-    case 'action_submitted':
-      return 'event-action'
-    case 'play_card':
-      return 'event-play'
-    case 'draw':
-    case 'discard':
-      return 'event-draw'
-    default:
-      return 'event-default'
-  }
-}
-
-function renderEventContent(evt: LogEvent): React.ReactNode {
-  const { event, player, data } = evt
-
-  switch (event) {
-    case 'game_init':
-      return (
-        <span>
-          Game initialized with <strong>{String(data?.playerCount ?? '')}</strong> players
-        </span>
-      )
-    case 'game_start':
-      return (
-        <span>
-          Game started. Players: {(data?.players as string[])?.join(', ')}. First player: <strong>{String(data?.firstPlayer ?? '')}</strong>
-        </span>
-      )
-    case 'game_end':
-      return (
-        <span>
-          Game ended. Winner: <strong>{String(data?.winner ?? 'none')}</strong>
-          {data?.reason ? <span className="event-reason"> - {String(data.reason)}</span> : null}
-        </span>
-      )
-    case 'game_cancelled':
-      return (
-        <span>
-          Game cancelled
-          {data?.reason ? <span className="event-reason"> - {String(data.reason)}</span> : null}
-        </span>
-      )
-    case 'action_submitted':
-      return (
-        <span>
-          <strong>{player}</strong> submitted: {String(data?.type ?? '')}
-          {data?.card ? <> - <code>{String(data.card)}</code></> : null}
-          {data?.reasoning ? (
-            <div className="event-reasoning">"{String(data.reasoning)}"</div>
-          ) : null}
-        </span>
-      )
-    case 'play_card':
-      return (
-        <span>
-          <strong>{player}</strong> played <code>{String(data?.card ?? '')}</code>
-          {data?.currentColor ? <> (color: {String(data.currentColor)})</> : null}
-        </span>
-      )
-    case 'draw':
-      return (
-        <span>
-          <strong>{player}</strong> drew {String(data?.count ?? 0)} card(s)
-          {data?.cards ? (
-            <span className="drawn-cards">: {(data.cards as string[]).join(', ')}</span>
-          ) : null}
-        </span>
-      )
-    case 'discard':
-      return (
-        <span>
-          <strong>{player}</strong> discarded <code>{String(data?.card ?? '')}</code>
-        </span>
-      )
-    default:
-      return (
-        <span>
-          {event}
-          {data && <code className="event-data">{JSON.stringify(data)}</code>}
-        </span>
-      )
-  }
+// Fallback for unknown event types
+function renderUnknownEvent(evt: LogEvent): React.ReactNode {
+  return (
+    <span className="event-unknown">
+      {evt.event}
+      {evt.data && <code className="event-data">{JSON.stringify(evt.data)}</code>}
+    </span>
+  )
 }
 
 function LogEventRow({ evt, index }: { evt: LogEvent; index: number }) {
   const [expanded, setExpanded] = useState(false)
 
+  // Use typed renderers for known event types
+  const isTyped = isTypedLogEvent(evt)
+  const icon = isTyped ? getEventIcon(evt.event as any) : '?'
+  const cssClass = isTyped ? getEventClass(evt.event as any) : 'event-unknown'
+  const content = isTyped ? renderEventContent(evt as any) : renderUnknownEvent(evt)
+
   return (
-    <div className={`log-event ${getEventClass(evt.event)}`}>
+    <div className={`log-event ${cssClass}`}>
       <div className="event-main" onClick={() => setExpanded(!expanded)}>
         <span className="event-index">{index + 1}</span>
         <span className="event-time">{formatTimestamp(evt.timestamp)}</span>
-        <span className={`event-icon ${getEventClass(evt.event)}`}>
-          {getEventIcon(evt.event)}
+        <span className={`event-icon ${cssClass}`}>
+          {icon}
         </span>
         {evt.turn && <span className="event-turn">T{evt.turn}</span>}
-        <span className="event-content">{renderEventContent(evt)}</span>
+        <span className="event-content">{content}</span>
         {evt.data && (
           <button className="expand-btn" title="Toggle raw data">
             {expanded ? '-' : '+'}

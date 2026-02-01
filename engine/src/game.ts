@@ -849,26 +849,22 @@ export function advanceTurn(state: GameState): void {
 
     // Check max_turns limit
     if (state.config.max_turns && state.turn > state.config.max_turns) {
-      // Game over - determine winner by highest score
-      let highestScore = -Infinity;
-      let winner = 'none';
-
-      for (const [playerId, player] of Object.entries(state.players)) {
-        const score = player.score ?? 0;
-        if (score > highestScore) {
-          highestScore = score;
-          winner = playerId;
-        }
-      }
+      // Proposal 010: Use configurable timeout winner
+      const result = determineTimeoutWinner(state);
 
       state.status = 'pending_analysis';
-      state.shared.winner = winner;
-      state.shared.endReason = `Max turns (${state.config.max_turns}) reached. ${winner} wins with ${highestScore} points.`;
+      state.shared.winner = result.winner;
+      state.shared.endReason = result.reason;
 
       logEvent(state, {
         event: 'game_end',
         turn: state.turn,
-        data: { winner, reason: state.shared.endReason }
+        data: {
+          winner: result.winner,
+          reason: result.reason,
+          endType: 'timeout',
+          revealedRole: result.revealRole
+        }
       });
 
       saveState(state);
@@ -1164,6 +1160,98 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
     }
   }
   return null;
+}
+
+/**
+ * Proposal 010: Determine winner when game times out (max_turns reached).
+ * Uses configurable timeout_winner rules, falling back to highest score.
+ */
+export function determineTimeoutWinner(state: GameState): { winner: string | null; reason: string; revealRole: boolean } {
+  const config = state.config.engine_mechanics?.timeout_winner;
+  const maxTurns = state.config.max_turns;
+
+  // Default fallback: highest score
+  const defaultWinner = (): { winner: string | null; reason: string; revealRole: boolean } => {
+    let highestScore = -Infinity;
+    let winner: string | null = 'none';
+
+    for (const [playerId, player] of Object.entries(state.players)) {
+      const score = player.score ?? 0;
+      if (score > highestScore) {
+        highestScore = score;
+        winner = playerId;
+      }
+    }
+
+    return {
+      winner,
+      reason: `Max turns (${maxTurns}) reached. ${winner} wins with ${highestScore} points.`,
+      revealRole: false
+    };
+  };
+
+  if (!config) {
+    return defaultWinner();
+  }
+
+  switch (config.type) {
+    case 'role': {
+      // Find player with specified role/objective
+      const targetRole = config.role;
+      const targetRoleName = config.role_name;
+
+      for (const [playerId, player] of Object.entries(state.players)) {
+        const objective = player.objective as { name?: string; type?: string } | undefined;
+
+        if (objective) {
+          const matchesRole = targetRole && objective.type === targetRole;
+          const matchesName = targetRoleName && objective.name === targetRoleName;
+
+          if (matchesRole || matchesName) {
+            const roleName = objective.name || targetRole || 'The Enemy';
+            return {
+              winner: playerId,
+              reason: `Time limit reached. ${roleName} wins by default.`,
+              revealRole: config.reveal_role ?? true
+            };
+          }
+        }
+      }
+      // No player with matching role found - fall back to default
+      return defaultWinner();
+    }
+
+    case 'specific_player': {
+      // Simple condition evaluation (could be extended)
+      // For now, support "has_objective:Name" format
+      const condition = config.player_condition;
+      if (condition?.startsWith('has_objective:')) {
+        const objName = condition.replace('has_objective:', '');
+        for (const [playerId, player] of Object.entries(state.players)) {
+          const objective = player.objective as { name?: string } | undefined;
+          if (objective?.name === objName) {
+            return {
+              winner: playerId,
+              reason: `Time limit reached. Player with "${objName}" wins by condition.`,
+              revealRole: config.reveal_role ?? false
+            };
+          }
+        }
+      }
+      return defaultWinner();
+    }
+
+    case 'no_winner':
+      return {
+        winner: null,
+        reason: config.reason || 'Game ended in a draw.',
+        revealRole: false
+      };
+
+    case 'highest_score':
+    default:
+      return defaultWinner();
+  }
 }
 
 export function drawCards(state: GameState, playerId: string, count: number): Card[] {
@@ -1937,14 +2025,27 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   }
 
   // ============ NEW: Action Points validation ============
+  // Proposal 006: AP cost per card - multiply by count for quantified actions
   if (apConfig) {
-    const actionCost = apConfig.action_costs[action.type] ?? 1;
+    const baseCost = apConfig.action_costs[action.type] ?? 1;
+    let actionCost = baseCost;
+
+    // For draw actions, cost is per card drawn
+    if (action.type === 'draw') {
+      const drawAction = action as DrawAction;
+      const count = drawAction.count ?? 1;
+      actionCost = baseCost * count;
+    }
+
     const remainingAP = player.actionPoints ?? 0;
 
     if (actionCost > remainingAP) {
+      const costExplanation = action.type === 'draw' && (action as DrawAction).count && (action as DrawAction).count! > 1
+        ? ` (${(action as DrawAction).count} cards × ${baseCost} AP each)`
+        : '';
       return {
         valid: false,
-        errors: [`Not enough action points. Action "${action.type}" costs ${actionCost} AP, you have ${remainingAP} AP remaining.`]
+        errors: [`Not enough action points. Action "${action.type}" costs ${actionCost} AP${costExplanation}, you have ${remainingAP} AP remaining.`]
       };
     }
   }
@@ -2060,6 +2161,20 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       }
 
       const card = player.hand[cardIndex];
+
+      // Proposal 008: Card type restrictions
+      // Check if this card type is playable according to card_type_rules config
+      const cardTypeRules = state.config.engine_mechanics?.card_type_rules as Record<string, { playable?: boolean }> | undefined;
+      if (cardTypeRules && cardTypeRules[card.type]) {
+        const rules = cardTypeRules[card.type];
+        if (rules.playable === false) {
+          const hint = card.type === 'item' ? ' Items are held in hand until used or traded.' :
+                       card.type === 'location' ? ' Use a place_location or move action instead.' : '';
+          errors.push(`Cannot play "${card.name}". Cards of type "${card.type}" cannot be played.${hint}`);
+          break;
+        }
+      }
+
       const topCard = state.shared.topCard as Card | undefined;
       const currentColor = state.shared.currentColor as string | undefined;
 
@@ -2122,6 +2237,27 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       if (state.deck.length === 0 && state.discardPile.length <= 1) {
         warnings.push('Draw pile is empty and cannot be reshuffled');
       }
+
+      // Proposal 008: Hand limit validation
+      const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
+      if (handLimit !== undefined) {
+        const drawAction = action as DrawAction;
+        const drawCount = drawAction.count ?? 1;
+        const currentHandSize = player.hand.length;
+        const projectedHandSize = currentHandSize + drawCount;
+
+        const policy = (state.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+
+        if (policy === 'cannot_draw' && projectedHandSize > handLimit) {
+          const maxDrawable = Math.max(0, handLimit - currentHandSize);
+          if (maxDrawable === 0) {
+            errors.push(`Hand limit (${handLimit}) reached. You have ${currentHandSize} cards and cannot draw more.`);
+          } else {
+            errors.push(`Drawing ${drawCount} cards would exceed hand limit (${handLimit}). You have ${currentHandSize} cards. Max you can draw: ${maxDrawable}.`);
+          }
+        }
+        // Other policies (discard_choice, discard_oldest) are handled in executeAction
+      }
       break;
     }
 
@@ -2138,12 +2274,26 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
 
     case 'move': {
-      // For board games - check if target is valid
+      const moveAction = action as { target: string };
+
+      // For board games - check if target is valid state
       if (state.config.board) {
         const validStates = state.config.board.states || [];
-        const moveAction = action as { target: string };
         if (!validStates.includes(moveAction.target)) {
           errors.push(`Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`);
+        }
+      }
+
+      // Proposal 007: Grid movement validation
+      // For grid-based games - check if target is a placed location or starting tile
+      const gridConfig = state.config.grid as { type?: string; starting_tile?: string } | undefined;
+      if (gridConfig) {
+        const placedLocations = (state.shared.placedLocations as string[]) || [];
+        const startingTile = gridConfig.starting_tile || 'origin';
+        const validLocations = [startingTile, ...placedLocations];
+
+        if (!validLocations.includes(moveAction.target)) {
+          errors.push(`Invalid move target "${moveAction.target}". You can only move to placed locations. Valid: ${validLocations.join(', ')}`);
         }
       }
       break;
@@ -2201,9 +2351,18 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   player.lastActionTurn = state.turn;
 
   // === NEW: Deduct action points if enabled ===
+  // Proposal 006: AP cost per card - multiply by count for quantified actions
   const apConfig = state.config.engine_mechanics?.action_points;
   if (apConfig && player.actionPoints !== undefined) {
-    const cost = apConfig.action_costs[action.type] ?? 1;
+    const baseCost = apConfig.action_costs[action.type] ?? 1;
+    let cost = baseCost;
+
+    // For draw actions, cost is per card drawn
+    if (action.type === 'draw') {
+      const drawAction = action as DrawAction;
+      cost = baseCost * (drawAction.count ?? 1);
+    }
+
     player.actionPoints -= cost;
     player.actionPointsUsed = (player.actionPointsUsed ?? 0) + cost;
   }
@@ -2254,6 +2413,15 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               }
             });
           }
+        }
+
+        // Proposal 007: Track placed locations for grid-based games
+        const gridConfig = state.config.grid as { type?: string } | undefined;
+        if (gridConfig && card.type === 'location') {
+          if (!state.shared.placedLocations) {
+            state.shared.placedLocations = [];
+          }
+          (state.shared.placedLocations as string[]).push(card.name);
         }
 
         // Record last action
@@ -2339,6 +2507,37 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const count = drawAction.count || 1;
         const cards = drawCards(state, playerId, count);
 
+        // Proposal 008: Hand limit enforcement (for discard_choice and discard_oldest policies)
+        const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
+        const handPolicy = (state.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+        let discardedCards: Card[] = [];
+
+        if (handLimit !== undefined && player.hand.length > handLimit) {
+          const excess = player.hand.length - handLimit;
+
+          if (handPolicy === 'discard_oldest') {
+            // Auto-discard the oldest (first) cards in hand
+            discardedCards = player.hand.splice(0, excess);
+            state.discardPile.push(...discardedCards);
+          } else if (handPolicy === 'discard_choice') {
+            // Note: Full implementation would require a pending_discard state
+            // For now, log a warning - the player should discard manually
+            logEvent(state, {
+              event: 'hand_limit_exceeded',
+              turn: state.turn,
+              player: playerId,
+              data: {
+                handSize: player.hand.length,
+                limit: handLimit,
+                excess: excess,
+                policy: handPolicy,
+                message: `Hand limit (${handLimit}) exceeded by ${excess}. Player should discard ${excess} cards.`
+              }
+            });
+          }
+          // 'cannot_draw' is handled in validation, should never reach here
+        }
+
         contestState.lastAction = {
           player: playerId,
           action,
@@ -2346,7 +2545,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           turn: state.turn,
           result: {
             success: true,
-            details: { drawnCount: cards.length }
+            details: { drawnCount: cards.length, discarded: discardedCards.length || undefined }
           }
         };
 

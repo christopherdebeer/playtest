@@ -123,6 +123,21 @@ If you believe they violated the rules, you can contest:
 
 A gamemaster will adjudicate the contest. Use this sparingly and only for clear rule violations.
 
+## Resignation and Victory Claims
+
+When submitting a resignation or victory claim, **ALWAYS use the `--wait` flag** to block until the gamemaster adjudicates:
+
+```bash
+./playtest player:act {INSTANCE_ID} -p {PLAYER_ID} -a '{"type": "resign", "reason": "Cannot win"}' --wait
+```
+
+The response will include:
+- `resignation.accepted: true` - Game is over, you may exit
+- `resignation.accepted: false` - Game continues, resume your turn loop
+
+**CRITICAL: Never exit your game loop until you receive confirmation that the game has ended.**
+If your resignation is rejected, you must continue playing. The `--wait` flag ensures you know the result before proceeding.
+
 ## Handling Validation Errors
 
 If your action fails, the engine returns actionable error messages. READ THEM and fix your action:

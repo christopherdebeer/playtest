@@ -13,12 +13,26 @@ interface MechanicDef {
   bggUrl: string
   description: string
   contentHtml: string
+  // Implementation status from shared/mechanics-implementation.json
+  implementationStatus: 'implemented' | 'partial' | 'not_implemented'
+  implementationConfig?: string
+  implementationSince?: string
+  implementationDescription?: string
+  implementationNotes?: string
+  implementationRelated?: string
+}
+
+interface ImplementationStats {
+  implemented: number
+  partial: number
+  notImplemented: number
 }
 
 interface MechanicsData {
   categories: string[]
   mechanics: MechanicDef[]
   count: number
+  implementationStats?: ImplementationStats
 }
 
 interface GameConfig {
@@ -71,12 +85,25 @@ const categoryDescriptions: Record<string, string> = {
   'worker-placement': 'Worker placement and action blocking mechanics',
 }
 
+const implementationStatusColors: Record<string, string> = {
+  implemented: '#22c55e',
+  partial: '#f59e0b',
+  not_implemented: '#6b7280',
+}
+
+const implementationStatusLabels: Record<string, string> = {
+  implemented: 'Implemented',
+  partial: 'Partial',
+  not_implemented: 'Not Implemented',
+}
+
 function MechanicsPage() {
   const [searchParams] = useSearchParams()
   const highlightSlug = searchParams.get('highlight')
 
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [expandedMechanics, setExpandedMechanics] = useState<Set<string>>(new Set())
 
   const data = mechanicsData as MechanicsData
@@ -106,7 +133,8 @@ function MechanicsPage() {
       m.slug.includes(search.toLowerCase()) ||
       m.description.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = selectedCategory === null || m.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesStatus = selectedStatus === null || m.implementationStatus === selectedStatus
+    return matchesSearch && matchesCategory && matchesStatus
   })
 
   // Group by category
@@ -177,12 +205,46 @@ function MechanicsPage() {
               )
             })}
           </div>
+
+          {data.implementationStats && (
+            <div className="implementation-filters">
+              <span className="filter-label">Engine Status:</span>
+              <button
+                className={`status-filter ${selectedStatus === null ? 'active' : ''}`}
+                onClick={() => setSelectedStatus(null)}
+              >
+                All
+              </button>
+              <button
+                className={`status-filter ${selectedStatus === 'implemented' ? 'active' : ''}`}
+                style={{ '--status-color': implementationStatusColors.implemented } as React.CSSProperties}
+                onClick={() => setSelectedStatus(selectedStatus === 'implemented' ? null : 'implemented')}
+              >
+                Implemented ({data.implementationStats.implemented})
+              </button>
+              <button
+                className={`status-filter ${selectedStatus === 'partial' ? 'active' : ''}`}
+                style={{ '--status-color': implementationStatusColors.partial } as React.CSSProperties}
+                onClick={() => setSelectedStatus(selectedStatus === 'partial' ? null : 'partial')}
+              >
+                Partial ({data.implementationStats.partial})
+              </button>
+              <button
+                className={`status-filter ${selectedStatus === 'not_implemented' ? 'active' : ''}`}
+                style={{ '--status-color': implementationStatusColors.not_implemented } as React.CSSProperties}
+                onClick={() => setSelectedStatus(selectedStatus === 'not_implemented' ? null : 'not_implemented')}
+              >
+                Not Implemented ({data.implementationStats.notImplemented})
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="mechanics-results">
           <p className="results-count">
             Showing {filteredMechanics.length} mechanics
             {selectedCategory && ` in ${selectedCategory}`}
+            {selectedStatus && ` with status "${implementationStatusLabels[selectedStatus]}"`}
             {search && ` matching "${search}"`}
           </p>
         </div>
@@ -217,7 +279,22 @@ function MechanicsPage() {
                       >
                         <div className="mechanic-card-header">
                           <h3>{mechanic.name}</h3>
-                          <span className="mechanic-id">#{mechanic.id}</span>
+                          <div className="mechanic-badges">
+                            <span
+                              className={`implementation-badge ${mechanic.implementationStatus}`}
+                              style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
+                              title={
+                                mechanic.implementationStatus === 'implemented'
+                                  ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
+                                  : mechanic.implementationStatus === 'partial'
+                                  ? mechanic.implementationNotes
+                                  : 'Not yet implemented in the engine'
+                              }
+                            >
+                              {implementationStatusLabels[mechanic.implementationStatus]}
+                            </span>
+                            <span className="mechanic-id">#{mechanic.id}</span>
+                          </div>
                         </div>
                         <p className="mechanic-summary">{mechanic.summary}</p>
 
