@@ -9,3 +9,4 @@
 {"timestamp":"2026-02-01T00:48:48.000Z","event":"action_executed","turn":3,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T00:49:15.265Z","event":"action_executed","turn":4,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T00:49:15.267Z","event":"game_end","turn":4,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}
+{"timestamp":"2026-02-01T00:55:32.004Z","event":"analysis_submitted","turn":4,"data":{"file":"playtest-analysis-v2.3-1769906743630.md","version":"v2.3"}}
