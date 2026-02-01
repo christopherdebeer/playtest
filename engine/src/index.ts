@@ -4,6 +4,7 @@
 
 import { Command } from 'commander';
 import { rmSync, existsSync, readFileSync, copyFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import {
   initGame,
   loadState,
@@ -55,6 +56,7 @@ import {
   listCategories
 } from './rules.js';
 import { getRulesPath } from './game.js';
+import { validateRules, formatValidationResult } from './validate.js';
 
 const program = new Command();
 
@@ -84,9 +86,46 @@ program
   .description('Initialize a new game instance')
   .option('-p, --players <n>', 'Number of players', '2')
   .option('--personas <list>', 'Persona assignments: "random" (default), "none", or comma-separated list (e.g., "aggressive,casual")', 'random')
-  .action((game: string, options: { players: string; personas: string }) => {
+  .option('--skip-validation', 'Skip RULES.md validation')
+  .action((game: string, options: { players: string; personas: string; skipValidation?: boolean }) => {
     try {
       const playerCount = parseInt(options.players, 10);
+
+      // Validate RULES.md before initializing (unless skipped)
+      if (!options.skipValidation) {
+        const GAMES_DIR = join(process.cwd(), 'games');
+        const rulesPath = join(GAMES_DIR, game, 'RULES.md');
+        const validationResult = validateRules(rulesPath, { extractSections: false });
+
+        // Output validation summary
+        console.error(`Validating ${game}/RULES.md...`);
+        if (validationResult.config) {
+          console.error(`  ✓ ${validationResult.config.name} v${validationResult.config.version || '?'}`);
+        }
+        if (validationResult.errors.length > 0) {
+          console.error(`  ✗ ${validationResult.errors.length} error(s):`);
+          for (const err of validationResult.errors) {
+            console.error(`    - [${err.code}] ${err.message}`);
+          }
+          // Fail on validation errors
+          console.log(JSON.stringify({
+            success: false,
+            error: `RULES.md validation failed with ${validationResult.errors.length} error(s). Use --skip-validation to bypass.`,
+            validation: {
+              valid: false,
+              errors: validationResult.errors,
+              warnings: validationResult.warnings
+            }
+          }));
+          process.exit(1);
+        }
+        if (validationResult.warnings.length > 0) {
+          console.error(`  ⚠ ${validationResult.warnings.length} warning(s)`);
+        } else {
+          console.error(`  ✓ Valid`);
+        }
+        console.error('');
+      }
 
       // Parse persona assignments
       let personaOverrides: Record<string, string> | undefined;
@@ -1462,6 +1501,58 @@ program
         error: (e as Error).message
       }));
       process.exit(1);
+    }
+  });
+
+// ============ Validation Commands ============
+
+program
+  .command('validate <game>')
+  .description('Validate game rules file (RULES.md)')
+  .option('--strict', 'Fail on warnings (exit code 2)')
+  .option('--sections', 'Include extracted markdown sections in output')
+  .option('--json', 'Output as JSON')
+  .action((game: string, options: { strict?: boolean; sections?: boolean; json?: boolean }) => {
+    try {
+      // Resolve rules path
+      const GAMES_DIR = join(process.cwd(), 'games');
+      const rulesPath = join(GAMES_DIR, game, 'RULES.md');
+
+      const result = validateRules(rulesPath, { extractSections: options.sections });
+
+      if (options.json) {
+        console.log(JSON.stringify({
+          valid: result.valid,
+          errors: result.errors,
+          warnings: result.warnings,
+          config: result.config,
+          sections: result.sections,
+        }, null, 2));
+      } else {
+        console.log(formatValidationResult(result, rulesPath));
+      }
+
+      // Exit codes: 0=valid, 1=errors, 2=strict+warnings, 3=file error
+      if (!result.valid) {
+        process.exit(1);
+      }
+      if (options.strict && result.warnings.length > 0) {
+        if (!options.json) {
+          console.log('\nStrict mode: failing due to warnings');
+        }
+        process.exit(2);
+      }
+    } catch (e) {
+      if (options.json) {
+        console.log(JSON.stringify({
+          valid: false,
+          errors: [{ code: 'EXCEPTION', message: (e as Error).message, severity: 'error' }],
+          warnings: [],
+        }));
+      } else {
+        console.error(`Error: ${(e as Error).message}`);
+      }
+      process.exit(3);
     }
   });
 
