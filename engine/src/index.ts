@@ -4,6 +4,7 @@
 
 import { Command } from 'commander';
 import { rmSync, existsSync, readFileSync, copyFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import {
   initGame,
   loadState,
@@ -55,6 +56,7 @@ import {
   listCategories
 } from './rules.js';
 import { getRulesPath } from './game.js';
+import { validateRules, formatValidationResult } from './validate.js';
 
 const program = new Command();
 
@@ -1462,6 +1464,58 @@ program
         error: (e as Error).message
       }));
       process.exit(1);
+    }
+  });
+
+// ============ Validation Commands ============
+
+program
+  .command('validate <game>')
+  .description('Validate game rules file (RULES.md)')
+  .option('--strict', 'Fail on warnings (exit code 2)')
+  .option('--sections', 'Include extracted markdown sections in output')
+  .option('--json', 'Output as JSON')
+  .action((game: string, options: { strict?: boolean; sections?: boolean; json?: boolean }) => {
+    try {
+      // Resolve rules path
+      const GAMES_DIR = join(process.cwd(), 'games');
+      const rulesPath = join(GAMES_DIR, game, 'RULES.md');
+
+      const result = validateRules(rulesPath, { extractSections: options.sections });
+
+      if (options.json) {
+        console.log(JSON.stringify({
+          valid: result.valid,
+          errors: result.errors,
+          warnings: result.warnings,
+          config: result.config,
+          sections: result.sections,
+        }, null, 2));
+      } else {
+        console.log(formatValidationResult(result, rulesPath));
+      }
+
+      // Exit codes: 0=valid, 1=errors, 2=strict+warnings, 3=file error
+      if (!result.valid) {
+        process.exit(1);
+      }
+      if (options.strict && result.warnings.length > 0) {
+        if (!options.json) {
+          console.log('\nStrict mode: failing due to warnings');
+        }
+        process.exit(2);
+      }
+    } catch (e) {
+      if (options.json) {
+        console.log(JSON.stringify({
+          valid: false,
+          errors: [{ code: 'EXCEPTION', message: (e as Error).message, severity: 'error' }],
+          warnings: [],
+        }));
+      } else {
+        console.error(`Error: ${(e as Error).message}`);
+      }
+      process.exit(3);
     }
   });
 

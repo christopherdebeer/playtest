@@ -715,3 +715,57 @@ export interface GameAnalysis {
   playerStrategies?: Record<string, string>;  // Brief strategy notes per player
   recommendations?: string[];    // Suggestions for game balance/rules
 }
+
+// ============ Validation Types ============
+
+/**
+ * A validation error or warning from rules validation.
+ */
+export interface ValidationIssue {
+  code: string;                  // Machine-readable error code
+  message: string;               // Human-readable message
+  severity: 'error' | 'warning'; // Severity level
+  location?: string;             // Where in the config (e.g., "config.deck[0].name")
+  suggestion?: string;           // How to fix it
+}
+
+/**
+ * An extracted markdown section from RULES.md.
+ */
+export interface ExtractedSection {
+  heading: string;               // Original heading text
+  level: number;                 // Heading level (1-6)
+  content: string;               // Content under this heading
+  startLine: number;             // Line number where section starts
+  endLine: number;               // Line number where section ends
+}
+
+/**
+ * All extracted sections from a RULES.md file.
+ */
+export interface ExtractedSections {
+  // Standard sections (normalized names)
+  overview?: string;
+  setup?: string;
+  gameplay?: string;
+  winning?: string;
+  cardTypes?: string;
+  gamemasterNotes?: string;
+  strategy?: string;
+  designNotes?: string;
+
+  // All sections by heading (raw)
+  allSections: Record<string, ExtractedSection>;
+}
+
+/**
+ * Result of validating a RULES.md file.
+ */
+export interface ValidationResult {
+  valid: boolean;                // True if no errors (warnings OK)
+  errors: ValidationIssue[];     // Validation errors
+  warnings: ValidationIssue[];   // Validation warnings
+  config?: GameConfig;           // Parsed config (if YAML valid)
+  markdown?: string;             // Raw markdown content
+  sections?: ExtractedSections;  // Extracted sections (if requested)
+}
