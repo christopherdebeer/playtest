@@ -86,9 +86,46 @@ program
   .description('Initialize a new game instance')
   .option('-p, --players <n>', 'Number of players', '2')
   .option('--personas <list>', 'Persona assignments: "random" (default), "none", or comma-separated list (e.g., "aggressive,casual")', 'random')
-  .action((game: string, options: { players: string; personas: string }) => {
+  .option('--skip-validation', 'Skip RULES.md validation')
+  .action((game: string, options: { players: string; personas: string; skipValidation?: boolean }) => {
     try {
       const playerCount = parseInt(options.players, 10);
+
+      // Validate RULES.md before initializing (unless skipped)
+      if (!options.skipValidation) {
+        const GAMES_DIR = join(process.cwd(), 'games');
+        const rulesPath = join(GAMES_DIR, game, 'RULES.md');
+        const validationResult = validateRules(rulesPath, { extractSections: false });
+
+        // Output validation summary
+        console.error(`Validating ${game}/RULES.md...`);
+        if (validationResult.config) {
+          console.error(`  ✓ ${validationResult.config.name} v${validationResult.config.version || '?'}`);
+        }
+        if (validationResult.errors.length > 0) {
+          console.error(`  ✗ ${validationResult.errors.length} error(s):`);
+          for (const err of validationResult.errors) {
+            console.error(`    - [${err.code}] ${err.message}`);
+          }
+          // Fail on validation errors
+          console.log(JSON.stringify({
+            success: false,
+            error: `RULES.md validation failed with ${validationResult.errors.length} error(s). Use --skip-validation to bypass.`,
+            validation: {
+              valid: false,
+              errors: validationResult.errors,
+              warnings: validationResult.warnings
+            }
+          }));
+          process.exit(1);
+        }
+        if (validationResult.warnings.length > 0) {
+          console.error(`  ⚠ ${validationResult.warnings.length} warning(s)`);
+        } else {
+          console.error(`  ✓ Valid`);
+        }
+        console.error('');
+      }
 
       // Parse persona assignments
       let personaOverrides: Record<string, string> | undefined;
