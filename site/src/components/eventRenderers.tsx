@@ -27,6 +27,8 @@ import type {
   ResignationSubmittedEvent,
   ResignationAdjudicatedEvent,
   HandLimitExceededEvent,
+  PlacedCardTriggeredEvent,
+  AnalysisSubmittedEvent,
 } from '../types/logs'
 
 // ============ EVENT ICONS ============
@@ -52,6 +54,8 @@ const EVENT_ICONS: Record<EventType, string> = {
   resignation_submitted: 'Q',
   resignation_adjudicated: 'J',
   hand_limit_exceeded: 'H',
+  placed_card_triggered: 'P',
+  analysis_submitted: 'Z',
 }
 
 export function getEventIcon(event: EventType): string {
@@ -78,6 +82,8 @@ const EVENT_CLASSES: Record<EventType, string> = {
   resignation_submitted: 'event-resignation',
   resignation_adjudicated: 'event-adjudication',
   hand_limit_exceeded: 'event-limit',
+  placed_card_triggered: 'event-action',
+  analysis_submitted: 'event-system',
 }
 
 export function getEventClass(event: EventType): string {
@@ -279,6 +285,26 @@ function renderHandLimitExceeded(evt: HandLimitExceededEvent): React.ReactNode {
   )
 }
 
+function renderPlacedCardTriggered(evt: PlacedCardTriggeredEvent): React.ReactNode {
+  const { player, data } = evt
+  return (
+    <span>
+      <strong>{player}</strong> triggered placed card at {data.targetState}
+      {data.effects.length > 0 && <span className="event-effects"> ({data.effects.join(', ')})</span>}
+    </span>
+  )
+}
+
+function renderAnalysisSubmitted(evt: AnalysisSubmittedEvent): React.ReactNode {
+  const { data } = evt
+  return (
+    <span>
+      Analysis submitted: <strong>{data.file}</strong>
+      {data.version && <span className="event-version"> (v{data.version})</span>}
+    </span>
+  )
+}
+
 // ============ EXHAUSTIVE RENDERER ============
 // TypeScript will error if a new event type is added but not handled
 
@@ -318,6 +344,10 @@ export function renderEventContent(evt: TypedLogEvent): React.ReactNode {
       return renderResignationAdjudicated(evt)
     case 'hand_limit_exceeded':
       return renderHandLimitExceeded(evt)
+    case 'placed_card_triggered':
+      return renderPlacedCardTriggered(evt)
+    case 'analysis_submitted':
+      return renderAnalysisSubmitted(evt)
     default:
       // Exhaustiveness check - TypeScript will error if we miss a case
       return assertNever(evt)
@@ -358,6 +388,8 @@ const KNOWN_EVENT_TYPES: Set<string> = new Set([
   'resignation_submitted',
   'resignation_adjudicated',
   'hand_limit_exceeded',
+  'placed_card_triggered',
+  'analysis_submitted',
 ])
 
 export function isTypedLogEvent(evt: { event: string }): evt is TypedLogEvent {

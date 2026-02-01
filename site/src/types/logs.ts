@@ -1,37 +1,31 @@
 /**
  * Log event types for the site log viewer.
  *
- * SOURCE OF TRUTH: /shared/types/log-events.ts
- *
- * Keep these in sync with:
- * - shared/types/log-events.ts (canonical definitions)
- * - engine/src/types.ts (LogEvent interface)
- *
- * TODO: Set up npm workspaces to import shared types directly
+ * Core types are imported from @playtest/shared.
+ * Site-specific types (transcripts, summaries) are defined here.
  */
 
-// ============ STATE SNAPSHOT TYPES ============
-// Lightweight state representation for logging (not full game state)
+// Import shared types
+export type {
+  PlayerStateSnapshot,
+  GameStateSnapshot,
+  LogEventType,
+  LogEventDataSchemas,
+  AnyLogEvent,
+} from '@playtest/shared';
 
-export interface PlayerStateSnapshot {
-  position: string           // Current location/state
-  handSize: number           // Number of cards in hand
-  hand?: string[]            // Card names (optional, for detailed logging)
-  score?: number
-  actionPoints?: number
-  resources?: Record<string, number>
-  effects?: Array<{ type: string; duration: number }>
-}
+export {
+  LOG_EVENT_TYPES,
+  isEventType,
+  validateActionEvent,
+} from '@playtest/shared';
 
-export interface GameStateSnapshot {
-  round: number
-  turnNumber: number
-  currentPlayer: string
-  players: Record<string, PlayerStateSnapshot>
-  deckSize: number
-  discardSize: number
-  shared?: Record<string, unknown>  // Game-specific shared state
-}
+// Re-export TypedLogEvent with a different name to avoid confusion
+// The shared version is generic, we create specific event interfaces below
+import type {
+  PlayerStateSnapshot,
+  GameStateSnapshot,
+} from '@playtest/shared';
 
 // Base log event structure
 export interface BaseLogEvent {
@@ -48,7 +42,7 @@ export interface GameInitEvent extends BaseLogEvent {
     gameId: string
     playerCount: number
     config: string
-    mechanics?: string[]      // Referenced mechanics from library
+    mechanics?: string[]
   }
 }
 
@@ -57,18 +51,18 @@ export interface GameStartEvent extends BaseLogEvent {
   data: {
     players: string[]
     firstPlayer: string
-    initialState?: GameStateSnapshot  // Starting state
+    initialState?: GameStateSnapshot
   }
 }
 
 export interface GameEndEvent extends BaseLogEvent {
   event: 'game_end'
   data: {
-    winner: string | null  // null for draws
+    winner: string | null
     reason: string
     resignedPlayer?: string
     claimedState?: string
-    finalState?: GameStateSnapshot    // End state
+    finalState?: GameStateSnapshot
     endType?: 'victory' | 'resignation' | 'timeout' | 'cancelled'
   }
 }
@@ -92,17 +86,13 @@ export interface ActionExecutedEvent extends BaseLogEvent {
     count?: number
     target?: string
     success?: boolean
-
-    // Player reasoning/thinking (required for playtesting analysis)
-    reasoning: string
-
-    // State changes for traceability
-    stateBefore?: PlayerStateSnapshot   // Player state before action
-    stateAfter?: PlayerStateSnapshot    // Player state after action
+    reasoning?: string
+    stateBefore?: PlayerStateSnapshot
+    stateAfter?: PlayerStateSnapshot
   }
 }
 
-// Probability/movement events (when probability_movement mechanic enabled)
+// Probability/movement events
 export interface ProbabilityRollEvent extends BaseLogEvent {
   event: 'probability_roll'
   player: string
@@ -137,14 +127,14 @@ export interface MoveFailedEvent extends BaseLogEvent {
   }
 }
 
-// Victory declaration events (when victory_declaration mechanic enabled)
+// Victory declaration events
 export interface VictoryClaimedEvent extends BaseLogEvent {
   event: 'victory_claimed'
   player: string
   data: {
     reason: string
     state: string
-    evidence?: Record<string, unknown>  // Evidence for the claim
+    evidence?: Record<string, unknown>
   }
 }
 
@@ -207,7 +197,7 @@ export interface ResignationAdjudicatedEvent extends BaseLogEvent {
   }
 }
 
-// Periodic full state snapshot for debugging/replay
+// State snapshot event
 export interface StateSnapshotEvent extends BaseLogEvent {
   event: 'state_snapshot'
   data: {
@@ -216,7 +206,7 @@ export interface StateSnapshotEvent extends BaseLogEvent {
   }
 }
 
-// Hand limit enforcement (Proposal 008)
+// Hand limit enforcement
 export interface HandLimitExceededEvent extends BaseLogEvent {
   event: 'hand_limit_exceeded'
   player: string
@@ -226,6 +216,26 @@ export interface HandLimitExceededEvent extends BaseLogEvent {
     excess: number
     policy: string
     message: string
+  }
+}
+
+// Placed card triggered event
+export interface PlacedCardTriggeredEvent extends BaseLogEvent {
+  event: 'placed_card_triggered'
+  player: string
+  data: {
+    targetState: string
+    effects: string[]
+    probabilityModifier: number
+  }
+}
+
+// Analysis submitted event
+export interface AnalysisSubmittedEvent extends BaseLogEvent {
+  event: 'analysis_submitted'
+  data: {
+    file: string
+    version: string
   }
 }
 
@@ -248,6 +258,8 @@ export type TypedLogEvent =
   | ResignationSubmittedEvent
   | ResignationAdjudicatedEvent
   | HandLimitExceededEvent
+  | PlacedCardTriggeredEvent
+  | AnalysisSubmittedEvent
 
 // Generic log event for backwards compatibility
 export interface LogEvent {
@@ -258,6 +270,9 @@ export interface LogEvent {
   player?: string
   data?: Record<string, unknown>
 }
+
+// ============ SITE-SPECIFIC TYPES ============
+// These are only used by the site, not shared with engine
 
 // Transcript event from agent session
 export interface TranscriptEvent {
@@ -282,13 +297,13 @@ export interface TranscriptEvent {
 export interface TranscriptSummary {
   filename: string
   fileSize: number
-  agentType: 'gamemaster' | 'player1' | 'player2' | string  // playerN
+  agentType: 'gamemaster' | 'player1' | 'player2' | string
   agentId: string | null
   messageCount: number
   toolUseCount: number
   thinkingCount: number
   eventCount: number
-  events: TranscriptEvent[]  // Full transcript events for detailed view
+  events: TranscriptEvent[]
 }
 
 export interface GameLogSummary {
@@ -307,13 +322,11 @@ export interface GameLogSummary {
   endReason: string | null
   fileSize: number
   events: LogEvent[]
-  // Analysis (if available)
   analysis?: {
     version: string
     filename: string
-    content: string  // Raw markdown content
+    content: string
   }
-  // Agent transcripts (if available)
   transcripts?: TranscriptSummary[]
 }
 
