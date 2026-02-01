@@ -1815,48 +1815,71 @@ program
             try {
               log(`Backing up transcript from: ${agentTranscriptPath}`);
 
+              // First, detect the actual agent type from transcript content
+              // This is needed because Claude Code may fire both player and gamemaster hooks
+              // for the same SubagentStop event due to matcher issues
+              let detectedAgentType: string | null = null;
+              const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
+              const lines = transcriptContent.split('\n');
+
+              for (const line of lines.slice(0, 50)) {
+                if (!line.trim()) continue;
+                try {
+                  const entry = JSON.parse(line);
+                  const getText = (e: unknown): string => {
+                    const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
+                    if (typedEntry.role === 'user' && typedEntry.type === 'message') {
+                      return typeof typedEntry.content === 'string'
+                        ? typedEntry.content
+                        : Array.isArray(typedEntry.content)
+                          ? typedEntry.content.find(c => c.type === 'text')?.text || ''
+                          : '';
+                    }
+                    if (typedEntry.message?.role === 'user') {
+                      return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
+                    }
+                    return '';
+                  };
+                  const text = getText(entry);
+
+                  // Check for gamemaster
+                  if (text.match(/^ROLE:\s*gamemaster/m)) {
+                    detectedAgentType = 'gamemaster';
+                    break;
+                  }
+                  // Check for player
+                  const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                  if (playerMatch) {
+                    detectedAgentType = playerMatch[1].replace('-', '');
+                    break;
+                  }
+                } catch {
+                  // Skip invalid JSON lines
+                }
+              }
+
+              log(`Detected agent type from transcript: ${detectedAgentType || '(none)'}`);
+              log(`Hook agent type: ${agentType}`);
+
+              // Verify this hook should handle this transcript
+              // Skip if agentType is 'player' but transcript is for gamemaster
+              if (agentType === 'player' && detectedAgentType === 'gamemaster') {
+                log(`Skipping backup - player hook received gamemaster transcript`);
+                process.exit(0);
+              }
+              // Skip if agentType is 'gamemaster' but transcript is for a player
+              if (agentType === 'gamemaster' && detectedAgentType && detectedAgentType.startsWith('player')) {
+                log(`Skipping backup - gamemaster hook received player transcript`);
+                process.exit(0);
+              }
+
               // Extract timestamp from gameId (format: gameName-timestamp)
               const timestampMatch = state.gameId.match(/(\d{13})$/);
               if (timestampMatch) {
                 const timestamp = timestampMatch[1];
 
-                // For players, extract the player number from transcript
-                let finalAgentType: string = agentType;
-                if (agentType === 'player') {
-                  const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
-                  const lines = transcriptContent.split('\n');
-                  for (const line of lines.slice(0, 50)) {
-                    if (!line.trim()) continue;
-                    try {
-                      const entry = JSON.parse(line);
-                      // Check user messages for PLAYER_ID
-                      const getText = (e: unknown): string => {
-                        const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
-                        if (typedEntry.role === 'user' && typedEntry.type === 'message') {
-                          return typeof typedEntry.content === 'string'
-                            ? typedEntry.content
-                            : Array.isArray(typedEntry.content)
-                              ? typedEntry.content.find(c => c.type === 'text')?.text || ''
-                              : '';
-                        }
-                        if (typedEntry.message?.role === 'user') {
-                          return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
-                        }
-                        return '';
-                      };
-                      const text = getText(entry);
-                      const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
-                      if (playerMatch) {
-                        // Normalize "player-1" to "player1"
-                        finalAgentType = playerMatch[1].replace('-', '');
-                        log(`Detected player type: ${finalAgentType}`);
-                        break;
-                      }
-                    } catch {
-                      // Skip invalid JSON lines
-                    }
-                  }
-                }
+                // Use detected agent type for filename
+                const finalAgentType = detectedAgentType || agentType;
 
                 // Extract game name from instanceId (format: gameName-timestamp)
                 const gameName = instanceId.replace(/-\d{13}$/, '');
