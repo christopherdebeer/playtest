@@ -2,16 +2,52 @@
 
 import { watch, existsSync, type FSWatcher } from 'fs';
 import { loadState, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
-import type { WaitResult, GameState, ContestState, LastAction } from './types.js';
+import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from './types.js';
 
 // Extended wait result with contest info
 export interface ExtendedWaitResult extends WaitResult {
   lastAction?: LastAction;
+  recentActions?: LastAction[];  // Last N actions for player visibility
+  operatorHints?: OperatorHint[];  // Hints from operator to help unblock agents
   contestState?: {
     pendingContest?: boolean;
     pendingResignation?: boolean;
   };
   pendingAnalysis?: boolean;  // True if game ended but awaiting GM analysis
+}
+
+// Get active hints for a player (filters by target and round/turn-based expiry)
+function getActiveHintsForPlayer(
+  contestState: ContestState,
+  playerId: string,
+  currentRound: number,
+  currentTurn: number
+): OperatorHint[] {
+  if (!contestState.operatorHints || contestState.operatorHints.length === 0) {
+    return [];
+  }
+
+  return contestState.operatorHints.filter(hint => {
+    // Check if expired by rounds
+    if (hint.expiresAfterRounds !== undefined) {
+      const roundsElapsed = currentRound - hint.createdAtRound;
+      if (roundsElapsed > hint.expiresAfterRounds) {
+        return false;
+      }
+    }
+    // Check if expired by turns
+    if (hint.expiresAfterTurns !== undefined) {
+      const turnsElapsed = currentTurn - hint.createdAtTurn;
+      if (turnsElapsed > hint.expiresAfterTurns) {
+        return false;
+      }
+    }
+    // Check if targeted to this player or all players
+    if (hint.targetPlayer && hint.targetPlayer !== playerId) {
+      return false;
+    }
+    return true;
+  });
 }
 
 const DEFAULT_TIMEOUT = 0; // 0 = no timeout (block indefinitely)
@@ -111,10 +147,13 @@ export async function waitForTurn(
         // Check if it's this player's turn
         if (state.currentPlayer === playerId) {
           cleanup();
+          const activeHints = getActiveHintsForPlayer(contestState, playerId, state.round || 1, state.turnNumber || 1);
           resolve({
             status: 'your_turn',
             gameState: getPlayerView(state, playerId),
             lastAction: contestState.lastAction,
+            recentActions: contestState.actionHistory || [],  // Last N actions for player visibility
+            operatorHints: activeHints.length > 0 ? activeHints : undefined,  // Include active hints
             contestState: {
               pendingContest: !!contestState.pendingContest,
               pendingResignation: !!contestState.pendingResignation

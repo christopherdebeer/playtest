@@ -39,7 +39,7 @@ import {
   skipAnalysis,
   submitAnalysisMarkdown
 } from './game.js';
-import type { PendingAction, GameAction, ContestState } from './types.js';
+import type { PendingAction, GameAction, ContestState, OperatorHint } from './types.js';
 import { waitForTurn } from './turns.js';
 import {
   getCardDefinition,
@@ -1385,6 +1385,76 @@ program
         totalRounds: state.round,
         totalTurnNumber: state.turnNumber,
         reason: options.reason
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
+// ============ Operator Hint Command ============
+
+program
+  .command('hint <game>')
+  .description('Inject an operator hint to help unblock agents')
+  .requiredOption('-m, --message <text>', 'The hint message for agents')
+  .requiredOption('-r, --reason <text>', 'Reason for providing this hint (logged)')
+  .option('-p, --player <id>', 'Target specific player (default: all players)')
+  .option('--expire-rounds <n>', 'Expire hint after N rounds', parseInt)
+  .option('--expire-turns <n>', 'Expire hint after N turns', parseInt)
+  .action((game: string, options: { message: string; reason: string; player?: string; expireRounds?: number; expireTurns?: number }) => {
+    try {
+      const state = loadState(game);
+      const contestState = ensureContestState(state);
+
+      // Create the hint
+      const hint: OperatorHint = {
+        message: options.message,
+        reason: options.reason,
+        timestamp: new Date().toISOString(),
+        createdAtRound: state.round || 1,
+        createdAtTurn: state.turnNumber || 1,
+        targetPlayer: options.player,
+        expiresAfterRounds: options.expireRounds,
+        expiresAfterTurns: options.expireTurns
+      };
+
+      // Add to hints array
+      if (!contestState.operatorHints) {
+        contestState.operatorHints = [];
+      }
+      contestState.operatorHints.push(hint);
+
+      // Save state
+      saveState(state);
+
+      // Log the hint event
+      logEvent(state, {
+        event: 'operator_hint',
+        data: {
+          message: hint.message,
+          reason: hint.reason,
+          targetPlayer: hint.targetPlayer || 'all',
+          expiresAfterRounds: hint.expiresAfterRounds,
+          expiresAfterTurns: hint.expiresAfterTurns
+        }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        hint: {
+          message: hint.message,
+          reason: hint.reason,
+          createdAtRound: hint.createdAtRound,
+          createdAtTurn: hint.createdAtTurn,
+          targetPlayer: hint.targetPlayer || 'all',
+          expiresAfterRounds: hint.expiresAfterRounds,
+          expiresAfterTurns: hint.expiresAfterTurns
+        },
+        totalHints: contestState.operatorHints.length
       }));
     } catch (e) {
       console.log(JSON.stringify({

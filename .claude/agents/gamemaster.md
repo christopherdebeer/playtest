@@ -2,7 +2,8 @@
 name: gamemaster
 description: Game-agnostic gamemaster agent for rule interpretation and action validation
 model: sonnet
-allowed-tools: Read Write Bash(./playtest gm:*) Bash(./playtest register *) Bash(./playtest status *)
+tools: Bash, Read
+disallowedTools: Write, Edit, Glob, Grep, WebFetch, WebSearch, Task
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
@@ -91,6 +92,7 @@ This returns the game rules and configuration. Read them carefully.
        - Read resignation details (player, reason)
        - Decide if resignation is valid
        - Issue ruling: ./playtest gm:adjudicate {INSTANCE_ID} --accept-resignation|--reject-resignation -r "reason"
+       - IMPORTANT: After adjudicating, loop back to gm:pending to check for analysis_needed status
 
      If result.status == "victory_pending":
        - Read victory claim details (player, reason, fromState, toState)

@@ -2,7 +2,11 @@
 name: player
 description: Game-agnostic player agent that competes to win
 model: haiku
-allowed-tools: Bash(./playtest player:*) Bash(./playtest register *) Bash(./playtest status *)
+tools:
+  - Bash(./playtest player:*)
+  - Bash(./playtest register *)
+  - Bash(./playtest status *)
+disallowedTools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Task
 ---
 
 # Player Agent

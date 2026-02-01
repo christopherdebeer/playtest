@@ -24,11 +24,15 @@ import type {
   VictoryRejectedEvent,
   ContestFiledEvent,
   ContestAdjudicatedEvent,
+  ContestAutoAdjudicatedEvent,
   ResignationSubmittedEvent,
   ResignationAdjudicatedEvent,
   HandLimitExceededEvent,
   PlacedCardTriggeredEvent,
   AnalysisSubmittedEvent,
+  OperatorHintEvent,
+  VictoryClaimPendingEvent,
+  TradeOfferedEvent,
 } from '../types/logs'
 
 // ============ EVENT ICONS ============
@@ -51,11 +55,15 @@ const EVENT_ICONS: Record<EventType, string> = {
   victory_rejected: 'N',
   contest_filed: 'C',
   contest_adjudicated: 'J',
+  contest_auto_adjudicated: 'J',
   resignation_submitted: 'Q',
   resignation_adjudicated: 'J',
   hand_limit_exceeded: 'H',
   placed_card_triggered: 'P',
   analysis_submitted: 'Z',
+  operator_hint: '!',
+  victory_claim_pending: 'V',
+  trade_offered: '$',
 }
 
 export function getEventIcon(event: EventType): string {
@@ -79,11 +87,15 @@ const EVENT_CLASSES: Record<EventType, string> = {
   victory_rejected: 'event-rejected',
   contest_filed: 'event-contest',
   contest_adjudicated: 'event-adjudication',
+  contest_auto_adjudicated: 'event-adjudication',
   resignation_submitted: 'event-resignation',
   resignation_adjudicated: 'event-adjudication',
   hand_limit_exceeded: 'event-limit',
   placed_card_triggered: 'event-action',
   analysis_submitted: 'event-system',
+  operator_hint: 'event-hint',
+  victory_claim_pending: 'event-victory',
+  trade_offered: 'event-action',
 }
 
 export function getEventClass(event: EventType): string {
@@ -305,6 +317,51 @@ function renderAnalysisSubmitted(evt: AnalysisSubmittedEvent): React.ReactNode {
   )
 }
 
+function renderOperatorHint(evt: OperatorHintEvent): React.ReactNode {
+  const { data } = evt
+  return (
+    <span>
+      <strong className="event-hint-label">OPERATOR HINT</strong>: {data.message}
+      <span className="event-reason"> (reason: {data.reason})</span>
+      {data.targetPlayer !== 'all' && <span className="event-target"> → {data.targetPlayer}</span>}
+    </span>
+  )
+}
+
+function renderContestAutoAdjudicated(evt: ContestAutoAdjudicatedEvent): React.ReactNode {
+  const { player, data } = evt
+  return (
+    <span>
+      Contest auto-adjudicated: <strong>{player}</strong>'s action <span className="event-ruling">{data.ruling}</span>
+      <span className="event-reason"> ({data.autoReason})</span>
+      <span className="event-elapsed"> - {Math.round(data.elapsedMs / 1000)}s timeout</span>
+    </span>
+  )
+}
+
+function renderVictoryClaimPending(evt: VictoryClaimPendingEvent): React.ReactNode {
+  const { player, data } = evt
+  return (
+    <span>
+      <strong>{player}</strong> victory claim pending: {data.reason}
+      {data.note && <span className="event-note"> ({data.note})</span>}
+    </span>
+  )
+}
+
+function renderTradeOffered(evt: TradeOfferedEvent): React.ReactNode {
+  const { player, data } = evt
+  const offerText = data.offer.length > 0 ? data.offer.join(', ') : 'nothing'
+  const requestText = data.request.length > 0 ? data.request.join(', ') : 'nothing (gift)'
+  return (
+    <span>
+      <strong>{player}</strong> offered trade to <strong>{data.target}</strong>:
+      <span className="event-offer"> [{offerText}]</span> for
+      <span className="event-request"> [{requestText}]</span>
+    </span>
+  )
+}
+
 // ============ EXHAUSTIVE RENDERER ============
 // TypeScript will error if a new event type is added but not handled
 
@@ -348,6 +405,14 @@ export function renderEventContent(evt: TypedLogEvent): React.ReactNode {
       return renderPlacedCardTriggered(evt)
     case 'analysis_submitted':
       return renderAnalysisSubmitted(evt)
+    case 'operator_hint':
+      return renderOperatorHint(evt)
+    case 'contest_auto_adjudicated':
+      return renderContestAutoAdjudicated(evt)
+    case 'victory_claim_pending':
+      return renderVictoryClaimPending(evt)
+    case 'trade_offered':
+      return renderTradeOffered(evt)
     default:
       // Exhaustiveness check - TypeScript will error if we miss a case
       return assertNever(evt)
@@ -385,11 +450,15 @@ const KNOWN_EVENT_TYPES: Set<string> = new Set([
   'victory_rejected',
   'contest_filed',
   'contest_adjudicated',
+  'contest_auto_adjudicated',
   'resignation_submitted',
   'resignation_adjudicated',
   'hand_limit_exceeded',
   'placed_card_triggered',
   'analysis_submitted',
+  'operator_hint',
+  'victory_claim_pending',
+  'trade_offered',
 ])
 
 export function isTypedLogEvent(evt: { event: string }): evt is TypedLogEvent {
