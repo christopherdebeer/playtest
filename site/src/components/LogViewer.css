@@ -217,6 +217,11 @@
   color: #9ca3af;
 }
 
+.event-icon.event-hint {
+  background: rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+}
+
 /* Event content helpers */
 .event-success {
   color: #4ade80;

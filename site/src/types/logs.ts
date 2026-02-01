@@ -239,6 +239,53 @@ export interface AnalysisSubmittedEvent extends BaseLogEvent {
   }
 }
 
+// Operator hint event (live debugging/unblocking)
+export interface OperatorHintEvent extends BaseLogEvent {
+  event: 'operator_hint'
+  data: {
+    message: string
+    reason: string
+    targetPlayer: string
+    expiresAfterRounds?: number
+    expiresAfterTurns?: number
+  }
+}
+
+// Contest auto-adjudicated event (GM timeout)
+export interface ContestAutoAdjudicatedEvent extends BaseLogEvent {
+  event: 'contest_auto_adjudicated'
+  player: string
+  data: {
+    contestedBy: string
+    reason: string
+    ruling: 'allowed' | 'rejected'
+    autoReason: string
+    elapsedMs: number
+  }
+}
+
+// Victory claim pending event
+export interface VictoryClaimPendingEvent extends BaseLogEvent {
+  event: 'victory_claim_pending'
+  player: string
+  data: {
+    reason: string
+    note?: string
+  }
+}
+
+// Trade offered event
+export interface TradeOfferedEvent extends BaseLogEvent {
+  event: 'trade_offered'
+  player: string
+  data: {
+    tradeId: string
+    target: string
+    offer: string[]
+    request: string[]
+  }
+}
+
 // Union type for all log events
 export type TypedLogEvent =
   | GameInitEvent
@@ -255,11 +302,15 @@ export type TypedLogEvent =
   | VictoryRejectedEvent
   | ContestFiledEvent
   | ContestAdjudicatedEvent
+  | ContestAutoAdjudicatedEvent
   | ResignationSubmittedEvent
   | ResignationAdjudicatedEvent
   | HandLimitExceededEvent
   | PlacedCardTriggeredEvent
   | AnalysisSubmittedEvent
+  | OperatorHintEvent
+  | VictoryClaimPendingEvent
+  | TradeOfferedEvent
 
 // Generic log event for backwards compatibility
 export interface LogEvent {
