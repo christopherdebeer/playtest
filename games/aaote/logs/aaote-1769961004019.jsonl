@@ -1,0 +1,15 @@
+{"timestamp":"2026-02-01T15:50:04.023Z","event":"game_init","data":{"gameId":"aaote-1769961004019","playerCount":4,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-01T15:50:30.088Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-01T15:52:30.347Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T15:54:26.272Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T15:56:17.453Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T15:57:45.175Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-01T15:59:21.912Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"place_location","card":"Mountain Pass","adjacentTo":"origin"}}
+{"timestamp":"2026-02-01T16:00:05.153Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"origin"}}
+{"timestamp":"2026-02-01T16:01:44.979Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"place_location","card":"Village Square","adjacentTo":"origin"}}
+{"timestamp":"2026-02-01T16:03:51.472Z","event":"trade_offered","round":2,"turnNumber":8,"player":"player-4","data":{"tradeId":"trade-1769961831472-jn3kdv2sw","target":"player-2","offer":["Dark Tome"],"request":[]}}
+{"timestamp":"2026-02-01T16:04:14.230Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"Mountain Pass"}}
+{"timestamp":"2026-02-01T16:05:06.252Z","event":"operator_hint","data":{"message":"Use place_location action to place location cards from your hand onto the grid adjacent to 'origin'. This is required before you can move to new locations. Example: {\"type\":\"place_location\",\"card\":\"Forest Clearing\",\"adjacentTo\":\"origin\"}","reason":"Engine validation bug fixed - place_location now works","targetPlayer":"all","expiresAfterTurns":8}}
+{"timestamp":"2026-02-01T16:06:28.854Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"move","target":"Mountain Pass","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T16:10:30.606Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T16:11:42.054Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"place_location","card":"River Crossing","adjacentTo":"Village Square"}}
