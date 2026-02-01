@@ -24,7 +24,8 @@ export interface PlayerStateSnapshot {
 }
 
 export interface GameStateSnapshot {
-  turn: number
+  round: number
+  turnNumber: number
   currentPlayer: string
   players: Record<string, PlayerStateSnapshot>
   deckSize: number
@@ -35,7 +36,8 @@ export interface GameStateSnapshot {
 // Base log event structure
 export interface BaseLogEvent {
   timestamp: string
-  turn?: number
+  round?: number
+  turnNumber?: number
   player?: string
 }
 
@@ -251,7 +253,8 @@ export type TypedLogEvent =
 export interface LogEvent {
   timestamp: string
   event: string
-  turn?: number
+  round?: number
+  turnNumber?: number
   player?: string
   data?: Record<string, unknown>
 }

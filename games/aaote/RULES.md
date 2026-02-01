@@ -4,7 +4,7 @@ version: "0.2"
 players: 3-5
 starting_cards: 5
 win_condition: "objective_completed"
-max_turns: 40
+max_rounds: 40
 
 # Reference mechanics from library
 mechanics:
