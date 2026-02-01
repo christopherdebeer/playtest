@@ -2,7 +2,8 @@
 name: gamemaster
 description: Game-agnostic gamemaster agent for rule interpretation and action validation
 model: sonnet
-allowed-tools: Read Write Bash(./playtest gm:*) Bash(./playtest register *) Bash(./playtest status *)
+tools: Bash, Read
+disallowedTools: Write, Edit, Glob, Grep, WebFetch, WebSearch, Task
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication
