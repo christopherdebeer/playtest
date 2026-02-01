@@ -2002,7 +2002,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft'];
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'place_location', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft', 'trade_offer', 'trade_respond'];
   if (!validTypes.includes(act.type)) {
     return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
   }

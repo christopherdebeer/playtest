@@ -590,6 +590,18 @@ export interface ResignationEntry {
   timestamp: string;
 }
 
+// Operator hint entry (for unblocking agents)
+export interface OperatorHint {
+  message: string;
+  reason: string;
+  timestamp: string;
+  createdAtRound: number;
+  createdAtTurn: number;
+  targetPlayer?: string;  // Optional: specific player, or all if undefined
+  expiresAfterRounds?: number;  // Optional: expire after N rounds
+  expiresAfterTurns?: number;   // Optional: expire after N turns
+}
+
 // Extended game state with contest system
 export interface ContestState {
   lastAction?: LastAction;
@@ -600,6 +612,7 @@ export interface ContestState {
   contestHistory: ContestHistoryEntry[];
   resignations: ResignationEntry[];
   victoryHistory: VictoryClaimEntry[];
+  operatorHints?: OperatorHint[];  // Ephemeral hints from operator to help agents
 }
 
 // Act command result
