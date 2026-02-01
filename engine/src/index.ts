@@ -115,7 +115,7 @@ program
           role: 'gamemaster',
           instanceId: state.gameId,
           agentType: 'gamemaster',
-          prompt: `INSTANCE: ${state.gameId}\nROLE: gamemaster\n\nRegister and begin gamemaster duties.`
+          prompt: `GAME: ${state.gameName}\nINSTANCE: ${state.gameId}\nROLE: gamemaster\n\nRegister and begin gamemaster duties.`
         },
         players: state.turnOrder.map(playerId => ({
           role: 'player',
@@ -123,7 +123,7 @@ program
           instanceId: state.gameId,
           agentType: 'player',
           persona: state.players[playerId].persona || 'random',  // Show pre-assigned or 'random'
-          prompt: `INSTANCE: ${state.gameId}\nPLAYER_ID: ${playerId}\n\nRegister and play to WIN!`
+          prompt: `GAME: ${state.gameName}\nINSTANCE: ${state.gameId}\nPLAYER_ID: ${playerId}\n\nRegister and play to WIN!`
         }))
       };
 
@@ -1612,15 +1612,15 @@ program
 
     const transcriptPath = inputJson.transcript_path || '';
 
-    // Helper function to extract game name from transcript content
+    // Helper function to extract instance ID from transcript content
     // Searches both user messages AND Task tool_use entries
-    const extractGameName = (content: string, searchToolUse: boolean = false): string => {
+    const extractInstanceId = (content: string, searchToolUse: boolean = false): string => {
       const lines = content.split('\n');
       // For tool_use search, scan all lines (Task calls can be anywhere)
       // For subagent transcripts, check first 50 lines
       const linesToCheck = searchToolUse ? lines : lines.slice(0, 50);
 
-      let foundGame = '';
+      let foundInstance = '';
 
       for (const line of linesToCheck) {
         if (!line.trim()) continue;
@@ -1635,7 +1635,7 @@ program
                 ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
                 : '';
 
-            const match = text.match(/^GAME:\s*(\S+)/m);
+            const match = text.match(/^INSTANCE:\s*(\S+)/m);
             if (match) {
               return match[1];
             }
@@ -1646,7 +1646,7 @@ program
             const text = typeof entry.message.content === 'string'
               ? entry.message.content
               : '';
-            const match = text.match(/^GAME:\s*(\S+)/m);
+            const match = text.match(/^INSTANCE:\s*(\S+)/m);
             if (match) {
               return match[1];
             }
@@ -1656,10 +1656,10 @@ program
           if (searchToolUse && entry.message?.role === 'assistant' && Array.isArray(entry.message?.content)) {
             for (const block of entry.message.content) {
               if (block.type === 'tool_use' && block.name === 'Task' && block.input?.prompt) {
-                const match = block.input.prompt.match(/^GAME:\s*(\S+)/m);
+                const match = block.input.prompt.match(/^INSTANCE:\s*(\S+)/m);
                 if (match) {
                   // Keep searching to find the most recent one
-                  foundGame = match[1];
+                  foundInstance = match[1];
                 }
               }
             }
@@ -1669,16 +1669,16 @@ program
         }
       }
 
-      return foundGame;
+      return foundInstance;
     };
 
-    // Poll transcript until game name is found (for start hooks)
+    // Poll transcript until instance ID is found (for start hooks)
     // Stop hooks can fail fast since transcript should already exist
     const MAX_WAIT_MS = hookType === 'start' ? 10000 : 2000;
     const POLL_INTERVAL_MS = 200;
     const startTime = Date.now();
 
-    let gameName = '';
+    let instanceId = '';
     const { readFileSync, appendFileSync, mkdirSync } = await import('fs');
 
     // Setup debug logging with relative path from cwd
@@ -1712,9 +1712,9 @@ program
           const content = readFileSync(targetTranscript, 'utf8');
           const lineCount = content.split('\n').filter(l => l.trim()).length;
           log(`Polling: file exists, ${lineCount} lines, elapsed ${Date.now() - startTime}ms`);
-          gameName = extractGameName(content, searchToolUse);
-          if (gameName) {
-            log(`Found game name: ${gameName}`);
+          instanceId = extractInstanceId(content, searchToolUse);
+          if (instanceId) {
+            log(`Found instance ID: ${instanceId}`);
             break;
           }
         } catch (e) {
@@ -1727,32 +1727,32 @@ program
       await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
     }
 
-    if (!gameName) {
-      log(`Timeout: game name not found after ${Date.now() - startTime}ms`);
+    if (!instanceId) {
+      log(`Timeout: instance ID not found after ${Date.now() - startTime}ms`);
     }
 
     // Handle start hooks - inject context
     if (hookType === 'start') {
-      if (!gameName) {
-        log(`No game name found - exiting`);
-        // Can't inject context without game name - exit silently
+      if (!instanceId) {
+        log(`No instance ID found - exiting`);
+        // Can't inject context without instance ID - exit silently
         process.exit(0);
       }
 
-      log(`Checking if state exists for game: ${gameName}`);
-      if (!stateExists(gameName)) {
-        log(`State does not exist for game: ${gameName} - exiting`);
+      log(`Checking if state exists for instance: ${instanceId}`);
+      if (!stateExists(instanceId)) {
+        log(`State does not exist for instance: ${instanceId} - exiting`);
         // Game not initialized yet - exit silently
         process.exit(0);
       }
 
-      log(`Loading state for game: ${gameName}`);
+      log(`Loading state for instance: ${instanceId}`);
       try {
-        const state = loadState(gameName);
+        const state = loadState(instanceId);
         log(`State loaded successfully. Rules length: ${state.rulesMarkdown?.length || 0}`);
 
         // Output rules
-        console.log(`## Game Rules for ${gameName}`);
+        console.log(`## Game Rules for ${instanceId}`);
         console.log('');
         console.log(JSON.stringify({
           success: true,
@@ -1793,18 +1793,18 @@ program
 
     // Handle stop hooks - block if game in progress
     if (hookType === 'stop') {
-      if (!gameName) {
-        // Can't determine game - allow stop
+      if (!instanceId) {
+        // Can't determine instance - allow stop
         process.exit(0);
       }
 
-      if (!stateExists(gameName)) {
+      if (!stateExists(instanceId)) {
         // No active game - allow stop
         process.exit(0);
       }
 
       try {
-        const state = loadState(gameName);
+        const state = loadState(instanceId);
         const gameStatus = state.status;
 
         // Allow stop if game is completed or cancelled
@@ -1815,49 +1815,74 @@ program
             try {
               log(`Backing up transcript from: ${agentTranscriptPath}`);
 
+              // First, detect the actual agent type from transcript content
+              // This is needed because Claude Code may fire both player and gamemaster hooks
+              // for the same SubagentStop event due to matcher issues
+              let detectedAgentType: string | null = null;
+              const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
+              const lines = transcriptContent.split('\n');
+
+              for (const line of lines.slice(0, 50)) {
+                if (!line.trim()) continue;
+                try {
+                  const entry = JSON.parse(line);
+                  const getText = (e: unknown): string => {
+                    const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
+                    if (typedEntry.role === 'user' && typedEntry.type === 'message') {
+                      return typeof typedEntry.content === 'string'
+                        ? typedEntry.content
+                        : Array.isArray(typedEntry.content)
+                          ? typedEntry.content.find(c => c.type === 'text')?.text || ''
+                          : '';
+                    }
+                    if (typedEntry.message?.role === 'user') {
+                      return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
+                    }
+                    return '';
+                  };
+                  const text = getText(entry);
+
+                  // Check for gamemaster
+                  if (text.match(/^ROLE:\s*gamemaster/m)) {
+                    detectedAgentType = 'gamemaster';
+                    break;
+                  }
+                  // Check for player
+                  const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                  if (playerMatch) {
+                    detectedAgentType = playerMatch[1].replace('-', '');
+                    break;
+                  }
+                } catch {
+                  // Skip invalid JSON lines
+                }
+              }
+
+              log(`Detected agent type from transcript: ${detectedAgentType || '(none)'}`);
+              log(`Hook agent type: ${agentType}`);
+
+              // Verify this hook should handle this transcript
+              // Skip if agentType is 'player' but transcript is for gamemaster
+              if (agentType === 'player' && detectedAgentType === 'gamemaster') {
+                log(`Skipping backup - player hook received gamemaster transcript`);
+                process.exit(0);
+              }
+              // Skip if agentType is 'gamemaster' but transcript is for a player
+              if (agentType === 'gamemaster' && detectedAgentType && detectedAgentType.startsWith('player')) {
+                log(`Skipping backup - gamemaster hook received player transcript`);
+                process.exit(0);
+              }
+
               // Extract timestamp from gameId (format: gameName-timestamp)
               const timestampMatch = state.gameId.match(/(\d{13})$/);
               if (timestampMatch) {
                 const timestamp = timestampMatch[1];
 
-                // For players, extract the player number from transcript
-                let finalAgentType: string = agentType;
-                if (agentType === 'player') {
-                  const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
-                  const lines = transcriptContent.split('\n');
-                  for (const line of lines.slice(0, 50)) {
-                    if (!line.trim()) continue;
-                    try {
-                      const entry = JSON.parse(line);
-                      // Check user messages for PLAYER_ID
-                      const getText = (e: unknown): string => {
-                        const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
-                        if (typedEntry.role === 'user' && typedEntry.type === 'message') {
-                          return typeof typedEntry.content === 'string'
-                            ? typedEntry.content
-                            : Array.isArray(typedEntry.content)
-                              ? typedEntry.content.find(c => c.type === 'text')?.text || ''
-                              : '';
-                        }
-                        if (typedEntry.message?.role === 'user') {
-                          return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
-                        }
-                        return '';
-                      };
-                      const text = getText(entry);
-                      const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
-                      if (playerMatch) {
-                        // Normalize "player-1" to "player1"
-                        finalAgentType = playerMatch[1].replace('-', '');
-                        log(`Detected player type: ${finalAgentType}`);
-                        break;
-                      }
-                    } catch {
-                      // Skip invalid JSON lines
-                    }
-                  }
-                }
+                // Use detected agent type for filename
+                const finalAgentType = detectedAgentType || agentType;
 
+                // Extract game name from instanceId (format: gameName-timestamp)
+                const gameName = instanceId.replace(/-\d{13}$/, '');
                 const destDir = `${process.cwd()}/games/${gameName}/logs`;
                 const destPath = `${destDir}/${finalAgentType}-transcript-${timestamp}.jsonl`;
 
@@ -1937,25 +1962,25 @@ program
     const toolName = (inputJson.tool_name as string) || '';
     const toolInput = inputJson.tool_input as Record<string, unknown> || {};
 
-    // Helper to extract game name from transcript or prompt
-    const extractGameName = (text: string): string => {
-      const match = text.match(/^GAME:\s*(\S+)/m);
+    // Helper to extract instance ID from transcript or prompt
+    const extractInstanceId = (text: string): string => {
+      const match = text.match(/^INSTANCE:\s*(\S+)/m);
       return match ? match[1] : '';
     };
 
-    // Try to find game name from various sources
-    let gameName = '';
+    // Try to find instance ID from various sources
+    let instanceId = '';
 
     // For UserPromptSubmit, check the prompt directly
     if (eventName === 'UserPromptSubmit' && prompt) {
-      gameName = extractGameName(prompt);
+      instanceId = extractInstanceId(prompt);
       log(`UserPromptSubmit prompt: ${prompt.substring(0, 200)}`);
     }
 
     // For PreToolUse with Task, check the tool input
     if (eventName === 'PreToolUse' && toolName === 'Task') {
       const taskPrompt = (toolInput.prompt as string) || '';
-      gameName = extractGameName(taskPrompt);
+      instanceId = extractInstanceId(taskPrompt);
       log(`PreToolUse Task prompt: ${taskPrompt.substring(0, 200)}`);
     }
 
@@ -1964,7 +1989,7 @@ program
       log(`SessionStart - transcript available at: ${transcriptPath}`);
     }
 
-    log(`Extracted game name: ${gameName || '(none)'}`);
+    log(`Extracted instance ID: ${instanceId || '(none)'}`);
 
     // Handle context injection based on event type
     switch (eventName) {
@@ -1972,13 +1997,13 @@ program
         // stdout is added to context
         log(`SessionStart - can inject context via stdout`);
         // Output rules if we have a game
-        if (gameName && stateExists(gameName)) {
+        if (instanceId && stateExists(instanceId)) {
           try {
-            const state = loadState(gameName);
+            const state = loadState(instanceId);
             console.log(`## Game Context Loaded`);
-            console.log(`Game: ${gameName}`);
+            console.log(`Instance: ${instanceId}`);
             console.log(`Status: ${state.status}`);
-            log(`SessionStart - output game context for ${gameName}`);
+            log(`SessionStart - output game context for ${instanceId}`);
           } catch (e) {
             log(`SessionStart - error loading state: ${e}`);
           }
@@ -1990,14 +2015,14 @@ program
       case 'UserPromptSubmit': {
         // stdout is added to context
         log(`UserPromptSubmit - can inject context via stdout`);
-        if (gameName && stateExists(gameName)) {
+        if (instanceId && stateExists(instanceId)) {
           try {
-            const state = loadState(gameName);
-            console.log(`\n## Active Game: ${gameName}`);
+            const state = loadState(instanceId);
+            console.log(`\n## Active Game: ${instanceId}`);
             console.log(`Status: ${state.status}`);
             console.log(`Turn: ${state.turn}`);
             console.log(`Current Player: ${state.currentPlayer}`);
-            log(`UserPromptSubmit - output game status for ${gameName}`);
+            log(`UserPromptSubmit - output game status for ${instanceId}`);
           } catch (e) {
             log(`UserPromptSubmit - error loading state: ${e}`);
           }
@@ -2010,14 +2035,14 @@ program
         // Can use JSON output with additionalContext or updatedInput
         log(`PreToolUse - tool: ${toolName}, can use additionalContext/updatedInput`);
 
-        if (toolName === 'Task' && gameName && stateExists(gameName)) {
+        if (toolName === 'Task' && instanceId && stateExists(instanceId)) {
           try {
-            const state = loadState(gameName);
+            const state = loadState(instanceId);
             // Return JSON with additionalContext
             const output = {
               hookSpecificOutput: {
                 hookEventName: 'PreToolUse',
-                additionalContext: `\n## Game Rules for ${gameName}\n${state.rulesMarkdown}\n\n## Current State\nTurn: ${state.turn}\nStatus: ${state.status}`
+                additionalContext: `\n## Game Rules for ${instanceId}\n${state.rulesMarkdown}\n\n## Current State\nTurn: ${state.turn}\nStatus: ${state.status}`
               }
             };
             console.log(JSON.stringify(output));
@@ -2058,8 +2083,8 @@ program
             const transcriptContent = fs.readFileSync(agentTranscriptPath, 'utf8');
             log(`Transcript read: ${transcriptContent.length} bytes`);
 
-            // Extract game name from transcript (GAME: <name>)
-            let detectedGameName = '';
+            // Extract instance ID from transcript (INSTANCE: <instanceId>)
+            let detectedInstanceId = '';
             let detectedAgentType = '';
 
             const lines = transcriptContent.split('\n');
@@ -2068,7 +2093,7 @@ program
               try {
                 const entry = JSON.parse(line);
 
-                // Check user messages for GAME: and ROLE:/PLAYER_ID:
+                // Check user messages for INSTANCE: and ROLE:/PLAYER_ID:
                 if (entry.role === 'user' && entry.type === 'message') {
                   const text = typeof entry.content === 'string'
                     ? entry.content
@@ -2076,11 +2101,11 @@ program
                       ? entry.content.find((c: { type?: string; text?: string }) => c.type === 'text')?.text || ''
                       : '';
 
-                  // Extract game name
-                  const gameMatch = text.match(/^GAME:\s*(\S+)/m);
-                  if (gameMatch && !detectedGameName) {
-                    detectedGameName = gameMatch[1];
-                    log(`Found game name: ${detectedGameName}`);
+                  // Extract instance ID
+                  const instanceMatch = text.match(/^INSTANCE:\s*(\S+)/m);
+                  if (instanceMatch && !detectedInstanceId) {
+                    detectedInstanceId = instanceMatch[1];
+                    log(`Found instance ID: ${detectedInstanceId}`);
                   }
 
                   // Extract agent type
@@ -2102,10 +2127,10 @@ program
                 if (entry.message?.role === 'user' && entry.message?.content) {
                   const text = typeof entry.message.content === 'string' ? entry.message.content : '';
 
-                  const gameMatch = text.match(/^GAME:\s*(\S+)/m);
-                  if (gameMatch && !detectedGameName) {
-                    detectedGameName = gameMatch[1];
-                    log(`Found game name (alt format): ${detectedGameName}`);
+                  const instanceMatch = text.match(/^INSTANCE:\s*(\S+)/m);
+                  if (instanceMatch && !detectedInstanceId) {
+                    detectedInstanceId = instanceMatch[1];
+                    log(`Found instance ID (alt format): ${detectedInstanceId}`);
                   }
 
                   const gmMatch = text.match(/^ROLE:\s*gamemaster/m);
@@ -2122,25 +2147,27 @@ program
                 }
 
                 // Stop early if we found both
-                if (detectedGameName && detectedAgentType) break;
+                if (detectedInstanceId && detectedAgentType) break;
               } catch {
                 // Skip invalid JSON lines
               }
             }
 
-            log(`Detection results - game: ${detectedGameName}, agent: ${detectedAgentType}`);
+            log(`Detection results - instance: ${detectedInstanceId}, agent: ${detectedAgentType}`);
 
-            // Only proceed if we have both game name and agent type
-            if (detectedGameName && detectedAgentType && stateExists(detectedGameName)) {
-              const gameState = loadState(detectedGameName);
+            // Only proceed if we have both instance ID and agent type
+            if (detectedInstanceId && detectedAgentType && stateExists(detectedInstanceId)) {
+              const gameState = loadState(detectedInstanceId);
 
               // Only backup if game is completed or cancelled (not during active gameplay)
               if (gameState.status === 'completed' || gameState.status === 'cancelled' || gameState.status === 'pending_analysis') {
-                // Extract timestamp from gameId (format: gameName-timestamp)
-                const timestampMatch = gameState.gameId.match(/(\d{13})$/);
+                // Extract timestamp from instance ID (format: gameName-timestamp)
+                const timestampMatch = detectedInstanceId.match(/(\d{13})$/);
                 if (timestampMatch) {
                   const timestamp = timestampMatch[1];
-                  const destDir = `${process.cwd()}/games/${detectedGameName}/logs`;
+                  // Extract game name from instance ID (everything before the timestamp)
+                  const gameName = detectedInstanceId.replace(/-\d{13}$/, '');
+                  const destDir = `${process.cwd()}/games/${gameName}/logs`;
                   const destPath = `${destDir}/${detectedAgentType}-transcript-${timestamp}.jsonl`;
 
                   // Ensure destination directory exists
@@ -2154,7 +2181,7 @@ program
                 log(`Game status is ${gameState.status}, skipping transcript backup`);
               }
             } else {
-              log(`Missing info for backup - game: ${detectedGameName}, agent: ${detectedAgentType}, stateExists: ${detectedGameName ? stateExists(detectedGameName) : 'N/A'}`);
+              log(`Missing info for backup - instance: ${detectedInstanceId}, agent: ${detectedAgentType}, stateExists: ${detectedInstanceId ? stateExists(detectedInstanceId) : 'N/A'}`);
             }
           } catch (e) {
             log(`Error backing up transcript: ${e}`);
