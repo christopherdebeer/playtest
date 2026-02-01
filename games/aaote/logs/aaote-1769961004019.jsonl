@@ -20,3 +20,13 @@
 {"timestamp":"2026-02-01T16:19:35.797Z","event":"action_executed","round":4,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
 {"timestamp":"2026-02-01T17:42:20.555Z","event":"action_executed","round":4,"turnNumber":15,"player":"player-3","data":{"type":"move","target":"River Crossing","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T17:51:16.279Z","event":"action_executed","round":4,"turnNumber":16,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-01T17:53:52.019Z","event":"action_executed","round":5,"turnNumber":17,"player":"player-1","data":{"type":"place_location","card":"Watchtower","adjacentTo":"Village Square"}}
+{"timestamp":"2026-02-01T17:55:18.904Z","event":"action_executed","round":5,"turnNumber":18,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"River Crossing"}}
+{"timestamp":"2026-02-01T17:58:06.120Z","event":"action_executed","round":5,"turnNumber":19,"player":"player-3","data":{"type":"draw","count":3}}
+{"timestamp":"2026-02-01T17:58:32.307Z","event":"action_executed","round":5,"turnNumber":20,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-01T17:59:10.492Z","event":"action_executed","round":6,"turnNumber":21,"player":"player-1","data":{"type":"move","target":"Watchtower","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T17:59:54.964Z","event":"action_executed","round":6,"turnNumber":22,"player":"player-2","data":{"type":"move","target":"Forest Clearing","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T18:01:21.063Z","event":"action_executed","round":6,"turnNumber":23,"player":"player-3","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"River Crossing"}}
+{"timestamp":"2026-02-01T18:03:49.586Z","event":"action_executed","round":6,"turnNumber":24,"player":"player-4","data":{"type":"move","target":"Mountain Pass","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T18:04:09.457Z","event":"action_executed","round":7,"turnNumber":25,"player":"player-1","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T18:04:35.506Z","event":"action_executed","round":7,"turnNumber":26,"player":"player-2","data":{"type":"draw","count":3}}
