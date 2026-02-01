@@ -74,6 +74,9 @@ export interface EngineMechanics {
   open_drafting?: OpenDraftingConfig;   // Draft from visible card pool
   simultaneous?: SimultaneousActionConfig;  // All players act at once
 
+  // Proposal 007: Grid-based movement
+  grid?: GridConfig;                   // Grid configuration for tile-placement games
+
   // Proposal 008: Hand limits and card type restrictions
   hand_limit?: number;                 // Maximum cards in hand
   hand_limit_policy?: 'cannot_draw' | 'discard_choice' | 'discard_oldest';  // What happens when limit exceeded
@@ -81,6 +84,14 @@ export interface EngineMechanics {
 
   // Proposal 010: Configurable default winner on timeout
   timeout_winner?: TimeoutWinnerConfig;  // Who wins when max_turns is reached
+}
+
+// Proposal 007: Grid configuration
+export interface GridConfig {
+  type: 'infinite' | 'bounded';
+  starting_tile: string;
+  adjacency: 'orthogonal' | 'diagonal' | 'hexagonal';
+  bounds?: { width: number; height: number };
 }
 
 // Proposal 008: Card type rules
@@ -354,7 +365,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
 
 export interface BaseAction {
   type: ActionType;
@@ -457,7 +468,13 @@ export interface PlaceCardAction extends BaseAction {
   targetState: string;        // Board state to place the card on
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
+export interface PlaceLocationAction extends BaseAction {
+  type: 'place_location';
+  card: string;               // Location card name to place
+  adjacentTo: string;         // Existing location to place adjacent to (e.g., "origin", "Forest Clearing")
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
 
 // Action validation result
 export interface ActionValidationResult {

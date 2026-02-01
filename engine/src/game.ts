@@ -1501,12 +1501,17 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   const isYourTurn = state.currentPlayer === playerId;
   const hasBoard = !!state.config.board;
+  const gridConfig = state.config.engine_mechanics?.grid as { type?: string; starting_tile?: string; adjacency?: string } | undefined;
+  const hasGrid = !!gridConfig;
   const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
   const handCards = player.hand.map(c => c.name);
   const placeableCards = player.hand.filter(c => c.placeable).map(c => c.name);
-  const playableCards = player.hand.filter(c => !c.placeable).map(c => c.name);
+  const locationCards = player.hand.filter(c => c.type === 'location').map(c => c.name);
+  const playableCards = player.hand.filter(c => !c.placeable && c.type !== 'location').map(c => c.name);
   const boardStates = state.config.board?.states || [];
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
+  const placedLocations = (state.shared.placedLocations as string[]) || [];
+  const startingTile = gridConfig?.starting_tile || 'origin';
 
   // Check for blocking effects
   const isBlocked = player.effects.some(e => {
@@ -1516,20 +1521,31 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   // Get valid move targets from current state
   const getValidMoveTargets = (): string[] => {
-    if (!state.config.board) return [];
-    const currentState = player.state;
-    const targets: string[] = [];
+    // For board games - use edges
+    if (state.config.board) {
+      const currentState = player.state;
+      const targets: string[] = [];
 
-    for (const edge of state.config.board.edges) {
-      const fromStates = Array.isArray(edge.from) ? edge.from : [edge.from];
-      const toStates = Array.isArray(edge.to) ? edge.to : [edge.to];
+      for (const edge of state.config.board.edges) {
+        const fromStates = Array.isArray(edge.from) ? edge.from : [edge.from];
+        const toStates = Array.isArray(edge.to) ? edge.to : [edge.to];
 
-      if (fromStates.includes(currentState)) {
-        targets.push(...toStates);
+        if (fromStates.includes(currentState)) {
+          targets.push(...toStates);
+        }
       }
+
+      return [...new Set(targets)]; // Remove duplicates
     }
 
-    return [...new Set(targets)]; // Remove duplicates
+    // For grid games - all placed locations are valid targets
+    if (gridConfig) {
+      const validLocations = [startingTile, ...placedLocations];
+      // Could filter by adjacency here, but for simplicity allow moving to any placed location
+      return validLocations.filter(loc => loc !== player.state);
+    }
+
+    return [];
   };
 
   const moveTargets = getValidMoveTargets();
@@ -1537,18 +1553,21 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   const actions: AvailableAction[] = [];
 
-  // === MOVE action (for board games) ===
-  if (hasBoard) {
+  // === MOVE action (for board or grid games) ===
+  if (hasBoard || hasGrid) {
     const moveEnabled = isYourTurn && !isBlocked && moveTargets.length > 0;
+    const description = hasGrid
+      ? 'Move to a placed location on the grid'
+      : 'Move to an adjacent state on the board';
     actions.push({
       type: 'move',
-      description: 'Move to an adjacent state on the board',
+      description,
       enabled: moveEnabled,
       reason: !isYourTurn ? 'Not your turn' :
               isBlocked ? 'You are blocked this turn' :
-              moveTargets.length === 0 ? 'No valid move targets from current state' :
+              moveTargets.length === 0 ? (hasGrid ? 'No other locations to move to' : 'No valid move targets from current state') :
               undefined,
-      required: { target: 'The state to move to' },
+      required: { target: hasGrid ? 'The location to move to' : 'The state to move to' },
       optional: { reasoning: 'Explanation of your move choice' },
       examples: moveTargets.slice(0, 2).map(target => ({
         type: 'move' as const,
@@ -1596,7 +1615,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     });
   }
 
-  // === PLACE_CARD action (for state/placeable cards) ===
+  // === PLACE_CARD action (for state/placeable cards on board games) ===
   if (hasBoard && placeableCards.length > 0) {
     const placeEnabled = isYourTurn && !isBlocked;
     actions.push({
@@ -1622,6 +1641,32 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       }).slice(0, 3),
       cards: placeableCards,
       targets: boardStates
+    });
+  }
+
+  // === PLACE_LOCATION action (for grid games with location cards) ===
+  if (hasGrid && locationCards.length > 0) {
+    const placeEnabled = isYourTurn && !isBlocked;
+    const validAdjacentTargets = [startingTile, ...placedLocations];
+    actions.push({
+      type: 'place_location',
+      description: 'Place a location card on the grid adjacent to an existing location',
+      enabled: placeEnabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required: {
+        card: 'The name of the location card to place',
+        adjacentTo: 'The existing location to place adjacent to'
+      },
+      optional: { reasoning: 'Explanation of your placement strategy' },
+      examples: locationCards.slice(0, 2).map(card => ({
+        type: 'place_location' as const,
+        card,
+        adjacentTo: player.state || startingTile
+      })),
+      cards: locationCards,
+      targets: validAdjacentTargets
     });
   }
 
@@ -1909,6 +1954,15 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
       }
       if (!act.targetState || typeof act.targetState !== 'string') {
         errors.push('place_card action requires "targetState" field (string) - the board state to place the card on');
+      }
+      break;
+
+    case 'place_location':
+      if (!act.card || typeof act.card !== 'string') {
+        errors.push('place_location action requires "card" field (string) - the location card name to place');
+      }
+      if (!act.adjacentTo || typeof act.adjacentTo !== 'string') {
+        errors.push('place_location action requires "adjacentTo" field (string) - existing location to place adjacent to');
       }
       break;
 
@@ -2340,6 +2394,41 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         }
       } else {
         errors.push('place_card action requires a game with board states defined.');
+      }
+      break;
+    }
+
+    case 'place_location': {
+      const placeAction = action as { card: string; adjacentTo: string };
+      const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
+
+      if (cardIndex === -1) {
+        errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
+        break;
+      }
+
+      const card = player.hand[cardIndex];
+
+      // Check if card is a location type
+      if (card.type !== 'location') {
+        errors.push(`Card "${placeAction.card}" is not a location card. Only location cards can be placed on the grid.`);
+        break;
+      }
+
+      // Check if grid config exists
+      const gridConfig = state.config.engine_mechanics?.grid as { starting_tile?: string } | undefined;
+      if (!gridConfig) {
+        errors.push('place_location action requires a game with grid mechanics defined.');
+        break;
+      }
+
+      // Check if adjacentTo is a valid existing location
+      const placedLocations = (state.shared.placedLocations as string[]) || [];
+      const startingTile = gridConfig.starting_tile || 'origin';
+      const validLocations = [startingTile, ...placedLocations];
+
+      if (!validLocations.includes(placeAction.adjacentTo)) {
+        errors.push(`Invalid adjacentTo target "${placeAction.adjacentTo}". Must be an existing location: ${validLocations.join(', ')}`);
       }
       break;
     }
@@ -2790,6 +2879,71 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               card: placedCard.cardName,
               targetState: placedCard.state,
               targetMode: placedCard.targetMode,
+              handSize: player.hand.length
+            }
+          }
+        };
+      }
+
+      case 'place_location': {
+        const placeAction = action as { card: string; adjacentTo: string };
+        const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
+
+        if (cardIndex === -1) {
+          return { success: false, error: `Card "${placeAction.card}" not in your hand` };
+        }
+
+        const card = player.hand[cardIndex];
+
+        if (card.type !== 'location') {
+          return { success: false, error: `Card "${placeAction.card}" is not a location card` };
+        }
+
+        // Remove card from hand
+        player.hand.splice(cardIndex, 1);
+
+        // Add to placed locations
+        if (!state.shared.placedLocations) {
+          state.shared.placedLocations = [];
+        }
+        (state.shared.placedLocations as string[]).push(placeAction.card);
+
+        contestState.lastAction = {
+          player: playerId,
+          action,
+          timestamp: new Date().toISOString(),
+          round: state.round,
+          turnNumber: state.turnNumber,
+          result: {
+            success: true,
+            details: {
+              card: placeAction.card,
+              adjacentTo: placeAction.adjacentTo
+            }
+          }
+        };
+
+        logEvent(state, {
+          event: 'action_executed',
+          round: state.round,
+          turnNumber: state.turnNumber,
+          player: playerId,
+          data: {
+            type: 'place_location',
+            card: placeAction.card,
+            adjacentTo: placeAction.adjacentTo
+          }
+        });
+
+        advanceTurn(state);
+
+        return {
+          success: true,
+          effect: {
+            type: 'place_location',
+            details: {
+              card: placeAction.card,
+              adjacentTo: placeAction.adjacentTo,
               handSize: player.hand.length
             }
           }
