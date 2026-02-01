@@ -2571,9 +2571,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         };
 
-        // After drawing, advance turn
-        advanceTurn(state);
-
+        // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
           event: 'action_executed',
           round: state.round,
@@ -2581,6 +2579,9 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           data: { type: 'draw', count: cards.length }
         });
+
+        // After drawing, advance turn
+        advanceTurn(state);
 
         return {
           success: true,
@@ -2601,8 +2602,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           result: { success: true }
         };
 
-        advanceTurn(state);
-
+        // Log event BEFORE advancing turn (to capture correct turnNumber)
         logEvent(state, {
           event: 'action_executed',
           round: state.round,
@@ -2610,6 +2610,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           player: playerId,
           data: { type: 'pass' }
         });
+
+        advanceTurn(state);
 
         return {
           success: true,
