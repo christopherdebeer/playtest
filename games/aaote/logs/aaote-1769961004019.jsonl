@@ -18,3 +18,5 @@
 {"timestamp":"2026-02-01T16:17:45.996Z","event":"contest_auto_adjudicated","round":4,"turnNumber":13,"player":"player-4","data":{"contestedBy":"player-1","reason":"Player-4 offered Dark Tome to player-2 in an earlier turn. If that trade was accepted, they cannot have all 3 Forbidden Items.","ruling":"allowed","autoReason":"Gamemaster timeout - action allowed by default","elapsedMs":109666}}
 {"timestamp":"2026-02-01T16:17:45.998Z","event":"action_executed","round":4,"turnNumber":13,"player":"player-1","data":{"type":"move","target":"Village Square","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T16:19:35.797Z","event":"action_executed","round":4,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-01T17:42:20.555Z","event":"action_executed","round":4,"turnNumber":15,"player":"player-3","data":{"type":"move","target":"River Crossing","placedCardEffects":[]}}
+{"timestamp":"2026-02-01T17:51:16.279Z","event":"action_executed","round":4,"turnNumber":16,"player":"player-4","data":{"type":"pass"}}
