@@ -13,3 +13,4 @@
 {"timestamp":"2026-02-01T16:06:28.854Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"move","target":"Mountain Pass","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T16:10:30.606Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
 {"timestamp":"2026-02-01T16:11:42.054Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"place_location","card":"River Crossing","adjacentTo":"Village Square"}}
+{"timestamp":"2026-02-01T16:13:22.022Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-4","data":{"type":"pass"}}
