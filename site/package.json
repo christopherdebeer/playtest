@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "npm run generate && vite",
-    "build": "npm run generate && tsc -b && vite build",
+    "build": "npm run build:shared && npm run generate && tsc -b && vite build",
+    "build:shared": "cd .. && npm run build --workspace=@playtest/shared",
     "preview": "vite preview",
     "generate": "npm run generate-games && npm run generate-mechanics && npm run generate-logs && npm run generate-docs",
     "generate-games": "node scripts/generate-games.js",
