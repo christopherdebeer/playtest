@@ -33,6 +33,7 @@ import {
   DrawAction,
   PlayCardAction,
   DiscardAction,
+  MoveCardToDiscardEffect,
 } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -512,7 +513,7 @@ export const cardsMechanic = defineMechanic<
   // ─────────────────────────────────────────────────────────────
 
   getEffectTypes(): readonly CardsEffect['type'][] {
-    return ['draw_cards', 'force_discard', 'steal_card'] as const;
+    return ['draw_cards', 'force_discard', 'steal_card', 'move_card_to_discard'] as const;
   },
 
   applyEffect(
@@ -598,6 +599,38 @@ export const cardsMechanic = defineMechanic<
             [sourceId]: { hand: newSourceHand },
             [targetId]: { hand: newTargetHand },
           },
+          events,
+        };
+      }
+
+      case 'move_card_to_discard': {
+        const moveEffect = effect as MoveCardToDiscardEffect;
+        const targetId = moveEffect.playerId;
+        const targetState = ctx.getMechanicPlayerState<CardsPlayerState>('cards', targetId);
+        if (!targetState) return { events: [] };
+
+        const cardIndex = moveEffect.cardId
+          ? targetState.hand.findIndex(c => c.id === moveEffect.cardId)
+          : moveEffect.cardName
+            ? targetState.hand.findIndex(c => c.name === moveEffect.cardName)
+            : -1;
+
+        if (cardIndex === -1) return { events: [] };
+
+        const card = targetState.hand[cardIndex];
+        const newHand = [...targetState.hand];
+        newHand.splice(cardIndex, 1);
+
+        events.push({
+          timestamp: ctx.timestamp,
+          event: 'card_moved_to_discard',
+          player: targetId,
+          data: { card: card.name },
+        });
+
+        return {
+          gameStateChanges: { discardPile: [...gameState.discardPile, card] },
+          playerStateChanges: { [targetId]: { hand: newHand } },
           events,
         };
       }

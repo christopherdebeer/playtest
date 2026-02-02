@@ -13,6 +13,7 @@ import { gridMechanic } from './grid/index.js';
 import { deckStacksMechanic } from './deck-stacks/index.js';
 import { tradingMechanic } from './trading/index.js';
 import { hiddenRolesMechanic } from './hidden-roles/index.js';
+import { cardMatchingMechanic } from './card-matching/index.js';
 
 // Export all mechanics
 export { cardsMechanic } from './cards/index.js';
@@ -23,6 +24,7 @@ export { gridMechanic } from './grid/index.js';
 export { deckStacksMechanic } from './deck-stacks/index.js';
 export { tradingMechanic } from './trading/index.js';
 export { hiddenRolesMechanic } from './hidden-roles/index.js';
+export { cardMatchingMechanic } from './card-matching/index.js';
 
 // All built-in mechanics
 export const allMechanics = [
@@ -34,6 +36,7 @@ export const allMechanics = [
   deckStacksMechanic,
   tradingMechanic,
   hiddenRolesMechanic,
+  cardMatchingMechanic,
 ];
 
 /**

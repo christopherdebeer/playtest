@@ -88,7 +88,11 @@ export interface DiscardAction extends BaseAction {
 // EFFECTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type CardsEffect = DrawCardsEffect | ForceDiscardEffect | StealCardEffect;
+export type CardsEffect =
+  | DrawCardsEffect
+  | ForceDiscardEffect
+  | StealCardEffect
+  | MoveCardToDiscardEffect;
 
 export interface DrawCardsEffect extends BaseEffect {
   type: 'draw_cards';
@@ -102,5 +106,12 @@ export interface ForceDiscardEffect extends BaseEffect {
 
 export interface StealCardEffect extends BaseEffect {
   type: 'steal_card';
+  cardName?: string;
+}
+
+export interface MoveCardToDiscardEffect extends BaseEffect {
+  type: 'move_card_to_discard';
+  playerId: string;
+  cardId?: string;
   cardName?: string;
 }

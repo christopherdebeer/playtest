@@ -21,12 +21,19 @@ engine_mechanics:
   action_points:
     points_per_turn: 3
     action_costs:
-      move: 1
-      place_location: 1
+      # Grid mechanic actions
+      move_grid: 1
+      place_tile: 1
+      # Cards mechanic actions
       play_card: 1      # Events cost 1 AP each
-      trade_offer: 1
       draw: 1           # Each card drawn costs 1 AP
-      pass: 0
+      discard: 0
+      # Trading mechanic actions
+      propose_trade: 1
+      respond_trade: 0
+      cancel_trade: 0
+      # Action-points mechanic actions
+      end_turn: 0
     rollover: false
 
   # Grid/board system - starts with single origin tile (Proposal 007: grid validation)

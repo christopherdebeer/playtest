@@ -12,6 +12,19 @@ mechanics:
   - take-that
   - lose-a-turn
 
+# Engine mechanics configuration
+engine_mechanics:
+  card_matching:
+    enabled: true
+    match_rules:
+      - { type: "color", mode: "any" }
+      - { type: "value", mode: "any" }
+    wild_types: ["wild"]
+    color_property: "color"
+    value_property: "value"
+    must_match_or_draw: true
+    initial_card_from_deck: true
+
 # Structured config for engine
 deck:
   # Number cards (0-9 in four colors) - 76 total

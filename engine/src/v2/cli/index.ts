@@ -166,6 +166,26 @@ function parseRulesFile(gameName: string): ParsedRules {
     });
   }
 
+  // Card matching mechanic
+  if (rawConfig.engine_mechanics?.card_matching) {
+    const cm = rawConfig.engine_mechanics.card_matching;
+    mechanics.push({
+      slug: 'card-matching',
+      config: {
+        enabled: cm.enabled ?? true,
+        matchRules: cm.match_rules ?? cm.matchRules ?? [
+          { type: 'color', mode: 'any' },
+          { type: 'value', mode: 'any' },
+        ],
+        wildTypes: cm.wild_types ?? cm.wildTypes ?? ['wild'],
+        colorProperty: cm.color_property ?? cm.colorProperty ?? 'color',
+        valueProperty: cm.value_property ?? cm.valueProperty ?? 'value',
+        mustMatchOrDraw: cm.must_match_or_draw ?? cm.mustMatchOrDraw ?? true,
+        initialCardFromDeck: cm.initial_card_from_deck ?? cm.initialCardFromDeck ?? true,
+      },
+    });
+  }
+
   const config: GameConfig = {
     name: rawConfig.name,
     version: rawConfig.version ?? '1.0.0',
