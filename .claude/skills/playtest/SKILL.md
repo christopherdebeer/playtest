@@ -14,7 +14,7 @@ This skill uses the TypeScript engine to manage game instances, with agents for 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Coordinator (this skill)                 │
-│  1. npx playtest init <game> --players <n>                  │
+│  1. ./playtest init <game> --players <n>                  │
 │  2. Parse instanceId and spawnInstructions from output      │
 │  3. Spawn gamemaster + player agents with instance IDs      │
 └─────────────────────────────────────────────────────────────┘
@@ -23,8 +23,8 @@ This skill uses the TypeScript engine to manage game instances, with agents for 
 ┌─────────────────────────────────────────────────────────────┐
 │                    TypeScript Engine                         │
 │  - Instance management (games/<game>/state/<instanceId>/)   │
-│  - Turn blocking (npx playtest wait)                        │
-│  - Registration with rules (npx playtest register)          │
+│  - Turn blocking (./playtest wait)                        │
+│  - Registration with rules (./playtest register)          │
 │  - Concurrent game support                                   │
 └─────────────────────────────────────────────────────────────┘
           │                    │                    │
@@ -117,34 +117,34 @@ for (const player of spawnInstructions.players) {
 ## Agent Flow (New)
 
 1. Agent spawns with `INSTANCE: {instanceId}` and `PLAYER_ID: {playerId}` (or `ROLE: gamemaster`)
-2. Agent calls `npx playtest register {instanceId} -r {role} -a {agentId} [-p {playerId}]`
+2. Agent calls `./playtest register {instanceId} -r {role} -a {agentId} [-p {playerId}]`
 3. Register returns rules and config - agent reads and understands them
 4. Agent proceeds with game loop (wait/act for players, pending/adjudicate for GM)
 
 ## Engine CLI Reference
 
 **Initialization:**
-- `npx playtest init <game> -p <n>` - Create game instance, get spawn instructions
+- `./playtest init <game> -p <n>` - Create game instance, get spawn instructions
 
 **Registration (NEW - replaces rules command for agents):**
-- `npx playtest register <instance> -r <role> -a <agentId> [-p <playerId>]` - Register and get rules
+- `./playtest register <instance> -r <role> -a <agentId> [-p <playerId>]` - Register and get rules
 
 **Instance Management:**
-- `npx playtest list [game]` - List active game instances
-- `npx playtest status <instance>` - Game status (accepts instance ID or game name)
+- `./playtest list [game]` - List active game instances
+- `./playtest status <instance>` - Game status (accepts instance ID or game name)
 
 **Turn Management:**
-- `npx playtest wait <game> -p <id>` - Block until turn (player)
-- `npx playtest actions <game> -p <id>` - **Discover available actions** (dynamic!)
-- `npx playtest act <game> -p <id> -a '<json>'` - Execute action
-- `npx playtest advance <game>` - Next turn (gamemaster)
+- `./playtest wait <game> -p <id>` - Block until turn (player)
+- `./playtest actions <game> -p <id>` - **Discover available actions** (dynamic!)
+- `./playtest act <game> -p <id> -a '<json>'` - Execute action
+- `./playtest advance <game>` - Next turn (gamemaster)
 
 **Gamemaster:**
-- `npx playtest pending <instance>` - Wait for contest/resignation/victory
-- `npx playtest adjudicate <instance> ...` - Rule on disputes
+- `./playtest pending <instance>` - Wait for contest/resignation/victory
+- `./playtest adjudicate <instance> ...` - Rule on disputes
 
 **End:**
-- `npx playtest end <instance> -w <id> -r '<reason>'` - End game
+- `./playtest end <instance> -w <id> -r '<reason>'` - End game
 
 ## Concurrent Games
 
@@ -152,8 +152,8 @@ Multiple instances of the same game can run simultaneously:
 
 ```bash
 # Start two uno games
-npx playtest init uno -p 3  # Returns uno-1706789012345
-npx playtest init uno -p 2  # Returns uno-1706789067890
+./playtest init uno -p 3  # Returns uno-1706789012345
+./playtest init uno -p 2  # Returns uno-1706789067890
 
 # Each agent uses its specific instance ID
 # No conflicts between games
