@@ -102,6 +102,70 @@ function parseRulesFile(gameName: string): ParsedRules {
     });
   }
 
+  // Action points mechanic
+  if (rawConfig.engine_mechanics?.action_points) {
+    const ap = rawConfig.engine_mechanics.action_points;
+    mechanics.push({
+      slug: 'action-points',
+      config: {
+        pointsPerTurn: ap.points_per_turn ?? ap.pointsPerTurn ?? 3,
+        actionCosts: ap.action_costs ?? ap.actionCosts ?? {},
+        rollover: ap.rollover ?? false,
+        maxRollover: ap.max_rollover ?? ap.maxRollover,
+      },
+    });
+  }
+
+  // Grid mechanic
+  if (rawConfig.engine_mechanics?.grid) {
+    const grid = rawConfig.engine_mechanics.grid;
+    mechanics.push({
+      slug: 'grid',
+      config: {
+        type: grid.type ?? 'finite',
+        width: grid.width,
+        height: grid.height,
+        startingTile: grid.starting_tile ?? grid.startingTile,
+        adjacency: grid.adjacency ?? 'orthogonal',
+      },
+    });
+  }
+
+  // Trading mechanic
+  if (rawConfig.engine_mechanics?.trade) {
+    const trade = rawConfig.engine_mechanics.trade;
+    mechanics.push({
+      slug: 'trading',
+      config: {
+        enabled: trade.enabled ?? true,
+        itemTypesOnly: trade.item_types_only ?? trade.itemTypesOnly ?? false,
+        allowedTypes: trade.allowed_types ?? trade.allowedTypes,
+        requireSameLocation: trade.require_same_location ?? trade.requireSameLocation ?? false,
+        requireAdjacent: trade.require_adjacent_location ?? trade.requireAdjacent ?? false,
+        allowGifts: trade.allow_gifts ?? trade.allowGifts ?? true,
+        maxCardsPerTrade: trade.max_cards_per_trade ?? trade.maxCardsPerTrade ?? 5,
+      },
+    });
+  }
+
+  // Hidden roles mechanic from objectives
+  if (rawConfig.objectives) {
+    mechanics.push({
+      slug: 'hidden-roles',
+      config: {
+        roles: rawConfig.objectives.map((obj: any) => ({
+          id: obj.name.toLowerCase().replace(/\s+/g, '-'),
+          name: obj.name,
+          type: obj.type === 'enemy' ? 'traitor' : 'regular',
+          count: obj.count ?? 1,
+          winCondition: obj.condition,
+        })),
+        dealAtStart: rawConfig.engine_mechanics?.hidden_objectives?.deal_at_start ?? true,
+        revealOnCompletion: rawConfig.engine_mechanics?.hidden_objectives?.reveal_on_completion ?? true,
+      },
+    });
+  }
+
   const config: GameConfig = {
     name: rawConfig.name,
     version: rawConfig.version ?? '1.0.0',
