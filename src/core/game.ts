@@ -2207,93 +2207,10 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
   }
 
-  // ============ NEW: Bid validation ============
-  if (action.type === 'bid') {
-    const bidAction = action as BidAction;
-    const auctionConfig = state.config.engine_mechanics?.auction;
-    if (!auctionConfig) {
-      return { valid: false, errors: ['Bidding is not enabled for this game.'] };
-    }
-    const currency = auctionConfig.currency;
-    const available = player.resources?.[currency] ?? 0;
-    if (bidAction.amount > available) {
-      return {
-        valid: false,
-        errors: [`Not enough ${currency} to bid. You have ${available}, trying to bid ${bidAction.amount}.`]
-      };
-    }
-    // Check minimum increment for English auctions
-    const currentHighBid = (state.shared.currentBid as number) ?? 0;
-    if (auctionConfig.type === 'english' && bidAction.amount <= currentHighBid) {
-      const minBid = currentHighBid + (auctionConfig.min_increment ?? 1);
-      return {
-        valid: false,
-        errors: [`Bid too low. Current high bid is ${currentHighBid}. Minimum bid: ${minBid}.`]
-      };
-    }
-  }
-
-  // ============ NEW: Set collection validation ============
-  if (action.type === 'collect_set') {
-    const collectAction = action as CollectSetAction;
-    const setConfig = state.config.engine_mechanics?.set_collection;
-    if (!setConfig) {
-      return { valid: false, errors: ['Set collection is not enabled for this game.'] };
-    }
-    const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
-    if (!setDef) {
-      return {
-        valid: false,
-        errors: [`Unknown set type "${collectAction.setType}". Available: ${setConfig.sets.map(s => s.name).join(', ')}`]
-      };
-    }
-    // Verify player has all the cards
-    for (const cardName of collectAction.cards) {
-      if (!player.hand.find(c => c.name === cardName)) {
-        return {
-          valid: false,
-          errors: [`Card "${cardName}" not in your hand.`]
-        };
-      }
-    }
-    // Verify set size matches
-    if (collectAction.cards.length !== setDef.size) {
-      return {
-        valid: false,
-        errors: [`Set "${collectAction.setType}" requires exactly ${setDef.size} cards, you provided ${collectAction.cards.length}.`]
-      };
-    }
-  }
-
-  // ============ NEW: Push Your Luck validation ============
-  if (action.type === 'roll' || action.type === 'bank') {
-    const pylConfig = state.config.engine_mechanics?.push_your_luck;
-    if (!pylConfig) {
-      return { valid: false, errors: ['Push your luck is not enabled for this game.'] };
-    }
-    if (action.type === 'bank' && (player.rollAccumulator ?? 0) === 0) {
-      return { valid: false, errors: ['No accumulated points to bank. Roll first!'] };
-    }
-    if (action.type === 'roll' && pylConfig.max_rolls && (player.rollCount ?? 0) >= pylConfig.max_rolls) {
-      return { valid: false, errors: [`Maximum rolls (${pylConfig.max_rolls}) reached. You must bank.`] };
-    }
-  }
-
-  // ============ NEW: Draft validation ============
-  if (action.type === 'draft') {
-    const draftAction = action as DraftAction;
-    const draftConfig = state.config.engine_mechanics?.open_drafting;
-    if (!draftConfig) {
-      return { valid: false, errors: ['Open drafting is not enabled for this game.'] };
-    }
-    const display = (state.shared.draftDisplay || []) as Card[];
-    if (!display.find(c => c.name === draftAction.card)) {
-      return {
-        valid: false,
-        errors: [`Card "${draftAction.card}" not in draft display. Available: ${display.map(c => c.name).join(', ')}`]
-      };
-    }
-  }
+  // Note: Bid validation moved to auction-english mechanic
+  // Note: Set collection validation moved to set-collection mechanic
+  // Note: Push your luck validation moved to push-your-luck mechanic
+  // Note: Draft validation moved to open-drafting mechanic
 
   // Action-specific validation
   switch (action.type) {
