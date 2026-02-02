@@ -20,7 +20,7 @@ function Header() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
-          <span className="hamburger-icon">&#9776;</span>
+          <span className="hamburger-icon">{mobileMenuOpen ? '\u00D7' : '\u2630'}</span>
         </button>
 
         <nav className="nav">
@@ -39,39 +39,26 @@ function Header() {
             GitHub
           </a>
         </nav>
-
-        {mobileMenuOpen && (
-          <>
-            <div
-              className="mobile-menu-backdrop"
-              onClick={closeMobileMenu}
-            />
-            <nav className="mobile-menu">
-              <button
-                className="mobile-menu-close"
-                onClick={closeMobileMenu}
-                aria-label="Close menu"
-              >
-                &times;
-              </button>
-              <a href="#usage" onClick={closeMobileMenu}>Usage</a>
-              <Link to="/mechanics" onClick={closeMobileMenu}>Mechanics</Link>
-              <Link to="/logs" onClick={closeMobileMenu}>Logs</Link>
-              <Link to="/docs" onClick={closeMobileMenu}>Docs</Link>
-              <a href="#games" onClick={closeMobileMenu}>Games</a>
-              <a href="#architecture" onClick={closeMobileMenu}>Architecture</a>
-              <a
-                href="https://github.com/christopherdebeer/playtest"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={closeMobileMenu}
-              >
-                GitHub
-              </a>
-            </nav>
-          </>
-        )}
       </div>
+
+      {mobileMenuOpen && (
+        <nav className="mobile-menu">
+          <a href="#usage" onClick={closeMobileMenu}>Usage</a>
+          <a href="#games" onClick={closeMobileMenu}>Games</a>
+          <Link to="/mechanics" onClick={closeMobileMenu}>Mechanics</Link>
+          <Link to="/logs" onClick={closeMobileMenu}>Logs</Link>
+          <Link to="/docs" onClick={closeMobileMenu}>Docs</Link>
+          <a href="#architecture" onClick={closeMobileMenu}>Architecture</a>
+          <a
+            href="https://github.com/christopherdebeer/playtest"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={closeMobileMenu}
+          >
+            GitHub
+          </a>
+        </nav>
+      )}
     </header>
   )
 }
