@@ -19,6 +19,13 @@ export interface HookContext {
 }
 
 /**
+ * Extended context for turn-start hooks
+ */
+export interface TurnStartContext extends HookContext {
+  isNewRound: boolean;
+}
+
+/**
  * Result of action validation
  */
 export interface ValidationResult {
@@ -80,7 +87,7 @@ export interface MechanicHooks {
    * Called at start of player's turn.
    * Return state changes to apply.
    */
-  onTurnStart?(ctx: HookContext): StateChanges | null;
+  onTurnStart?(ctx: TurnStartContext): StateChanges | null;
 }
 
 /**

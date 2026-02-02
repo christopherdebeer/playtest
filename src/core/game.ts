@@ -942,55 +942,9 @@ export function advanceTurn(state: GameState): void {
       .filter(e => e.duration > 0);
   }
 
-  // === NEW MECHANICS: Income generation ===
-  if (state.config.engine_mechanics?.income && nextPlayer.resources) {
-    const income = state.config.engine_mechanics.income;
-
-    // Per-turn income
-    if (income.per_turn) {
-      for (const [resource, amount] of Object.entries(income.per_turn)) {
-        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
-
-        // Apply resource cap if configured
-        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
-        }
-      }
-
-      logEvent(state, {
-        event: 'income_generated',
-        round: state.round,
-        turnNumber: state.turnNumber,
-        player: state.currentPlayer,
-        data: { income: income.per_turn }
-      });
-    }
-
-    // Per-round income (only at start of new round)
-    if (isNewRound && income.per_round) {
-      for (const [resource, amount] of Object.entries(income.per_round)) {
-        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
-
-        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
-        }
-      }
-
-      logEvent(state, {
-        event: 'round_income_generated',
-        round: state.round,
-        turnNumber: state.turnNumber,
-        player: state.currentPlayer,
-        data: { income: income.per_round }
-      });
-    }
-  }
-
   // ============ Mechanic Hooks: Turn start ============
-  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP)
-  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer);
+  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP, income)
+  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer, isNewRound);
   applyStateChanges(state, turnStartChanges);
 
   saveState(state);
@@ -2442,27 +2396,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       if (state.deck.length === 0 && state.discardPile.length <= 1) {
         warnings.push('Draw pile is empty and cannot be reshuffled');
       }
-
-      // Proposal 008: Hand limit validation
-      const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
-      if (handLimit !== undefined) {
-        const drawAction = action as DrawAction;
-        const drawCount = drawAction.count ?? 1;
-        const currentHandSize = player.hand.length;
-        const projectedHandSize = currentHandSize + drawCount;
-
-        const policy = (state.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
-
-        if (policy === 'cannot_draw' && projectedHandSize > handLimit) {
-          const maxDrawable = Math.max(0, handLimit - currentHandSize);
-          if (maxDrawable === 0) {
-            errors.push(`Hand limit (${handLimit}) reached. You have ${currentHandSize} cards and cannot draw more.`);
-          } else {
-            errors.push(`Drawing ${drawCount} cards would exceed hand limit (${handLimit}). You have ${currentHandSize} cards. Max you can draw: ${maxDrawable}.`);
-          }
-        }
-        // Other policies (discard_choice, discard_oldest) are handled in executeAction
-      }
+      // Note: Hand limit validation (cannot_draw policy) moved to hand-management mechanic
+      // Other policies (discard_choice, discard_oldest) are handled in executeAction
       break;
     }
 

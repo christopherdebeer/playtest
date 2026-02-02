@@ -9,6 +9,7 @@
 import {
   MechanicHooks,
   HookContext,
+  TurnStartContext,
   ValidationResult,
   StateChanges,
   PlayerInitResult,
@@ -157,8 +158,9 @@ class MechanicRegistry {
   /**
    * Run onTurnStart hooks for all enabled mechanics.
    */
-  onTurnStart(state: GameState, playerId: string): StateChanges {
-    const ctx = this.createContext(state, playerId);
+  onTurnStart(state: GameState, playerId: string, isNewRound: boolean = false): StateChanges {
+    const baseCtx = this.createContext(state, playerId);
+    const ctx: TurnStartContext = { ...baseCtx, isNewRound };
     const enabledMechanics = this.getEnabledMechanics(state.config);
     const mergedChanges: StateChanges = {};
 

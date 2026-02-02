@@ -12,7 +12,7 @@
  * - shouldAutoEndTurn: Force end when AP depleted
  */
 
-import { MechanicHooks, HookContext, ValidationResult, StateChanges, PlayerInitResult } from './types.js';
+import { MechanicHooks, HookContext, TurnStartContext, ValidationResult, StateChanges, PlayerInitResult } from './types.js';
 import { GameConfig, GameAction, DrawAction } from '../types/game.js';
 
 export const actionPointsMechanic: MechanicHooks = {
@@ -92,7 +92,7 @@ export const actionPointsMechanic: MechanicHooks = {
     };
   },
 
-  onTurnStart(ctx: HookContext): StateChanges | null {
+  onTurnStart(ctx: TurnStartContext): StateChanges | null {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return null;
 
