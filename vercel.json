@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build:site",
-  "outputDirectory": "dist",
+  "outputDirectory": "site/dist",
   "framework": "vite",
   "installCommand": "npm install",
   "rewrites": [

@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   root: 'site',
   build: {
-    outDir: resolve(__dirname, 'dist'),
-    emptyOutDir: false,
+    outDir: 'dist',
+    emptyOutDir: true,
   },
   resolve: {
     alias: {
