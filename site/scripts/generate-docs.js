@@ -47,39 +47,77 @@ async function readMarkdownFiles(dir, basePath = '') {
 }
 
 /**
+ * Parse YAML frontmatter from content
+ * Returns { frontmatter: object, content: string }
+ */
+function parseFrontmatter(content) {
+  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/
+  const match = content.match(frontmatterRegex)
+
+  if (!match) {
+    return { frontmatter: {}, content }
+  }
+
+  const frontmatterText = match[1]
+  const restContent = content.slice(match[0].length)
+  const frontmatter = {}
+
+  // Parse simple YAML key: value pairs
+  const lines = frontmatterText.split('\n')
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':')
+    if (colonIndex > 0) {
+      const key = line.slice(0, colonIndex).trim().toLowerCase().replace(/\s+/g, '_')
+      const value = line.slice(colonIndex + 1).trim()
+      if (key && value) {
+        frontmatter[key] = value
+      }
+    }
+  }
+
+  return { frontmatter, content: restContent }
+}
+
+/**
  * Parse a markdown document
  */
 async function parseDocument(filePath, relativePath) {
-  const content = await readFile(filePath, 'utf-8')
+  const rawContent = await readFile(filePath, 'utf-8')
 
-  // Extract title from first H1
+  // Parse YAML frontmatter if present
+  const { frontmatter, content } = parseFrontmatter(rawContent)
+
+  // Extract title from first H1 or frontmatter
   const titleMatch = content.match(/^#\s+(.+)$/m)
-  const title = titleMatch ? titleMatch[1] : basename(filePath, '.md')
+  const title = frontmatter.title || (titleMatch ? titleMatch[1] : basename(filePath, '.md'))
 
-  // Extract metadata from table-like format at top of proposals
-  const metadata = {}
+  // Start with frontmatter metadata
+  const metadata = { ...frontmatter }
+
+  // Also extract metadata from **Key**: Value format (for proposals)
   const metaMatches = content.matchAll(/^\*\*([^*]+)\*\*:\s*(.+)$/gm)
   for (const match of metaMatches) {
     const key = match[1].toLowerCase().replace(/\s+/g, '_')
     metadata[key] = match[2]
   }
 
-  // Extract first paragraph as summary
+  // Extract first paragraph as summary (skip frontmatter-style lines)
   const paragraphs = content.split(/\n\n+/).filter(p =>
     !p.startsWith('#') &&
     !p.startsWith('**') &&
     !p.startsWith('|') &&
     !p.startsWith('```') &&
+    !p.startsWith('---') &&
     p.trim().length > 0
   )
   const summary = paragraphs[0]?.replace(/\*\*/g, '').slice(0, 200) || ''
 
-  // Convert full content to HTML
+  // Convert content (without frontmatter) to HTML
   const contentHtml = await marked.parse(content)
 
-  // Determine category from path
+  // Determine category from frontmatter or path
   const pathParts = relativePath.split('/')
-  const category = pathParts.length > 1 ? pathParts[0] : 'general'
+  const category = frontmatter.category || (pathParts.length > 1 ? pathParts[0] : 'general')
 
   // Generate slug from filename
   const slug = basename(filePath, '.md').toLowerCase().replace(/\s+/g, '-')
