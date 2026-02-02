@@ -2172,21 +2172,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
   }
 
-  // ============ NEW: Check for blocking effects ============
-  // Effects like 'block_turn', 'skip', 'Block' prevent the player from taking actions
-  const blockingEffects = player.effects.filter(e => {
-    const effectType = e.type.toLowerCase();
-    return effectType === 'block_turn' || effectType === 'block' || effectType === 'skip';
-  });
-
-  if (blockingEffects.length > 0 && action.type !== 'pass') {
-    // Player is blocked - they can only pass (or draw in some games)
-    const effectNames = blockingEffects.map(e => e.type).join(', ');
-    return {
-      valid: false,
-      errors: [`You are blocked this turn by effect: ${effectNames}. You can only pass.`]
-    };
-  }
+  // Note: Blocking effects check moved to lose-a-turn mechanic
 
   // ============ NEW: Check for multiple actions per round ============
   // Prevent players from submitting multiple actions in the same round
@@ -2320,19 +2306,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       }
 
       const card = player.hand[cardIndex];
-
-      // Proposal 008: Card type restrictions
-      // Check if this card type is playable according to card_type_rules config
-      const cardTypeRules = state.config.engine_mechanics?.card_type_rules as Record<string, { playable?: boolean }> | undefined;
-      if (cardTypeRules && cardTypeRules[card.type]) {
-        const rules = cardTypeRules[card.type];
-        if (rules.playable === false) {
-          const hint = card.type === 'item' ? ' Items are held in hand until used or traded.' :
-                       card.type === 'location' ? ' Use a place_location or move action instead.' : '';
-          errors.push(`Cannot play "${card.name}". Cards of type "${card.type}" cannot be played.${hint}`);
-          break;
-        }
-      }
+      // Note: Card type playable validation moved to card-type-rules mechanic
 
       const topCard = state.shared.topCard as Card | undefined;
       const currentColor = state.shared.currentColor as string | undefined;
@@ -2368,26 +2342,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         }
       }
 
-      // ============ NEW: Interference card target validation ============
-      // Cards that affect other players require a target specification
-      const interferenceEffects = ['block_turn', 'probability_penalty', 'force_discard', 'skip'];
-      const isInterferenceCard = card.type === 'interference' ||
-                                 (card.effect?.type && interferenceEffects.includes(card.effect.type));
-
-      if (isInterferenceCard) {
-        const opponents = state.turnOrder.filter(pid => pid !== playerId);
-
-        if (opponents.length > 1 && !playAction.target) {
-          // Multiple opponents - require explicit target
-          errors.push(`Interference card "${card.name}" requires a "target" field. Valid targets: ${opponents.join(', ')}`);
-        } else if (playAction.target) {
-          // Validate target is a valid opponent
-          if (!opponents.includes(playAction.target)) {
-            errors.push(`Invalid target "${playAction.target}". Valid targets: ${opponents.join(', ')}`);
-          }
-        }
-        // If only 1 opponent, target is implicit (no need to specify)
-      }
+      // Note: Interference card targeting validation moved to take-that mechanic
       break;
     }
 
