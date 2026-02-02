@@ -79,7 +79,7 @@ function GamesSection() {
               </div>
 
               <div className="game-preview">
-                <code className="preview-cmd">npx playtest init {game.id} -p 3</code>
+                <code className="preview-cmd">/playtest {game.id} 3</code>
               </div>
             </Link>
           ))}

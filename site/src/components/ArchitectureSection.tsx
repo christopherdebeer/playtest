@@ -9,8 +9,8 @@ function ArchitectureSection() {
         <div className="arch-diagram">
           <pre>{`
 ┌─────────────────────────────────────────────────────────────┐
-│                     Coordinator (skill)                     │
-│  1. npx playtest init <game> --players <n>                  │
+│                     Coordinator (/playtest skill)           │
+│  1. ./playtest init <game> --players <n>                    │
 │  2. Spawn gamemaster (sonnet) + player agents (haiku)       │
 └─────────────────────────────────────────────────────────────┘
           │
@@ -18,8 +18,8 @@ function ArchitectureSection() {
 ┌─────────────────────────────────────────────────────────────┐
 │                    TypeScript Engine                         │
 │  - State management (games/<game>/state/game.json)          │
-│  - Turn blocking (npx playtest wait)                        │
-│  - Deck operations (npx playtest draw/play/discard)         │
+│  - Turn blocking (./playtest player:wait)                   │
+│  - Deck operations (./playtest draw/play/discard)           │
 └─────────────────────────────────────────────────────────────┘
           │                    │                    │
           ▼                    ▼                    ▼
@@ -43,7 +43,7 @@ function ArchitectureSection() {
           <div className="detail-card">
             <h3>Turn Synchronization</h3>
             <p>
-              Players use <code>npx playtest wait</code> to block until their turn.
+              Players use <code>./playtest player:wait</code> to block until their turn.
               The engine handles turn order, action validation, and state transitions.
             </p>
           </div>

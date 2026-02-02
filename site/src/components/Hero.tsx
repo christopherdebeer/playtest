@@ -12,7 +12,7 @@ function Hero() {
           Test game mechanics, validate rules, and explore edge cases automatically.
         </p>
         <div className="hero-cta">
-          <code className="install-cmd">npx playtest init &lt;game&gt; --players 3</code>
+          <code className="install-cmd">/playtest &lt;game&gt; &lt;players&gt;</code>
         </div>
         <div className="hero-features">
           <div className="feature">
