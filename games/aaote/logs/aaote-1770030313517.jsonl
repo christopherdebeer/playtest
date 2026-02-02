@@ -1,0 +1,17 @@
+{"timestamp":"2026-02-02T11:05:13.518Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:05:23.979Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:05:24.278Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:05:24.578Z","event":"player_registered","player":"player-3","data":{"agentId":"a3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:05:24.579Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:24.579Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:24.579Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:24.580Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:34.596Z","event":"cards_drawn","player":"player-1","data":{"count":1,"deckRemaining":34},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:34.596Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":2,"action":"draw"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:34.885Z","event":"cards_drawn","player":"player-1","data":{"count":1,"deckRemaining":33},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:34.885Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":1,"action":"draw"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:05:35.492Z","event":"card_discarded","player":"player-1","data":{"card":"Theft"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:06:16.197Z","event":"tile_placed","player":"player-1","data":{"position":{"x":1,"y":0},"tile":"Ancient Ruins","terrain":"ruins"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:06:16.197Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":0,"action":"place_tile"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:06:16.197Z","event":"card_removed_from_hand","player":"player-1","data":{"card":"Ancient Ruins"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:06:16.200Z","event":"auto_end_turn","player":"player-1","data":{"reason":"action-points triggered auto-end"},"round":1,"turnNumber":1}

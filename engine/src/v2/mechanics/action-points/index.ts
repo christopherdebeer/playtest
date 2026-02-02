@@ -278,6 +278,17 @@ export const actionPointsMechanic = defineMechanic<
     };
   },
 
+  /**
+   * Check if turn should auto-end due to AP depletion.
+   */
+  shouldAutoEndTurn(
+    ctx: ActionContext<ActionPointsGameState, ActionPointsPlayerState>
+  ): boolean {
+    const { playerState } = ctx;
+    // Auto-end turn when AP is depleted
+    return playerState.currentPoints === 0;
+  },
+
   // ─────────────────────────────────────────────────────────────
   // Effects
   // ─────────────────────────────────────────────────────────────

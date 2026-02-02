@@ -153,6 +153,15 @@ export interface Mechanic<
     result: ExecutionResult
   ): EffectResult<TGameState, TPlayerState>;
 
+  /**
+   * Called after action execution to check if turn should auto-end.
+   * Use this for mechanics that manage turn resources (e.g., action-points checking 0 AP).
+   * Return true to force turn advancement.
+   */
+  shouldAutoEndTurn?(
+    ctx: ActionContext<TGameState, TPlayerState>
+  ): boolean;
+
   // ═══════════════════════════════════════════════════════════════
   // TURN ORDER (optional)
   // ═══════════════════════════════════════════════════════════════

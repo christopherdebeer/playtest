@@ -1,0 +1,16 @@
+{"timestamp":"2026-02-02T11:03:03.713Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:03:13.399Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:03:13.699Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:03:13.998Z","event":"player_registered","player":"player-3","data":{"agentId":"a3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T11:03:13.999Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:13.999Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:13.999Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:14.000Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:32.389Z","event":"cards_drawn","player":"player-1","data":{"count":1,"deckRemaining":34},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:32.389Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":2,"action":"draw"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:32.691Z","event":"cards_drawn","player":"player-1","data":{"count":1,"deckRemaining":33},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:32.691Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":1,"action":"draw"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:44.456Z","event":"tile_placed","player":"player-1","data":{"position":{"x":1,"y":0},"tile":"Mountain Pass","terrain":"mountain"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:44.456Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":0,"action":"place_tile"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:44.456Z","event":"card_removed_from_hand","player":"player-1","data":{"card":"Mountain Pass"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:03:44.459Z","event":"auto_end_turn","player":"player-1","data":{"reason":"AP depleted"},"round":1,"turnNumber":1}

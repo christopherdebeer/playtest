@@ -351,8 +351,23 @@ export class GameEngine {
         data: { winner: winCheck.winner, reason: winCheck.reason },
       });
     } else {
+      // Check if any mechanic wants to auto-end the turn (mechanic-agnostic)
+      let nextTurn = result.nextTurn;
+      if (nextTurn.type === 'same_player') {
+        const autoEndCheck = composed.shouldAutoEndTurn(this.createActionContext(updatedState, playerId));
+        if (autoEndCheck.shouldEnd) {
+          nextTurn = { type: 'advance' };
+          logEvent(updatedState, {
+            timestamp: new Date().toISOString(),
+            event: 'auto_end_turn',
+            player: playerId,
+            data: { reason: autoEndCheck.reason },
+          });
+        }
+      }
+
       // Advance turn
-      updatedState = this.advanceTurn(updatedState, result.nextTurn);
+      updatedState = this.advanceTurn(updatedState, nextTurn);
     }
 
     saveState(updatedState);

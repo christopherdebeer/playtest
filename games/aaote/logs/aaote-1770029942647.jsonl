@@ -1,0 +1,21 @@
+{"timestamp":"2026-02-02T10:59:02.648Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:59:12.335Z","event":"player_registered","player":"player-1","data":{"agentId":"agent1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:59:12.654Z","event":"player_registered","player":"player-2","data":{"agentId":"agent2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:59:12.974Z","event":"player_registered","player":"player-3","data":{"agentId":"agent3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:59:12.976Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:12.976Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:12.976Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:12.977Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:43.540Z","event":"tile_placed","player":"player-1","data":{"position":{"x":1,"y":0},"tile":"Village Square","terrain":"settlement"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:43.540Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":2,"action":"place_tile"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:59:43.540Z","event":"card_removed_from_hand","player":"player-1","data":{"card":"Village Square"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:00.657Z","event":"player_moved","player":"player-1","data":{"from":{"x":0,"y":0},"to":{"x":1,"y":0},"tile":"Village Square"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:00.657Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":1,"action":"move_grid"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:10.998Z","event":"cards_drawn","player":"player-1","data":{"count":1,"deckRemaining":34},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:10.998Z","event":"points_spent","player":"player-1","data":{"cost":1,"remaining":0,"action":"draw"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:28.868Z","event":"turn_ended","player":"player-1","data":{"pointsRemaining":0,"newPoints":3},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T11:00:55.172Z","event":"trade_proposed","player":"player-2","data":{"tradeId":"trade-1770030055173-1q1xu29rk","target":"player-1","offeredCount":1,"requestedCount":0},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T11:00:55.172Z","event":"points_spent","player":"player-2","data":{"cost":1,"remaining":2,"action":"propose_trade"},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T11:01:05.071Z","event":"turn_ended","player":"player-2","data":{"pointsRemaining":2,"newPoints":3},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T11:01:14.868Z","event":"turn_ended","player":"player-3","data":{"pointsRemaining":3,"newPoints":3},"round":1,"turnNumber":3}
+{"timestamp":"2026-02-02T11:01:33.140Z","event":"trade_completed","data":{"tradeId":"trade-1770030055173-1q1xu29rk","initiator":"player-2","target":"player-1","offeredItems":["card-25"],"requestedItems":[]},"round":2,"turnNumber":4}

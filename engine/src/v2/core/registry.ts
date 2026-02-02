@@ -51,6 +51,8 @@ export interface ComposedMechanics {
   tickEffects(ctx: ActionContext, boundary: 'turn' | 'round'): EffectResult;
   getPlayerView(state: CoreGameState, playerId: string): PlayerView;
   checkWinConditions(ctx: ActionContext): { triggered: boolean; winner?: string | null; reason?: string } | null;
+  /** Check if any mechanic wants to auto-end the turn (e.g., AP depleted) */
+  shouldAutoEndTurn(ctx: ActionContext): { shouldEnd: boolean; reason?: string };
   getLogEventTypes(): readonly string[];
 }
 
@@ -527,6 +529,20 @@ export class MechanicRegistry {
           if (result?.triggered) return result;
         }
         return null;
+      },
+
+      shouldAutoEndTurn(ctx: ActionContext): { shouldEnd: boolean; reason?: string } {
+        // Check all mechanics for shouldAutoEndTurn hook
+        for (const m of mechanics) {
+          if (m.shouldAutoEndTurn) {
+            const mCtx = { ...ctx, gameState: ctx.state.mechanicState[m.slug], playerState: ctx.state.players[ctx.playerId]?.mechanicState?.[m.slug] };
+            const shouldEnd = (m.shouldAutoEndTurn as any)(mCtx);
+            if (shouldEnd) {
+              return { shouldEnd: true, reason: `${m.slug} triggered auto-end` };
+            }
+          }
+        }
+        return { shouldEnd: false };
       },
 
       getLogEventTypes(): readonly string[] {
