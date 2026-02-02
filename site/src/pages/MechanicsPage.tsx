@@ -207,7 +207,7 @@ function MechanicsPage() {
             })}
           </div>
 
-          {data.implementationStats && (
+          {data.implementationStats && (data.implementationStats.implemented > 0 || data.implementationStats.partial > 0) && (
             <div className="implementation-filters">
               <span className="filter-label">Engine Status:</span>
               <button
@@ -281,19 +281,19 @@ function MechanicsPage() {
                         <div className="mechanic-card-header">
                           <h3>{mechanic.name}</h3>
                           <div className="mechanic-badges">
-                            <span
-                              className={`implementation-badge ${mechanic.implementationStatus}`}
-                              style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
-                              title={
-                                mechanic.implementationStatus === 'implemented'
-                                  ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
-                                  : mechanic.implementationStatus === 'partial'
-                                  ? mechanic.implementationNotes
-                                  : 'Not yet implemented in the engine'
-                              }
-                            >
-                              {implementationStatusLabels[mechanic.implementationStatus]}
-                            </span>
+                            {mechanic.implementationStatus !== 'not_implemented' && (
+                              <span
+                                className={`implementation-badge ${mechanic.implementationStatus}`}
+                                style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
+                                title={
+                                  mechanic.implementationStatus === 'implemented'
+                                    ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
+                                    : mechanic.implementationNotes
+                                }
+                              >
+                                {implementationStatusLabels[mechanic.implementationStatus]}
+                              </span>
+                            )}
                             <span className="mechanic-id">#{mechanic.id}</span>
                           </div>
                         </div>

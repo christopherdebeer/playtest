@@ -54,28 +54,30 @@ function GamesSection() {
               )}
 
               <div className="game-stats">
-                {game.config.startingCards && (
+                {game.config.startingCards != null && game.config.startingCards > 0 && (
                   <div className="stat">
                     <span className="stat-value">{game.config.startingCards}</span>
                     <span className="stat-label">starting cards</span>
                   </div>
                 )}
-                {game.config.deckSize && (
+                {game.config.deckSize != null && game.config.deckSize > 0 && (
                   <div className="stat">
                     <span className="stat-value">{game.config.deckSize}</span>
                     <span className="stat-label">deck size</span>
                   </div>
                 )}
-                {game.config.boardStates && (
+                {game.config.boardStates && game.config.boardStates.length > 0 && (
                   <div className="stat">
                     <span className="stat-value">{game.config.boardStates.length}</span>
                     <span className="stat-label">board states</span>
                   </div>
                 )}
-                <div className="stat">
-                  <span className="stat-value">{game.config.maxRounds}</span>
-                  <span className="stat-label">max rounds</span>
-                </div>
+                {game.config.maxRounds != null && game.config.maxRounds > 0 && (
+                  <div className="stat">
+                    <span className="stat-value">{game.config.maxRounds}</span>
+                    <span className="stat-label">max rounds</span>
+                  </div>
+                )}
               </div>
 
               <div className="game-preview">
