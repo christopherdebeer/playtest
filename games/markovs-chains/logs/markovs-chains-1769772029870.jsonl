@@ -1,7 +1,0 @@
-{"timestamp":"2026-01-30T11:20:29.873Z","event":"game_init","data":{"gameId":"markovs-chains-1769772029870","playerCount":2,"config":"Markov's Chains"}}
-{"timestamp":"2026-01-30T11:21:16.750Z","event":"game_start","turn":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
-{"timestamp":"2026-01-30T11:21:27.096Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"move","targetState":"A","boostCard":"Momentum","reasoning":"Use Momentum to increase probability of moving from Start to A from 0.65 to 0.95"}}
-{"timestamp":"2026-01-30T11:21:40.903Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"draw","reasoning":"Failed to move, drawing a card to improve options"}}
-{"timestamp":"2026-01-30T11:21:54.227Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"move","targetState":"B","boostCard":"Momentum","reasoning":"Attempt to move to B state with Momentum boost after previous failed attempt to move to A"}}
-{"timestamp":"2026-01-30T11:22:36.716Z","event":"action_submitted","turn":1,"player":"player-1","data":{"type":"pass","reasoning":"Unable to execute other actions due to potential game state issue"}}
-{"timestamp":"2026-01-30T11:23:00.184Z","event":"game_end","turn":1,"data":{"winner":"none","reason":"Manual stop due to game state issues"}}

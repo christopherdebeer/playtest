@@ -5,7 +5,10 @@
 # Active game state (recreated each playtest)
 games/*/state/
 
-*.log
+# Hook trace logs (debug output)
+logs/
+
+# *.log
 
 # Lock files
 *.lock
@@ -18,6 +21,9 @@ games/*/state/
 # - games/*/logs/*.json (game summaries)
 # - games/*/logs/debug/ (debug captures with timing analysis)
 # - games/*/traces/ (game traces)
+
+# BUT ignore backup archives (created by cleanup command)
+games/*/logs-archive-*.tar.gz
 
 # ===========================================
 # LOCAL/USER-SPECIFIC
@@ -34,6 +40,9 @@ games/*/state/
 engine/dist/
 site/dist/
 *.tsbuildinfo
+
+# Generated site data (build-time artifacts)
+site/src/data/*.json
 
 # ===========================================
 # DEPENDENCIES

@@ -2096,6 +2096,39 @@ program
     }
   });
 
+// ============ Cleanup Command ============
+
+program
+  .command('cleanup')
+  .description('Clean up incomplete game logs and orphaned files')
+  .option('--dry-run', 'Preview files without deleting', false)
+  .option('--no-keep-transcripts', 'Also delete transcripts from complete games')
+  .option('--archive', 'Create backup archives before deletion', true)
+  .option('--force', 'Actually delete files (required without --dry-run)')
+  .action(async (options: { dryRun: boolean; keepTranscripts: boolean; archive: boolean; force?: boolean }) => {
+    const { cleanupLogs } = await import('./cleanup.js');
+
+    try {
+      const gamesDir = join(process.cwd(), 'games');
+
+      const cleanupOptions = {
+        dryRun: options.dryRun,
+        keepTranscripts: options.keepTranscripts,
+        archive: options.archive,
+        force: options.force || false,
+        gamesDir
+      };
+
+      const report = await cleanupLogs(cleanupOptions);
+      console.log(report);
+
+      process.exit(0);
+    } catch (err) {
+      console.error('Cleanup failed:', err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
 // ============ Universal Hook Event Handler ============
 // Handles all hook events for tracing and debugging
 

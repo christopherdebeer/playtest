@@ -1,7 +1,0 @@
-{"timestamp":"2026-01-29T00:12:28.151Z","event":"game_init","data":{"gameId":"uno-1769645548149","playerCount":2,"config":"UNO"}}
-{"timestamp":"2026-01-29T00:12:52.093Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"play_card","card":"Red 8","effect":{"type":"none","color":"Red","value":8}}}
-{"timestamp":"2026-01-29T00:13:00.826Z","event":"contest_filed","turn":1,"player":"player-2","data":{"reason":"Testing contest functionality","contestedAction":{"type":"play_card","card":"Red 8"},"contestedPlayer":"player-1"}}
-{"timestamp":"2026-01-29T00:13:08.859Z","event":"contest_adjudicated","turn":1,"data":{"ruling":"allowed","rulingReason":"Red 8 matches Green 8 by number, action is legal","reversed":false,"contestedPlayer":"player-1","contestedBy":"player-2"}}
-{"timestamp":"2026-01-29T00:13:16.599Z","event":"resignation_submitted","turn":1,"player":"player-2","data":{"reason":"Testing resignation functionality"}}
-{"timestamp":"2026-01-29T00:13:31.625Z","event":"game_end","turn":1,"data":{"winner":"player-1","reason":"Resignation accepted: Testing resignation functionality","resignedPlayer":"player-2"}}
-{"timestamp":"2026-01-29T00:13:31.627Z","event":"resignation_adjudicated","turn":1,"data":{"player":"player-2","accepted":true,"rulingReason":"Valid resignation"}}

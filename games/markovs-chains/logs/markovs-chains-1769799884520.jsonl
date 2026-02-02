@@ -1,5 +1,0 @@
-{"timestamp":"2026-01-30T19:04:44.523Z","event":"game_init","data":{"gameId":"markovs-chains-1769799884520","playerCount":2,"config":"Markov's Chains"}}
-{"timestamp":"2026-01-30T19:04:46.668Z","event":"action_executed","turn":1,"player":"player-1","data":{"type":"move","target":"A"}}
-{"timestamp":"2026-01-30T19:04:48.829Z","event":"action_executed","turn":2,"player":"player-2","data":{"type":"pass"}}
-{"timestamp":"2026-01-30T19:04:50.992Z","event":"action_executed","turn":2,"player":"player-1","data":{"type":"move","target":"Victory"}}
-{"timestamp":"2026-01-30T19:04:50.994Z","event":"game_end","turn":2,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}
