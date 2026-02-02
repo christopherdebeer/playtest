@@ -16,6 +16,7 @@ import { gridMovementMechanic } from './grid-movement.js';
 import { placeLocationMechanic } from './place-location.js';
 import { boardStateMechanic } from './board-state.js';
 import { placeCardMechanic } from './place-card.js';
+import { tradingMechanic } from './trading.js';
 
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
@@ -28,6 +29,7 @@ mechanicRegistry.register(gridMovementMechanic);
 mechanicRegistry.register(placeLocationMechanic);
 mechanicRegistry.register(boardStateMechanic);
 mechanicRegistry.register(placeCardMechanic);
+mechanicRegistry.register(tradingMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges } from './registry.js';

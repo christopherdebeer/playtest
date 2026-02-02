@@ -2396,114 +2396,12 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
 
     case 'trade_offer': {
-      const tradeAction = action as { target: string; offer: string[]; request: string[] };
-      const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; require_adjacent_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
-
-      // Check if trading is enabled
-      if (!tradeConfig?.enabled) {
-        errors.push('Trading is not enabled for this game.');
-        break;
-      }
-
-      // Validate target player exists
-      if (!state.players[tradeAction.target]) {
-        errors.push(`Invalid trade target "${tradeAction.target}". Player not found.`);
-        break;
-      }
-
-      if (tradeAction.target === playerId) {
-        errors.push('Cannot trade with yourself.');
-        break;
-      }
-
-      // Check location constraints
-      if (tradeConfig.require_same_location) {
-        const targetPlayer = state.players[tradeAction.target];
-        if (player.state !== targetPlayer.state) {
-          errors.push(`Cannot trade with ${tradeAction.target}. You must be at the same location. You are at "${player.state}", they are at "${targetPlayer.state}".`);
-        }
-      }
-
-      if (tradeConfig.require_adjacent_location) {
-        // For grid games, check if players are at adjacent locations
-        const gridConfig = state.config.engine_mechanics?.grid;
-        if (gridConfig) {
-          const targetPlayer = state.players[tradeAction.target];
-          // For now, allow if same location (adjacent includes same)
-          // Full adjacency check would need grid coordinate tracking
-          if (player.state !== targetPlayer.state) {
-            warnings.push(`Trading with non-adjacent player. Full adjacency validation not implemented yet.`);
-          }
-        }
-      }
-
-      // Validate offered cards exist in player's hand
-      for (const cardName of tradeAction.offer) {
-        const cardIndex = player.hand.findIndex(c => c.name === cardName);
-        if (cardIndex === -1) {
-          errors.push(`Card "${cardName}" not in your hand. Cannot offer it.`);
-        } else if (tradeConfig.item_types_only) {
-          const card = player.hand[cardIndex];
-          if (card.type !== 'item') {
-            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
-          }
-        }
-      }
-
-      // Validate requested cards exist in target's hand
-      const targetPlayer = state.players[tradeAction.target];
-      for (const cardName of tradeAction.request) {
-        const cardIndex = targetPlayer.hand.findIndex(c => c.name === cardName);
-        if (cardIndex === -1) {
-          errors.push(`Card "${cardName}" not in ${tradeAction.target}'s hand. Cannot request it.`);
-        } else if (tradeConfig.item_types_only) {
-          const card = targetPlayer.hand[cardIndex];
-          if (card.type !== 'item') {
-            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
-          }
-        }
-      }
-
-      // Check if gifts are allowed
-      if (tradeAction.request.length === 0 && !tradeConfig.allow_gifts) {
-        errors.push('One-sided trades (gifts) are not allowed. You must request something in return.');
-      }
-
-      if (tradeAction.offer.length === 0) {
-        errors.push('You must offer at least one card to trade.');
-      }
+      // Note: trade_offer validation moved to trading mechanic
       break;
     }
 
     case 'trade_respond': {
-      const respondAction = action as { offerId: string; accept: boolean };
-      const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
-      const trade = pendingTrades.find(t => t.id === respondAction.offerId);
-
-      if (!trade) {
-        errors.push(`Trade offer "${respondAction.offerId}" not found or has expired.`);
-        break;
-      }
-
-      if (trade.to !== playerId) {
-        errors.push(`This trade offer is not for you. It was sent to ${trade.to}.`);
-        break;
-      }
-
-      // If accepting, verify both players still have the cards
-      if (respondAction.accept) {
-        const fromPlayer = state.players[trade.from];
-        for (const cardName of trade.offer) {
-          if (!fromPlayer.hand.find(c => c.name === cardName)) {
-            errors.push(`Offerer no longer has card "${cardName}". Trade cannot be completed.`);
-          }
-        }
-        for (const cardName of trade.request) {
-          if (!player.hand.find(c => c.name === cardName)) {
-            errors.push(`You no longer have card "${cardName}". Trade cannot be completed.`);
-          }
-        }
-      }
+      // Note: trade_respond validation moved to trading mechanic
       break;
     }
   }
