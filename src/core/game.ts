@@ -2369,91 +2369,28 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
 
     case 'move': {
-      const moveAction = action as { target: string };
-
-      // For board games - check if target is valid state
-      if (state.config.board) {
-        const validStates = state.config.board.states || [];
-        if (!validStates.includes(moveAction.target)) {
-          errors.push(`Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`);
-        }
-      }
-
-      // Proposal 007: Grid movement validation
-      // For grid-based games - check if target is a placed location or starting tile
-      const gridConfig = state.config.grid as { type?: string; starting_tile?: string } | undefined;
-      if (gridConfig) {
-        const placedLocations = (state.shared.placedLocations as string[]) || [];
-        const startingTile = gridConfig.starting_tile || 'origin';
-        const validLocations = [startingTile, ...placedLocations];
-
-        if (!validLocations.includes(moveAction.target)) {
-          errors.push(`Invalid move target "${moveAction.target}". You can only move to placed locations. Valid: ${validLocations.join(', ')}`);
-        }
-      }
+      // Note: Move validation moved to grid-movement and board-state mechanics
       break;
     }
 
     case 'place_card': {
+      // Note: place_card validation moved to place-card mechanic
+      // Core still handles card-in-hand check
       const placeAction = action as PlaceCardAction;
       const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-
       if (cardIndex === -1) {
         errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-        break;
-      }
-
-      const card = player.hand[cardIndex];
-
-      // Check if card is placeable
-      if (!card.placeable) {
-        errors.push(`Card "${placeAction.card}" cannot be placed on states. Only cards marked as placeable can be used with place_card action.`);
-        break;
-      }
-
-      // Check if target state is valid
-      if (state.config.board) {
-        const validStates = state.config.board.states || [];
-        if (!validStates.includes(placeAction.targetState)) {
-          errors.push(`Invalid target state "${placeAction.targetState}". Valid states: ${validStates.join(', ')}`);
-        }
-      } else {
-        errors.push('place_card action requires a game with board states defined.');
       }
       break;
     }
 
     case 'place_location': {
+      // Note: place_location validation moved to place-location mechanic
+      // Core still handles card-in-hand check
       const placeAction = action as { card: string; adjacentTo: string };
       const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-
       if (cardIndex === -1) {
         errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-        break;
-      }
-
-      const card = player.hand[cardIndex];
-
-      // Check if card is a location type
-      if (card.type !== 'location') {
-        errors.push(`Card "${placeAction.card}" is not a location card. Only location cards can be placed on the grid.`);
-        break;
-      }
-
-      // Check if grid config exists
-      const gridConfig = state.config.engine_mechanics?.grid as { starting_tile?: string } | undefined;
-      if (!gridConfig) {
-        errors.push('place_location action requires a game with grid mechanics defined.');
-        break;
-      }
-
-      // Check if adjacentTo is a valid existing location
-      const placedLocations = (state.shared.placedLocations as string[]) || [];
-      const startingTile = gridConfig.starting_tile || 'origin';
-      const validLocations = [startingTile, ...placedLocations];
-
-      if (!validLocations.includes(placeAction.adjacentTo)) {
-        errors.push(`Invalid adjacentTo target "${placeAction.adjacentTo}". Must be an existing location: ${validLocations.join(', ')}`);
       }
       break;
     }

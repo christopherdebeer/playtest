@@ -12,6 +12,10 @@ import { handManagementMechanic } from './hand-management.js';
 import { cardTypeRulesMechanic } from './card-type-rules.js';
 import { takeThatMechanic } from './take-that.js';
 import { loseATurnMechanic } from './lose-a-turn.js';
+import { gridMovementMechanic } from './grid-movement.js';
+import { placeLocationMechanic } from './place-location.js';
+import { boardStateMechanic } from './board-state.js';
+import { placeCardMechanic } from './place-card.js';
 
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
@@ -20,6 +24,10 @@ mechanicRegistry.register(handManagementMechanic);
 mechanicRegistry.register(cardTypeRulesMechanic);
 mechanicRegistry.register(takeThatMechanic);
 mechanicRegistry.register(loseATurnMechanic);
+mechanicRegistry.register(gridMovementMechanic);
+mechanicRegistry.register(placeLocationMechanic);
+mechanicRegistry.register(boardStateMechanic);
+mechanicRegistry.register(placeCardMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges } from './registry.js';
