@@ -39,9 +39,9 @@ import {
   submitAnalysis,
   skipAnalysis,
   submitAnalysisMarkdown
-} from './game.js';
-import type { PendingAction, GameAction, ContestState, OperatorHint } from './types.js';
-import { waitForTurn } from './turns.js';
+} from '../core/game.js';
+import type { PendingAction, GameAction, ContestState, OperatorHint } from '../types/game.js';
+import { waitForTurn } from '../core/turns.js';
 import {
   getCardDefinition,
   parseRules,
@@ -54,9 +54,9 @@ import {
   getMechanicMarkdown,
   resolveMechanics,
   listCategories
-} from './rules.js';
-import { getRulesPath } from './game.js';
-import { validateRules, formatValidationResult } from './validate.js';
+} from '../core/rules.js';
+import { getRulesPath } from '../core/game.js';
+import { validateRules, formatValidationResult } from '../core/validate.js';
 
 const program = new Command();
 
@@ -2106,7 +2106,7 @@ program
   .option('--archive', 'Create backup archives before deletion', true)
   .option('--force', 'Actually delete files (required without --dry-run)')
   .action(async (options: { dryRun: boolean; keepTranscripts: boolean; archive: boolean; force?: boolean }) => {
-    const { cleanupLogs } = await import('./cleanup.js');
+    const { cleanupLogs } = await import('../core/cleanup.js');
 
     try {
       const gamesDir = join(process.cwd(), 'games');

@@ -2,7 +2,7 @@
 
 import { watch, existsSync, type FSWatcher } from 'fs';
 import { loadState, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
-import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from './types.js';
+import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from '../types/game.js';
 
 // Extended wait result with contest info
 export interface ExtendedWaitResult extends WaitResult {

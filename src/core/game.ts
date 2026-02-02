@@ -52,10 +52,10 @@ import type {
   PlayerPower,
   GameAnalysis,
   KeyMoment
-} from './types.js';
+} from '../types/game.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
-// Find project root (parent of engine directory)
+// Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const GAMES_DIR = join(PROJECT_ROOT, 'games');

@@ -15,7 +15,7 @@ import type {
   ExtractedSections,
   ExtractedSection,
   MechanicsIndex,
-} from './types.js';
+} from '../types/game.js';
 
 import {
   SECTION_DEFINITIONS,

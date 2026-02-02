@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from 'fs';
 import { parse as parseYAML } from 'yaml';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import type { GameConfig, DeckConfig, Card, MechanicDef, MechanicsIndex } from './types.js';
+import type { GameConfig, DeckConfig, Card, MechanicDef, MechanicsIndex } from '../types/game.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MECHANICS_DIR = join(__dirname, '../../mechanics');

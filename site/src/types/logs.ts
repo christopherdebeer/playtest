@@ -1,7 +1,7 @@
 /**
  * Log event types for the site log viewer.
  *
- * Core types are imported from @playtest/shared.
+ * Core types are imported from playtest.
  * Site-specific types (transcripts, summaries) are defined here.
  */
 
@@ -12,20 +12,20 @@ export type {
   LogEventType,
   LogEventDataSchemas,
   AnyLogEvent,
-} from '@playtest/shared';
+} from 'playtest';
 
 export {
   LOG_EVENT_TYPES,
   isEventType,
   validateActionEvent,
-} from '@playtest/shared';
+} from 'playtest';
 
 // Re-export TypedLogEvent with a different name to avoid confusion
 // The shared version is generic, we create specific event interfaces below
 import type {
   PlayerStateSnapshot,
   GameStateSnapshot,
-} from '@playtest/shared';
+} from 'playtest';
 
 // Base log event structure
 export interface BaseLogEvent {

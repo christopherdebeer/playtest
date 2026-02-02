@@ -1,5 +1,5 @@
 ---
-name: start-game
+name: playtest
 description: This skill should be used when the user asks to "start a playtest", "run a game", "test game rules", "launch multi-agent game simulation", or wants to initialize a game. Initializes and runs games with coordinated multi-agent architecture using TypeScript engine orchestration.
 argument-hint: <game-name> [num-players]
 allowed-tools: Read, Task, Bash, Glob
@@ -114,7 +114,7 @@ for (const player of spawnInstructions.players) {
 **Key Change**: Agents now call `register` as their first command to receive rules.
 ```
 
-## Agent Flow (New)
+## Agent Flow
 
 1. Agent spawns with `INSTANCE: {instanceId}` and `PLAYER_ID: {playerId}` (or `ROLE: gamemaster`)
 2. Agent calls `./playtest register {instanceId} -r {role} -a {agentId} [-p {playerId}]`
@@ -126,7 +126,7 @@ for (const player of spawnInstructions.players) {
 **Initialization:**
 - `./playtest init <game> -p <n>` - Create game instance, get spawn instructions
 
-**Registration (NEW - replaces rules command for agents):**
+**Registration:**
 - `./playtest register <instance> -r <role> -a <agentId> [-p <playerId>]` - Register and get rules
 
 **Instance Management:**
@@ -158,12 +158,3 @@ Multiple instances of the same game can run simultaneously:
 # Each agent uses its specific instance ID
 # No conflicts between games
 ```
-
-## Key Differences from v3
-
-| v3 | v4 |
-|----|-----|
-| Game name in commands | Instance ID in commands |
-| rules command for rules | register command returns rules |
-| Single instance per game | Concurrent instances supported |
-| GAME: {name} in prompts | INSTANCE: {id} in prompts |

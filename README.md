@@ -20,9 +20,7 @@ claude plugin add https://github.com/christopherdebeer/playtest
 ```
 
 This gives you access to:
-- `/start-game` - Initialize multi-agent playtesting
-- `/stop-game` - Emergency halt active sessions
-- `/view-results` - Analyze game logs
+- `/playtest` - Initialize multi-agent playtesting
 - Automatic agent definitions (gamemaster, player)
 - SubagentStart hooks for injecting game rules
 
@@ -35,13 +33,14 @@ git clone https://github.com/christopherdebeer/playtest
 cd playtest
 npm install
 npm run build
+npm run link .
 ```
 
 ## Quick Start
 
 ```bash
 # Initialize a game
-cd engine && ./playtest init markovs-chains --players 2
+./playtest init markovs-chains --players 2
 
 # Or use the skill
 /playtest markovs-chains 2
@@ -53,19 +52,27 @@ cd engine && ./playtest init markovs-chains --players 2
 playtest/
 ├── .claude-plugin/         # Plugin manifest (for Claude Code)
 │   └── plugin.json        # Plugin metadata and configuration
-├── agents/                # Game-agnostic agent definitions (symlink to .claude/agents/)
+├── src/                   # TypeScript engine source
+│   ├── cli/              # CLI entry point
+│   ├── core/             # Game engine logic
+│   └── types/            # Shared type definitions
+├── dist/                  # Built engine (TypeScript output)
+│   ├── cli/              # CLI executable
+│   ├── core/             # Engine modules
+│   └── types/            # Type declarations
+├── site/                  # React site for viewing game logs
+│   ├── src/              # Site source code
+│   └── dist/             # Built site (Vite output)
+├── agents/                # Game-agnostic agent definitions
 │   ├── gamemaster.md
 │   └── player.md
 ├── skills/                # Claude Code skills
-│   ├── start-game/
-│   ├── stop-game/
-│   └── view-results/
+│   └── playtest/
 ├── hooks/                 # SubagentStart hooks
 │   ├── player-start-hook.sh
 │   └── gamemaster-start-hook.sh
-├── engine/                # TypeScript game engine
-│   ├── src/              # Engine source code
-│   └── ARCHITECTURE.md   # v3 architecture docs
+├── docs/                  # Documentation
+│   └── ENGINE_ARCHITECTURE.md
 └── games/                # Game definitions
     ├── markovs-chains/   # Probability-based racing game
     │   └── RULES.md     # Game rules + structured config

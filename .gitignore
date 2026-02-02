@@ -36,8 +36,14 @@ games/*/logs-archive-*.tar.gz
 # BUILD OUTPUT
 # ===========================================
 
+# Top-level build output (consolidated monorepo)
+dist/
+
+# Legacy build directories (from old multi-package structure)
 engine/dist/
 site/dist/
+shared/dist/
+
 *.tsbuildinfo
 
 # Generated site data (build-time artifacts)
@@ -57,6 +63,3 @@ node_modules/
 Thumbs.db
 *~
 *.swp
-
-# Shared package build output
-shared/dist/
