@@ -1,0 +1,11 @@
+{"timestamp":"2026-02-02T10:07:22.823Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:07:34.365Z","event":"player_registered","player":"player-1","data":{"agentId":"agent1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:07:34.781Z","event":"player_registered","player":"player-2","data":{"agentId":"agent2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:07:35.185Z","event":"player_registered","player":"player-3","data":{"agentId":"agent3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:07:35.187Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:07:35.187Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:07:35.187Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:07:35.189Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:07:58.286Z","event":"tile_placed","player":"player-1","data":{"position":{"x":0,"y":1},"tile":"Forest Clearing","terrain":"forest"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:07:58.286Z","event":"card_removed_from_hand","player":"player-1","data":{"card":"Forest Clearing"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:08:14.427Z","event":"player_moved","player":"player-1","data":{"from":{"x":0,"y":0},"to":{"x":0,"y":1},"tile":"Forest Clearing"},"round":1,"turnNumber":1}
