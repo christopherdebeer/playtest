@@ -16,6 +16,7 @@ engine_mechanics:
 board:
   states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]
   start: "Start"
+  victory: "Victory"
   edges:
     # Layer 1: Start to intermediate states (55% - reduced from 65%)
     - { from: "Start", to: ["A", "B", "C"], probability: 0.55 }

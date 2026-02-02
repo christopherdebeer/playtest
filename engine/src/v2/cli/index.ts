@@ -93,8 +93,8 @@ function parseRulesFile(gameName: string): ParsedRules {
       slug: 'probability',
       config: {
         board: rawConfig.board,
-        startState: rawConfig.start_state ?? rawConfig.startState,
-        victoryState: rawConfig.victory_state ?? rawConfig.victoryState,
+        startState: rawConfig.board.start ?? rawConfig.start_state ?? rawConfig.startState,
+        victoryState: rawConfig.board.victory ?? rawConfig.victory_state ?? rawConfig.victoryState,
         allowBoosts: rawConfig.engine_mechanics?.card_boosts ?? true,
         maxBoost: rawConfig.max_boost ?? 0.95,
         minProbability: rawConfig.min_probability ?? 0.05,
@@ -164,6 +164,8 @@ export function createV2Commands(program: Command): void {
       }
 
       const state = result.value;
+      saveState(state);
+
       console.log(JSON.stringify({
         success: true,
         instanceId: state.instanceId,
@@ -202,6 +204,8 @@ export function createV2Commands(program: Command): void {
       }
 
       const updatedState = result.value;
+      saveState(updatedState);
+
       console.log(JSON.stringify({
         success: true,
         status: updatedState.status,
@@ -309,6 +313,8 @@ export function createV2Commands(program: Command): void {
       }
 
       const updatedState = result.value;
+      saveState(updatedState);
+
       const view = engine.getPlayerView(updatedState, options.player);
 
       console.log(JSON.stringify({
