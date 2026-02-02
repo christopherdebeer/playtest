@@ -48,6 +48,7 @@ shared/dist/
 
 # Generated site data (build-time artifacts)
 site/src/data/*.json
+site/public/data/
 
 # ===========================================
 # DEPENDENCIES

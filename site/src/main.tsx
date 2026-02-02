@@ -8,11 +8,13 @@ import LogsPage from './pages/LogsPage'
 import LogDetailPage from './pages/LogDetailPage'
 import DocsPage from './pages/DocsPage'
 import DocDetailPage from './pages/DocDetailPage'
+import ScrollToTop from './components/ScrollToTop'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/games/:gameId" element={<GamePage />} />

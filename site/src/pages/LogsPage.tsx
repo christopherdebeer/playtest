@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { LogsData, GameLogSummary } from '../types/logs'
-import logsDataRaw from '../data/logs.json'
+import { fetchLogsIndex } from '../utils/logData'
 import './LogsPage.css'
-
-const logsData = logsDataRaw as unknown as LogsData
 
 function formatDuration(seconds: number | null): string {
   if (seconds === null) return 'N/A'
@@ -34,14 +32,14 @@ function getOutcomeClass(outcome: string): string {
   }
 }
 
-function LogCard({ log }: { log: GameLogSummary }) {
+function LogCard({ log }: { log: GameLogSummary & { hasAnalysis?: boolean } }) {
   return (
     <Link to={`/logs/${log.gameId}`} className="log-card">
       <div className="log-card-header">
         <h3>{log.gameName}</h3>
         <div className="log-badges">
-          {log.analysis && (
-            <span className="analysis-badge" title={`Analysis available (${log.analysis.version})`}>
+          {log.hasAnalysis && (
+            <span className="analysis-badge" title="Analysis available">
               Analysis
             </span>
           )}
@@ -95,6 +93,22 @@ function LogsPage() {
   const [gameFilter, setGameFilter] = useState<string>(initialGameFilter)
   const [outcomeFilter, setOutcomeFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'date' | 'turns' | 'events'>('date')
+  const [logsData, setLogsData] = useState<LogsData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load logs index on mount
+  useEffect(() => {
+    fetchLogsIndex()
+      .then(data => {
+        setLogsData(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [])
 
   // Update filter if URL param changes
   useEffect(() => {
@@ -103,6 +117,26 @@ function LogsPage() {
       setGameFilter(gameParam)
     }
   }, [searchParams])
+
+  if (loading) {
+    return (
+      <div className="logs-page">
+        <div className="container">
+          <p>Loading logs...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !logsData) {
+    return (
+      <div className="logs-page">
+        <div className="container">
+          <p>Error loading logs: {error || 'Unknown error'}</p>
+        </div>
+      </div>
+    )
+  }
 
   const games = Object.keys(logsData.games)
   const outcomes = ['completed', 'ended', 'cancelled', 'in_progress', 'unknown']

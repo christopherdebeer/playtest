@@ -7,6 +7,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const GAMES_DIR = join(__dirname, '..', '..', 'games')
 const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'logs.json')
+const PUBLIC_DATA_DIR = join(__dirname, '..', 'public', 'data', 'logs')
+const INDEX_FILE = join(PUBLIC_DATA_DIR, 'index.json')
 
 /**
  * Transcript naming conventions (for backup/archival):
@@ -402,9 +404,72 @@ async function main() {
     logs: allLogs,
   }
 
-  // Write output
+  // Write legacy output (keep for backwards compatibility)
   await writeFile(OUTPUT_FILE, JSON.stringify(output, null, 2))
   console.log(`Generated ${OUTPUT_FILE} with ${allLogs.length} game logs`)
+
+  // Generate split files for lazy loading
+  console.log('\nGenerating split log files for lazy loading...')
+
+  // Ensure public data directory exists
+  if (!existsSync(PUBLIC_DATA_DIR)) {
+    await mkdir(PUBLIC_DATA_DIR, { recursive: true })
+  }
+
+  // Generate index file (summaries without full events/transcripts/analysis content)
+  const logsIndex = allLogs.map(log => {
+    const { events, transcripts, analysis, ...summary } = log
+    return {
+      ...summary,
+      hasAnalysis: !!analysis,
+      hasTranscripts: transcripts && transcripts.length > 0,
+      transcriptCount: transcripts?.length || 0,
+    }
+  })
+
+  const indexOutput = {
+    generatedAt: new Date().toISOString(),
+    games: gameStats,
+    logs: logsIndex,
+  }
+
+  await writeFile(INDEX_FILE, JSON.stringify(indexOutput, null, 2))
+  console.log(`Generated ${INDEX_FILE} with ${logsIndex.length} log summaries`)
+
+  // Generate individual log detail files
+  for (const log of allLogs) {
+    const logDetailFile = join(PUBLIC_DATA_DIR, `${log.gameId}.json`)
+
+    // Separate transcripts and analysis for separate loading
+    const { transcripts, analysis, ...logWithoutLargeData } = log
+
+    // Create detail file with events but without transcript/analysis content
+    const logDetail = {
+      ...logWithoutLargeData,
+      hasAnalysis: !!analysis,
+      hasTranscripts: transcripts && transcripts.length > 0,
+      analysisFilename: analysis ? `${log.gameId}-analysis.json` : null,
+      transcriptsFilename: transcripts && transcripts.length > 0 ? `${log.gameId}-transcripts.json` : null,
+    }
+
+    await writeFile(logDetailFile, JSON.stringify(logDetail, null, 2))
+
+    // Write analysis separately if it exists
+    if (analysis) {
+      const analysisFile = join(PUBLIC_DATA_DIR, `${log.gameId}-analysis.json`)
+      await writeFile(analysisFile, JSON.stringify(analysis, null, 2))
+    }
+
+    // Write transcripts separately if they exist
+    if (transcripts && transcripts.length > 0) {
+      const transcriptsFile = join(PUBLIC_DATA_DIR, `${log.gameId}-transcripts.json`)
+      await writeFile(transcriptsFile, JSON.stringify(transcripts, null, 2))
+    }
+
+    console.log(`  Generated details for ${log.gameId}`)
+  }
+
+  console.log(`\nGenerated ${allLogs.length} individual log files in ${PUBLIC_DATA_DIR}`)
 }
 
 main().catch(console.error)

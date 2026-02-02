@@ -57,12 +57,102 @@
   border-color: var(--text-secondary);
 }
 
+.mobile-menu-button {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.mobile-menu-button:hover {
+  color: var(--accent);
+}
+
+.mobile-menu-backdrop {
+  display: none;
+}
+
+.mobile-menu {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .nav {
-    gap: 1rem;
+    display: none;
   }
 
-  .nav a:not(.github-link) {
-    display: none;
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .mobile-menu-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+  }
+
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 80%;
+    max-width: 300px;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+    z-index: 201;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-menu-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .mobile-menu-close:hover {
+    color: var(--text-primary);
+  }
+
+  .mobile-menu a {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+  }
+
+  .mobile-menu a:hover {
+    color: var(--text-primary);
   }
 }
