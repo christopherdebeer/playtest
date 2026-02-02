@@ -1,0 +1,14 @@
+{"timestamp":"2026-02-02T09:41:48.999Z","event":"game_created","data":{"gameName":"uno","playerCount":2,"mechanics":["cards","card-matching"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:41:58.988Z","event":"player_registered","player":"player-1","data":{"agentId":"agent1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:41:59.428Z","event":"player_registered","player":"player-2","data":{"agentId":"agent2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:41:59.429Z","event":"cards_dealt","player":"player-1","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:41:59.429Z","event":"cards_dealt","player":"player-2","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:41:59.430Z","event":"game_started","data":{"turnOrder":["player-1","player-2"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:42:18.853Z","event":"card_matched","player":"player-1","data":{"card":"Red 9","color":"Red","value":9},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:42:18.853Z","event":"card_moved_to_discard","player":"player-1","data":{"card":"Red 9"},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:42:52.084Z","event":"card_matched","player":"player-2","data":{"card":"Blue 9","color":"Blue","value":9},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T09:42:52.084Z","event":"card_moved_to_discard","player":"player-2","data":{"card":"Blue 9"},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T09:43:22.639Z","event":"draw_penalty","player":"player-1","data":{"count":4},"round":2,"turnNumber":3}
+{"timestamp":"2026-02-02T09:43:22.639Z","event":"card_matched","player":"player-1","data":{"card":"Wild Draw Four","value":4,"declaredColor":"Green"},"round":2,"turnNumber":3}
+{"timestamp":"2026-02-02T09:43:22.639Z","event":"card_moved_to_discard","player":"player-1","data":{"card":"Wild Draw Four"},"round":2,"turnNumber":3}
+{"timestamp":"2026-02-02T09:43:44.947Z","event":"drew_for_match","player":"player-2","data":{"count":4},"round":2,"turnNumber":4}

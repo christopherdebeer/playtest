@@ -1,0 +1,8 @@
+{"timestamp":"2026-02-02T09:00:11.667Z","event":"game_created","data":{"gameName":"markovs-chains","playerCount":2,"mechanics":["cards","probability"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:00:21.534Z","event":"player_registered","player":"player-1","data":{"agentId":"agent1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:00:30.781Z","event":"player_registered","player":"player-2","data":{"agentId":"agent2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:00:30.782Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:00:30.782Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:00:30.783Z","event":"game_started","data":{"turnOrder":["player-1","player-2"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:00:57.146Z","event":"probability_roll","player":"player-1","data":{"from":"Start","to":"A","baseProbability":0.55,"effectiveProbability":0.55,"success":true},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:00:57.146Z","event":"state_transition","player":"player-1","data":{"from":"Start","to":"A","triggeredEffects":0},"round":1,"turnNumber":1}

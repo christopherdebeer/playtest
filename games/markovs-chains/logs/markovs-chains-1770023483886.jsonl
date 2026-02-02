@@ -1,0 +1,21 @@
+{"timestamp":"2026-02-02T09:11:23.887Z","event":"game_created","data":{"gameName":"markovs-chains","playerCount":2,"mechanics":["cards","probability"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:11:47.948Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:11:48.378Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:11:48.380Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:11:48.380Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:11:48.381Z","event":"game_started","data":{"turnOrder":["player-1","player-2"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:11:50.520Z","event":"probability_roll","player":"player-1","data":{"from":"Start","to":"A","baseProbability":0.55,"effectiveProbability":0.55,"success":true},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:11:50.520Z","event":"state_transition","player":"player-1","data":{"from":"Start","to":"A","triggeredEffects":0},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:11:52.640Z","event":"probability_roll","player":"player-2","data":{"from":"Start","to":"A","baseProbability":0.55,"effectiveProbability":0.55,"success":true},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T09:11:52.640Z","event":"state_transition","player":"player-2","data":{"from":"Start","to":"A","triggeredEffects":0},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T09:11:54.844Z","event":"probability_roll","player":"player-1","data":{"from":"A","to":"Checkpoint-X","baseProbability":0.4,"effectiveProbability":0.4,"success":true},"round":2,"turnNumber":3}
+{"timestamp":"2026-02-02T09:11:54.844Z","event":"state_transition","player":"player-1","data":{"from":"A","to":"Checkpoint-X","triggeredEffects":0},"round":2,"turnNumber":3}
+{"timestamp":"2026-02-02T09:11:56.847Z","event":"probability_roll","player":"player-2","data":{"from":"A","to":"Checkpoint-X","baseProbability":0.4,"effectiveProbability":0.4,"success":false},"round":2,"turnNumber":4}
+{"timestamp":"2026-02-02T09:11:56.847Z","event":"move_failed","player":"player-2","data":{"from":"A","attemptedTarget":"Checkpoint-X"},"round":2,"turnNumber":4}
+{"timestamp":"2026-02-02T09:11:59.029Z","event":"probability_roll","player":"player-1","data":{"from":"Checkpoint-X","to":"Victory","baseProbability":0.25,"effectiveProbability":0.25,"success":false},"round":3,"turnNumber":5}
+{"timestamp":"2026-02-02T09:11:59.029Z","event":"move_failed","player":"player-1","data":{"from":"Checkpoint-X","attemptedTarget":"Victory"},"round":3,"turnNumber":5}
+{"timestamp":"2026-02-02T09:12:01.107Z","event":"probability_roll","player":"player-2","data":{"from":"A","to":"Checkpoint-X","baseProbability":0.4,"effectiveProbability":0.4,"success":true},"round":3,"turnNumber":6}
+{"timestamp":"2026-02-02T09:12:01.107Z","event":"state_transition","player":"player-2","data":{"from":"A","to":"Checkpoint-X","triggeredEffects":0},"round":3,"turnNumber":6}
+{"timestamp":"2026-02-02T09:12:03.065Z","event":"probability_roll","player":"player-1","data":{"from":"Checkpoint-X","to":"Victory","baseProbability":0.25,"effectiveProbability":0.25,"success":true},"round":4,"turnNumber":7}
+{"timestamp":"2026-02-02T09:12:03.065Z","event":"state_transition","player":"player-1","data":{"from":"Checkpoint-X","to":"Victory","triggeredEffects":0},"round":4,"turnNumber":7}
+{"timestamp":"2026-02-02T09:12:03.068Z","event":"game_ended","data":{"winner":"player-1","reason":"player-1 reached victory state \"Victory\""},"round":4,"turnNumber":7}

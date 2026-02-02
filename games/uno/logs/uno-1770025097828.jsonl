@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-02T09:38:17.830Z","event":"game_created","data":{"gameName":"uno","playerCount":2,"mechanics":["cards","card-matching"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:38:28.554Z","event":"player_registered","player":"player-1","data":{"agentId":"test-agent-1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:38:34.173Z","event":"player_registered","player":"player-2","data":{"agentId":"test-agent-2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:38:34.174Z","event":"cards_dealt","player":"player-1","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:38:34.174Z","event":"cards_dealt","player":"player-2","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:38:34.175Z","event":"game_started","data":{"turnOrder":["player-1","player-2"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:39:22.269Z","event":"card_matched","player":"player-1","data":{"card":"Blue 7","color":"Blue","value":7},"round":1,"turnNumber":1}

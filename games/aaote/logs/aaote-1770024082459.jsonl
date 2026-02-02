@@ -1,0 +1,13 @@
+{"timestamp":"2026-02-02T09:21:22.459Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:21:34.281Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:21:34.659Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:21:35.051Z","event":"player_registered","player":"player-3","data":{"agentId":"a3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:21:35.053Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:21:35.053Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:21:35.053Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:21:35.055Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:22:51.531Z","event":"tile_placed","player":"player-1","data":{"position":{"x":0,"y":1}},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:23:35.087Z","event":"player_moved","player":"player-1","data":{"from":{"x":0,"y":0},"to":{"x":0,"y":1}},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:24:21.268Z","event":"trade_proposed","player":"player-1","data":{"tradeId":"trade-1770024261269-4gtz1x3z2","target":"player-2","offeredCount":1,"requestedCount":0},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:25:23.513Z","event":"turn_ended","player":"player-1","data":{"pointsRemaining":3,"newPoints":3},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:25:55.137Z","event":"trade_completed","data":{"tradeId":"trade-1770024261269-4gtz1x3z2","initiator":"player-1","target":"player-2","offeredItems":["card-5"],"requestedItems":[]},"round":1,"turnNumber":2}

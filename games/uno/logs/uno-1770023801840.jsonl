@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-02T09:16:41.841Z","event":"game_created","data":{"gameName":"uno","playerCount":2,"mechanics":["cards"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:17:42.410Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:17:53.108Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T09:17:53.110Z","event":"cards_dealt","player":"player-1","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:17:53.110Z","event":"cards_dealt","player":"player-2","data":{"count":7},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:17:53.110Z","event":"game_started","data":{"turnOrder":["player-1","player-2"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:18:23.488Z","event":"card_played","player":"player-1","data":{"card":"Green 2","effect":{"type":"none","color":"Green","value":2}},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T09:19:13.498Z","event":"card_played","player":"player-2","data":{"card":"Green 7","effect":{"type":"none","color":"Green","value":7}},"round":1,"turnNumber":2}
+{"timestamp":"2026-02-02T09:19:48.503Z","event":"card_played","player":"player-1","data":{"card":"Red 8","effect":{"type":"none","color":"Red","value":8}},"round":2,"turnNumber":3}
