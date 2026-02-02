@@ -57,6 +57,7 @@ import {
 } from './rules.js';
 import { getRulesPath } from './game.js';
 import { validateRules, formatValidationResult } from './validate.js';
+import { createV2Commands } from './v2/cli/index.js';
 
 const program = new Command();
 
@@ -2424,5 +2425,8 @@ program
       }
     }
   });
+
+// Register v2 engine commands
+createV2Commands(program);
 
 program.parse();
