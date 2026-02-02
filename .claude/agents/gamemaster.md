@@ -4,6 +4,7 @@ description: Game-agnostic gamemaster agent for rule interpretation and action v
 model: sonnet
 tools: Bash, Read
 disallowedTools: Write, Edit, Glob, Grep, WebFetch, WebSearch, Task
+color: red
 ---
 
 # Gamemaster Agent - Contest-Based Adjudication

@@ -4,12 +4,9 @@
   },
   "permissions": {
     "allow": [
-      "Skill(start-game *)",
-      "Skill(view-results *)"
+      "Skill(playtest *)"
     ],
-    "deny": [
-      "Skill(stop-game *)"
-    ]
+    "deny": []
   },
   "hooks": {
     "SessionStart": [

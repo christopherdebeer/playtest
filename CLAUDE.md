@@ -4,13 +4,13 @@ Game-agnostic agentic playtesting framework. Uses parallel Claude agents (gamema
 
 ## Setup
 
-Before using `./playtest`, ensure engine is built:
+Before using `./playtest` cli or Skill, ensure engine is built:
 ```
-npm install && npm run build --prefix engine
+npm install && npm run build
 ```
 
-## Quick Start
+## Quick Start Skill
 
 ```
-/start-game markovs-chains 2
+/playtest markovs-chains 2 # uses skill
 ```
