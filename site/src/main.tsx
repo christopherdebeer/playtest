@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import App from './App'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
 import GamePage from './pages/GamePage'
 import MechanicsPage from './pages/MechanicsPage'
 import LogsPage from './pages/LogsPage'
@@ -16,13 +17,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/games/:gameId" element={<GamePage />} />
-        <Route path="/mechanics" element={<MechanicsPage />} />
-        <Route path="/logs" element={<LogsPage />} />
-        <Route path="/logs/:logId" element={<LogDetailPage />} />
-        <Route path="/docs" element={<DocsPage />} />
-        <Route path="/docs/:docSlug" element={<DocDetailPage />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/games/:gameId" element={<GamePage />} />
+          <Route path="/mechanics" element={<MechanicsPage />} />
+          <Route path="/logs" element={<LogsPage />} />
+          <Route path="/logs/:logId" element={<LogDetailPage />} />
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/docs/:docSlug" element={<DocDetailPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,
