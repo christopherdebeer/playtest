@@ -258,13 +258,83 @@ program
 program
   .command('list [game]')
   .description('List active game instances (optionally for a specific game)')
-  .action(async (game?: string) => {
+  .option('--status <status>', 'Filter by status (in_progress, completed, waiting_for_players)')
+  .option('--since <time>', 'Show instances created since (e.g., "1h", "30m", "2d")')
+  .option('--updated-within <time>', 'Show instances updated within (e.g., "5m", "1h")')
+  .option('--stalled', 'Show only stalled games (no recent activity)')
+  .option('--threshold <time>', 'Stall threshold (default: "5m")', '5m')
+  .option('--sort-by <field>', 'Sort by: turns, updated, created (default: updated)', 'updated')
+  .option('--format <format>', 'Output format: json, table, compact (default: json)', 'json')
+  .action(async (game?: string, options?: {
+    status?: string;
+    since?: string;
+    updatedWithin?: string;
+    stalled?: boolean;
+    threshold?: string;
+    sortBy?: string;
+    format?: string;
+  }) => {
     try {
       const fs = await import('fs');
       const path = await import('path');
       const GAMES_DIR = path.join(process.cwd(), 'games');
 
-      const results: { gameName: string; instanceId: string; status: string; round: number; turnNumber: number }[] = [];
+      interface GameInstance {
+        gameName: string;
+        instanceId: string;
+        status: string;
+        round: number;
+        turnNumber: number;
+        created?: number;
+        lastUpdated?: number;
+        stalled?: boolean;
+        stalledMinutes?: number;
+      }
+
+      // Parse time string to milliseconds
+      const parseTime = (timeStr: string): number => {
+        const match = timeStr.match(/^(\d+)([smhd])$/);
+        if (!match) throw new Error(`Invalid time format: ${timeStr}`);
+        const [, value, unit] = match;
+        const multipliers: Record<string, number> = {
+          s: 1000,
+          m: 60 * 1000,
+          h: 60 * 60 * 1000,
+          d: 24 * 60 * 60 * 1000
+        };
+        return parseInt(value) * multipliers[unit];
+      };
+
+      // Get last update time from log file
+      const getLastUpdate = (gameName: string, instanceId: string): number | undefined => {
+        try {
+          const logPath = path.join(GAMES_DIR, gameName, 'logs', `${instanceId}.jsonl`);
+          if (!fs.existsSync(logPath)) return undefined;
+
+          const content = fs.readFileSync(logPath, 'utf-8');
+          const lines = content.trim().split('\n').filter(l => l.trim());
+          if (lines.length === 0) return undefined;
+
+          const lastLine = lines[lines.length - 1];
+          const lastEvent = JSON.parse(lastLine);
+          return new Date(lastEvent.timestamp).getTime();
+        } catch {
+          return undefined;
+        }
+      };
+
+      // Get creation time from state file
+      const getCreationTime = (instanceId: string): number | undefined => {
+        try {
+          const statePath = getStatePath(instanceId);
+          const stats = fs.statSync(statePath);
+          return stats.birthtimeMs;
+        } catch {
+          return undefined;
+        }
+      };
+
+      const results: GameInstance[] = [];
 
       // If game specified, list instances for that game only
       const gamesToCheck = game ? [game] : fs.readdirSync(GAMES_DIR).filter((f: string) => {
@@ -280,12 +350,21 @@ program
         for (const instanceId of instances) {
           try {
             const state = loadState(instanceId);
+            const lastUpdated = getLastUpdate(gameName, instanceId);
+            const created = getCreationTime(instanceId);
+            const now = Date.now();
+            const stalledMinutes = lastUpdated ? (now - lastUpdated) / (60 * 1000) : undefined;
+
             results.push({
               gameName: state.gameName,
               instanceId: state.gameId,
               status: state.status,
               round: state.round,
-              turnNumber: state.turnNumber
+              turnNumber: state.turnNumber,
+              created,
+              lastUpdated,
+              stalled: stalledMinutes !== undefined && stalledMinutes > parseTime(options?.threshold || '5m') / (60 * 1000),
+              stalledMinutes
             });
           } catch {
             // Skip if can't load state
@@ -293,11 +372,90 @@ program
         }
       }
 
-      console.log(JSON.stringify({
-        success: true,
-        instances: results,
-        count: results.length
-      }));
+      // Apply filters
+      let filtered = results;
+
+      if (options?.status) {
+        filtered = filtered.filter(i => i.status === options.status);
+      }
+
+      if (options?.since) {
+        const sinceMs = Date.now() - parseTime(options.since);
+        filtered = filtered.filter(i => i.created && i.created >= sinceMs);
+      }
+
+      if (options?.updatedWithin) {
+        const withinMs = Date.now() - parseTime(options.updatedWithin);
+        filtered = filtered.filter(i => i.lastUpdated && i.lastUpdated >= withinMs);
+      }
+
+      if (options?.stalled) {
+        filtered = filtered.filter(i => i.stalled);
+      }
+
+      // Sort results
+      const sortBy = options?.sortBy || 'updated';
+      filtered.sort((a, b) => {
+        if (sortBy === 'turns') {
+          return b.turnNumber - a.turnNumber;
+        } else if (sortBy === 'created') {
+          return (b.created || 0) - (a.created || 0);
+        } else {
+          return (b.lastUpdated || 0) - (a.lastUpdated || 0);
+        }
+      });
+
+      // Format output
+      const format = options?.format || 'json';
+
+      if (format === 'json') {
+        console.log(JSON.stringify({
+          success: true,
+          instances: filtered,
+          count: filtered.length
+        }, null, 2));
+      } else if (format === 'table') {
+        // Table format
+        console.log('\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐');
+        console.log('│ Game Instances                                                                              │');
+        console.log('├──────────────────┬──────────────────────────────────┬─────────────┬────────┬────────┬────────┤');
+        console.log('│ Game             │ Instance ID                      │ Status      │ Round  │ Turns  │ Updated│');
+        console.log('├──────────────────┼──────────────────────────────────┼─────────────┼────────┼────────┼────────┤');
+
+        for (const inst of filtered) {
+          const updatedAgo = inst.lastUpdated
+            ? formatTimeSince(Date.now() - inst.lastUpdated)
+            : 'unknown';
+          const stallFlag = inst.stalled ? ' ⚠️' : '';
+          console.log(`│ ${inst.gameName.padEnd(16)} │ ${inst.instanceId.padEnd(32)} │ ${inst.status.padEnd(11)} │ ${String(inst.round).padStart(6)} │ ${String(inst.turnNumber).padStart(6)} │ ${(updatedAgo + stallFlag).padEnd(6)} │`);
+        }
+
+        console.log('└──────────────────┴──────────────────────────────────┴─────────────┴────────┴────────┴────────┘');
+        console.log(`\nTotal: ${filtered.length} instance(s)\n`);
+      } else if (format === 'compact') {
+        // Compact format
+        for (const inst of filtered) {
+          const updatedAgo = inst.lastUpdated
+            ? formatTimeSince(Date.now() - inst.lastUpdated)
+            : '?';
+          const stallFlag = inst.stalled ? ' [STALLED]' : '';
+          console.log(`${inst.instanceId} | ${inst.status} | T${inst.turnNumber} | ${updatedAgo} ago${stallFlag}`);
+        }
+      }
+
+      // Helper to format time since
+      function formatTimeSince(ms: number): string {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days}d`;
+        if (hours > 0) return `${hours}h`;
+        if (minutes > 0) return `${minutes}m`;
+        return `${seconds}s`;
+      }
+
     } catch (e) {
       console.log(JSON.stringify({
         success: false,
@@ -2083,9 +2241,20 @@ program
         }
 
         // Block stop if game is still in progress
-        const message = agentType === 'gamemaster'
-          ? 'Game not finished. Continue managing the game until completion.'
-          : 'Game still in progress. Wait for your turn or for the game to end.';
+        let message: string;
+        if (agentType === 'gamemaster') {
+          message = 'Game not finished. Continue managing the game until completion.';
+        } else {
+          // For players, provide specific guidance based on whose turn it is
+          const playerId = (inputJson as { player_id?: string }).player_id;
+          const isMyTurn = playerId && state.currentPlayer === playerId;
+
+          if (isMyTurn) {
+            message = `It is your turn (turn ${state.turnNumber}). Use './playtest wait ${instanceId} -p ${playerId}' to check your turn, then take your action with './playtest act'.`;
+          } else {
+            message = `Waiting for ${state.currentPlayer}'s turn (turn ${state.turnNumber}). Use './playtest wait ${instanceId} -p ${playerId}' to block until your turn.`;
+          }
+        }
 
         console.error(message);
         process.exit(2);

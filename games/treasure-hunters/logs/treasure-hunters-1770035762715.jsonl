@@ -1,0 +1,100 @@
+{"timestamp":"2026-02-02T12:36:02.718Z","event":"game_init","data":{"gameId":"treasure-hunters-1770035762715","playerCount":2,"config":"Treasure Hunters"}}
+{"timestamp":"2026-02-02T12:36:24.450Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-02T12:36:38.789Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Diamond Goblet","effect":{"type":"treasure","color":"White","value":4}}}
+{"timestamp":"2026-02-02T12:36:38.795Z","event":"income_generated","round":1,"turnNumber":2,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:36:44.469Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Diamond Crown","effect":{"type":"treasure","color":"White","value":5}}}
+{"timestamp":"2026-02-02T12:36:44.469Z","event":"income_generated","round":2,"turnNumber":3,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:36:52.737Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:36:52.738Z","event":"income_generated","round":2,"turnNumber":4,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:01.802Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:01.802Z","event":"income_generated","round":3,"turnNumber":5,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:09.518Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:09.518Z","event":"income_generated","round":3,"turnNumber":6,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:14.432Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:14.433Z","event":"income_generated","round":4,"turnNumber":7,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:23.607Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:23.608Z","event":"income_generated","round":4,"turnNumber":8,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:29.985Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:29.985Z","event":"income_generated","round":5,"turnNumber":9,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:35.099Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-02T12:37:35.100Z","event":"income_generated","round":5,"turnNumber":10,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:40.430Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Ruby Crown","effect":{"type":"treasure","color":"Red","value":5}}}
+{"timestamp":"2026-02-02T12:37:40.430Z","event":"income_generated","round":6,"turnNumber":11,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:45.830Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"play_card","card":"Ruby Goblet","effect":{"type":"treasure","color":"Red","value":4}}}
+{"timestamp":"2026-02-02T12:37:45.830Z","event":"income_generated","round":6,"turnNumber":12,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:50.470Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"play_card","card":"Ruby Ring","effect":{"type":"treasure","color":"Red","value":3}}}
+{"timestamp":"2026-02-02T12:37:50.472Z","event":"income_generated","round":7,"turnNumber":13,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:37:56.577Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:37:56.578Z","event":"income_generated","round":7,"turnNumber":14,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:01.380Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:01.381Z","event":"income_generated","round":8,"turnNumber":15,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:06.603Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"play_card","card":"Ruby Crown","effect":{"type":"treasure","color":"Red","value":5}}}
+{"timestamp":"2026-02-02T12:38:06.604Z","event":"income_generated","round":8,"turnNumber":16,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:14.576Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:14.577Z","event":"income_generated","round":9,"turnNumber":17,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:18.954Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:18.955Z","event":"income_generated","round":9,"turnNumber":18,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:24.630Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"play_card","card":"Ruby Goblet","effect":{"type":"treasure","color":"Red","value":4}}}
+{"timestamp":"2026-02-02T12:38:24.630Z","event":"income_generated","round":10,"turnNumber":19,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:30.705Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:30.706Z","event":"income_generated","round":10,"turnNumber":20,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:40.639Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:40.640Z","event":"income_generated","round":11,"turnNumber":21,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:40.734Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:40.735Z","event":"income_generated","round":11,"turnNumber":22,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:54.614Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:54.617Z","event":"income_generated","round":12,"turnNumber":23,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:38:54.702Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:38:54.702Z","event":"income_generated","round":12,"turnNumber":24,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:09.934Z","event":"set_collected","round":12,"turnNumber":24,"player":"player-2","data":{"setType":"Type Set","cards":["Sapphire Goblet","Emerald Goblet","Diamond Goblet"],"points":15,"totalSets":1}}
+{"timestamp":"2026-02-02T12:39:09.935Z","event":"income_generated","round":13,"turnNumber":25,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:10.031Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:10.033Z","event":"income_generated","round":13,"turnNumber":26,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:18.231Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:18.232Z","event":"income_generated","round":14,"turnNumber":27,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:18.314Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:18.315Z","event":"income_generated","round":14,"turnNumber":28,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:23.404Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"play_card","card":"Ruby Ring","effect":{"type":"treasure","color":"Red","value":3}}}
+{"timestamp":"2026-02-02T12:39:23.404Z","event":"income_generated","round":15,"turnNumber":29,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:23.490Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:23.490Z","event":"income_generated","round":15,"turnNumber":30,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:33.189Z","event":"action_executed","round":15,"turnNumber":30,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:33.190Z","event":"income_generated","round":16,"turnNumber":31,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:33.296Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:33.296Z","event":"income_generated","round":16,"turnNumber":32,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:45.343Z","event":"action_executed","round":16,"turnNumber":32,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:45.344Z","event":"income_generated","round":17,"turnNumber":33,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:39:45.437Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:39:45.438Z","event":"income_generated","round":17,"turnNumber":34,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:11.383Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:11.384Z","event":"income_generated","round":18,"turnNumber":35,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:11.470Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:11.470Z","event":"income_generated","round":18,"turnNumber":36,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:21.374Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:21.374Z","event":"income_generated","round":19,"turnNumber":37,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:21.476Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:21.477Z","event":"income_generated","round":19,"turnNumber":38,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:33.596Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:33.597Z","event":"income_generated","round":20,"turnNumber":39,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:33.690Z","event":"action_executed","round":20,"turnNumber":39,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:33.691Z","event":"income_generated","round":20,"turnNumber":40,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:44.727Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"play_card","card":"Ruby Ring","effect":{"type":"treasure","color":"Red","value":3}}}
+{"timestamp":"2026-02-02T12:40:44.728Z","event":"income_generated","round":21,"turnNumber":41,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:50.975Z","event":"set_collected","round":21,"turnNumber":41,"player":"player-1","data":{"setType":"Color Set","cards":["Sapphire Goblet","Sapphire Ring","Sapphire Crown"],"points":15,"totalSets":1}}
+{"timestamp":"2026-02-02T12:40:50.976Z","event":"income_generated","round":21,"turnNumber":42,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:40:56.807Z","event":"action_executed","round":21,"turnNumber":42,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:40:56.807Z","event":"income_generated","round":22,"turnNumber":43,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:04.382Z","event":"set_collected","round":22,"turnNumber":43,"player":"player-1","data":{"setType":"Color Set","cards":["Emerald Ring","Emerald Crown","Emerald Goblet"],"points":15,"totalSets":2}}
+{"timestamp":"2026-02-02T12:41:04.383Z","event":"income_generated","round":22,"turnNumber":44,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:10.534Z","event":"action_executed","round":22,"turnNumber":44,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:41:10.534Z","event":"income_generated","round":23,"turnNumber":45,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:18.480Z","event":"set_collected","round":23,"turnNumber":45,"player":"player-1","data":{"setType":"Type Set","cards":["Ruby Ring","Diamond Ring","Sapphire Ring"],"points":15,"totalSets":3}}
+{"timestamp":"2026-02-02T12:41:18.481Z","event":"income_generated","round":23,"turnNumber":46,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:33.323Z","event":"action_executed","round":23,"turnNumber":46,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:41:33.324Z","event":"income_generated","round":24,"turnNumber":47,"player":"player-1","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:39.467Z","event":"action_executed","round":24,"turnNumber":47,"player":"player-1","data":{"type":"play_card","card":"Ruby Goblet","effect":{"type":"treasure","color":"Red","value":4}}}
+{"timestamp":"2026-02-02T12:41:39.468Z","event":"income_generated","round":24,"turnNumber":48,"player":"player-2","data":{"income":{"gold":2}}}
+{"timestamp":"2026-02-02T12:41:53.180Z","event":"resignation_submitted","round":24,"turnNumber":48,"player":"player-2","data":{"reason":"Player-1 has already reached 60 points and mathematically won. Cannot win from this position."}}
+{"timestamp":"2026-02-02T12:42:26.418Z","event":"game_end","round":24,"turnNumber":48,"data":{"winner":"player-1","reason":"Resignation accepted: Player-1 has already reached 60 points and mathematically won. Cannot win from this position.","resignedPlayer":"player-2"}}
+{"timestamp":"2026-02-02T12:42:26.419Z","event":"resignation_adjudicated","round":24,"turnNumber":48,"data":{"player":"player-2","accepted":true,"rulingReason":"Resignation accepted. While Player-1 has 45 points (not 60), they hold a commanding lead and need only 5 more points to win. Player-2 would need 35 points to catch up. This is a valid strategic resignation."}}
+{"timestamp":"2026-02-02T12:43:30.309Z","event":"analysis_submitted","round":24,"turnNumber":48,"data":{"file":"playtest-analysis-v1.0-1770035762715.md","version":"v1.0"}}

@@ -5,8 +5,8 @@
 # Active game state (recreated each playtest)
 games/*/state/
 
-# Hook trace logs (debug output)
-logs/
+# Hook trace logs (debug output - root level only)
+/logs/
 
 
 # Lock files
