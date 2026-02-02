@@ -1,0 +1,137 @@
+{
+  "_comment": "Engine-registered mechanics. This file is the source of truth for what mechanics the engine supports. Site reads this to show implementation status.",
+  "version": "3.0.0",
+  "generated": false,
+  "mechanics": {
+    "action-points": {
+      "config_key": "action_points",
+      "since": "1.0.0",
+      "description": "Resource budget per turn for actions",
+      "config_schema": {
+        "points_per_turn": "number",
+        "action_costs": "Record<string, number>"
+      }
+    },
+    "income": {
+      "config_key": "income",
+      "since": "1.0.0",
+      "description": "Automatic resource generation each turn",
+      "config_schema": {
+        "resource": "string",
+        "amount": "number",
+        "timing": "start_of_turn | end_of_turn"
+      }
+    },
+    "auction-english": {
+      "config_key": "auction",
+      "since": "1.0.0",
+      "description": "English auction bidding system",
+      "config_schema": {
+        "type": "english",
+        "currency": "string",
+        "min_increment": "number"
+      }
+    },
+    "set-collection": {
+      "config_key": "set_collection",
+      "since": "1.0.0",
+      "description": "Collecting matching sets for scoring",
+      "config_schema": {
+        "sets": "SetDefinition[]",
+        "scoring": "per_set | largest_set | most_sets",
+        "points_per_set": "number"
+      }
+    },
+    "push-your-luck": {
+      "config_key": "push_your_luck",
+      "since": "1.0.0",
+      "description": "Risk/reward dice rolling mechanic",
+      "config_schema": {
+        "dice_sides": "number",
+        "bust_threshold": "number",
+        "points_per_success": "number"
+      }
+    },
+    "variable-player-powers": {
+      "config_key": "variable_powers",
+      "since": "1.0.0",
+      "description": "Asymmetric player abilities",
+      "config_schema": {
+        "powers": "PowerDefinition[]",
+        "assignment": "random | draft | fixed"
+      }
+    },
+    "open-drafting": {
+      "config_key": "open_drafting",
+      "since": "1.0.0",
+      "description": "Drafting from visible card display",
+      "config_schema": {
+        "display_size": "number",
+        "refill": "immediate | end_of_round"
+      }
+    },
+    "turn-order-stat-based": {
+      "config_key": "turn_order",
+      "since": "1.0.0",
+      "description": "Turn order based on player stats",
+      "config_schema": {
+        "type": "stat-based",
+        "stat": "string",
+        "order": "highest_first | lowest_first"
+      }
+    },
+    "grid-movement": {
+      "config_key": "grid",
+      "since": "2.0.0",
+      "description": "Tile-based movement on a grid",
+      "config_schema": {
+        "type": "bounded | infinite",
+        "adjacency": "orthogonal | diagonal | hexagonal"
+      }
+    },
+    "trading": {
+      "config_key": "trade",
+      "since": "2.0.0",
+      "description": "Player-to-player trading system",
+      "config_schema": {
+        "requires_acceptance": "boolean",
+        "tradeable_types": "string[]"
+      }
+    },
+    "hand-management": {
+      "config_key": "hand_limit",
+      "since": "1.0.0",
+      "description": "Hand size limits and discard policies",
+      "config_schema": {
+        "hand_limit": "number",
+        "hand_limit_policy": "cannot_draw | discard_choice | discard_oldest"
+      }
+    },
+    "lose-a-turn": {
+      "config_key": "card_type_rules",
+      "since": "2.5.0",
+      "description": "Skip actions via card effects",
+      "config_schema": {
+        "card_type_rules": "Record<string, CardTypeRules>"
+      }
+    },
+    "take-that": {
+      "config_key": "card_type_rules",
+      "since": "2.5.0",
+      "description": "Direct attack cards targeting opponents",
+      "config_schema": {
+        "targetMode": "opponents | any_player"
+      }
+    }
+  },
+  "partial": {
+    "hidden-roles": {
+      "notes": "Basic role assignment works, but role revelation and special win conditions need GM adjudication",
+      "related_config": "objectives, victory_declaration"
+    },
+    "traitor-game": {
+      "notes": "Supported via hidden-roles, but traitor mechanics require GM interpretation",
+      "related_config": "hidden-roles, victory_declaration"
+    }
+  }
+}
