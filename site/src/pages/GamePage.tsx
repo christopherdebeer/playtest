@@ -4,6 +4,7 @@ import gamesData from '../data/games.json'
 import MechanicBadge from '../components/MechanicBadge'
 import { LogsData } from '../types/logs'
 import { fetchLogsIndex } from '../utils/logData'
+import BackLink from '../components/BackLink'
 import './GamePage.css'
 
 interface CardDef {
@@ -50,7 +51,7 @@ function GamePage() {
       <div className="game-page">
         <div className="container">
           <h1>Game not found</h1>
-          <Link to="/">Back to home</Link>
+          <BackLink to="/">Back to home</BackLink>
         </div>
       </div>
     )
@@ -69,7 +70,7 @@ function GamePage() {
   return (
     <div className="game-page">
       <div className="container">
-        <Link to="/" className="back-link">Back to games</Link>
+        <BackLink to="/">Back to games</BackLink>
 
         <div className="game-page-header">
           <h1>{game.config.name}</h1>

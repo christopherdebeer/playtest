@@ -1,9 +1,10 @@
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { marked } from 'marked'
 import { GameLogSummary, TranscriptSummary, TranscriptEvent } from '../types/logs'
 import LogViewer from '../components/LogViewer'
 import { fetchLogDetail, fetchLogAnalysis, fetchLogTranscripts } from '../utils/logData'
+import BackLink from '../components/BackLink'
 import './LogDetailPage.css'
 
 // Helper component for expandable text content
@@ -354,7 +355,7 @@ function LogDetailPage() {
     return (
       <div className="log-detail-page">
         <div className="container">
-          <Link to="/logs" className="back-link">Back to logs</Link>
+          <BackLink to="/logs">Back to logs</BackLink>
           <p>Loading log details...</p>
         </div>
       </div>
@@ -367,7 +368,7 @@ function LogDetailPage() {
         <div className="container">
           <h1>Log not found</h1>
           <p>{error}</p>
-          <Link to="/logs">Back to logs</Link>
+          <BackLink to="/logs">Back to logs</BackLink>
         </div>
       </div>
     )
@@ -378,7 +379,7 @@ function LogDetailPage() {
   return (
     <div className="log-detail-page">
       <div className="container">
-        <Link to="/logs" className="back-link">Back to logs</Link>
+        <BackLink to="/logs">Back to logs</BackLink>
 
         <div className="log-detail-header">
           <div className="header-main">

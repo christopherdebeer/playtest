@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import mechanicsData from '../data/mechanics.json'
 import gamesData from '../data/games.json'
+import BackLink from '../components/BackLink'
 import './MechanicsPage.css'
 
 interface MechanicDef {
@@ -159,7 +160,7 @@ function MechanicsPage() {
   return (
     <div className="mechanics-page">
       <div className="container">
-        <Link to="/" className="back-link">Back to home</Link>
+        <BackLink to="/">Back to home</BackLink>
 
         <div className="mechanics-header">
           <h1>Game Mechanics</h1>

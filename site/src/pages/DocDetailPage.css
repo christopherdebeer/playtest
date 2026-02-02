@@ -3,18 +3,6 @@
   padding: 2rem 0 4rem;
 }
 
-.back-link {
-  display: inline-block;
-  margin-bottom: 2rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  text-decoration: none;
-}
-
-.back-link:hover {
-  color: var(--accent);
-}
-
 .doc-article {
   max-width: 800px;
 }
