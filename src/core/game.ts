@@ -55,6 +55,9 @@ import type {
 } from '../types/game.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
+// Mechanics hook system (incremental extraction)
+import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
+
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
@@ -561,11 +564,11 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       }
     }
 
-    // Initialize action points if configured
-    let actionPoints: number | undefined;
-    if (config.engine_mechanics?.action_points) {
-      actionPoints = config.engine_mechanics.action_points.points_per_turn;
-    }
+    // ============ Mechanic Hooks: Player initialization ============
+    // Get initial player state from all enabled mechanics
+    const mechanicState = mechanicRegistry.initPlayerState(config, playerId);
+    const actionPoints = mechanicState.actionPoints as number | undefined;
+    const actionPointsUsed = mechanicState.actionPointsUsed as number | undefined;
 
     // Assign player power if variable powers enabled
     let powerId: string | undefined;
@@ -595,7 +598,7 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       persona,
       resources,
       actionPoints,
-      actionPointsUsed: actionPoints !== undefined ? 0 : undefined,
+      actionPointsUsed,
       collectedSets: [],
       rollAccumulator: 0,
       rollCount: 0,
@@ -985,13 +988,10 @@ export function advanceTurn(state: GameState): void {
     }
   }
 
-  // === NEW MECHANICS: Action points refresh ===
-  if (state.config.engine_mechanics?.action_points) {
-    const apConfig = state.config.engine_mechanics.action_points;
-    const rollover = apConfig.rollover ? (nextPlayer.actionPoints || 0) : 0;
-    nextPlayer.actionPoints = apConfig.points_per_turn + rollover;
-    nextPlayer.actionPointsUsed = 0;
-  }
+  // ============ Mechanic Hooks: Turn start ============
+  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP)
+  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer);
+  applyStateChanges(state, turnStartChanges);
 
   saveState(state);
 }
@@ -2245,30 +2245,14 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     };
   }
 
-  // ============ NEW: Action Points validation ============
-  // Proposal 006: AP cost per card - multiply by count for quantified actions
-  if (apConfig) {
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
-    let actionCost = baseCost;
-
-    // For draw actions, cost is per card drawn
-    if (action.type === 'draw') {
-      const drawAction = action as DrawAction;
-      const count = drawAction.count ?? 1;
-      actionCost = baseCost * count;
-    }
-
-    const remainingAP = player.actionPoints ?? 0;
-
-    if (actionCost > remainingAP) {
-      const costExplanation = action.type === 'draw' && (action as DrawAction).count && (action as DrawAction).count! > 1
-        ? ` (${(action as DrawAction).count} cards × ${baseCost} AP each)`
-        : '';
-      return {
-        valid: false,
-        errors: [`Not enough action points. Action "${action.type}" costs ${actionCost} AP${costExplanation}, you have ${remainingAP} AP remaining.`]
-      };
-    }
+  // ============ Mechanic Hooks: Pre-validation ============
+  // Run preValidateAction hooks for all enabled mechanics
+  const preValidationResult = mechanicRegistry.preValidateAction(state, playerId, action);
+  if (!preValidationResult.valid) {
+    return {
+      valid: false,
+      errors: [preValidationResult.error || 'Action blocked by mechanic']
+    };
   }
 
   // ============ NEW: Resource spending validation ============
@@ -2718,22 +2702,10 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   // Mark that player has acted this round (prevents multiple actions without action points)
   player.lastActionRound = state.round;
 
-  // === NEW: Deduct action points if enabled ===
-  // Proposal 006: AP cost per card - multiply by count for quantified actions
-  const apConfig = state.config.engine_mechanics?.action_points;
-  if (apConfig && player.actionPoints !== undefined) {
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
-    let cost = baseCost;
-
-    // For draw actions, cost is per card drawn
-    if (action.type === 'draw') {
-      const drawAction = action as DrawAction;
-      cost = baseCost * (drawAction.count ?? 1);
-    }
-
-    player.actionPoints -= cost;
-    player.actionPointsUsed = (player.actionPointsUsed ?? 0) + cost;
-  }
+  // ============ Mechanic Hooks: Post-execution state changes ============
+  // Run postExecuteAction hooks for all enabled mechanics (e.g., deduct AP)
+  const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
+  applyStateChanges(state, postExecuteChanges);
 
   try {
     switch (action.type) {
