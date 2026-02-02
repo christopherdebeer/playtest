@@ -101,11 +101,17 @@ const implementationStatusLabels: Record<string, string> = {
 function MechanicsPage() {
   const [searchParams] = useSearchParams()
   const highlightSlug = searchParams.get('highlight')
+  const categoryParam = searchParams.get('category')
 
   const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [expandedMechanics, setExpandedMechanics] = useState<Set<string>>(new Set())
+
+  // Sync category filter with URL param
+  useEffect(() => {
+    setSelectedCategory(categoryParam)
+  }, [categoryParam])
 
   const data = mechanicsData as MechanicsData
   const games = gamesData as Game[]
