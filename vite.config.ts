@@ -6,11 +6,12 @@ export default defineConfig({
   plugins: [react()],
   root: 'site',
   build: {
-    outDir: '../dist',
+    outDir: resolve(__dirname, 'dist'),
+    emptyOutDir: false,
   },
   resolve: {
     alias: {
-      'playtest': resolve(__dirname, '../dist/index.js'),
+      'playtest': resolve(__dirname, 'dist/index.js'),
     }
   }
 })
