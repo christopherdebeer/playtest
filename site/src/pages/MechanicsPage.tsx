@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import mechanicsData from '../data/mechanics.json'
 import gamesData from '../data/games.json'
+import BackLink from '../components/BackLink'
 import './MechanicsPage.css'
 
 interface MechanicDef {
@@ -100,11 +101,17 @@ const implementationStatusLabels: Record<string, string> = {
 function MechanicsPage() {
   const [searchParams] = useSearchParams()
   const highlightSlug = searchParams.get('highlight')
+  const categoryParam = searchParams.get('category')
 
   const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [expandedMechanics, setExpandedMechanics] = useState<Set<string>>(new Set())
+
+  // Sync category filter with URL param
+  useEffect(() => {
+    setSelectedCategory(categoryParam)
+  }, [categoryParam])
 
   const data = mechanicsData as MechanicsData
   const games = gamesData as Game[]
@@ -159,7 +166,7 @@ function MechanicsPage() {
   return (
     <div className="mechanics-page">
       <div className="container">
-        <Link to="/" className="back-link">Back to home</Link>
+        <BackLink to="/">Back to home</BackLink>
 
         <div className="mechanics-header">
           <h1>Game Mechanics</h1>
@@ -206,7 +213,7 @@ function MechanicsPage() {
             })}
           </div>
 
-          {data.implementationStats && (
+          {data.implementationStats && (data.implementationStats.implemented > 0 || data.implementationStats.partial > 0) && (
             <div className="implementation-filters">
               <span className="filter-label">Engine Status:</span>
               <button
@@ -280,19 +287,19 @@ function MechanicsPage() {
                         <div className="mechanic-card-header">
                           <h3>{mechanic.name}</h3>
                           <div className="mechanic-badges">
-                            <span
-                              className={`implementation-badge ${mechanic.implementationStatus}`}
-                              style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
-                              title={
-                                mechanic.implementationStatus === 'implemented'
-                                  ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
-                                  : mechanic.implementationStatus === 'partial'
-                                  ? mechanic.implementationNotes
-                                  : 'Not yet implemented in the engine'
-                              }
-                            >
-                              {implementationStatusLabels[mechanic.implementationStatus]}
-                            </span>
+                            {mechanic.implementationStatus !== 'not_implemented' && (
+                              <span
+                                className={`implementation-badge ${mechanic.implementationStatus}`}
+                                style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
+                                title={
+                                  mechanic.implementationStatus === 'implemented'
+                                    ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
+                                    : mechanic.implementationNotes
+                                }
+                              >
+                                {implementationStatusLabels[mechanic.implementationStatus]}
+                              </span>
+                            )}
                             <span className="mechanic-id">#{mechanic.id}</span>
                           </div>
                         </div>

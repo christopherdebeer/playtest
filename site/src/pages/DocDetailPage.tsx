@@ -1,5 +1,6 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import docsData from '../data/docs.json'
+import BackLink from '../components/BackLink'
 import './DocDetailPage.css'
 
 interface DocMetadata {
@@ -51,7 +52,7 @@ function DocDetailPage() {
         <div className="container">
           <h1>Document not found</h1>
           <p>No document found with slug: {docSlug}</p>
-          <Link to="/docs" className="back-link">Back to docs</Link>
+          <BackLink to="/docs">Back to docs</BackLink>
         </div>
       </div>
     )
@@ -63,7 +64,7 @@ function DocDetailPage() {
   return (
     <div className="doc-detail-page">
       <div className="container">
-        <Link to="/docs" className="back-link">← Back to docs</Link>
+        <BackLink to="/docs">Back to docs</BackLink>
 
         <article className="doc-article">
           <header className="doc-header">

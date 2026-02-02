@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import docsData from '../data/docs.json'
+import BackLink from '../components/BackLink'
 import './DocsPage.css'
 
 interface DocMetadata {
@@ -106,7 +107,7 @@ function DocsPage() {
   return (
     <div className="docs-page">
       <div className="container">
-        <Link to="/" className="back-link">← Back to home</Link>
+        <BackLink to="/">Back to home</BackLink>
 
         <div className="docs-header">
           <h1>Documentation</h1>

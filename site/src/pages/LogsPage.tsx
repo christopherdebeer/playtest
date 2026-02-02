@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { LogsData, GameLogSummary } from '../types/logs'
 import { fetchLogsIndex } from '../utils/logData'
+import BackLink from '../components/BackLink'
 import './LogsPage.css'
 
 function formatDuration(seconds: number | null): string {
@@ -169,7 +170,7 @@ function LogsPage() {
   return (
     <div className="logs-page">
       <div className="container">
-        <Link to="/" className="back-link">Back to home</Link>
+        <BackLink to="/">Back to home</BackLink>
 
         <div className="logs-header">
           <h1>Game Logs</h1>

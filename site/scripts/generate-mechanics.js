@@ -7,7 +7,7 @@ import { marked } from 'marked'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const MECHANICS_DIR = join(__dirname, '..', '..', 'mechanics')
-const IMPLEMENTATION_FILE = join(__dirname, '..', '..', 'shared', 'mechanics-implementation.json')
+const REGISTRY_FILE = join(__dirname, '..', '..', 'shared', 'registered-mechanics.json')
 const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'mechanics.json')
 
@@ -67,14 +67,14 @@ async function main() {
     return
   }
 
-  // Read implementation status from shared file
-  let implementationData = { implemented: {}, partial: {} }
+  // Read registered mechanics from engine registry
+  let registry = { mechanics: {}, partial: {} }
   try {
-    const implContent = await readFile(IMPLEMENTATION_FILE, 'utf-8')
-    implementationData = JSON.parse(implContent)
-    console.log(`Loaded implementation data: ${Object.keys(implementationData.implemented).length} implemented, ${Object.keys(implementationData.partial).length} partial`)
+    const registryContent = await readFile(REGISTRY_FILE, 'utf-8')
+    registry = JSON.parse(registryContent)
+    console.log(`Loaded engine registry: ${Object.keys(registry.mechanics).length} implemented, ${Object.keys(registry.partial || {}).length} partial`)
   } catch (err) {
-    console.warn('No implementation data found, all mechanics will show as not implemented')
+    console.warn('No engine registry found at shared/registered-mechanics.json, all mechanics will show as not implemented')
   }
 
   const mechanics = []
@@ -91,16 +91,16 @@ async function main() {
       const parsed = await parseMechanicFile(content)
 
       if (parsed) {
-        // Add implementation status
-        if (implementationData.implemented[parsed.slug]) {
-          const impl = implementationData.implemented[parsed.slug]
+        // Add implementation status from engine registry
+        if (registry.mechanics[parsed.slug]) {
+          const impl = registry.mechanics[parsed.slug]
           parsed.implementationStatus = 'implemented'
           parsed.implementationConfig = impl.config_key
           parsed.implementationSince = impl.since
           parsed.implementationDescription = impl.description
           implementedCount++
-        } else if (implementationData.partial[parsed.slug]) {
-          const impl = implementationData.partial[parsed.slug]
+        } else if (registry.partial && registry.partial[parsed.slug]) {
+          const impl = registry.partial[parsed.slug]
           parsed.implementationStatus = 'partial'
           parsed.implementationNotes = impl.notes
           parsed.implementationRelated = impl.related_config
