@@ -1,0 +1,16 @@
+{"timestamp":"2026-02-02T12:15:53.765Z","event":"game_init","data":{"gameId":"markovs-chains-1770034553762","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-02T12:16:08.137Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-02T12:16:21.201Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-02-02T12:16:33.954Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_card","card":"Hazard","targetState":"A","targetMode":"opponents","effect":{"type":"probability_penalty","value":-0.2}}}
+{"timestamp":"2026-02-02T12:16:41.740Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-02-02T12:16:49.326Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-02T12:16:54.177Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-02-02T12:16:59.639Z","event":"effect_applied","round":3,"turnNumber":6,"player":"player-1","data":{"effectType":"block_turn","appliedBy":"player-2","card":"Block","duration":1}}
+{"timestamp":"2026-02-02T12:16:59.639Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"play_card","card":"Block","effect":{"type":"block_turn","duration":1},"effectTarget":"player-1"}}
+{"timestamp":"2026-02-02T12:17:05.067Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-02T12:17:11.316Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-02-02T12:17:16.704Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-02-02T12:17:24.554Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-02-02T12:17:30.853Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-02-02T12:17:30.856Z","event":"game_end","round":6,"turnNumber":11,"data":{"winner":"player-1","reason":"player-1 reached Victory state","autoDetected":true}}
+{"timestamp":"2026-02-02T12:18:48.617Z","event":"analysis_submitted","round":6,"turnNumber":11,"data":{"file":"playtest-analysis-v2.3-1770034553762.md","version":"v2.3"}}
