@@ -17,6 +17,7 @@ import {
   WinConditionResult,
   LogEvent,
   InitContext,
+  BaseAction,
   ok,
   err,
   validResult,
@@ -207,6 +208,74 @@ export const actionPointsMechanic = defineMechanic<
         examples: [{ type: 'end_turn' }],
       },
     ];
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // Action Hooks (cross-mechanic coordination)
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Pre-validate any action by checking if player has enough AP.
+   */
+  preValidateAction(
+    ctx: ActionContext<ActionPointsGameState, ActionPointsPlayerState>,
+    action: BaseAction
+  ): ValidationResult {
+    const config = ctx.getMechanicConfig<ActionPointsConfig>('action-points')!;
+    const { playerState } = ctx;
+    const cost = config.actionCosts[action.type] ?? 0;
+
+    // Actions with 0 cost are always allowed
+    if (cost === 0) {
+      return validResult();
+    }
+
+    if (playerState.currentPoints < cost) {
+      return invalidResult([{
+        code: 'INSUFFICIENT_AP',
+        message: `Not enough action points: "${action.type}" costs ${cost} AP, you have ${playerState.currentPoints}`,
+        suggestion: 'End turn to refresh AP or use a lower-cost action',
+      }]);
+    }
+
+    return validResult();
+  },
+
+  /**
+   * After any action succeeds, deduct the AP cost.
+   */
+  postExecuteAction(
+    ctx: ActionContext<ActionPointsGameState, ActionPointsPlayerState>,
+    action: BaseAction,
+    result: ExecutionResult
+  ): EffectResult<ActionPointsGameState, ActionPointsPlayerState> {
+    const config = ctx.getMechanicConfig<ActionPointsConfig>('action-points')!;
+    const { playerState } = ctx;
+    const cost = config.actionCosts[action.type] ?? 0;
+
+    // Actions with 0 cost don't need to deduct anything
+    if (cost === 0) {
+      return { events: [] };
+    }
+
+    const newPoints = playerState.currentPoints - cost;
+
+    return {
+      playerStateChanges: {
+        [ctx.playerId]: {
+          currentPoints: newPoints,
+          usedThisTurn: playerState.usedThisTurn + cost,
+        },
+      },
+      events: [
+        {
+          timestamp: ctx.timestamp,
+          event: 'points_spent',
+          player: ctx.playerId,
+          data: { cost, remaining: newPoints, action: action.type },
+        },
+      ],
+    };
   },
 
   // ─────────────────────────────────────────────────────────────

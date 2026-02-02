@@ -10,6 +10,7 @@
 
 import {
   Result,
+  ValidationResult,
   ValidationError,
   BaseAction,
   BaseEffect,
@@ -25,6 +26,7 @@ import {
   InitContext,
   ok,
   err,
+  validResult,
 } from './types.js';
 import { Mechanic, MechanicRegistryView, MechanicInfo, getMechanicInfo } from './mechanic.js';
 
@@ -41,7 +43,9 @@ export interface ComposedMechanics {
   initPlayerState(playerId: string, context: InitContext): Record<string, unknown>;
   onGameStart(state: CoreGameState): Array<ExecutionResult & { mechanicSlug: string }>;
   getAvailableActions(ctx: ActionContext): ActionAvailability[];
+  /** Validates action, including all preValidateAction hooks from all mechanics */
   validateAction(ctx: ActionContext, action: BaseAction): Result<void, ValidationError[]>;
+  /** Executes action and runs all postExecuteAction hooks, returning combined result */
   executeAction(ctx: ActionContext, action: BaseAction): ExecutionResult;
   applyEffect(ctx: EffectContext, effect: BaseEffect): EffectResult;
   tickEffects(ctx: ActionContext, boundary: 'turn' | 'round'): EffectResult;
@@ -354,6 +358,25 @@ export class MechanicRegistry {
       },
 
       validateAction(ctx: ActionContext, action: BaseAction): Result<void, ValidationError[]> {
+        const allErrors: ValidationError[] = [];
+
+        // Run preValidateAction hooks from ALL mechanics (e.g., action-points checking AP cost)
+        for (const m of mechanics) {
+          if (m.preValidateAction) {
+            const mCtx = { ...ctx, gameState: ctx.state.mechanicState[m.slug], playerState: ctx.state.players[ctx.playerId]?.mechanicState?.[m.slug] };
+            const hookResult = (m.preValidateAction as any)(mCtx, action);
+            if (!hookResult.valid) {
+              allErrors.push(...hookResult.errors);
+            }
+          }
+        }
+
+        // If any pre-validation hooks failed, return errors before main validation
+        if (allErrors.length > 0) {
+          return err(allErrors);
+        }
+
+        // Find the mechanic that handles this action
         const mechanic = self.getMechanicForAction(action.type);
         if (!mechanic) {
           return err([{
@@ -363,6 +386,7 @@ export class MechanicRegistry {
           }]);
         }
 
+        // Run the main validation for this action
         const mCtx = { ...ctx, gameState: ctx.state.mechanicState[mechanic.slug], playerState: ctx.state.players[ctx.playerId]?.mechanicState?.[mechanic.slug] };
         const result = (mechanic.validateAction as any)(mCtx, action);
         return result.valid ? ok(undefined) : err(result.errors);
@@ -379,8 +403,45 @@ export class MechanicRegistry {
           };
         }
 
+        // Execute the main action
         const mCtx = { ...ctx, gameState: ctx.state.mechanicState[mechanic.slug], playerState: ctx.state.players[ctx.playerId]?.mechanicState?.[mechanic.slug] };
-        return (mechanic.executeAction as any)(mCtx, action);
+        const result = (mechanic.executeAction as any)(mCtx, action);
+
+        // Run postExecuteAction hooks from ALL mechanics (e.g., action-points deducting AP cost)
+        // Only run hooks if the action was successful
+        if (result.success) {
+          // Initialize crossMechanicState for hook results (keyed by mechanic slug)
+          result.crossMechanicState = result.crossMechanicState || { game: {}, player: {} };
+
+          for (const m of mechanics) {
+            if (m.postExecuteAction) {
+              const hookCtx = { ...ctx, gameState: ctx.state.mechanicState[m.slug], playerState: ctx.state.players[ctx.playerId]?.mechanicState?.[m.slug] };
+              const hookResult = (m.postExecuteAction as any)(hookCtx, action, result);
+
+              // Store hook's state changes under the hook's mechanic slug (NOT the action's mechanic)
+              if (hookResult.gameStateChanges) {
+                result.crossMechanicState.game![m.slug] = {
+                  ...(result.crossMechanicState.game![m.slug] || {}),
+                  ...hookResult.gameStateChanges,
+                };
+              }
+              if (hookResult.playerStateChanges) {
+                for (const [pid, changes] of Object.entries(hookResult.playerStateChanges)) {
+                  result.crossMechanicState.player![pid] = result.crossMechanicState.player![pid] || {};
+                  result.crossMechanicState.player![pid][m.slug] = {
+                    ...(result.crossMechanicState.player![pid][m.slug] || {}),
+                    ...(changes as object),
+                  };
+                }
+              }
+              if (hookResult.events && hookResult.events.length > 0) {
+                result.events = [...result.events, ...hookResult.events];
+              }
+            }
+          }
+        }
+
+        return result;
       },
 
       applyEffect(ctx: EffectContext, effect: BaseEffect): EffectResult {

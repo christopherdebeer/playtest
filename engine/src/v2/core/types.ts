@@ -263,6 +263,13 @@ export interface ExecutionResult<
   // Effects to apply (cross-mechanic)
   effects?: BaseEffect[];
 
+  // Cross-mechanic state changes from action hooks (keyed by mechanic slug)
+  // These bypass the normal namespacing and apply directly to the specified mechanic
+  crossMechanicState?: {
+    game?: Record<string, unknown>;
+    player?: Record<string, Record<string, unknown>>; // playerId -> mechanicSlug -> changes
+  };
+
   // What happens next
   nextTurn: TurnAdvancement;
 }

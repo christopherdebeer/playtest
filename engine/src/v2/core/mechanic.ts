@@ -129,6 +129,31 @@ export interface Mechanic<
   ): WinConditionResult | null;
 
   // ═══════════════════════════════════════════════════════════════
+  // ACTION HOOKS (optional, for cross-mechanic coordination)
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Called before validating ANY action (from any mechanic).
+   * Use this to add cross-cutting validation (e.g., action-points checking AP cost).
+   * Return errors to block the action.
+   */
+  preValidateAction?(
+    ctx: ActionContext<TGameState, TPlayerState>,
+    action: BaseAction
+  ): ValidationResult;
+
+  /**
+   * Called after executing ANY action (from any mechanic).
+   * Use this to react to actions (e.g., action-points deducting AP cost).
+   * Return state changes to apply after the action.
+   */
+  postExecuteAction?(
+    ctx: ActionContext<TGameState, TPlayerState>,
+    action: BaseAction,
+    result: ExecutionResult
+  ): EffectResult<TGameState, TPlayerState>;
+
+  // ═══════════════════════════════════════════════════════════════
   // TURN ORDER (optional)
   // ═══════════════════════════════════════════════════════════════
 

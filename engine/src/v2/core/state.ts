@@ -488,6 +488,43 @@ export class GameEngine {
       }
     }
 
+    // Apply cross-mechanic state changes from hooks (already keyed by mechanic slug)
+    if (result.crossMechanicState) {
+      // Apply game state changes
+      if (result.crossMechanicState.game) {
+        for (const [mechanicSlug, changes] of Object.entries(result.crossMechanicState.game)) {
+          updatedState.mechanicState = {
+            ...updatedState.mechanicState,
+            [mechanicSlug]: {
+              ...(updatedState.mechanicState[mechanicSlug] as object),
+              ...(changes as object),
+            },
+          };
+        }
+      }
+
+      // Apply player state changes
+      if (result.crossMechanicState.player) {
+        for (const [pid, mechanicChanges] of Object.entries(result.crossMechanicState.player)) {
+          for (const [mechanicSlug, changes] of Object.entries(mechanicChanges as Record<string, unknown>)) {
+            updatedState.players = {
+              ...updatedState.players,
+              [pid]: {
+                ...updatedState.players[pid],
+                mechanicState: {
+                  ...updatedState.players[pid].mechanicState,
+                  [mechanicSlug]: {
+                    ...(updatedState.players[pid].mechanicState[mechanicSlug] as object),
+                    ...(changes as object),
+                  },
+                },
+              },
+            };
+          }
+        }
+      }
+    }
+
     return updatedState;
   }
 
