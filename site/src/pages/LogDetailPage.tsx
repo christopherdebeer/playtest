@@ -1,9 +1,9 @@
-import { useParams, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { marked } from 'marked'
-import { LogsData, TranscriptSummary, TranscriptEvent } from '../types/logs'
+import { GameLogSummary, TranscriptSummary, TranscriptEvent } from '../types/logs'
 import LogViewer from '../components/LogViewer'
-import logsDataRaw from '../data/logs.json'
+import { fetchLogDetail, fetchLogAnalysis, fetchLogTranscripts } from '../utils/logData'
 import './LogDetailPage.css'
 
 // Helper component for expandable text content
@@ -61,8 +61,6 @@ function parseToolResultContent(content: unknown): string {
   }
   return JSON.stringify(content, null, 2)
 }
-
-const logsData = logsDataRaw as unknown as LogsData
 
 // Configure marked for safe rendering
 marked.setOptions({
@@ -273,23 +271,109 @@ function getOutcomeClass(outcome: string): string {
 
 function LogDetailPage() {
   const { logId } = useParams<{ logId: string }>()
-  const log = logsData.logs.find(l => l.gameId === logId)
-  const hasTranscripts = log?.transcripts && log.transcripts.length > 0
-  const [activeTab, setActiveTab] = useState<'analysis' | 'events' | 'transcripts'>(
-    // Default to analysis if available, otherwise events
-    log?.analysis ? 'analysis' : 'events'
-  )
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  if (!log) {
+  const [log, setLog] = useState<GameLogSummary & { hasAnalysis?: boolean; hasTranscripts?: boolean } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [analysis, setAnalysis] = useState<{ version: string; filename: string; content: string } | null | undefined>(undefined)
+  const [transcripts, setTranscripts] = useState<TranscriptSummary[] | undefined>(undefined)
+
+  // Load log details on mount
+  useEffect(() => {
+    if (!logId) return
+
+    setLoading(true)
+    fetchLogDetail(logId)
+      .then(data => {
+        setLog(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [logId])
+
+  // Parse initial tab from hash or default
+  const getInitialTab = (): 'analysis' | 'events' | 'transcripts' => {
+    const hash = location.hash.slice(1) // Remove leading #
+    if (hash === 'analysis' && log?.hasAnalysis) return 'analysis'
+    if (hash === 'events') return 'events'
+    if (hash === 'transcripts' && log?.hasTranscripts) return 'transcripts'
+    // Default to analysis if available, otherwise events
+    return log?.hasAnalysis ? 'analysis' : 'events'
+  }
+
+  const [activeTab, setActiveTab] = useState<'analysis' | 'events' | 'transcripts'>(getInitialTab)
+
+  // Update tab when hash changes (browser back/forward)
+  useEffect(() => {
+    if (!log) return
+    const hash = location.hash.slice(1)
+    if (hash === 'analysis' && log.hasAnalysis) {
+      setActiveTab('analysis')
+    } else if (hash === 'events') {
+      setActiveTab('events')
+    } else if (hash === 'transcripts' && log.hasTranscripts) {
+      setActiveTab('transcripts')
+    }
+  }, [location.hash, log?.hasAnalysis, log?.hasTranscripts, log])
+
+  // Update initial tab when log loads
+  useEffect(() => {
+    if (log && location.hash) {
+      const initialTab = getInitialTab()
+      setActiveTab(initialTab)
+    }
+  }, [log])
+
+  // Lazy load analysis when analysis tab is clicked
+  useEffect(() => {
+    if (activeTab === 'analysis' && analysis === undefined && logId) {
+      fetchLogAnalysis(logId).then(setAnalysis)
+    }
+  }, [activeTab, analysis, logId])
+
+  // Lazy load transcripts when transcripts tab is clicked
+  useEffect(() => {
+    if (activeTab === 'transcripts' && transcripts === undefined && logId) {
+      fetchLogTranscripts(logId).then(setTranscripts)
+    }
+  }, [activeTab, transcripts, logId])
+
+  // Update hash when tab changes
+  const handleTabChange = (tab: 'analysis' | 'events' | 'transcripts') => {
+    setActiveTab(tab)
+    navigate(`#${tab}`, { replace: true })
+  }
+
+  if (loading) {
+    return (
+      <div className="log-detail-page">
+        <div className="container">
+          <Link to="/logs" className="back-link">Back to logs</Link>
+          <p>Loading log details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !log) {
     return (
       <div className="log-detail-page">
         <div className="container">
           <h1>Log not found</h1>
+          <p>{error}</p>
           <Link to="/logs">Back to logs</Link>
         </div>
       </div>
     )
   }
+
+  const hasTranscripts = log.hasTranscripts
 
   return (
     <div className="log-detail-page">
@@ -382,42 +466,50 @@ function LogDetailPage() {
         {/* Tab navigation for Analysis, Event Log, and Transcripts */}
         <div className="log-detail-tabs">
           <div className="tab-buttons">
-            {log.analysis && (
+            {log.hasAnalysis && (
               <button
                 className={`tab-button ${activeTab === 'analysis' ? 'active' : ''}`}
-                onClick={() => setActiveTab('analysis')}
+                onClick={() => handleTabChange('analysis')}
               >
-                Analysis ({log.analysis.version})
+                Analysis {analysis && `(${analysis.version})`}
               </button>
             )}
             <button
               className={`tab-button ${activeTab === 'events' ? 'active' : ''}`}
-              onClick={() => setActiveTab('events')}
+              onClick={() => handleTabChange('events')}
             >
               Event Log ({log.totalEvents})
             </button>
             {hasTranscripts && (
               <button
                 className={`tab-button ${activeTab === 'transcripts' ? 'active' : ''}`}
-                onClick={() => setActiveTab('transcripts')}
+                onClick={() => handleTabChange('transcripts')}
               >
-                Transcripts ({log.transcripts!.length})
+                Transcripts {transcripts && `(${transcripts.length})`}
               </button>
             )}
           </div>
 
           <div className="tab-content">
-            {activeTab === 'analysis' && log.analysis && (
+            {activeTab === 'analysis' && log.hasAnalysis && (
               <div className="log-analysis">
-                <div className="analysis-meta">
-                  <span className="analysis-file">{log.analysis.filename}</span>
-                </div>
-                <div
-                  className="analysis-content markdown-body"
-                  dangerouslySetInnerHTML={{
-                    __html: marked(log.analysis.content) as string
-                  }}
-                />
+                {analysis === undefined ? (
+                  <p>Loading analysis...</p>
+                ) : analysis === null ? (
+                  <p>Analysis not available</p>
+                ) : (
+                  <>
+                    <div className="analysis-meta">
+                      <span className="analysis-file">{analysis.filename}</span>
+                    </div>
+                    <div
+                      className="analysis-content markdown-body"
+                      dangerouslySetInnerHTML={{
+                        __html: marked(analysis.content) as string
+                      }}
+                    />
+                  </>
+                )}
               </div>
             )}
 
@@ -429,13 +521,21 @@ function LogDetailPage() {
 
             {activeTab === 'transcripts' && hasTranscripts && (
               <div className="log-detail-transcripts">
-                <p className="transcripts-intro">
-                  Agent transcripts show the full conversation history for each agent during the game,
-                  including their reasoning, tool usage, and decisions.
-                </p>
-                {log.transcripts!.map((transcript, idx) => (
-                  <TranscriptViewer key={idx} transcript={transcript} />
-                ))}
+                {transcripts === undefined ? (
+                  <p>Loading transcripts...</p>
+                ) : transcripts.length === 0 ? (
+                  <p>No transcripts available</p>
+                ) : (
+                  <>
+                    <p className="transcripts-intro">
+                      Agent transcripts show the full conversation history for each agent during the game,
+                      including their reasoning, tool usage, and decisions.
+                    </p>
+                    {transcripts.map((transcript, idx) => (
+                      <TranscriptViewer key={idx} transcript={transcript} />
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>

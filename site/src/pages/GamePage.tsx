@@ -1,11 +1,10 @@
 import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import gamesData from '../data/games.json'
-import logsDataRaw from '../data/logs.json'
 import MechanicBadge from '../components/MechanicBadge'
 import { LogsData } from '../types/logs'
+import { fetchLogsIndex } from '../utils/logData'
 import './GamePage.css'
-
-const logsData = logsDataRaw as unknown as LogsData
 
 interface CardDef {
   name: string
@@ -39,6 +38,12 @@ function GamePage() {
   const { gameId } = useParams<{ gameId: string }>()
   const games: Game[] = gamesData as Game[]
   const game = games.find((g) => g.id === gameId)
+  const [logsData, setLogsData] = useState<LogsData | null>(null)
+
+  // Load logs index for showing log count
+  useEffect(() => {
+    fetchLogsIndex().then(setLogsData).catch(() => setLogsData(null))
+  }, [])
 
   if (!game) {
     return (
@@ -101,10 +106,10 @@ function GamePage() {
 
         <div className="quick-start">
           <h2>Quick Start</h2>
-          <pre><code>npx playtest init {game.id} --players 3</code></pre>
+          <pre><code>/playtest {game.id} 3</code></pre>
         </div>
 
-        {(() => {
+        {logsData && (() => {
           const gameLogs = logsData.logs.filter(l => l.gameName === game.id)
           if (gameLogs.length === 0) return null
           return (
