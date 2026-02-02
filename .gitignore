@@ -32,6 +32,9 @@ games/*/state/
 # ===========================================
 
 engine/dist/
+
+# Engine test game output
+engine/games/
 site/dist/
 *.tsbuildinfo
 
