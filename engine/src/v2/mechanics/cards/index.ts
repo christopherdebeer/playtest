@@ -34,6 +34,7 @@ import {
   PlayCardAction,
   DiscardAction,
   MoveCardToDiscardEffect,
+  RemoveCardFromHandEffect,
 } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -50,10 +51,17 @@ function buildDeck(entries: DeckEntry[], random: () => number): Card[] {
         id: `card-${idCounter++}`,
         name: entry.name,
         type: entry.type,
+        subtype: entry.subtype,
         effect: entry.effect,
         targetRequired: entry.targetRequired,
         targetMode: entry.targetMode,
         description: entry.description,
+        // Location card properties
+        terrain: entry.terrain,
+        connections: entry.connections,
+        entryRequirements: entry.entryRequirements,
+        placeable: entry.placeable,
+        requires: entry.requires,
       });
     }
   }
@@ -513,7 +521,7 @@ export const cardsMechanic = defineMechanic<
   // ─────────────────────────────────────────────────────────────
 
   getEffectTypes(): readonly CardsEffect['type'][] {
-    return ['draw_cards', 'force_discard', 'steal_card', 'move_card_to_discard'] as const;
+    return ['draw_cards', 'force_discard', 'steal_card', 'move_card_to_discard', 'remove_card_from_hand'] as const;
   },
 
   applyEffect(
@@ -635,6 +643,38 @@ export const cardsMechanic = defineMechanic<
         };
       }
 
+      case 'remove_card_from_hand': {
+        // Remove card from hand without putting it in discard (card is consumed/transformed)
+        const removeEffect = effect as RemoveCardFromHandEffect;
+        const targetId = removeEffect.playerId;
+        const targetState = ctx.getMechanicPlayerState<CardsPlayerState>('cards', targetId);
+        if (!targetState) return { events: [] };
+
+        const cardIndex = removeEffect.cardId
+          ? targetState.hand.findIndex(c => c.id === removeEffect.cardId)
+          : removeEffect.cardName
+            ? targetState.hand.findIndex(c => c.name === removeEffect.cardName)
+            : -1;
+
+        if (cardIndex === -1) return { events: [] };
+
+        const card = targetState.hand[cardIndex];
+        const newHand = [...targetState.hand];
+        newHand.splice(cardIndex, 1);
+
+        events.push({
+          timestamp: ctx.timestamp,
+          event: 'card_removed_from_hand',
+          player: targetId,
+          data: { card: card.name },
+        });
+
+        return {
+          playerStateChanges: { [targetId]: { hand: newHand } },
+          events,
+        };
+      }
+
       default:
         return { events: [] };
     }
@@ -696,6 +736,8 @@ export const cardsMechanic = defineMechanic<
       'card_discarded',
       'cards_force_discarded',
       'card_stolen',
+      'card_moved_to_discard',
+      'card_removed_from_hand',
       'deck_reshuffled',
     ] as const;
   },

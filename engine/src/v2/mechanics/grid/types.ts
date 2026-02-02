@@ -86,7 +86,7 @@ export interface MoveGridAction extends BaseAction {
 export interface PlaceTileAction extends BaseAction {
   type: 'place_tile';
   position: Position;
-  tileId: string;
+  cardName: string; // Name of location card from player's hand
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

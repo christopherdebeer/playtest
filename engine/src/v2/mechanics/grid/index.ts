@@ -295,6 +295,25 @@ export const gridMechanic = defineMechanic<
           }
         }
 
+        // Check player has the location card in hand
+        const cardsState = ctx.getMechanicPlayerState<{ hand: Array<{ name: string; type?: string }> }>('cards', ctx.playerId);
+        if (cardsState) {
+          const card = cardsState.hand.find(c => c.name === placeAction.cardName);
+          if (!card) {
+            return invalidResult([{
+              code: 'CARD_NOT_IN_HAND',
+              message: `Card "${placeAction.cardName}" is not in your hand`,
+              suggestion: `Your location cards: ${cardsState.hand.filter(c => c.type === 'location').map(c => c.name).join(', ') || 'none'}`,
+            }]);
+          }
+          if (card.type !== 'location') {
+            return invalidResult([{
+              code: 'NOT_LOCATION_CARD',
+              message: `Card "${placeAction.cardName}" is not a location card (type: ${card.type || 'unknown'})`,
+            }]);
+          }
+        }
+
         return validResult();
       }
 
@@ -357,10 +376,29 @@ export const gridMechanic = defineMechanic<
         const pos = placeAction.position;
         const posKey_ = posKey(pos.x, pos.y);
 
-        // Create tile definition (in real implementation, this would come from player's hand)
+        // Look up the card from player's hand
+        const cardsState = ctx.getMechanicPlayerState<{
+          hand: Array<{
+            id: string;
+            name: string;
+            type?: string;
+            terrain?: string;
+            effect?: { type: string; value?: number; description?: string };
+            connections?: number;
+            entryRequirements?: string[];
+          }>
+        }>('cards', ctx.playerId);
+
+        const card = cardsState?.hand.find(c => c.name === placeAction.cardName);
+
+        // Build tile definition from the card data
         const tile: TileDefinition = {
-          id: placeAction.tileId,
-          name: placeAction.tileId,
+          id: card?.id ?? `tile-${Date.now()}`,
+          name: placeAction.cardName,
+          terrain: card?.terrain,
+          effect: card?.effect,
+          connections: card?.connections,
+          entryRequirements: card?.entryRequirements,
         };
 
         const newTiles = {
@@ -374,16 +412,27 @@ export const gridMechanic = defineMechanic<
           },
         };
 
+        // Emit effect to remove the card from hand (card becomes the tile, not discarded)
+        const effects: GridEffect[] = [];
+        if (card) {
+          effects.push({
+            type: 'remove_card_from_hand',
+            playerId: ctx.playerId,
+            cardName: placeAction.cardName,
+          } as any); // Cross-mechanic effect
+        }
+
         return {
           success: true,
           message: `Placed ${tile.name} at (${pos.x}, ${pos.y})`,
           gameStateChanges: { tiles: newTiles },
+          effects,
           events: [
             {
               timestamp: ctx.timestamp,
               event: 'tile_placed',
               player: ctx.playerId,
-              data: { position: pos, tile: tile.name },
+              data: { position: pos, tile: tile.name, terrain: tile.terrain },
             },
           ],
           nextTurn: { type: 'same_player' }, // Placement doesn't end turn
@@ -447,16 +496,46 @@ export const gridMechanic = defineMechanic<
         return true;
       });
 
-    if (validPlacements.length > 0) {
+    // Get location cards from hand
+    const cardsState = ctx.getMechanicPlayerState<{ hand: Array<{ name: string; type?: string }> }>('cards', ctx.playerId);
+    const locationCards = cardsState?.hand.filter(c => c.type === 'location') ?? [];
+
+    if (validPlacements.length > 0 && locationCards.length > 0) {
+      // Generate examples combining positions and location cards
+      const examples: PlaceTileAction[] = [];
+      for (const pos of validPlacements.slice(0, 2)) {
+        for (const card of locationCards.slice(0, 2)) {
+          examples.push({
+            type: 'place_tile' as const,
+            position: pos,
+            cardName: card.name,
+          });
+          if (examples.length >= 4) break;
+        }
+        if (examples.length >= 4) break;
+      }
+
       actions.push({
         type: 'place_tile',
         enabled: true,
+        description: `Place a location card from your hand (${locationCards.length} available)`,
+        examples,
+      });
+    } else if (validPlacements.length > 0) {
+      actions.push({
+        type: 'place_tile',
+        enabled: false,
         description: 'Place a location tile from your hand',
-        examples: validPlacements.slice(0, 2).map(pos => ({
-          type: 'place_tile' as const,
-          position: pos,
-          tileId: 'location_from_hand',
-        })),
+        reason: 'No location cards in hand',
+        examples: [],
+      });
+    } else if (locationCards.length > 0) {
+      actions.push({
+        type: 'place_tile',
+        enabled: false,
+        description: 'Place a location tile from your hand',
+        reason: 'No valid adjacent positions available',
+        examples: [],
       });
     }
 

@@ -21,10 +21,17 @@ export interface DeckEntry {
   name: string;
   count: number;
   type?: string;
+  subtype?: string;
   effect?: CardEffectDefinition;
   targetRequired?: boolean;
   targetMode?: 'self' | 'opponent' | 'any';
   description?: string;
+  // Location card properties (for grid mechanic integration)
+  terrain?: string;
+  connections?: number;
+  entryRequirements?: string[];
+  placeable?: boolean;
+  requires?: string[];
 }
 
 export interface CardEffectDefinition {
@@ -48,10 +55,17 @@ export interface Card {
   id: string;
   name: string;
   type?: string;
+  subtype?: string;
   effect?: CardEffectDefinition;
   targetRequired?: boolean;
   targetMode?: 'self' | 'opponent' | 'any';
   description?: string;
+  // Location card properties (for grid mechanic integration)
+  terrain?: string;
+  connections?: number;
+  entryRequirements?: string[];
+  placeable?: boolean;
+  requires?: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -92,7 +106,8 @@ export type CardsEffect =
   | DrawCardsEffect
   | ForceDiscardEffect
   | StealCardEffect
-  | MoveCardToDiscardEffect;
+  | MoveCardToDiscardEffect
+  | RemoveCardFromHandEffect;
 
 export interface DrawCardsEffect extends BaseEffect {
   type: 'draw_cards';
@@ -111,6 +126,17 @@ export interface StealCardEffect extends BaseEffect {
 
 export interface MoveCardToDiscardEffect extends BaseEffect {
   type: 'move_card_to_discard';
+  playerId: string;
+  cardId?: string;
+  cardName?: string;
+}
+
+/**
+ * Remove a card from hand without putting it in discard pile.
+ * Used when a card is consumed/transformed (e.g., placing a location on the grid).
+ */
+export interface RemoveCardFromHandEffect extends BaseEffect {
+  type: 'remove_card_from_hand';
   playerId: string;
   cardId?: string;
   cardName?: string;
