@@ -21,9 +21,9 @@
   "scripts": {
     "build": "npm run build:engine && npm run build:site",
     "build:engine": "tsc -p tsconfig.json",
-    "build:site": "npm run generate && tsc -p tsconfig.site.json && vite build --config site/vite.config.ts",
+    "build:site": "npm run build:engine && npm run generate && tsc -p tsconfig.site.json && vite build",
     "dev": "tsc --watch",
-    "dev:site": "npm run generate && vite --config site/vite.config.ts",
+    "dev:site": "npm run generate && vite",
     "generate": "npm run generate:games && npm run generate:mechanics && npm run generate:logs && npm run generate:docs",
     "generate:games": "node site/scripts/generate-games.js",
     "generate:mechanics": "node site/scripts/generate-mechanics.js",

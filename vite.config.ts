@@ -7,10 +7,11 @@ export default defineConfig({
   root: 'site',
   build: {
     outDir: 'dist',
+    emptyOutDir: true,
   },
   resolve: {
     alias: {
-      'playtest': resolve(__dirname, '../dist/index.js'),
+      'playtest': resolve(__dirname, 'dist/index.js'),
     }
   }
 })
