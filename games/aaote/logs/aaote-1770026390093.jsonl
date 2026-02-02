@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-02T09:59:50.093Z","event":"game_created","data":{"gameName":"aaote","playerCount":3,"mechanics":["cards","action-points","grid","trading","hidden-roles"]},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:00:02.434Z","event":"player_registered","player":"player-1","data":{"agentId":"a1"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:00:02.893Z","event":"player_registered","player":"player-2","data":{"agentId":"a2"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:00:03.329Z","event":"player_registered","player":"player-3","data":{"agentId":"a3"},"round":1,"turnNumber":0}
+{"timestamp":"2026-02-02T10:00:03.331Z","event":"cards_dealt","player":"player-1","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:00:03.331Z","event":"cards_dealt","player":"player-2","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:00:03.331Z","event":"cards_dealt","player":"player-3","data":{"count":5},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:00:03.333Z","event":"game_started","data":{"turnOrder":["player-1","player-2","player-3"]},"round":1,"turnNumber":1}
+{"timestamp":"2026-02-02T10:00:40.717Z","event":"tile_placed","player":"player-1","data":{"position":{"x":1,"y":0}},"round":1,"turnNumber":1}

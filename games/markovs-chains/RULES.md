@@ -2,53 +2,57 @@
 name: "Markov's Chains"
 version: "2.3"
 players: 2-4
-starting_cards: 5
 win_condition: "First player to reach the Victory state"
 max_rounds: 25
 
-# Engine mechanics - enable/disable engine capabilities for this game
+# Engine mechanics configuration
+# Key = mechanic slug, value = config passed to mechanic's parseConfig()
 engine_mechanics:
-  probability_movement: true   # Moves use edge probabilities
-  card_boosts: true            # Cards can modify move probability
-  victory_declaration: true    # Players must declare victory for GM adjudication
+  # Cards mechanic - deck management
+  cards:
+    startingCards: 5
+    reshuffleDiscard: true
+    deck:
+      # Boost cards (6 total - reduced from 8)
+      - { name: "Catalyst", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
+      - { name: "Momentum", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
+      - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
+      # Interference cards (10 total)
+      - { name: "Friction", count: 4, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
+      - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 1 } }
+      - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
+      # State Cards - NEW in v2.3! (8 total) - Placeable on board states
+      - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20 } }
+      - { name: "Safe Haven", count: 3, type: "buff", placeable: true, targetMode: "owner", effect: { type: "probability_boost", value: 0.15 } }
+      - { name: "Toll Gate", count: 2, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "force_discard", value: 1 } }
+      # Utility cards (6 total - reduced from 8)
+      - { name: "Redirect", count: 2, type: "utility", effect: { type: "force_retarget" } }
+      - { name: "State Swap", count: 2, type: "utility", effect: { type: "swap_positions" } }
+      - { name: "Reroll", count: 2, type: "utility", effect: { type: "reroll_failed" } }
 
-# Structured config for engine
-board:
-  states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]
-  start: "Start"
-  victory: "Victory"
-  edges:
-    # Layer 1: Start to intermediate states (55% - reduced from 65%)
-    - { from: "Start", to: ["A", "B", "C"], probability: 0.55 }
-    # Layer 2: Intermediate to checkpoints (40% - reduced from 50%)
-    - { from: ["A", "B", "C"], to: ["Checkpoint-X", "Checkpoint-Y"], probability: 0.40 }
-    # Layer 3: Checkpoints to Victory (25% - reduced from 35%)
-    - { from: ["Checkpoint-X", "Checkpoint-Y"], to: "Victory", probability: 0.25 }
-    # Lateral movement between intermediates (35%)
-    - { from: "A", to: ["B", "C"], probability: 0.35 }
-    - { from: "B", to: ["A", "C"], probability: 0.35 }
-    - { from: "C", to: ["A", "B"], probability: 0.35 }
-    # Lateral movement between checkpoints (40%)
-    - { from: "Checkpoint-X", to: "Checkpoint-Y", probability: 0.40 }
-    - { from: "Checkpoint-Y", to: "Checkpoint-X", probability: 0.40 }
-
-deck:
-  # Boost cards (6 total - reduced from 8)
-  - { name: "Catalyst", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
-  - { name: "Momentum", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
-  - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
-  # Interference cards (10 total)
-  - { name: "Friction", count: 4, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
-  - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 1 } }
-  - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
-  # State Cards - NEW in v2.3! (8 total) - Placeable on board states
-  - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20 } }
-  - { name: "Safe Haven", count: 3, type: "buff", placeable: true, targetMode: "owner", effect: { type: "probability_boost", value: 0.15 } }
-  - { name: "Toll Gate", count: 2, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "force_discard", value: 1 } }
-  # Utility cards (6 total - reduced from 8)
-  - { name: "Redirect", count: 2, type: "utility", effect: { type: "force_retarget" } }
-  - { name: "State Swap", count: 2, type: "utility", effect: { type: "swap_positions" } }
-  - { name: "Reroll", count: 2, type: "utility", effect: { type: "reroll_failed" } }
+  # Probability mechanic - state graph movement
+  probability:
+    startState: "Start"
+    victoryState: "Victory"
+    allowBoosts: true
+    maxBoost: 0.95
+    minProbability: 0.05
+    board:
+      states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]
+      edges:
+        # Layer 1: Start to intermediate states (55% - reduced from 65%)
+        - { from: "Start", to: ["A", "B", "C"], probability: 0.55 }
+        # Layer 2: Intermediate to checkpoints (40% - reduced from 50%)
+        - { from: ["A", "B", "C"], to: ["Checkpoint-X", "Checkpoint-Y"], probability: 0.40 }
+        # Layer 3: Checkpoints to Victory (25% - reduced from 35%)
+        - { from: ["Checkpoint-X", "Checkpoint-Y"], to: "Victory", probability: 0.25 }
+        # Lateral movement between intermediates (35%)
+        - { from: "A", to: ["B", "C"], probability: 0.35 }
+        - { from: "B", to: ["A", "C"], probability: 0.35 }
+        - { from: "C", to: ["A", "B"], probability: 0.35 }
+        # Lateral movement between checkpoints (40%)
+        - { from: "Checkpoint-X", to: "Checkpoint-Y", probability: 0.40 }
+        - { from: "Checkpoint-Y", to: "Checkpoint-X", probability: 0.40 }
 ---
 
 # Markov's Chains - Game Rules

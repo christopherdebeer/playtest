@@ -23,7 +23,7 @@ import { createDefaultRegistry } from '../mechanics/index.js';
 const GAMES_DIR = path.resolve(process.cwd(), 'games');
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RULES PARSING
+// RULES PARSING (mechanic-agnostic)
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface ParsedRules {
@@ -31,6 +31,27 @@ interface ParsedRules {
   errors: string[];
 }
 
+/**
+ * Parse RULES.md with mechanic-agnostic config extraction.
+ *
+ * Format:
+ * ```yaml
+ * name: "Game Name"
+ * players: 2-4
+ * win_condition: "..."
+ *
+ * # Mechanic configs - key is mechanic slug, value is passed to parseConfig()
+ * engine_mechanics:
+ *   cards:
+ *     deck: [...]
+ *     startingCards: 7
+ *   card-matching:
+ *     matchRules: [...]
+ *   action-points:
+ *     pointsPerTurn: 3
+ *     actionCosts: {...}
+ * ```
+ */
 function parseRulesFile(gameName: string): ParsedRules {
   const rulesPath = path.join(GAMES_DIR, gameName, 'RULES.md');
 
@@ -70,120 +91,17 @@ function parseRulesFile(gameName: string): ParsedRules {
     players = { type: 'exact', count: 2 };
   }
 
-  // Build mechanic configs
+  // Build mechanic configs from engine_mechanics (mechanic-agnostic)
+  // Key is mechanic slug, value is config passed directly to mechanic's parseConfig()
   const mechanics: MechanicConfigEntry[] = [];
 
-  // Cards mechanic from deck config
-  if (rawConfig.deck) {
-    mechanics.push({
-      slug: 'cards',
-      config: {
-        deck: rawConfig.deck,
-        startingCards: rawConfig.starting_cards ?? rawConfig.startingCards ?? 5,
-        handLimit: rawConfig.hand_limit ?? rawConfig.handLimit,
-        handLimitPolicy: rawConfig.hand_limit_policy ?? rawConfig.handLimitPolicy,
-        reshuffleDiscard: rawConfig.reshuffle_discard ?? rawConfig.reshuffleDiscard ?? true,
-      },
-    });
-  }
+  if (rawConfig.engine_mechanics && typeof rawConfig.engine_mechanics === 'object') {
+    for (const [slug, config] of Object.entries(rawConfig.engine_mechanics)) {
+      // Skip non-object entries (like comments or metadata)
+      if (typeof config !== 'object' || config === null) continue;
 
-  // Probability mechanic from board config
-  if (rawConfig.board) {
-    mechanics.push({
-      slug: 'probability',
-      config: {
-        board: rawConfig.board,
-        startState: rawConfig.board.start ?? rawConfig.start_state ?? rawConfig.startState,
-        victoryState: rawConfig.board.victory ?? rawConfig.victory_state ?? rawConfig.victoryState,
-        allowBoosts: rawConfig.engine_mechanics?.card_boosts ?? true,
-        maxBoost: rawConfig.max_boost ?? 0.95,
-        minProbability: rawConfig.min_probability ?? 0.05,
-      },
-    });
-  }
-
-  // Action points mechanic
-  if (rawConfig.engine_mechanics?.action_points) {
-    const ap = rawConfig.engine_mechanics.action_points;
-    mechanics.push({
-      slug: 'action-points',
-      config: {
-        pointsPerTurn: ap.points_per_turn ?? ap.pointsPerTurn ?? 3,
-        actionCosts: ap.action_costs ?? ap.actionCosts ?? {},
-        rollover: ap.rollover ?? false,
-        maxRollover: ap.max_rollover ?? ap.maxRollover,
-      },
-    });
-  }
-
-  // Grid mechanic
-  if (rawConfig.engine_mechanics?.grid) {
-    const grid = rawConfig.engine_mechanics.grid;
-    mechanics.push({
-      slug: 'grid',
-      config: {
-        type: grid.type ?? 'finite',
-        width: grid.width,
-        height: grid.height,
-        startingTile: grid.starting_tile ?? grid.startingTile,
-        adjacency: grid.adjacency ?? 'orthogonal',
-      },
-    });
-  }
-
-  // Trading mechanic
-  if (rawConfig.engine_mechanics?.trade) {
-    const trade = rawConfig.engine_mechanics.trade;
-    mechanics.push({
-      slug: 'trading',
-      config: {
-        enabled: trade.enabled ?? true,
-        itemTypesOnly: trade.item_types_only ?? trade.itemTypesOnly ?? false,
-        allowedTypes: trade.allowed_types ?? trade.allowedTypes,
-        requireSameLocation: trade.require_same_location ?? trade.requireSameLocation ?? false,
-        requireAdjacent: trade.require_adjacent_location ?? trade.requireAdjacent ?? false,
-        allowGifts: trade.allow_gifts ?? trade.allowGifts ?? true,
-        maxCardsPerTrade: trade.max_cards_per_trade ?? trade.maxCardsPerTrade ?? 5,
-      },
-    });
-  }
-
-  // Hidden roles mechanic from objectives
-  if (rawConfig.objectives) {
-    mechanics.push({
-      slug: 'hidden-roles',
-      config: {
-        roles: rawConfig.objectives.map((obj: any) => ({
-          id: obj.name.toLowerCase().replace(/\s+/g, '-'),
-          name: obj.name,
-          type: obj.type === 'enemy' ? 'traitor' : 'regular',
-          count: obj.count ?? 1,
-          winCondition: obj.condition,
-        })),
-        dealAtStart: rawConfig.engine_mechanics?.hidden_objectives?.deal_at_start ?? true,
-        revealOnCompletion: rawConfig.engine_mechanics?.hidden_objectives?.reveal_on_completion ?? true,
-      },
-    });
-  }
-
-  // Card matching mechanic
-  if (rawConfig.engine_mechanics?.card_matching) {
-    const cm = rawConfig.engine_mechanics.card_matching;
-    mechanics.push({
-      slug: 'card-matching',
-      config: {
-        enabled: cm.enabled ?? true,
-        matchRules: cm.match_rules ?? cm.matchRules ?? [
-          { type: 'color', mode: 'any' },
-          { type: 'value', mode: 'any' },
-        ],
-        wildTypes: cm.wild_types ?? cm.wildTypes ?? ['wild'],
-        colorProperty: cm.color_property ?? cm.colorProperty ?? 'color',
-        valueProperty: cm.value_property ?? cm.valueProperty ?? 'value',
-        mustMatchOrDraw: cm.must_match_or_draw ?? cm.mustMatchOrDraw ?? true,
-        initialCardFromDeck: cm.initial_card_from_deck ?? cm.initialCardFromDeck ?? true,
-      },
-    });
+      mechanics.push({ slug, config });
+    }
   }
 
   const config: GameConfig = {
