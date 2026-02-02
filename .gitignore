@@ -8,7 +8,6 @@ games/*/state/
 # Hook trace logs (debug output)
 logs/
 
-# *.log
 
 # Lock files
 *.lock

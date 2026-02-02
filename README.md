@@ -16,7 +16,7 @@ Playtest enables automated testing of board/card games using:
 Install directly from GitHub:
 
 ```bash
-claude plugin add https://github.com/christopherdebeer/claude-subagent-comms-test
+claude plugin add https://github.com/christopherdebeer/playtest
 ```
 
 This gives you access to:
@@ -31,8 +31,8 @@ This gives you access to:
 Clone the repository for local development:
 
 ```bash
-git clone https://github.com/christopherdebeer/claude-subagent-comms-test
-cd claude-subagent-comms-test
+git clone https://github.com/christopherdebeer/playtest
+cd playtest
 npm install
 npm run build
 ```
@@ -41,10 +41,10 @@ npm run build
 
 ```bash
 # Initialize a game
-cd engine && npx playtest init markovs-chains --players 2
+cd engine && ./playtest init markovs-chains --players 2
 
 # Or use the skill
-/start-game markovs-chains 2
+/playtest markovs-chains 2
 ```
 
 ## Directory Structure
@@ -103,13 +103,13 @@ Natural language rules for gamemaster interpretation...
 ## Engine CLI
 
 ```bash
-npx playtest init <game> -p <n>          # Initialize game
-npx playtest status <game>               # Check status
-npx playtest wait <game> -p <id>         # Wait for turn (blocking)
-npx playtest act <game> -p <id> -a ..    # Execute action
-npx playtest roll <game> --probability   # Probability roll
-npx playtest draw <game> -p <id>         # Draw cards
-npx playtest end <game> -w <id> -r ..    # End game
+./playtest init <game> -p <n>          # Initialize game
+./playtest status <game>               # Check status
+./playtest wait <game> -p <id>         # Wait for turn (blocking)
+./playtest act <game> -p <id> -a ..    # Execute action
+./playtest roll <game> --probability   # Probability roll
+./playtest draw <game> -p <id>         # Draw cards
+./playtest end <game> -w <id> -r ..    # End game
 ```
 
 ## Available Games
@@ -119,6 +119,4 @@ npx playtest end <game> -w <id> -r ..    # End game
 
 ## Skills
 
-- `/start-game <game> [players]` - Start a playtest
-- `/stop-game [game]` - Emergency halt
-- `/view-results [game]` - Analyze logs
+- `/playtest <game> [players]` - Start a playtest
