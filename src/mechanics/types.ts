@@ -49,6 +49,17 @@ export interface PlayerInitResult {
 }
 
 /**
+ * Context for player initialization (includes partial game state being built)
+ */
+export interface PlayerInitContext {
+  config: GameConfig;
+  playerId: string;
+  playerIndex: number;
+  /** Players initialized so far (for cross-player coordination) */
+  existingPlayers: Record<string, Partial<PlayerState>>;
+}
+
+/**
  * Mechanic hooks interface - all methods optional, return null to skip
  */
 export interface MechanicHooks {
@@ -80,8 +91,9 @@ export interface MechanicHooks {
   /**
    * Called when initializing a new player.
    * Return partial player state to merge.
+   * Context includes existingPlayers for cross-player coordination.
    */
-  initPlayerState?(config: GameConfig, playerId: string): PlayerInitResult | null;
+  initPlayerState?(ctx: PlayerInitContext): PlayerInitResult | null;
 
   /**
    * Called at start of player's turn.

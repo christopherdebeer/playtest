@@ -13,6 +13,7 @@ import {
   ValidationResult,
   StateChanges,
   PlayerInitResult,
+  PlayerInitContext,
   isMechanicEnabled
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState } from '../types/game.js';
@@ -138,14 +139,27 @@ class MechanicRegistry {
 
   /**
    * Collect player state from all enabled mechanics during registration.
+   * Passes existing players for cross-player coordination (e.g., unique power assignment).
    */
-  initPlayerState(config: GameConfig, playerId: string): PlayerInitResult {
+  initPlayerState(
+    config: GameConfig,
+    playerId: string,
+    playerIndex: number,
+    existingPlayers: Record<string, Partial<PlayerState>>
+  ): PlayerInitResult {
     const enabledMechanics = this.getEnabledMechanics(config);
     const merged: PlayerInitResult = {};
 
+    const ctx: PlayerInitContext = {
+      config,
+      playerId,
+      playerIndex,
+      existingPlayers
+    };
+
     for (const mechanic of enabledMechanics) {
       if (mechanic.initPlayerState) {
-        const result = mechanic.initPlayerState(config, playerId);
+        const result = mechanic.initPlayerState(ctx);
         if (result) {
           Object.assign(merged, result);
         }

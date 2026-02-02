@@ -566,30 +566,12 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 
     // ============ Mechanic Hooks: Player initialization ============
     // Get initial player state from all enabled mechanics
-    const mechanicState = mechanicRegistry.initPlayerState(config, playerId);
+    // Pass existing players for cross-player coordination (e.g., unique power assignment)
+    const playerIndex = i - 1;
+    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players);
     const actionPoints = mechanicState.actionPoints as number | undefined;
     const actionPointsUsed = mechanicState.actionPointsUsed as number | undefined;
-
-    // Assign player power if variable powers enabled
-    let powerId: string | undefined;
-    if (config.engine_mechanics?.variable_powers) {
-      const powers = config.engine_mechanics.variable_powers.powers;
-      if (config.engine_mechanics.variable_powers.assignment === 'random') {
-        // Random assignment - each player gets a different power
-        const availablePowers = powers.filter(p =>
-          !Object.values(players).some(pl => pl.powerId === p.id)
-        );
-        if (availablePowers.length > 0) {
-          powerId = availablePowers[Math.floor(Math.random() * availablePowers.length)].id;
-        }
-      } else if (config.engine_mechanics.variable_powers.assignment === 'fixed') {
-        // Fixed assignment by player index
-        const playerIndex = parseInt(playerId.replace('player-', '')) - 1;
-        if (playerIndex < powers.length) {
-          powerId = powers[playerIndex].id;
-        }
-      }
-    }
+    const powerId = mechanicState.powerId as string | undefined;
 
     players[playerId] = {
       state: config.board?.start ?? 'start',

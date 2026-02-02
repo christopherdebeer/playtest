@@ -21,6 +21,7 @@ import { openDraftingMechanic } from './open-drafting.js';
 import { setCollectionMechanic } from './set-collection.js';
 import { pushYourLuckMechanic } from './push-your-luck.js';
 import { auctionEnglishMechanic } from './auction-english.js';
+import { variablePlayerPowersMechanic } from './variable-player-powers.js';
 
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
@@ -38,6 +39,7 @@ mechanicRegistry.register(openDraftingMechanic);
 mechanicRegistry.register(setCollectionMechanic);
 mechanicRegistry.register(pushYourLuckMechanic);
 mechanicRegistry.register(auctionEnglishMechanic);
+mechanicRegistry.register(variablePlayerPowersMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges } from './registry.js';
@@ -45,6 +47,7 @@ export type {
   MechanicHooks,
   HookContext,
   TurnStartContext,
+  PlayerInitContext,
   ValidationResult,
   StateChanges,
   PlayerInitResult
