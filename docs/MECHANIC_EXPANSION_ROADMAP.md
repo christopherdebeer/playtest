@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 36 of 192 mechanics (19%)**
+**Implemented: 38 of 192 mechanics (20%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -19,7 +19,7 @@
 | Dice | 1 | 6 | 17% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
-| Information | 0 | 8 | 0% |
+| Information | 2 | 8 | 25% |
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
@@ -48,9 +48,16 @@
 | `win-race` | Victory | First to reach goal wins |
 | `sudden-death-ending` | Ending | Instant win conditions |
 
+### Recently Implemented (Phase 4)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `hidden-roles` | Information | Secret role assignment (Werewolf, Mafia) |
+| `traitor-game` | Information | Traitor vs loyalist asymmetric gameplay |
+
 ## Existing Hook Infrastructure
 
-24 hooks are currently available:
+27 hooks are currently available:
 
 ### Action & Validation
 - `preValidateAction(ctx, action)` - Block invalid actions
@@ -89,6 +96,11 @@
 ### Movement
 - `onBeforeMove(ctx, target)` - Modify/block move
 - `onAfterMove(ctx, previousState, newState)` - React to move
+
+### Visibility (Phase 4)
+- `getVisibleState(ctx)` - Filter state for viewer
+- `onReveal(ctx)` - Handle info reveals
+- `canSeeInfo(ctx, infoType, targetPlayerId)` - Check visibility permissions
 
 ---
 
@@ -231,11 +243,11 @@ onPassPriority?(ctx: HookContext): { nextPlayer?: string; removeFromRound?: bool
 
 ---
 
-## Phase 4: Visibility System (3 New Hooks)
+## Phase 4: Visibility System (3 New Hooks) ✅ IMPLEMENTED
 
-**New Core Service**: `src/mechanics/core/visibility.ts`
+**Core Service**: `src/mechanics/core/visibility.ts`
 
-### New Hooks
+### Hooks (Implemented)
 
 ```typescript
 interface VisibilityContext {
@@ -252,24 +264,29 @@ interface RevealContext {
   config: GameConfig;
 }
 
-// Add to MechanicHooks:
-getVisibleState?(ctx: VisibilityContext): Partial<GameState> | null;
+// Added to MechanicHooks:
+getVisibleState?(ctx: VisibilityContext): VisibleState | null;
 onReveal?(ctx: RevealContext): StateChanges | null;
-canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean;
+canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean | undefined;
 ```
 
-### Unlocked Mechanics
+### Implemented Mechanics
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `hidden-roles` | Secret role assignment | ✅ Implemented |
+| `traitor-game` | Hidden traitor role | ✅ Implemented |
+
+### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
-| `hidden-roles` | Secret role assignment |
 | `hidden-movement` | Hidden player positions |
 | `hidden-victory-points` | Secret scoring |
 | `deduction` | Deduce hidden information |
 | `memory` | Remember revealed info |
 | `targeted-clues` | Give clues about hidden info |
 | `roles-with-asymmetric-information` | Different info per role |
-| `traitor-game` | Hidden traitor role |
 
 ---
 
@@ -450,18 +467,19 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 
 ## Implementation Priority Matrix
 
-| Phase | Complexity | New Hooks | Mechanics Unlocked | Cumulative Total |
-|-------|------------|-----------|-------------------|------------------|
-| 1 | Low | 0 | 18 | 36 (19%) ← **Current** |
-| 2 | Low | 2 | 5 | 41 (21%) |
-| 3 | Medium | 2 | 8 | 49 (26%) |
-| 4 | Medium | 3 | 8 | 57 (30%) |
-| 5 | Medium | 2 | 6 | 63 (33%) |
-| 6 | High | 6 | 8 | 71 (37%) |
-| 7 | High | 5 | 3 | 74 (39%) |
-| 8 | High | 5 | 10 | 84 (44%) |
+| Phase | Complexity | New Hooks | Mechanics Unlocked | Cumulative Total | Status |
+|-------|------------|-----------|-------------------|------------------|--------|
+| 1 | Low | 0 | 18 | 36 (19%) | 83% |
+| 2 | Low | 2 | 5 | 41 (21%) | Pending |
+| 3 | Medium | 2 | 8 | 49 (26%) | Pending |
+| 4 | Medium | 3 | 2 (+6 unlocked) | 38 (20%) | ✅ **Done** |
+| 5 | Medium | 2 | 6 | 44 (23%) | Next |
+| 6 | High | 6 | 8 | 52 (27%) | Pending |
+| 7 | High | 5 | 3 | 55 (29%) | Pending |
+| 8 | High | 5 | 10 | 65 (34%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
+**Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
 
 ---
 
@@ -482,10 +500,12 @@ These mechanics require physical components or real-time elements unsuitable for
 
 ## Next Steps
 
-1. **Implement Phase 1 mechanics** - No infrastructure changes needed
-2. **Create `core/dice.ts`** - Unlock dice mechanics
-3. **Extend `core/turns.ts`** - Support dynamic turn order
-4. **Create `core/visibility.ts`** - Enable hidden information games
+1. ~~**Create `core/visibility.ts`** - Enable hidden information games~~ ✅ Done
+2. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
+3. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
+4. **Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)
+5. **Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)
+6. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
 
 ---
 
