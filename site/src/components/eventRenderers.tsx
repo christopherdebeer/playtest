@@ -33,6 +33,8 @@ import type {
   OperatorHintEvent,
   VictoryClaimPendingEvent,
   TradeOfferedEvent,
+  HookInvokedEvent,
+  MechanicResponseEvent,
 } from '../types/logs'
 
 // ============ EVENT ICONS ============
@@ -64,6 +66,8 @@ const EVENT_ICONS: Record<EventType, string> = {
   operator_hint: '!',
   victory_claim_pending: 'V',
   trade_offered: '$',
+  hook_invoked: '🪝',
+  mechanic_response: '⚙',
 }
 
 export function getEventIcon(event: EventType): string {
@@ -96,6 +100,8 @@ const EVENT_CLASSES: Record<EventType, string> = {
   operator_hint: 'event-hint',
   victory_claim_pending: 'event-victory',
   trade_offered: 'event-action',
+  hook_invoked: 'event-hook',
+  mechanic_response: 'event-mechanic',
 }
 
 export function getEventClass(event: EventType): string {
@@ -362,6 +368,40 @@ function renderTradeOffered(evt: TradeOfferedEvent): React.ReactNode {
   )
 }
 
+function renderHookInvoked(evt: HookInvokedEvent): React.ReactNode {
+  const { data } = evt
+  const resultClass = `hook-result-${data.result}`
+
+  return (
+    <span>
+      Hook <code className="hook-name">{data.hook}</code>
+      {data.action_type && <> for <code>{data.action_type}</code></>}
+      {' '}→ <span className={resultClass}>{data.result}</span>
+      <span className="event-meta">
+        {' '}({data.responding_mechanics.length}/{data.enabled_mechanics.length} mechanics, {data.duration_ms.toFixed(2)}ms)
+      </span>
+    </span>
+  )
+}
+
+function renderMechanicResponse(evt: MechanicResponseEvent): React.ReactNode {
+  const { data } = evt
+  const responseClass = `mechanic-response-${data.response_type}`
+
+  return (
+    <span>
+      <code className="mechanic-name">{data.mechanic}</code>
+      {' '}→ <code className="hook-name">{data.hook}</code>
+      {': '}
+      <span className={responseClass}>{data.response_type}</span>
+      <span className="event-meta"> ({data.duration_ms.toFixed(2)}ms)</span>
+      {data.response_data && (
+        <span className="has-details"> [details]</span>
+      )}
+    </span>
+  )
+}
+
 // ============ EXHAUSTIVE RENDERER ============
 // TypeScript will error if a new event type is added but not handled
 
@@ -413,6 +453,10 @@ export function renderEventContent(evt: TypedLogEvent): React.ReactNode {
       return renderVictoryClaimPending(evt)
     case 'trade_offered':
       return renderTradeOffered(evt)
+    case 'hook_invoked':
+      return renderHookInvoked(evt)
+    case 'mechanic_response':
+      return renderMechanicResponse(evt)
     default:
       // Exhaustiveness check - TypeScript will error if we miss a case
       return assertNever(evt)
@@ -459,6 +503,8 @@ const KNOWN_EVENT_TYPES: Set<string> = new Set([
   'operator_hint',
   'victory_claim_pending',
   'trade_offered',
+  'hook_invoked',
+  'mechanic_response',
 ])
 
 export function isTypedLogEvent(evt: { event: string }): evt is TypedLogEvent {

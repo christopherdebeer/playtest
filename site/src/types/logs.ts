@@ -219,6 +219,30 @@ export interface HandLimitExceededEvent extends BaseLogEvent {
   }
 }
 
+// Hook telemetry events
+export interface HookInvokedEvent extends BaseLogEvent {
+  event: 'hook_invoked'
+  data: {
+    hook: string
+    action_type?: string
+    enabled_mechanics: string[]
+    responding_mechanics: string[]
+    duration_ms: number
+    result: 'blocked' | 'allowed' | 'modified' | 'no_response'
+  }
+}
+
+export interface MechanicResponseEvent extends BaseLogEvent {
+  event: 'mechanic_response'
+  data: {
+    mechanic: string
+    hook: string
+    response_type: 'blocked' | 'allowed' | 'modified' | 'state_changes'
+    duration_ms: number
+    response_data?: Record<string, unknown>
+  }
+}
+
 // Placed card triggered event
 export interface PlacedCardTriggeredEvent extends BaseLogEvent {
   event: 'placed_card_triggered'
@@ -311,6 +335,8 @@ export type TypedLogEvent =
   | OperatorHintEvent
   | VictoryClaimPendingEvent
   | TradeOfferedEvent
+  | HookInvokedEvent
+  | MechanicResponseEvent
 
 // Generic log event for backwards compatibility
 export interface LogEvent {
