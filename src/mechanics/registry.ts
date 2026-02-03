@@ -43,6 +43,9 @@ import {
   DiceRollContext,
   AfterRollContext,
   DiceRollHookResult,
+  TurnOrderContext,
+  TurnOrderResult,
+  PassPriorityResult,
   isMechanicEnabled
 } from './types.js';
 import { Effect } from '../types/game.js';
@@ -176,7 +179,9 @@ class MechanicRegistry {
         // Visibility System (Phase 4)
         'getVisibleState', 'onReveal', 'canSeeInfo',
         // Dice System (Phase 2)
-        'onBeforeRoll', 'onAfterRoll'
+        'onBeforeRoll', 'onAfterRoll',
+        // Dynamic Turn Order (Phase 3)
+        'onDetermineTurnOrder', 'onPassPriority'
       ];
 
       for (const hookName of hookNames) {
@@ -1153,6 +1158,61 @@ class MechanicRegistry {
     }
 
     return mergedChanges;
+  }
+
+  // ============ Dynamic Turn Order Hook Routing (Phase 3) ============
+
+  /**
+   * Run onDetermineTurnOrder hooks. Returns new turn order if any mechanic provides one.
+   * First mechanic to return a non-null order wins.
+   */
+  onDetermineTurnOrder(
+    state: GameState,
+    reason: 'round_start' | 'mid_round' | 'claim' | 'pass'
+  ): TurnOrderResult | null {
+    const ctx: TurnOrderContext = {
+      state,
+      config: state.config,
+      currentOrder: state.turnOrder,
+      reason
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onDetermineTurnOrder) {
+        const result = mechanic.onDetermineTurnOrder(ctx);
+        if (result?.order) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Run onPassPriority hooks. Returns next player or removal instruction.
+   * First mechanic to return a result wins.
+   */
+  onPassPriority(state: GameState, playerId: string): PassPriorityResult | null {
+    const ctx: HookContext = {
+      state,
+      playerId,
+      player: state.players[playerId],
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onPassPriority) {
+        const result = mechanic.onPassPriority(ctx);
+        if (result) {
+          return result;
+        }
+      }
+    }
+
+    return null;
   }
 
   /**

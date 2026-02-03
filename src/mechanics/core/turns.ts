@@ -221,3 +221,191 @@ export function getTurnInfo(state: GameState): {
     isLastTurnOfRound: isLastTurnOfRound(state)
   };
 }
+
+// ============ Dynamic Turn Order (Phase 3) ============
+
+/**
+ * Set a new turn order.
+ * Does not change current player unless they're no longer in the order.
+ */
+export function setTurnOrder(state: GameState, newOrder: string[]): void {
+  state.turnOrder = [...newOrder];
+
+  // If current player is no longer in order, set to first player
+  if (state.currentPlayer && !newOrder.includes(state.currentPlayer)) {
+    state.currentPlayer = newOrder[0] || null;
+  }
+}
+
+/**
+ * Shuffle the turn order randomly.
+ * Optionally keeps the current player in place.
+ */
+export function shuffleTurnOrder(
+  state: GameState,
+  keepCurrentPlayer: boolean = false
+): void {
+  const order = [...state.turnOrder];
+
+  // Fisher-Yates shuffle
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  if (keepCurrentPlayer && state.currentPlayer) {
+    // Move current player to front
+    const currentIdx = order.indexOf(state.currentPlayer);
+    if (currentIdx > 0) {
+      order.splice(currentIdx, 1);
+      order.unshift(state.currentPlayer);
+    }
+  }
+
+  state.turnOrder = order;
+}
+
+/**
+ * Reverse the turn order.
+ */
+export function reverseTurnOrder(state: GameState): void {
+  state.turnOrder = state.turnOrder.reverse();
+}
+
+/**
+ * Move a player to a specific position in turn order.
+ * @param position - 0-indexed position (0 = first)
+ */
+export function movePlayerInOrder(
+  state: GameState,
+  playerId: string,
+  position: number
+): boolean {
+  const currentIdx = state.turnOrder.indexOf(playerId);
+  if (currentIdx === -1) return false;
+
+  // Remove from current position
+  state.turnOrder.splice(currentIdx, 1);
+
+  // Insert at new position (clamped to valid range)
+  const insertIdx = Math.max(0, Math.min(position, state.turnOrder.length));
+  state.turnOrder.splice(insertIdx, 0, playerId);
+
+  return true;
+}
+
+/**
+ * Remove a player from turn order (but not from game).
+ * Useful for pass-based turn order mechanics.
+ */
+export function removeFromTurnOrder(state: GameState, playerId: string): boolean {
+  const idx = state.turnOrder.indexOf(playerId);
+  if (idx === -1) return false;
+
+  state.turnOrder.splice(idx, 1);
+
+  // If removed player was current, advance to next
+  if (state.currentPlayer === playerId) {
+    state.currentPlayer = state.turnOrder[idx % state.turnOrder.length] || null;
+  }
+
+  return true;
+}
+
+/**
+ * Add a player back to turn order (at the end by default).
+ */
+export function addToTurnOrder(
+  state: GameState,
+  playerId: string,
+  position?: number
+): void {
+  if (state.turnOrder.includes(playerId)) return;
+
+  if (position !== undefined) {
+    state.turnOrder.splice(position, 0, playerId);
+  } else {
+    state.turnOrder.push(playerId);
+  }
+}
+
+/**
+ * Apply dynamic turn order if any mechanic provides one.
+ * Called at round start to allow mechanics to reorder players.
+ */
+export function applyDynamicTurnOrder(
+  state: GameState,
+  reason: 'round_start' | 'mid_round' | 'claim' | 'pass' = 'round_start'
+): boolean {
+  const result = mechanicRegistry.onDetermineTurnOrder(state, reason);
+
+  if (result?.order) {
+    setTurnOrder(state, result.order);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Sort turn order by a player property (e.g., score, resources).
+ * @param property - Player state property to sort by
+ * @param descending - If true, highest first (default: true)
+ */
+export function sortTurnOrderByProperty(
+  state: GameState,
+  property: string,
+  descending: boolean = true
+): void {
+  const order = [...state.turnOrder].sort((a, b) => {
+    const playerA = state.players[a];
+    const playerB = state.players[b];
+
+    // Type-safe property access for common player properties
+    let valueA = 0;
+    let valueB = 0;
+
+    if (property === 'score') {
+      valueA = playerA?.score ?? 0;
+      valueB = playerB?.score ?? 0;
+    } else if (property === 'actionPoints') {
+      valueA = playerA?.actionPoints ?? 0;
+      valueB = playerB?.actionPoints ?? 0;
+    } else if (property === 'movementPoints') {
+      valueA = playerA?.movementPoints ?? 0;
+      valueB = playerB?.movementPoints ?? 0;
+    } else if (property === 'tricksWon') {
+      valueA = playerA?.tricksWon ?? 0;
+      valueB = playerB?.tricksWon ?? 0;
+    } else if (playerA?.resources && property.startsWith('resources.')) {
+      const resourceName = property.substring(10);
+      valueA = playerA.resources[resourceName] ?? 0;
+      valueB = playerB?.resources?.[resourceName] ?? 0;
+    }
+
+    return descending ? valueB - valueA : valueA - valueB;
+  });
+
+  state.turnOrder = order;
+}
+
+/**
+ * Create snake draft order (1,2,3,3,2,1,1,2,3...).
+ * Returns turn order for a specified number of rounds.
+ */
+export function createSnakeDraftOrder(
+  players: string[],
+  rounds: number = 1
+): string[] {
+  const order: string[] = [];
+
+  for (let round = 0; round < rounds; round++) {
+    if (round % 2 === 0) {
+      order.push(...players);
+    } else {
+      order.push(...[...players].reverse());
+    }
+  }
+
+  return order;
+}

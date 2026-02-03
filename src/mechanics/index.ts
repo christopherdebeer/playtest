@@ -45,6 +45,9 @@ import { traitorGameMechanic } from './traitor-game.js';
 // Phase 2: Dice System mechanics
 import { diceRollingMechanic } from './dice-rolling.js';
 
+// Phase 3: Dynamic Turn Order mechanics
+import { turnOrderRandomMechanic } from './turn-order-random.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -96,6 +99,9 @@ mechanicRegistry.register(traitorGameMechanic);
 // Register Phase 2: Dice System mechanics
 mechanicRegistry.register(diceRollingMechanic);
 
+// Register Phase 3: Dynamic Turn Order mechanics
+mechanicRegistry.register(turnOrderRandomMechanic);
+
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
 mechanicRegistry.register(scoreThresholdWinMechanic);
@@ -141,5 +147,9 @@ export type {
   // Dice system types (Phase 2)
   DiceRollContext,
   AfterRollContext,
-  DiceRollHookResult
+  DiceRollHookResult,
+  // Turn order types (Phase 3)
+  TurnOrderContext,
+  TurnOrderResult,
+  PassPriorityResult
 } from './types.js';

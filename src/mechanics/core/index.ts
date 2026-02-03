@@ -96,7 +96,17 @@ export {
   advanceTurn,
   setCurrentPlayer,
   skipTurn,
-  getTurnInfo
+  getTurnInfo,
+  // Dynamic turn order (Phase 3)
+  setTurnOrder,
+  shuffleTurnOrder,
+  reverseTurnOrder,
+  movePlayerInOrder,
+  removeFromTurnOrder,
+  addToTurnOrder,
+  applyDynamicTurnOrder,
+  sortTurnOrderByProperty,
+  createSnakeDraftOrder
 } from './turns.js';
 
 // Visibility operations (Phase 4)
