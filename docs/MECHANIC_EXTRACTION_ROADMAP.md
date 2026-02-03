@@ -188,22 +188,25 @@ Each migration follows the push-your-luck pattern:
 3. Add `describeAction` for UI descriptions
 4. Keep `preValidateAction` for validation
 
-### Phase 7: Core Service Extraction
+### Phase 7: Core Service Extraction (Complete)
 
-Extract remaining core services:
+All core services extracted:
 
 ```
 src/mechanics/core/
-├── card-piles.ts     # (done)
-├── hand.ts           # (done)
-├── resources.ts      # NEW: Resource/currency operations
-├── effects.ts        # NEW: Effect management (add, remove, decrement)
-├── board.ts          # NEW: Board state and movement
-├── turns.ts          # NEW: Turn/round management
+├── card-piles.ts     # ✅ Deck/discard operations with hooks
+├── hand.ts           # ✅ Hand operations with hooks
+├── resources.ts      # ✅ Resource/currency operations with hooks
+├── effects.ts        # ✅ Effect management with hooks
+├── board.ts          # ✅ Board state and movement with hooks
+├── turns.ts          # ✅ Turn/round management
 └── index.ts
 ```
 
-Each service exposes hooks for dependent mechanics.
+New hooks added:
+- `onBeforeResourceChange` / `onAfterResourceChange` - Resource operations
+- `onBeforeAddEffect` / `onAfterAddEffect` / `onBeforeRemoveEffect` / `onEffectExpired` - Effect lifecycle
+- `onBeforeMove` / `onAfterMove` - Board movement
 
 ### Phase 8: Win Condition Mechanics
 
@@ -364,6 +367,10 @@ class MechanicRegistry {
 | `src/mechanics/place-location.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/core/card-piles.ts` | Added hooks (onBeforeDraw, onAfterDraw, onDiscard) |
 | `src/mechanics/core/hand.ts` | Added hooks (onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand) |
+| `src/mechanics/core/resources.ts` | NEW: Resource operations with hooks |
+| `src/mechanics/core/effects.ts` | NEW: Effect lifecycle operations with hooks |
+| `src/mechanics/core/board.ts` | NEW: Board state operations with hooks |
+| `src/mechanics/core/turns.ts` | NEW: Turn/round management operations |
 | `src/core/game.ts` | Updated to use core services with playerId for hooks |
 
 ## Commits This Session
@@ -373,4 +380,5 @@ class MechanicRegistry {
 3. `240afb7` - Turn lifecycle and win condition hooks
 4. `41cac14` - Action execution and registration hooks
 5. `b387a35` - Migrate set-collection, trading, open-drafting
-6. (pending) - Migrate board-state, place-card, place-location
+6. `c24bddd` - Migrate board-state, place-card, place-location
+7. (pending) - Core service extraction (resources, effects, board, turns)

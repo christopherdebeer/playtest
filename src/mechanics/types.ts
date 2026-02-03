@@ -6,7 +6,7 @@
  * returning values; returning null means "not my concern".
  */
 
-import { GameState, GameConfig, PlayerState, GameAction, Card } from '../types/game.js';
+import { GameState, GameConfig, PlayerState, GameAction, Card, Effect } from '../types/game.js';
 
 /**
  * Context passed to hooks - read-only view of game state
@@ -216,6 +216,106 @@ export interface HandRemoveContext {
 }
 
 /**
+ * Context for resource change operations
+ */
+export interface ResourceChangeContext {
+  state: GameState;
+  playerId: string;
+  resource: string;
+  /** Positive for add, negative for spend */
+  amount: number;
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeResourceChange - can modify amount or block
+ */
+export interface ResourceChangeHookResult {
+  /** Modified amount (defaults to requested amount) */
+  amount?: number;
+  /** Block the change entirely */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Context for after-resource-change hook
+ */
+export interface AfterResourceChangeContext extends ResourceChangeContext {
+  /** New amount after the change */
+  newAmount: number;
+}
+
+/**
+ * Context for effect operations
+ */
+export interface EffectContext {
+  state: GameState;
+  playerId: string;
+  effect: Effect;
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeAddEffect - can modify effect or block
+ */
+export interface EffectAddHookResult {
+  /** Modified effect (defaults to original) */
+  effect?: Effect;
+  /** Block the add entirely */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Result from onBeforeRemoveEffect - can block removal
+ */
+export interface EffectRemoveHookResult {
+  /** Block the removal */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Context for board move operations
+ */
+export interface MoveContext {
+  state: GameState;
+  playerId: string;
+  /** Target state to move to */
+  target: string;
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeMove - can modify target or block
+ */
+export interface MoveHookResult {
+  /** Modified target state */
+  target?: string;
+  /** Block the move entirely */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Context for after-move hook
+ */
+export interface AfterMoveContext {
+  state: GameState;
+  playerId: string;
+  /** Previous state before move */
+  previousState: string;
+  /** New state after move */
+  newState: string;
+  config: GameConfig;
+}
+
+/**
  * Mechanic hooks interface - all methods optional, return null to skip
  */
 export interface MechanicHooks {
@@ -332,6 +432,60 @@ export interface MechanicHooks {
    * Can trigger effects.
    */
   onAfterRemoveFromHand?(ctx: HandRemoveContext): StateChanges | null;
+
+  // ============ Resource Operation Hooks ============
+
+  /**
+   * Called before a resource change (add or spend).
+   * Can modify the amount or block the change.
+   */
+  onBeforeResourceChange?(ctx: ResourceChangeContext): ResourceChangeHookResult | null;
+
+  /**
+   * Called after a resource change is applied.
+   * Can trigger effects based on resource changes.
+   */
+  onAfterResourceChange?(ctx: AfterResourceChangeContext): StateChanges | null;
+
+  // ============ Effect Operation Hooks ============
+
+  /**
+   * Called before adding an effect to a player.
+   * Can modify the effect or block the add.
+   */
+  onBeforeAddEffect?(ctx: EffectContext): EffectAddHookResult | null;
+
+  /**
+   * Called after an effect is added to a player.
+   * Can trigger side effects.
+   */
+  onAfterAddEffect?(ctx: EffectContext): StateChanges | null;
+
+  /**
+   * Called before removing an effect from a player.
+   * Can block the removal.
+   */
+  onBeforeRemoveEffect?(ctx: EffectContext): EffectRemoveHookResult | null;
+
+  /**
+   * Called when an effect expires (duration reaches 0).
+   * Can trigger side effects or cleanup.
+   */
+  onEffectExpired?(ctx: EffectContext): StateChanges | null;
+
+  // ============ Board Movement Hooks ============
+
+  /**
+   * Called before a player moves to a new board state.
+   * Can modify the target or block the move.
+   */
+  onBeforeMove?(ctx: MoveContext): MoveHookResult | null;
+
+  /**
+   * Called after a player moves to a new board state.
+   * Can trigger effects or update state.
+   */
+  onAfterMove?(ctx: AfterMoveContext): StateChanges | null;
 }
 
 /**
