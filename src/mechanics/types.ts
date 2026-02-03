@@ -410,6 +410,68 @@ export interface PassPriorityResult {
   skipToNextRound?: boolean;
 }
 
+// ============ Voting & Social Types (Phase 5) ============
+
+/**
+ * Context for casting a vote
+ */
+export interface VoteContext {
+  state: GameState;
+  /** Player casting the vote */
+  playerId: string;
+  /** Topic being voted on (e.g., 'elimination', 'action', 'leader') */
+  topic: string;
+  /** Vote ID (for tracking multi-round votes) */
+  voteId: string;
+  /** The player's vote choice */
+  choice: string | number | null;
+  config: GameConfig;
+}
+
+/**
+ * Result from onVoteCast hook
+ */
+export interface VoteCastResult {
+  /** Modified vote choice */
+  choice?: string | number | null;
+  /** Block the vote */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+  /** Additional state changes */
+  stateChanges?: StateChanges;
+}
+
+/**
+ * Context for tallying votes
+ */
+export interface VoteTallyContext {
+  state: GameState;
+  /** Topic being voted on */
+  topic: string;
+  /** Vote ID */
+  voteId: string;
+  /** All votes cast: playerId -> choice */
+  votes: Record<string, string | number | null>;
+  config: GameConfig;
+}
+
+/**
+ * Result from onVoteTally hook
+ */
+export interface VoteTallyResult {
+  /** The winning choice */
+  winner: string | number | null;
+  /** True if vote tied */
+  tied?: boolean;
+  /** Tied choices (if tied) */
+  tiedChoices?: (string | number)[];
+  /** How tie was resolved */
+  tiebreakerUsed?: string;
+  /** Additional state changes to apply */
+  stateChanges?: StateChanges;
+}
+
 /**
  * Result from onBeforeMove - can modify target or block
  */
@@ -655,6 +717,20 @@ export interface MechanicHooks {
    * Can determine next player or remove from round.
    */
   onPassPriority?(ctx: HookContext): PassPriorityResult | null;
+
+  // ============ Voting & Social Hooks (Phase 5) ============
+
+  /**
+   * Called when a player casts a vote.
+   * Can modify the vote, block it, or trigger effects.
+   */
+  onVoteCast?(ctx: VoteContext): VoteCastResult | null;
+
+  /**
+   * Called when votes are tallied.
+   * Can provide custom tally logic or tiebreakers.
+   */
+  onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
 
   // ============ Mechanic Composition ============
 

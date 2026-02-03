@@ -144,3 +144,23 @@ export {
   type DiceRollResult,
   type DiceRollOptions
 } from './dice.js';
+
+// Social operations (Phase 5)
+export {
+  startVoting,
+  castVote,
+  getActiveVotingSession,
+  getVotingSession,
+  hasVoted,
+  getPendingVoters,
+  isVotingComplete,
+  getVotingResult,
+  completeVoting,
+  getVoteCounts,
+  clearCompletedVotes,
+  validateVoteAction,
+  type Vote,
+  type VotingSession,
+  type VotingConfig,
+  type VotingResult
+} from './social.js';

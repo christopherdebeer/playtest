@@ -46,6 +46,10 @@ import {
   TurnOrderContext,
   TurnOrderResult,
   PassPriorityResult,
+  VoteContext,
+  VoteCastResult,
+  VoteTallyContext,
+  VoteTallyResult,
   isMechanicEnabled
 } from './types.js';
 import { Effect } from '../types/game.js';
@@ -1206,6 +1210,70 @@ class MechanicRegistry {
     for (const mechanic of enabledMechanics) {
       if (mechanic.onPassPriority) {
         const result = mechanic.onPassPriority(ctx);
+        if (result) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // ============ Voting & Social Hooks (Phase 5) ============
+
+  /**
+   * Route onVoteCast to all enabled mechanics
+   */
+  onVoteCast(
+    state: GameState,
+    playerId: string,
+    topic: string,
+    voteId: string,
+    choice: string | number | null
+  ): VoteCastResult | null {
+    const ctx: VoteContext = {
+      state,
+      playerId,
+      topic,
+      voteId,
+      choice,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onVoteCast) {
+        const result = mechanic.onVoteCast(ctx);
+        if (result) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Route onVoteTally to all enabled mechanics
+   */
+  onVoteTally(
+    state: GameState,
+    topic: string,
+    voteId: string,
+    votes: Record<string, string | number | null>
+  ): VoteTallyResult | null {
+    const ctx: VoteTallyContext = {
+      state,
+      topic,
+      voteId,
+      votes,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onVoteTally) {
+        const result = mechanic.onVoteTally(ctx);
         if (result) {
           return result;
         }

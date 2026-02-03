@@ -48,6 +48,9 @@ import { diceRollingMechanic } from './dice-rolling.js';
 // Phase 3: Dynamic Turn Order mechanics
 import { turnOrderRandomMechanic } from './turn-order-random.js';
 
+// Phase 5: Voting & Social mechanics
+import { votingMechanic } from './voting.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -101,6 +104,9 @@ mechanicRegistry.register(diceRollingMechanic);
 
 // Register Phase 3: Dynamic Turn Order mechanics
 mechanicRegistry.register(turnOrderRandomMechanic);
+
+// Register Phase 5: Voting & Social mechanics
+mechanicRegistry.register(votingMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
