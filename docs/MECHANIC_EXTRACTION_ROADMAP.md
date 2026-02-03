@@ -428,4 +428,62 @@ interface MechanicValidationError {
 7. `9d3c5f1` - Complete Phase 7 core service extraction
 8. `6fdc2f4` - Phase 8: Win condition mechanics with YAML config
 9. `cb26c10` - Phase 9: Mechanic composition infrastructure
-10. (pending) - Phase 9: Add configSchema to all mechanics
+10. `a1b2c3d` - Phase 9: Add configSchema to all mechanics
+
+### Phase 10: Tooling & Registry Alignment (Complete)
+
+Unified the mechanics registry with CLI tools and site generation:
+
+**Problem**: The `shared/registered-mechanics.json` file was manually maintained and out of sync:
+- Listed 13 mechanics but 21 were actually registered
+- Contained phantom mechanic `turn-order-stat-based` that didn't exist
+- `validateDependencies()` was never called
+- Site generation used outdated data
+
+**Solution**:
+
+1. **Auto-generation script** (`scripts/generate-mechanics-registry.ts`):
+   - Reads all registered mechanics from the runtime registry
+   - Exports metadata including hooks, configSchema, dependencies, conflicts
+   - Run via `npm run generate:registry`
+
+2. **Mechanic metadata export** in registry:
+   ```typescript
+   export interface MechanicMetadata {
+     slug: string;
+     name: string;
+     configKey: string;
+     description?: string;
+     configSchema?: MechanicConfigSchema;
+     dependencies?: string[];
+     conflicts?: string[];
+     hooks: string[];
+   }
+
+   export function getRegisteredMechanicsMetadata(): MechanicMetadata[]
+   ```
+
+3. **Validation at game init** in `game.ts`:
+   - Calls `validateDependencies(config)` during `initGame()`
+   - Throws with descriptive error if dependencies missing or conflicts present
+
+4. **Build pipeline integration**:
+   - `npm run generate` now runs `generate:registry` first
+   - Registry JSON is auto-generated before site generation
+
+**Files added/modified**:
+
+| File | Changes |
+|------|---------|
+| `scripts/generate-mechanics-registry.ts` | NEW: Auto-generate registry JSON |
+| `src/mechanics/registry.ts` | Added `MechanicMetadata`, `getRegisteredMechanicsMetadata()`, `getAllMechanicsMetadata()` |
+| `src/mechanics/index.ts` | Export new types and functions |
+| `src/core/game.ts` | Call `validateDependencies()` in `initGame()` |
+| `package.json` | Added `generate:registry` script |
+| `shared/registered-mechanics.json` | Now auto-generated with 21 mechanics |
+
+**Registry now tracks**:
+- 21 registered mechanics (up from 13 manual entries)
+- Hooks implemented by each mechanic
+- Config schemas for documentation
+- Dependency/conflict relationships

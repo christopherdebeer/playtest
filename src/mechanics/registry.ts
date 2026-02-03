@@ -51,6 +51,25 @@ export interface MechanicValidationError {
   message: string;
 }
 
+/**
+ * Metadata for a registered mechanic (for export/documentation)
+ */
+export interface MechanicMetadata {
+  slug: string;
+  name: string;
+  configKey: string;
+  description?: string;
+  configSchema?: {
+    type: string;
+    properties?: Record<string, unknown>;
+    required?: string[];
+    description?: string;
+  };
+  dependencies?: string[];
+  conflicts?: string[];
+  hooks: string[];
+}
+
 class MechanicRegistry {
   private mechanics: Map<string, MechanicHooks> = new Map();
 
@@ -124,6 +143,50 @@ class MechanicRegistry {
     }
 
     return errors;
+  }
+
+  /**
+   * Get metadata for all registered mechanics (for export/documentation)
+   */
+  getAllMechanicsMetadata(): MechanicMetadata[] {
+    const result: MechanicMetadata[] = [];
+
+    for (const mechanic of this.mechanics.values()) {
+      // Derive config key from slug (e.g., 'action-points' -> 'action_points')
+      const configKey = mechanic.slug.replace(/-/g, '_');
+
+      // Collect which hooks are implemented
+      const hooks: string[] = [];
+      const hookNames = [
+        'preValidateAction', 'postExecuteAction', 'shouldAutoEndTurn',
+        'initPlayerState', 'onTurnStart', 'onTurnEnd', 'onCheckWin',
+        'onExecuteAction', 'getAvailableActions', 'describeAction',
+        'onBeforeDraw', 'onAfterDraw', 'onDiscard',
+        'onBeforeAddToHand', 'onAfterAddToHand', 'onAfterRemoveFromHand',
+        'onBeforeResourceChange', 'onAfterResourceChange',
+        'onBeforeAddEffect', 'onAfterAddEffect', 'onBeforeRemoveEffect', 'onEffectExpired',
+        'onBeforeMove', 'onAfterMove'
+      ];
+
+      for (const hookName of hookNames) {
+        if (hookName in mechanic && (mechanic as unknown as Record<string, unknown>)[hookName] !== undefined) {
+          hooks.push(hookName);
+        }
+      }
+
+      result.push({
+        slug: mechanic.slug,
+        name: mechanic.name,
+        configKey,
+        description: mechanic.configSchema?.description,
+        configSchema: mechanic.configSchema,
+        dependencies: mechanic.dependencies,
+        conflicts: mechanic.conflicts,
+        hooks
+      });
+    }
+
+    return result.sort((a, b) => a.slug.localeCompare(b.slug));
   }
 
   /**
@@ -834,6 +897,14 @@ class MechanicRegistry {
       };
     }
   }
+}
+
+/**
+ * Get all registered mechanics as metadata for export.
+ * Used by scripts to generate shared/registered-mechanics.json
+ */
+export function getRegisteredMechanicsMetadata(): MechanicMetadata[] {
+  return mechanicRegistry.getAllMechanicsMetadata();
 }
 
 // Singleton registry instance

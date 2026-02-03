@@ -537,6 +537,13 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     throw new Error(`Player count ${playerCount} out of range [${min}, ${max}] for ${gameName}`);
   }
 
+  // Validate mechanic dependencies and conflicts
+  const mechanicErrors = mechanicRegistry.validateDependencies(config);
+  if (mechanicErrors.length > 0) {
+    const errorMessages = mechanicErrors.map(e => `  - ${e.message}`).join('\n');
+    throw new Error(`Mechanic configuration errors for ${gameName}:\n${errorMessages}`);
+  }
+
   const gameId = `${gameName}-${Date.now()}`;
 
   // Build and shuffle deck if configured

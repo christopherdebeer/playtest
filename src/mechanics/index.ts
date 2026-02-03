@@ -58,8 +58,8 @@ mechanicRegistry.register(eliminationWinMechanic);
 mechanicRegistry.register(timeoutWinnerMechanic);
 
 // Re-export for convenience
-export { mechanicRegistry, applyStateChanges } from './registry.js';
-export type { MechanicValidationError } from './registry.js';
+export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';
+export type { MechanicValidationError, MechanicMetadata } from './registry.js';
 export type {
   MechanicHooks,
   MechanicConfigSchema,
