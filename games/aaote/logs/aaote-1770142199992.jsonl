@@ -1,2 +1,17 @@
 {"timestamp":"2026-02-03T18:09:59.997Z","event":"game_init","data":{"gameId":"aaote-1770142199992","playerCount":2,"config":"AAOTE: An Agent of the Enemy"}}
 {"timestamp":"2026-02-03T18:10:23.988Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T18:11:10.543Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"Crossroads","adjacentTo":"origin"}}
+{"timestamp":"2026-02-03T18:11:28.698Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"Crossroads"}}
+{"timestamp":"2026-02-03T18:11:51.775Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:12:08.499Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:12:21.283Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:12:33.154Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":3}}
+{"timestamp":"2026-02-03T18:12:47.992Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Sabotage","effect":{"type":"destroy_location","description":"Remove a non-occupied location from grid"}}}
+{"timestamp":"2026-02-03T18:13:01.888Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-03T18:13:17.271Z","event":"trade_offered","round":5,"turnNumber":9,"player":"player-1","data":{"tradeId":"trade-1770142397271-cwtngsss9","target":"player-2","offer":["Lantern"],"request":[]}}
+{"timestamp":"2026-02-03T18:13:28.799Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"move","target":"Crossroads","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:13:45.158Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"place_location","card":"Hidden Cave","adjacentTo":"Ancient Ruins"}}
+{"timestamp":"2026-02-03T18:13:58.016Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"move","target":"Hidden Cave","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:14:09.421Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:14:26.439Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T18:14:46.781Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Theft","effect":{"type":"steal_item","description":"Steal random item from adjacent player"}}}
