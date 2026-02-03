@@ -93,6 +93,24 @@ export interface PlayerState {
   currentNode?: string;            // Current node location
   previousNode?: string;           // Previous node (for tracking)
   stopsThisTurn?: number;          // Number of stops made this turn
+
+  // Visibility system state (Phase 4)
+  hiddenRole?: string;             // Player's secret role (traitor, villager, etc.)
+  team?: string;                   // Player's team affiliation
+  knowledge?: PlayerKnowledge;     // What this player knows about others
+}
+
+/**
+ * Knowledge that a player has about other players.
+ * Used by the visibility system to track revealed information.
+ */
+export interface PlayerKnowledge {
+  /** Players whose roles this player knows */
+  knownRoles: Record<string, string>;
+  /** Players whose positions this player knows */
+  knownPositions: Record<string, string>;
+  /** Custom revealed information (key is "playerId:infoType") */
+  revealed: Record<string, unknown>;
 }
 
 export interface Effect {
@@ -161,6 +179,10 @@ export interface EngineMechanics {
   deck_building?: DeckBuildingConfig;         // Personal deck acquisition (Dominion, Star Realms)
   multi_use_cards?: MultiUseCardsConfig;      // Cards with multiple use options
   point_to_point_movement?: PointToPointMovementConfig;  // Graph-based node movement
+
+  // Phase 4: Visibility System
+  hidden_roles?: HiddenRolesConfig;           // Secret role assignment
+  traitor_game?: TraitorGameConfig;           // Traitor vs loyalist gameplay
 }
 
 // Proposal 007: Grid configuration
@@ -618,6 +640,57 @@ export interface PointToPointRoute {
   type?: string;                               // Route type/color
   length?: number;                             // Route length
   blocked?: boolean;                           // Whether route is blocked
+}
+
+// Hidden Roles mechanic (Phase 4: Visibility System)
+export interface HiddenRolesConfig {
+  roles: HiddenRoleDefinition[];               // Available roles
+  assignment?: 'random' | 'predetermined' | 'draft';  // How roles are assigned
+  defaultRole?: string;                        // Default role if not enough specific roles
+  teamVisibility?: boolean;                    // Whether teammates can see each other
+  evilKnowsEvil?: boolean;                     // Whether evil players know each other
+  investigatorRole?: string;                   // Role that can investigate others
+  hiddenInfo?: ('role' | 'team' | 'alignment')[];  // What info is hidden
+}
+
+export interface HiddenRoleDefinition {
+  id: string;                                  // Unique role identifier
+  name: string;                                // Display name
+  description?: string;                        // Role description
+  team?: string;                               // Team this role belongs to
+  count?: number;                              // Number of this role
+  isEvil?: boolean;                            // Whether this role is evil/traitor
+  abilities?: string[];                        // Special abilities
+  winCondition?: string;                       // Win condition description
+}
+
+// Traitor Game mechanic (Phase 4: Visibility System)
+export interface TraitorGameConfig {
+  traitorCount?: number;                       // Number of traitors (default: 1)
+  traitorsByPlayerCount?: Record<number, number>;  // Traitor count by player count
+  traitorRole?: string;                        // Role ID for traitor
+  loyalistRole?: string;                       // Role ID for loyalists
+  traitorsKnowEachOther?: boolean;             // Whether traitors know each other
+  traitorWinCondition?: TraitorWinCondition;   // How traitors win
+  loyalistWinCondition?: LoyalistWinCondition; // How loyalists win
+  enableAccusation?: boolean;                  // Allow voting to expose traitors
+  exposureThreshold?: number;                  // Voting threshold to expose
+}
+
+export interface TraitorWinCondition {
+  type: 'majority_eliminated' | 'all_eliminated' | 'objective_failed' |
+        'reach_state' | 'timeout' | 'custom';
+  targetState?: string;
+  eliminationThreshold?: number;
+  customCondition?: string;
+}
+
+export interface LoyalistWinCondition {
+  type: 'objective_complete' | 'traitors_exposed' | 'reach_state' |
+        'survive_rounds' | 'custom';
+  targetState?: string;
+  roundsToSurvive?: number;
+  customCondition?: string;
 }
 
 export interface GameConfig {

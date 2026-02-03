@@ -37,6 +37,9 @@ import {
   MoveContext,
   MoveHookResult,
   AfterMoveContext,
+  VisibilityContext,
+  RevealContext,
+  VisibleState,
   isMechanicEnabled
 } from './types.js';
 import { Effect } from '../types/game.js';
@@ -166,7 +169,9 @@ class MechanicRegistry {
         'onBeforeAddToHand', 'onAfterAddToHand', 'onAfterRemoveFromHand',
         'onBeforeResourceChange', 'onAfterResourceChange',
         'onBeforeAddEffect', 'onAfterAddEffect', 'onBeforeRemoveEffect', 'onEffectExpired',
-        'onBeforeMove', 'onAfterMove'
+        'onBeforeMove', 'onAfterMove',
+        // Visibility System (Phase 4)
+        'getVisibleState', 'onReveal', 'canSeeInfo'
       ];
 
       for (const hookName of hookNames) {
@@ -960,6 +965,123 @@ class MechanicRegistry {
     }
 
     return mergedChanges;
+  }
+
+  // ============ Visibility System Hook Routing (Phase 4) ============
+
+  /**
+   * Run getVisibleState hooks. Returns merged visible state.
+   * Mechanics can filter what a viewer can see about game state.
+   */
+  getVisibleState(state: GameState, viewerPlayerId: string): VisibleState {
+    const ctx: VisibilityContext = {
+      state,
+      viewerPlayerId,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedVisible: VisibleState = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.getVisibleState) {
+        const result = mechanic.getVisibleState(ctx);
+        if (result) {
+          // Merge visibility results (more restrictive wins)
+          if (result.players) {
+            mergedVisible.players = mergedVisible.players || {};
+            for (const [pid, pstate] of Object.entries(result.players)) {
+              mergedVisible.players[pid] = {
+                ...mergedVisible.players[pid],
+                ...pstate
+              };
+            }
+          }
+          if (result.shared) {
+            mergedVisible.shared = {
+              ...mergedVisible.shared,
+              ...result.shared
+            };
+          }
+          if (result.visibilityMeta) {
+            mergedVisible.visibilityMeta = {
+              ...mergedVisible.visibilityMeta,
+              ...result.visibilityMeta
+            };
+          }
+        }
+      }
+    }
+
+    return mergedVisible;
+  }
+
+  /**
+   * Run onReveal hooks when hidden information is revealed.
+   * Returns merged state changes.
+   */
+  onReveal(
+    state: GameState,
+    revealingPlayerId: string,
+    targetInfo: string,
+    toPlayerIds: string[] | 'all'
+  ): StateChanges {
+    const ctx: RevealContext = {
+      state,
+      revealingPlayerId,
+      targetInfo,
+      toPlayerIds,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onReveal) {
+        const changes = mechanic.onReveal(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Check if a player can see specific information.
+   * Returns true if any mechanic grants visibility, false if any denies.
+   * Returns undefined if no mechanics have an opinion (default: visible).
+   */
+  canSeeInfo(
+    state: GameState,
+    viewerPlayerId: string,
+    infoType: string,
+    targetPlayerId?: string
+  ): boolean | undefined {
+    const ctx: VisibilityContext = {
+      state,
+      viewerPlayerId,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    let hasOpinion = false;
+    let anyDenied = false;
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.canSeeInfo) {
+        const result = mechanic.canSeeInfo(ctx, infoType, targetPlayerId);
+        if (result !== undefined) {
+          hasOpinion = true;
+          if (result === false) {
+            anyDenied = true;
+          }
+        }
+      }
+    }
+
+    if (!hasOpinion) return undefined;
+    return !anyDenied;
   }
 
   /**

@@ -290,6 +290,47 @@ export interface MoveContext {
   config: GameConfig;
 }
 
+// ============ Visibility System Types (Phase 4) ============
+
+/**
+ * Context for visibility checks - determines what a player can see
+ */
+export interface VisibilityContext {
+  state: GameState;
+  viewerPlayerId: string;
+  config: GameConfig;
+}
+
+/**
+ * Context for reveal operations - when hidden info becomes visible
+ */
+export interface RevealContext {
+  state: GameState;
+  /** Player revealing the information */
+  revealingPlayerId: string;
+  /** Type of information being revealed (e.g., 'role', 'hand', 'position') */
+  targetInfo: string;
+  /** Players who will see the revealed info ('all' for everyone) */
+  toPlayerIds: string[] | 'all';
+  config: GameConfig;
+}
+
+/**
+ * Result from getVisibleState - filtered game state for a viewer
+ */
+export interface VisibleState {
+  /** Filtered players object (with hidden info redacted) */
+  players?: Record<string, Partial<PlayerState>>;
+  /** Filtered shared state */
+  shared?: Record<string, unknown>;
+  /** Additional visibility metadata */
+  visibilityMeta?: {
+    hiddenPlayers?: string[];
+    hiddenInfo?: string[];
+    revealedTo?: Record<string, string[]>;
+  };
+}
+
 /**
  * Result from onBeforeMove - can modify target or block
  */
@@ -486,6 +527,29 @@ export interface MechanicHooks {
    * Can trigger effects or update state.
    */
   onAfterMove?(ctx: AfterMoveContext): StateChanges | null;
+
+  // ============ Visibility System Hooks (Phase 4) ============
+
+  /**
+   * Filter game state for a specific viewer.
+   * Return partial state showing only what the viewer should see.
+   * Return null to skip (use default visibility).
+   */
+  getVisibleState?(ctx: VisibilityContext): VisibleState | null;
+
+  /**
+   * Called when hidden information is revealed.
+   * Can trigger effects or update state based on reveals.
+   */
+  onReveal?(ctx: RevealContext): StateChanges | null;
+
+  /**
+   * Check if a player can see specific information.
+   * Return true/false to allow/deny, or undefined to defer to other mechanics.
+   * @param infoType - Type of info: 'role', 'hand', 'position', 'score', etc.
+   * @param targetPlayerId - Optional target player (for viewing another player's info)
+   */
+  canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean | undefined;
 
   // ============ Mechanic Composition ============
 
