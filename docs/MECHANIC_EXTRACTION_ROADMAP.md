@@ -487,3 +487,23 @@ Unified the mechanics registry with CLI tools and site generation:
 - Hooks implemented by each mechanic
 - Config schemas for documentation
 - Dependency/conflict relationships
+
+---
+
+## Next Steps: Mechanic Expansion
+
+With the extraction infrastructure complete, the next phase focuses on **expanding mechanic coverage** from 21 to 87+ mechanics (45% of the 192 BGG reference mechanics).
+
+See **[MECHANIC_EXPANSION_ROADMAP.md](./MECHANIC_EXPANSION_ROADMAP.md)** for:
+- 18 mechanics implementable with existing hooks (no new infrastructure)
+- 6 new core services and ~25 new hooks planned
+- Phased implementation plan with priority matrix
+- Hook specifications for dice, visibility, voting, combat, workers, and auctions
+
+---
+
+## Related Documents
+
+- [MECHANIC_EXPANSION_ROADMAP.md](./MECHANIC_EXPANSION_ROADMAP.md) - Expansion to 87+ mechanics
+- [ENGINE_ARCHITECTURE.md](./ENGINE_ARCHITECTURE.md) - Engine architecture overview
+- [EXTENSION-GUIDE.md](./EXTENSION-GUIDE.md) - How to add new mechanics

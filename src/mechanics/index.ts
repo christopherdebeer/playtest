@@ -23,6 +23,13 @@ import { pushYourLuckMechanic } from './push-your-luck.js';
 import { auctionEnglishMechanic } from './auction-english.js';
 import { variablePlayerPowersMechanic } from './variable-player-powers.js';
 
+// New mechanics (Phase 1 expansion)
+import { closedDraftingMechanic } from './closed-drafting.js';
+import { trickTakingMechanic } from './trick-taking.js';
+import { movementPointsMechanic } from './movement-points.js';
+import { automaticResourceGrowthMechanic } from './automatic-resource-growth.js';
+import { eventsMechanic } from './events.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -49,6 +56,13 @@ mechanicRegistry.register(setCollectionMechanic);
 mechanicRegistry.register(pushYourLuckMechanic);
 mechanicRegistry.register(auctionEnglishMechanic);
 mechanicRegistry.register(variablePlayerPowersMechanic);
+
+// Register new mechanics (Phase 1 expansion)
+mechanicRegistry.register(closedDraftingMechanic);
+mechanicRegistry.register(trickTakingMechanic);
+mechanicRegistry.register(movementPointsMechanic);
+mechanicRegistry.register(automaticResourceGrowthMechanic);
+mechanicRegistry.register(eventsMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);

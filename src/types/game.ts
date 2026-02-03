@@ -15,6 +15,9 @@ export interface Card {
   };
   placeable?: boolean;  // Can this card be placed on board states?
   targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  // Trick-taking card attributes
+  suit?: string;  // Card suit (e.g., "hearts", "spades")
+  value?: number | string;  // Card value (e.g., 1-13, "A", "K", "Q", "J")
 }
 
 export interface PlayerState {
@@ -46,6 +49,18 @@ export interface PlayerState {
     condition?: string;  // Win condition description
     revealed?: boolean;  // Whether the objective has been revealed
   };
+
+  // Closed drafting state
+  draftPool?: Card[];              // Cards available to draft from
+  draftSelection?: Card | null;    // Currently selected card (hidden until reveal)
+  hasDraftSelected?: boolean;      // Whether player has made selection this pick
+
+  // Movement points state
+  movementPoints?: number;         // Remaining movement points this turn
+  movementPointsUsed?: number;     // Movement points used this turn
+
+  // Trick-taking state
+  tricksWon?: number;              // Number of tricks won
 }
 
 export interface Effect {
@@ -95,6 +110,13 @@ export interface EngineMechanics {
   win_empty_hand?: boolean;                   // Win by emptying hand
   win_elimination?: boolean;                  // Win by being last player standing
   win_timeout?: WinTimeoutConfig;             // Winner determination on timeout
+
+  // New mechanics (Phase 1 expansion)
+  closed_drafting?: ClosedDraftingConfig;     // Simultaneous card drafting with passing
+  trick_taking?: TrickTakingConfig;           // Trick-taking card game mechanic
+  movement_points?: MovementPointsConfig;     // Movement budget per turn
+  automatic_resource_growth?: AutomaticResourceGrowthConfig;  // Resources that grow over time
+  events?: EventsConfig;                      // Random/scheduled game events
 }
 
 // Proposal 007: Grid configuration
@@ -256,6 +278,78 @@ export interface OpenDraftingConfig {
 export interface SimultaneousActionConfig {
   enabled: boolean;                  // Use simultaneous resolution
   resolution_order: 'random' | 'clockwise' | 'priority';  // How to resolve conflicts
+}
+
+// Closed Drafting mechanic (slug: closed-drafting)
+export interface ClosedDraftingConfig {
+  pool_size: number;                 // Cards per player's draft pool
+  pass_direction: 'left' | 'right'; // Direction to pass remaining cards
+  alternate_direction?: boolean;     // Alternate direction each round
+  final_pool_keep?: number;          // Cards kept from final pool
+}
+
+// Trick-Taking mechanic (slug: trick-taking)
+export interface TrickTakingConfig {
+  trump_suit?: string;               // Trump suit (optional)
+  can_lead_trump?: boolean;          // Can lead trump when having other suits
+  suit_order?: string[];             // Suit hierarchy for tiebreaks
+  value_order?: string[];            // Value hierarchy (first is highest)
+  points_per_trick?: number;         // Points per trick won
+  card_values?: Record<string, number>;  // Explicit card values
+}
+
+// Movement Points mechanic (slug: movement-points)
+export interface MovementPointsConfig {
+  points_per_turn: number;           // Movement points per turn
+  rollover?: boolean;                // Carry over unused points
+  max_points?: number;               // Max accumulated points
+  terrain_costs?: Record<string, number>;  // Cost per terrain type
+  default_cost?: number;             // Default movement cost
+  movement_actions?: string[];       // Actions that consume MP
+}
+
+// Automatic Resource Growth mechanic (slug: automatic-resource-growth)
+export interface AutomaticResourceGrowthConfig {
+  rules: ResourceGrowthRule[];       // Growth rules
+}
+
+export interface ResourceGrowthRule {
+  resource: string;                  // Resource to grow
+  rate?: number;                     // Growth rate (0.1 = 10%)
+  fixed_per?: number;                // Fixed amount per threshold
+  threshold?: number;                // Threshold for fixed_per
+  min?: number;                      // Minimum after growth
+  max?: number;                      // Maximum after growth
+  rounding?: 'floor' | 'round' | 'ceil';
+  timing?: 'turn' | 'round';
+}
+
+// Events mechanic (slug: events)
+export interface EventsConfig {
+  events: GameEventDef[];            // Available events
+  timing?: 'turn_start' | 'round_start' | 'both';
+  probability?: number;              // Chance of event occurring
+  max_per_trigger?: number;          // Max events per trigger
+  use_deck?: boolean;                // Remove events after occurring
+}
+
+export interface GameEventDef {
+  id: string;                        // Unique identifier
+  name: string;                      // Display name
+  description?: string;              // Description
+  weight?: number;                   // Selection weight
+  on_rounds?: number[];              // Specific rounds only
+  effects: GameEventEffect[];        // Effects when triggered
+  once?: boolean;                    // Can only occur once
+}
+
+export interface GameEventEffect {
+  type: 'resource' | 'effect' | 'state' | 'score';
+  target?: 'current' | 'all' | 'random' | string;
+  resource?: string;
+  amount?: number;
+  effect?: Partial<Effect>;
+  state?: string;
 }
 
 export interface GameConfig {
@@ -420,7 +514,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select';
 
 export interface BaseAction {
   type: ActionType;
@@ -494,6 +588,12 @@ export interface DraftAction extends BaseAction {
   card: string;                      // Card name to draft from display
 }
 
+// Closed Drafting action
+export interface DraftSelectAction extends BaseAction {
+  type: 'draft_select';
+  card: string;                      // Card name to select from draft pool
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -542,7 +642,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction;
 
 // Action validation result
 export interface ActionValidationResult {

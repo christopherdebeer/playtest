@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T12:39:06.589Z",
+  "generated": "2026-02-03T13:02:50.702Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -28,6 +28,17 @@
         "preValidateAction"
       ]
     },
+    "automatic-resource-growth": {
+      "config_key": "automatic_resource_growth",
+      "since": "3.0.0",
+      "description": "Resources that grow based on current value (interest, regeneration)",
+      "config_schema": {
+        "rules": "array"
+      },
+      "hooks": [
+        "onTurnStart"
+      ]
+    },
     "board-state": {
       "config_key": "board_state",
       "since": "3.0.0",
@@ -43,6 +54,39 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ]
+    },
+    "closed-drafting": {
+      "config_key": "closed_drafting",
+      "since": "3.0.0",
+      "description": "Simultaneous card selection with passing (7 Wonders style)",
+      "config_schema": {
+        "pool_size": "number",
+        "pass_direction": "left | right",
+        "alternate_direction": "boolean",
+        "final_pool_keep": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "events": {
+      "config_key": "events",
+      "since": "3.0.0",
+      "description": "Random or scheduled game events",
+      "config_schema": {
+        "events": "array",
+        "timing": "turn_start | round_start | both",
+        "probability": "number",
+        "max_per_trigger": "number",
+        "use_deck": "boolean"
+      },
+      "hooks": [
+        "onTurnStart"
       ]
     },
     "grid-movement": {
@@ -81,6 +125,25 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ]
+    },
+    "movement-points": {
+      "config_key": "movement_points",
+      "since": "3.0.0",
+      "description": "Movement economy: points per turn, terrain costs",
+      "config_schema": {
+        "points_per_turn": "number",
+        "rollover": "boolean",
+        "max_points": "number",
+        "terrain_costs": "object",
+        "default_cost": "number",
+        "movement_actions": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "postExecuteAction",
+        "initPlayerState",
+        "onTurnStart"
       ]
     },
     "open-drafting": {
@@ -167,6 +230,25 @@
         "require_adjacent_location": "boolean",
         "item_types_only": "boolean",
         "allow_gifts": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "trick-taking": {
+      "config_key": "trick_taking",
+      "since": "3.0.0",
+      "description": "Classic trick-taking card game mechanic",
+      "config_schema": {
+        "trump_suit": "string",
+        "can_lead_trump": "boolean",
+        "suit_order": "array",
+        "value_order": "array",
+        "points_per_trick": "number",
+        "card_values": "object"
       },
       "hooks": [
         "preValidateAction",
