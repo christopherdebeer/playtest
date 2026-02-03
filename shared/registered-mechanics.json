@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T13:23:02.609Z",
+  "generated": "2026-02-03T14:07:59.070Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -123,6 +123,28 @@
         "describeAction"
       ]
     },
+    "deck-building": {
+      "config_key": "deck_building",
+      "since": "3.0.0",
+      "description": "Acquire cards into personal deck (Dominion, Star Realms)",
+      "config_schema": {
+        "starting_deck": "array",
+        "supply": "array",
+        "currency": "string",
+        "use_discard": "boolean",
+        "draw_count": "number",
+        "acquire_to": "hand | discard | deck_top",
+        "allow_trash": "boolean",
+        "trash_pile": "string"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
     "events": {
       "config_key": "events",
       "since": "3.0.0",
@@ -217,6 +239,24 @@
         "onTurnStart"
       ]
     },
+    "multi-use-cards": {
+      "config_key": "multi_use_cards",
+      "since": "3.0.0",
+      "description": "Cards with multiple possible uses (Race for the Galaxy, Glory to Rome)",
+      "config_schema": {
+        "cards": "array",
+        "default_uses": "array",
+        "discard_on_use": "boolean",
+        "cards_as_currency": "boolean",
+        "card_currency_value": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
     "once-per-game-abilities": {
       "config_key": "once_per_game_abilities",
       "since": "3.0.0",
@@ -264,6 +304,28 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "point-to-point-movement": {
+      "config_key": "point_to_point_movement",
+      "since": "3.0.0",
+      "description": "Movement between nodes connected by routes (Ticket to Ride, Pandemic)",
+      "config_schema": {
+        "nodes": "array",
+        "routes": "array",
+        "starting_node": "string",
+        "use_movement_points": "boolean",
+        "default_cost": "number",
+        "exclusive_routes": "boolean",
+        "multi_stop": "boolean",
+        "max_stops": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"

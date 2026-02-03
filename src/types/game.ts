@@ -6,7 +6,8 @@ export type Role = 'gamemaster' | 'player';
 export interface Card {
   name: string;
   type: string;
-  effect: {
+  id?: string;  // Unique card instance ID (for deck-building, multi-use tracking)
+  effect?: {
     type: string;
     value?: number;
     duration?: number;
@@ -80,6 +81,17 @@ export interface PlayerState {
   // Area movement state
   currentArea?: string;            // Current area location
   previousArea?: string;           // Previous area (for tracking)
+
+  // Deck-building state
+  personalDeck?: Card[];           // Player's personal deck
+  personalDiscard?: Card[];        // Player's personal discard pile
+  deckCardsAcquired?: number;      // Count of cards acquired (for unique IDs)
+  coins?: number;                  // Currency for deck-building games
+
+  // Point-to-point movement state
+  currentNode?: string;            // Current node location
+  previousNode?: string;           // Previous node (for tracking)
+  stopsThisTurn?: number;          // Number of stops made this turn
 }
 
 export interface Effect {
@@ -143,6 +155,11 @@ export interface EngineMechanics {
   catch_the_leader?: CatchTheLeaderConfig;    // Balancing mechanic for competitive games
   sudden_death_ending?: SuddenDeathEndingConfig;  // Instant win conditions
   area_movement?: AreaMovementConfig;         // Movement between named areas
+
+  // Phase 1 expansion (continued)
+  deck_building?: DeckBuildingConfig;         // Personal deck acquisition (Dominion, Star Realms)
+  multi_use_cards?: MultiUseCardsConfig;      // Cards with multiple use options
+  point_to_point_movement?: PointToPointMovementConfig;  // Graph-based node movement
 }
 
 // Proposal 007: Grid configuration
@@ -519,6 +536,89 @@ export interface AreaDefinition {
   properties?: Record<string, unknown>;
 }
 
+// Deck Building mechanic (slug: deck-building)
+export interface DeckBuildingConfig {
+  starting_deck?: (string | Card)[];           // Starting deck cards
+  supply?: DeckBuildingSupplyPile[];           // Supply piles for acquisition
+  currency?: string;                           // Currency resource name
+  use_discard?: boolean;                       // Use separate discard pile
+  draw_count?: number;                         // Cards drawn per turn
+  acquire_to?: 'hand' | 'discard' | 'deck_top'; // Where acquired cards go
+  allow_trash?: boolean;                       // Enable trashing cards
+  trash_pile?: string;                         // Trash pile name
+}
+
+export interface DeckBuildingSupplyPile {
+  card: Card;                                  // Card template
+  count: number;                               // Number available
+  cost?: number | Record<string, number>;      // Cost to acquire
+  type?: string;                               // Pile type
+}
+
+// Multi-Use Cards mechanic (slug: multi-use-cards)
+export interface MultiUseCardsConfig {
+  cards: MultiUseCardDef[];                    // Card definitions with uses
+  default_uses?: MultiUseCardUse[];            // Default uses for all cards
+  discard_on_use?: boolean;                    // Cards go to discard after use
+  cards_as_currency?: boolean;                 // Allow using cards as currency
+  card_currency_value?: number;                // Currency value per card
+}
+
+export interface MultiUseCardDef {
+  name: string;                                // Card name
+  uses: MultiUseCardUse[];                     // Available uses
+}
+
+export interface MultiUseCardUse {
+  type: string;                                // Use type identifier
+  label: string;                               // Display label
+  description?: string;                        // Description
+  effect?: {
+    gain_resources?: Record<string, number>;
+    spend_resources?: Record<string, number>;
+    gain_points?: number;
+    draw_cards?: number;
+    add_effect?: { type: string; duration?: number; [key: string]: unknown };
+  };
+  condition?: {
+    min_resources?: Record<string, number>;
+    phase?: string;
+    player_state?: Record<string, unknown>;
+  };
+}
+
+// Point-to-Point Movement mechanic (slug: point-to-point-movement)
+export interface PointToPointMovementConfig {
+  nodes: PointToPointNode[];                   // Node definitions
+  routes: PointToPointRoute[];                 // Route definitions
+  starting_node: string | string[];            // Starting node(s)
+  use_movement_points?: boolean;               // Use movement points system
+  default_cost?: number;                       // Default route cost
+  exclusive_routes?: boolean;                  // Only owner can use claimed routes
+  multi_stop?: boolean;                        // Allow multiple stops per turn
+  max_stops?: number;                          // Maximum stops per turn
+}
+
+export interface PointToPointNode {
+  id: string;                                  // Unique node identifier
+  name?: string;                               // Display name
+  type?: string;                               // Node type
+  properties?: Record<string, unknown>;        // Special properties
+}
+
+export interface PointToPointRoute {
+  id?: string;                                 // Route identifier
+  from: string;                                // Starting node
+  to: string;                                  // Ending node
+  bidirectional?: boolean;                     // Whether route is bidirectional
+  cost?: number;                               // Travel cost
+  resource_cost?: Record<string, number>;      // Resource cost
+  owner?: string;                              // Owner player ID
+  type?: string;                               // Route type/color
+  length?: number;                             // Route length
+  blocked?: boolean;                           // Whether route is blocked
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -681,7 +781,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel';
 
 export interface BaseAction {
   type: ActionType;
@@ -768,6 +868,43 @@ export interface UseAbilityAction extends BaseAction {
   target?: string;                   // Optional target
 }
 
+// Deck Building actions
+export interface AcquireAction extends BaseAction {
+  type: 'acquire';
+  card: string;                      // Card name to acquire from supply
+  pile?: string;                     // Optional: specific supply pile
+}
+
+export interface BuyAction extends BaseAction {
+  type: 'buy';
+  card: string;                      // Card name to buy from supply
+  pile?: string;                     // Optional: specific supply pile
+}
+
+export interface TrashAction extends BaseAction {
+  type: 'trash';
+  card: string;                      // Card name to trash from hand
+}
+
+export interface DrawDeckAction extends BaseAction {
+  type: 'draw_deck';
+  count?: number;                    // Number of cards to draw from personal deck
+}
+
+// Multi-Use Cards action
+export interface UseCardAction extends BaseAction {
+  type: 'use_card';
+  card: string;                      // Card name to use
+  use: string;                       // Use type identifier
+}
+
+// Point-to-Point Movement action
+export interface TravelAction extends BaseAction {
+  type: 'travel';
+  target: string;                    // Destination node ID
+  route?: string;                    // Optional: specific route to use
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -816,7 +953,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction;
 
 // Action validation result
 export interface ActionValidationResult {

@@ -34,6 +34,9 @@ import { oncePerGameAbilitiesMechanic } from './once-per-game-abilities.js';
 import { chainingMechanic } from './chaining.js';
 import { catchTheLeaderMechanic } from './catch-the-leader.js';
 import { areaMovementMechanic } from './area-movement.js';
+import { deckBuildingMechanic } from './deck-building.js';
+import { multiUseCardsMechanic } from './multi-use-cards.js';
+import { pointToPointMovementMechanic } from './point-to-point-movement.js';
 
 // Win condition mechanics
 import {
@@ -75,6 +78,9 @@ mechanicRegistry.register(oncePerGameAbilitiesMechanic);
 mechanicRegistry.register(chainingMechanic);
 mechanicRegistry.register(catchTheLeaderMechanic);
 mechanicRegistry.register(areaMovementMechanic);
+mechanicRegistry.register(deckBuildingMechanic);
+mechanicRegistry.register(multiUseCardsMechanic);
+mechanicRegistry.register(pointToPointMovementMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);

@@ -1435,6 +1435,9 @@ export function placeCard(
   // Verify card is placeable
   if (!card.placeable) return null;
 
+  // Verify card has an effect to place
+  if (!card.effect) return null;
+
   // Create placed card entry
   const placedCard: PlacedCard = {
     cardName: card.name,
