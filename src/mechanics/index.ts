@@ -47,10 +47,14 @@ export type {
   MechanicHooks,
   HookContext,
   TurnStartContext,
+  TurnEndContext,
   PlayerInitContext,
   ValidationResult,
   StateChanges,
   PlayerInitResult,
+  // Win condition types
+  WinCheckContext,
+  WinCheckResult,
   // Core operation hook types
   DrawContext,
   DrawHookResult,

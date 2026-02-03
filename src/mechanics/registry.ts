@@ -10,6 +10,7 @@ import {
   MechanicHooks,
   HookContext,
   TurnStartContext,
+  TurnEndContext,
   ValidationResult,
   StateChanges,
   PlayerInitResult,
@@ -21,6 +22,8 @@ import {
   HandAddContext,
   HandAddHookResult,
   HandRemoveContext,
+  WinCheckContext,
+  WinCheckResult,
   isMechanicEnabled
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
@@ -203,6 +206,66 @@ class MechanicRegistry {
     }
 
     return mergedChanges;
+  }
+
+  /**
+   * Run onTurnEnd hooks for all enabled mechanics.
+   */
+  onTurnEnd(state: GameState, playerId: string, nextPlayerId: string, isRoundEnd: boolean = false): StateChanges {
+    const baseCtx = this.createContext(state, playerId);
+    const ctx: TurnEndContext = { ...baseCtx, nextPlayerId, isRoundEnd };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onTurnEnd) {
+        const changes = mechanic.onTurnEnd(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Run onCheckWin hooks for a specific player.
+   * Returns first winning result, or null if no win.
+   */
+  onCheckWin(state: GameState, playerId: string, trigger: string): WinCheckResult | null {
+    const baseCtx = this.createContext(state, playerId);
+    const ctx: WinCheckContext = { ...baseCtx, trigger };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onCheckWin) {
+        const result = mechanic.onCheckWin(ctx);
+        if (result?.won) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check win conditions for all active players.
+   * Returns { playerId, reason } of first winner, or null.
+   */
+  checkAllWinConditions(state: GameState, trigger: string): { playerId: string; reason: string } | null {
+    const activePlayers = Object.entries(state.players)
+      .filter(([_, p]) => p.state !== 'eliminated' && !p.effects?.some(e => e.type === 'eliminated'));
+
+    for (const [playerId] of activePlayers) {
+      const result = this.onCheckWin(state, playerId, trigger);
+      if (result?.won) {
+        return { playerId, reason: result.reason || 'Win condition met' };
+      }
+    }
+
+    return null;
   }
 
   // ============ Core Operation Hook Routing ============

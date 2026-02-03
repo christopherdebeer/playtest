@@ -26,6 +26,38 @@ export interface TurnStartContext extends HookContext {
 }
 
 /**
+ * Extended context for turn-end hooks
+ */
+export interface TurnEndContext extends HookContext {
+  /** Next player ID (after turn advances) */
+  nextPlayerId: string;
+  /** True if this ends the current round */
+  isRoundEnd: boolean;
+}
+
+/**
+ * Context for win condition checks
+ */
+export interface WinCheckContext {
+  state: GameState;
+  playerId: string;
+  player: PlayerState;
+  config: GameConfig;
+  /** The trigger that caused this win check (action type, turn end, etc.) */
+  trigger: string;
+}
+
+/**
+ * Result from win condition check
+ */
+export interface WinCheckResult {
+  /** True if this player has won */
+  won: boolean;
+  /** Reason for winning (for logging) */
+  reason?: string;
+}
+
+/**
  * Result of action validation
  */
 export interface ValidationResult {
@@ -171,6 +203,19 @@ export interface MechanicHooks {
    * Return state changes to apply.
    */
   onTurnStart?(ctx: TurnStartContext): StateChanges | null;
+
+  /**
+   * Called at end of player's turn (before advancing to next player).
+   * Return state changes to apply.
+   */
+  onTurnEnd?(ctx: TurnEndContext): StateChanges | null;
+
+  /**
+   * Called to check if a player has won.
+   * Return { won: true, reason } if the player has achieved victory.
+   * Multiple mechanics can define win conditions; first to return won: true wins.
+   */
+  onCheckWin?(ctx: WinCheckContext): WinCheckResult | null;
 
   // ============ Core Operation Hooks ============
   // These hooks are called by core services (card-piles, hand)
