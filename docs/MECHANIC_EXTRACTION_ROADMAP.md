@@ -148,7 +148,7 @@ interface MechanicHooks {
 
 | Concept | Lines | Description | Status |
 |---------|-------|-------------|--------|
-| **Win Conditions** | 1091-1260 | Pattern matching ("reach state", "score >= N", "empty hand") | Pending - use `onCheckWin` |
+| **Win Conditions** | 1091-1260 | Pattern matching ("reach state", "score >= N", "empty hand") | ✅ Migrated |
 | **Push Your Luck** | 3154-3236 | Dice rolling, bust detection, banking | ✅ Migrated |
 | **Set Collection** | 3058-3149 | Set validation, points award | ✅ Migrated |
 | **Trading** | 2795-2927 | Trade creation, card transfer | ✅ Migrated |
@@ -208,37 +208,46 @@ New hooks added:
 - `onBeforeAddEffect` / `onAfterAddEffect` / `onBeforeRemoveEffect` / `onEffectExpired` - Effect lifecycle
 - `onBeforeMove` / `onAfterMove` - Board movement
 
-### Phase 8: Win Condition Mechanics
+### Phase 8: Win Condition Mechanics (Complete)
 
-Create win condition mechanics that use `onCheckWin`:
+Created win condition mechanics that use `onCheckWin` with YAML config:
 
-```typescript
-// src/mechanics/win-conditions/
-├── reach-state.ts      // Win by reaching a board state
-├── score-threshold.ts  // Win by score >= N
-├── empty-hand.ts       // Win by emptying hand (UNO)
-├── collect-sets.ts     // Win by collecting N sets
-├── elimination.ts      // Win by being last standing
+```
+src/mechanics/win-conditions/
+├── reach-state.ts      # ✅ Win by reaching a board state
+├── score-threshold.ts  # ✅ Win by score >= N
+├── empty-hand.ts       # ✅ Win by emptying hand (UNO)
+├── elimination.ts      # ✅ Win by being last standing
+├── timeout-winner.ts   # ✅ Determine winner on max_rounds timeout
 └── index.ts
 ```
 
-Example:
-```typescript
-export const emptyHandWinMechanic: MechanicHooks = {
-  slug: 'win-empty-hand',
-  name: 'Empty Hand Win',
+| Mechanic | Config Key | Example Config |
+|----------|------------|----------------|
+| `win-reach-state` | `win_reach_state` | `{ target_state: "Victory" }` |
+| `win-score-threshold` | `win_score_threshold` | `{ threshold: 100, operator: ">=" }` |
+| `win-empty-hand` | `win_empty_hand` | `true` |
+| `win-elimination` | `win_elimination` | `true` |
+| `win-timeout` | `win_timeout` | `{ type: "highest_score" }` |
 
-  onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
-    const winCondition = ctx.config.win_condition;
-    if (winCondition !== 'empty hand') return null;
+**Composable**: Multiple win conditions can be enabled simultaneously:
 
-    if (ctx.player.hand.length === 0) {
-      return { won: true, reason: 'Emptied hand' };
-    }
-    return null;
-  }
-};
+```yaml
+engine_mechanics:
+  # First to score 100 OR reach Victory wins
+  win_score_threshold:
+    threshold: 100
+  win_reach_state:
+    target_state: "Victory"
+  # On timeout, highest score wins
+  win_timeout:
+    type: highest_score
 ```
+
+Each mechanic:
+1. Checks if its config key is present in `engine_mechanics`
+2. Evaluates the win condition for the player
+3. Returns `{ won: true, reason }` or `null`
 
 ### Phase 9: Mechanic Composition
 
@@ -372,6 +381,13 @@ class MechanicRegistry {
 | `src/mechanics/core/board.ts` | NEW: Board state operations with hooks |
 | `src/mechanics/core/turns.ts` | NEW: Turn/round management operations |
 | `src/core/game.ts` | Updated to use core services with playerId for hooks |
+| `src/mechanics/win-conditions/reach-state.ts` | NEW: Win by reaching board state |
+| `src/mechanics/win-conditions/score-threshold.ts` | NEW: Win by score threshold |
+| `src/mechanics/win-conditions/empty-hand.ts` | NEW: Win by emptying hand |
+| `src/mechanics/win-conditions/elimination.ts` | NEW: Win by being last standing |
+| `src/mechanics/win-conditions/timeout-winner.ts` | NEW: Timeout winner determination |
+| `src/mechanics/win-conditions/index.ts` | NEW: Win condition exports |
+| `src/mechanics/index.ts` | Register win condition mechanics |
 
 ## Commits This Session
 
@@ -381,4 +397,5 @@ class MechanicRegistry {
 4. `41cac14` - Action execution and registration hooks
 5. `b387a35` - Migrate set-collection, trading, open-drafting
 6. `c24bddd` - Migrate board-state, place-card, place-location
-7. (pending) - Core service extraction (resources, effects, board, turns)
+7. `9d3c5f1` - Complete Phase 7 core service extraction
+8. (pending) - Phase 8: Win condition mechanics with YAML config

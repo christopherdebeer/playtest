@@ -88,6 +88,13 @@ export interface EngineMechanics {
 
   // Proposal 010: Configurable default winner on timeout
   timeout_winner?: TimeoutWinnerConfig;  // Who wins when max_turns is reached
+
+  // Win condition mechanics (composable)
+  win_reach_state?: WinReachStateConfig;      // Win by reaching a board state
+  win_score_threshold?: WinScoreThresholdConfig;  // Win by reaching a score threshold
+  win_empty_hand?: boolean;                   // Win by emptying hand
+  win_elimination?: boolean;                  // Win by being last player standing
+  win_timeout?: WinTimeoutConfig;             // Winner determination on timeout
 }
 
 // Proposal 007: Grid configuration
@@ -130,6 +137,25 @@ export interface CardTypeRules {
 // Proposal 010: Timeout winner configuration
 export interface TimeoutWinnerConfig {
   type: 'role' | 'highest_score' | 'specific_player' | 'no_winner';  // How to determine winner
+  role?: string;           // For type "role": the role/objective type that wins
+  role_name?: string;      // For type "role": match by objective name
+  player_condition?: string;  // For type "specific_player": condition to evaluate
+  reveal_role?: boolean;   // Whether to reveal the winner's hidden role
+  reason?: string;         // Custom reason message (for "no_winner")
+}
+
+// Win condition mechanic configs (composable)
+export interface WinReachStateConfig {
+  target_state: string;    // The board state to reach to win
+}
+
+export interface WinScoreThresholdConfig {
+  threshold: number;       // Score threshold to reach
+  operator?: '>=' | '>' | '==' | '=';  // Comparison operator (default: ">=")
+}
+
+export interface WinTimeoutConfig {
+  type?: 'highest_score' | 'role' | 'specific_player' | 'no_winner';  // How to determine winner
   role?: string;           // For type "role": the role/objective type that wins
   role_name?: string;      // For type "role": match by objective name
   player_condition?: string;  // For type "specific_player": condition to evaluate

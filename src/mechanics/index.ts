@@ -23,6 +23,15 @@ import { pushYourLuckMechanic } from './push-your-luck.js';
 import { auctionEnglishMechanic } from './auction-english.js';
 import { variablePlayerPowersMechanic } from './variable-player-powers.js';
 
+// Win condition mechanics
+import {
+  reachStateWinMechanic,
+  scoreThresholdWinMechanic,
+  emptyHandWinMechanic,
+  eliminationWinMechanic,
+  timeoutWinnerMechanic
+} from './win-conditions/index.js';
+
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
 mechanicRegistry.register(incomeMechanic);
@@ -40,6 +49,13 @@ mechanicRegistry.register(setCollectionMechanic);
 mechanicRegistry.register(pushYourLuckMechanic);
 mechanicRegistry.register(auctionEnglishMechanic);
 mechanicRegistry.register(variablePlayerPowersMechanic);
+
+// Register win condition mechanics
+mechanicRegistry.register(reachStateWinMechanic);
+mechanicRegistry.register(scoreThresholdWinMechanic);
+mechanicRegistry.register(emptyHandWinMechanic);
+mechanicRegistry.register(eliminationWinMechanic);
+mechanicRegistry.register(timeoutWinnerMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges } from './registry.js';
