@@ -1021,6 +1021,36 @@ export function cancelGame(gameName: string, reason: string): GameState {
 }
 
 /**
+ * Conditionally advance turn based on action type and mechanic hooks.
+ * For games with action points, only advances when AP is depleted.
+ * For games without action points, always advances (each action = one turn).
+ *
+ * @param state - Current game state
+ * @param playerId - Player who just acted
+ * @param action - The action that was executed
+ * @returns true if turn was advanced, false if player can continue
+ */
+export function maybeAdvanceTurn(state: GameState, playerId: string, action: GameAction): boolean {
+  // 'pass' always ends the turn
+  if (action.type === 'pass') {
+    advanceTurn(state);
+    return true;
+  }
+
+  // Check if any mechanic wants to auto-end the turn (e.g., action points depleted)
+  const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
+
+  if (shouldEnd) {
+    advanceTurn(state);
+    return true;
+  }
+
+  // Turn continues - save state but don't advance
+  saveState(state);
+  return false;
+}
+
+/**
  * Submit gamemaster analysis for a completed game.
  * Transitions status from 'pending_analysis' to 'completed'.
  */
@@ -1447,6 +1477,108 @@ export function applyPlacedCardEffects(
   );
 
   return { probabilityModifier, effectsApplied };
+}
+
+/**
+ * Apply effects from a location card when a player enters it.
+ * This handles the inherent effects of location cards in grid-based games.
+ *
+ * @param state - Current game state
+ * @param playerId - Player entering the location
+ * @param locationName - Name of the location being entered
+ * @returns Object with effects applied
+ */
+export function applyLocationEffects(
+  state: GameState,
+  playerId: string,
+  locationName: string
+): { effectsApplied: string[]; cardsDrawn: number } {
+  const effectsApplied: string[] = [];
+  let cardsDrawn = 0;
+
+  // Look up location card definition from deck config
+  const deckConfig = state.config.deck || [];
+  const locationCard = deckConfig.find(
+    (cardDef: { name: string; type?: string }) =>
+      cardDef.name === locationName && cardDef.type === 'location'
+  ) as { name: string; type: string; effect?: { type: string; value?: number; description?: string } } | undefined;
+
+  if (!locationCard?.effect) {
+    return { effectsApplied, cardsDrawn };
+  }
+
+  const player = state.players[playerId];
+  const effect = locationCard.effect;
+
+  switch (effect.type) {
+    case 'draw_on_enter': {
+      // Draw cards when entering this location
+      const drawCount = effect.value ?? 1;
+      const handLimit = state.config.engine_mechanics?.hand_limit ?? Infinity;
+
+      // Check if player can draw (hand limit)
+      if (player.hand.length < handLimit) {
+        const actualDrawCount = Math.min(drawCount, handLimit - player.hand.length);
+        if (actualDrawCount > 0 && state.deck.length > 0) {
+          const drawnCards = state.deck.splice(0, actualDrawCount);
+          player.hand.push(...drawnCards);
+          cardsDrawn = drawnCards.length;
+          effectsApplied.push(`${locationName}: Drew ${cardsDrawn} card${cardsDrawn !== 1 ? 's' : ''}`);
+
+          // Log the draw
+          logEvent(state, {
+            event: 'location_effect_triggered',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: {
+              location: locationName,
+              effect: 'draw_on_enter',
+              cardsDrawn
+            }
+          });
+        }
+      }
+      break;
+    }
+
+    case 'trade_bonus': {
+      // Trading at this location has reduced or zero AP cost
+      effectsApplied.push(`${locationName}: Trading costs 0 AP here`);
+      break;
+    }
+
+    case 'hide': {
+      // Player's position is hidden from others
+      effectsApplied.push(`${locationName}: Your position is hidden from others`);
+      break;
+    }
+
+    case 'reveal': {
+      // Player can see all other player positions
+      effectsApplied.push(`${locationName}: You can see all player positions`);
+      break;
+    }
+
+    case 'enemy_only': {
+      // Only The Enemy can enter - should be validated before move
+      // If player is here, they might be revealed as The Enemy
+      effectsApplied.push(`${locationName}: Only The Enemy may enter this location!`);
+      break;
+    }
+
+    case 'safe':
+      // No special effect
+      break;
+
+    default:
+      // Unknown effect type - log but don't crash
+      if (effect.description) {
+        effectsApplied.push(`${locationName}: ${effect.description}`);
+      }
+  }
+
+  return { effectsApplied, cardsDrawn };
 }
 
 /**
@@ -2352,7 +2484,69 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   // Mark that player has acted this round (prevents multiple actions without action points)
   player.lastActionRound = state.round;
 
-  // ============ Mechanic Hooks: Post-execution state changes ============
+  // ============ Mechanic Delegation: Let mechanics handle actions first ============
+  // Try to execute via mechanic hooks before falling back to built-in handling
+  const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
+
+  if (mechanicResult?.handled) {
+    // Mechanic handled the action - apply its state changes
+    if (mechanicResult.stateChanges) {
+      applyStateChanges(state, mechanicResult.stateChanges);
+    }
+
+    // Run postExecuteAction hooks (e.g., deduct AP)
+    const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
+    applyStateChanges(state, postExecuteChanges);
+
+    // Log the action
+    logEvent(state, {
+      event: 'action_executed',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      player: playerId,
+      data: {
+        type: action.type,
+        ...mechanicResult.logData
+      }
+    });
+
+    // Check win condition if requested
+    if (mechanicResult.checkWin) {
+      const winCheck = checkAllWinConditions(state);
+      if (winCheck) {
+        state.status = 'pending_analysis';
+        state.shared.winner = winCheck.winner;
+        state.shared.endReason = winCheck.reason;
+        saveState(state);
+        return {
+          success: true,
+          gameOver: true,
+          winner: winCheck.winner,
+          effect: { type: action.type, details: mechanicResult.logData }
+        };
+      }
+    }
+
+    // Handle turn advancement
+    if (mechanicResult.advanceTurn) {
+      advanceTurn(state);
+    } else {
+      // Check if AP mechanic wants to end turn
+      const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
+      if (shouldEnd) {
+        advanceTurn(state);
+      } else {
+        saveState(state);
+      }
+    }
+
+    return {
+      success: true,
+      effect: { type: action.type, details: mechanicResult.logData }
+    };
+  }
+
+  // ============ Fallback: Built-in action handling ============
   // Run postExecuteAction hooks for all enabled mechanics (e.g., deduct AP)
   const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
   applyStateChanges(state, postExecuteChanges);
@@ -2480,8 +2674,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           };
         }
 
-        // Advance turn (action cards effects handled by engine)
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -2490,7 +2684,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             details: {
               card: card.name,
               handSize: player.hand.length,
-              currentColor: state.shared.currentColor
+              currentColor: state.shared.currentColor,
+              turnAdvanced
             }
           }
         };
@@ -2557,14 +2752,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           data: { type: 'draw', count: cards.length }
         });
 
-        // After drawing, advance turn
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
           effect: {
             type: 'draw',
-            details: { drawn: cards.length, handSize: player.hand.length }
+            details: { drawn: cards.length, handSize: player.hand.length, turnAdvanced }
           }
         };
       }
@@ -2588,7 +2783,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           data: { type: 'pass' }
         });
 
-        advanceTurn(state);
+        // Pass always advances turn
+        maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -2624,10 +2820,10 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
 
       case 'move': {
-        // Board game movement
+        // Board game movement (non-grid) - grid moves are handled by grid-movement mechanic
         const moveAction = action as { target: string; useCard?: string };
 
-        // Apply effects from placed cards at the destination state
+        // Apply effects from placed cards at the destination state (board games)
         const placedCardEffects = applyPlacedCardEffects(state, playerId, moveAction.target);
 
         // Log placed card effects if any were applied
@@ -2704,7 +2900,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           };
         }
 
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -2712,7 +2909,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             type: 'move',
             details: {
               newState: player.state,
-              placedCardEffects: placedCardEffects.effectsApplied
+              placedCardEffects: placedCardEffects.effectsApplied,
+              turnAdvanced
             }
           }
         };
@@ -2757,7 +2955,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         });
 
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -2767,7 +2966,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               card: placedCard.cardName,
               targetState: placedCard.state,
               targetMode: placedCard.targetMode,
-              handSize: player.hand.length
+              handSize: player.hand.length,
+              turnAdvanced
             }
           }
         };
@@ -2823,7 +3023,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         });
 
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -2832,7 +3033,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             details: {
               card: placeAction.card,
               adjacentTo: placeAction.adjacentTo,
-              handSize: player.hand.length
+              handSize: player.hand.length,
+              turnAdvanced
             }
           }
         };
@@ -3040,7 +3242,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         // For once-around auctions, advance turn; for English, player can bid again
         if (auctionConfig.type === 'once-around' || auctionConfig.type === 'sealed') {
-          advanceTurn(state);
+          maybeAdvanceTurn(state, playerId, action);
         } else {
           saveState(state);
         }
@@ -3180,7 +3382,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           };
         }
 
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -3189,7 +3392,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             details: {
               setType: collectAction.setType,
               points: setConfig.points_per_set,
-              totalSets: player.collectedSets.length
+              totalSets: player.collectedSets.length,
+              turnAdvanced
             }
           }
         };
@@ -3232,7 +3436,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
             result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
           });
 
-          advanceTurn(state);
+          // Bust ends turn
+          maybeAdvanceTurn(state, playerId, action);
 
           return {
             success: true,
@@ -3313,7 +3518,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           };
         }
 
-        advanceTurn(state);
+        // Bank ends turn (player chose to stop rolling)
+        maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
@@ -3368,13 +3574,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           result: { success: true, details: { card: draftedCard.name } }
         });
 
-        advanceTurn(state);
+        // Conditionally advance turn (respects action points)
+        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
 
         return {
           success: true,
           effect: {
             type: 'draft',
-            details: { card: draftedCard.name, handSize: player.hand.length }
+            details: { card: draftedCard.name, handSize: player.hand.length, turnAdvanced }
           }
         };
       }
@@ -3657,6 +3864,7 @@ export function adjudicateVictory(
       }
     });
 
+    // Victory rejection always advances turn
     advanceTurn(state);
   }
 

@@ -42,6 +42,7 @@ export interface PlayerState {
   rollCount?: number;                     // Number of rolls this turn
   powerId?: string;                       // Assigned player power ID
   completedTrades?: number;               // Number of completed trades (for The Trader objective)
+  visitedLocations?: string[];            // Locations visited (for The Explorer objective)
 
   // Proposal 010: Hidden objectives for role-based games
   objective?: {
