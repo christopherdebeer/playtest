@@ -38,6 +38,10 @@ import { deckBuildingMechanic } from './deck-building.js';
 import { multiUseCardsMechanic } from './multi-use-cards.js';
 import { pointToPointMovementMechanic } from './point-to-point-movement.js';
 
+// Phase 4: Visibility System mechanics
+import { hiddenRolesMechanic } from './hidden-roles.js';
+import { traitorGameMechanic } from './traitor-game.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -82,6 +86,10 @@ mechanicRegistry.register(deckBuildingMechanic);
 mechanicRegistry.register(multiUseCardsMechanic);
 mechanicRegistry.register(pointToPointMovementMechanic);
 
+// Register Phase 4: Visibility System mechanics
+mechanicRegistry.register(hiddenRolesMechanic);
+mechanicRegistry.register(traitorGameMechanic);
+
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
 mechanicRegistry.register(scoreThresholdWinMechanic);
@@ -119,5 +127,9 @@ export type {
   DiscardContext,
   HandAddContext,
   HandAddHookResult,
-  HandRemoveContext
+  HandRemoveContext,
+  // Visibility system types (Phase 4)
+  VisibilityContext,
+  RevealContext,
+  VisibleState
 } from './types.js';

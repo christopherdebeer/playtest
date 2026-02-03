@@ -98,3 +98,22 @@ export {
   skipTurn,
   getTurnInfo
 } from './turns.js';
+
+// Visibility operations (Phase 4)
+export {
+  getVisibleStateForPlayer,
+  canPlayerSeeInfo,
+  revealInfo,
+  getKnownRole,
+  recordKnownRole,
+  hasHiddenRole,
+  getHiddenRole,
+  setHiddenRole,
+  getPlayersWithRole,
+  redactPlayerState,
+  redactSharedState,
+  isSameTeam,
+  type InfoType,
+  type PlayerKnowledge,
+  type VisibilityOperationResult
+} from './visibility.js';

@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T18:09:24.764Z",
+  "generated": "2026-02-03T18:47:48.885Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -164,7 +164,10 @@
       "config_key": "grid_movement",
       "since": "3.0.0",
       "hooks": [
-        "preValidateAction"
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
       ]
     },
     "hand-management": {
@@ -177,6 +180,24 @@
       },
       "hooks": [
         "onBeforeDraw"
+      ]
+    },
+    "hidden-roles": {
+      "config_key": "hidden_roles",
+      "since": "3.0.0",
+      "description": "Assigns secret roles to players, enabling social deduction mechanics.",
+      "config_schema": {
+        "roles": "array",
+        "assignment": "random | predetermined | draft",
+        "defaultRole": "string",
+        "teamVisibility": "boolean",
+        "evilKnowsEvil": "boolean"
+      },
+      "hooks": [
+        "initPlayerState",
+        "getVisibleState",
+        "onReveal",
+        "canSeeInfo"
       ]
     },
     "income": {
@@ -399,6 +420,30 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "traitor-game": {
+      "config_key": "traitor_game",
+      "since": "3.0.0",
+      "description": "Adds traitor vs loyalist hidden roles with asymmetric win conditions.",
+      "config_schema": {
+        "traitorCount": "number",
+        "traitorsByPlayerCount": "object",
+        "traitorRole": "string",
+        "loyalistRole": "string",
+        "traitorsKnowEachOther": "boolean",
+        "traitorWinCondition": "object",
+        "loyalistWinCondition": "object",
+        "enableAccusation": "boolean"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onCheckWin",
+        "getVisibleState",
+        "canSeeInfo"
+      ],
+      "dependencies": [
+        "hidden-roles"
       ]
     },
     "trick-taking": {
