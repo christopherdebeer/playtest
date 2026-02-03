@@ -54,6 +54,18 @@ import { turnOrderProgressiveMechanic } from './turn-order-progressive.js';
 
 // Phase 5: Voting & Social mechanics
 import { votingMechanic } from './voting.js';
+import { negotiationMechanic } from './negotiation.js';
+import { communicationLimitsMechanic } from './communication-limits.js';
+
+// Phase 2: Additional Dice mechanics
+import { rollSpinAndMoveMechanic } from './roll-spin-and-move.js';
+import { differentDiceMovementMechanic } from './different-dice-movement.js';
+
+// Phase 3: Additional Turn Order mechanics
+import { turnOrderPassOrderMechanic } from './turn-order-pass-order.js';
+
+// Phase 4: Additional Visibility mechanics
+import { hiddenMovementMechanic } from './hidden-movement.js';
 
 // Win condition mechanics
 import {
@@ -115,6 +127,18 @@ mechanicRegistry.register(turnOrderProgressiveMechanic);
 
 // Register Phase 5: Voting & Social mechanics
 mechanicRegistry.register(votingMechanic);
+mechanicRegistry.register(negotiationMechanic);
+mechanicRegistry.register(communicationLimitsMechanic);
+
+// Register Phase 2: Additional Dice mechanics
+mechanicRegistry.register(rollSpinAndMoveMechanic);
+mechanicRegistry.register(differentDiceMovementMechanic);
+
+// Register Phase 3: Additional Turn Order mechanics
+mechanicRegistry.register(turnOrderPassOrderMechanic);
+
+// Register Phase 4: Additional Visibility mechanics
+mechanicRegistry.register(hiddenMovementMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
