@@ -95,6 +95,67 @@ export function getCardDefinition(config: GameConfig, cardName: string): DeckCon
 
 let mechanicsIndexCache: MechanicsIndex | null = null;
 
+// Registered mechanics cache for implementation status
+interface RegisteredMechanicsRegistry {
+  mechanics: Record<string, {
+    config_key: string;
+    since: string;
+    description?: string;
+    hooks?: string[];
+  }>;
+  partial?: Record<string, {
+    notes: string;
+    related_config?: string;
+  }>;
+}
+
+let registeredMechanicsCache: RegisteredMechanicsRegistry | null = null;
+
+function loadRegisteredMechanics(): RegisteredMechanicsRegistry {
+  if (registeredMechanicsCache) return registeredMechanicsCache;
+
+  const registryPath = join(__dirname, '../../shared/registered-mechanics.json');
+  if (!existsSync(registryPath)) {
+    registeredMechanicsCache = { mechanics: {} };
+    return registeredMechanicsCache;
+  }
+
+  registeredMechanicsCache = JSON.parse(readFileSync(registryPath, 'utf-8'));
+  return registeredMechanicsCache!;
+}
+
+export interface MechanicImplementationStatus {
+  status: 'implemented' | 'partial' | 'not_implemented';
+  configKey?: string;
+  since?: string;
+  description?: string;
+  notes?: string;
+}
+
+export function getMechanicImplementationStatus(slug: string): MechanicImplementationStatus {
+  const registry = loadRegisteredMechanics();
+
+  if (registry.mechanics[slug]) {
+    const impl = registry.mechanics[slug];
+    return {
+      status: 'implemented',
+      configKey: impl.config_key,
+      since: impl.since,
+      description: impl.description
+    };
+  }
+
+  if (registry.partial && registry.partial[slug]) {
+    const impl = registry.partial[slug];
+    return {
+      status: 'partial',
+      notes: impl.notes
+    };
+  }
+
+  return { status: 'not_implemented' };
+}
+
 export function loadMechanicsIndex(): MechanicsIndex {
   if (mechanicsIndexCache) return mechanicsIndexCache;
 
