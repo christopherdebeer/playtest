@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 45 of 192 mechanics (23%)**
+**Implemented: 51 of 192 mechanics (27%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -16,15 +16,15 @@
 | Cards | 10 | 15 | 67% |
 | Conflict | 0 | 8 | 0% |
 | Cooperative | 0 | 10 | 0% |
-| Dice | 3 | 6 | 50% |
+| Dice | 5 | 6 | 83% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
-| Information | 3 | 8 | 38% |
+| Information | 4 | 8 | 50% |
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
-| Social | 1 | 11 | 9% |
-| Turn Order | 3 | 8 | 38% |
+| Social | 3 | 11 | 27% |
+| Turn Order | 4 | 8 | 50% |
 | Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
 
@@ -80,6 +80,17 @@
 | Mechanic | Category | Description |
 |----------|----------|-------------|
 | `voting` | Social | Democratic decision-making (majority/plurality/unanimous) |
+| `negotiation` | Social | Binding/non-binding agreements between players (Diplomacy, Cosmic Encounter) |
+| `communication-limits` | Social | Restricted communication mechanics (Hanabi, Codenames) |
+
+### Recently Implemented (Phase 2-4 Continued)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `roll-spin-and-move` | Dice | Classic board game dice movement (Monopoly) |
+| `different-dice-movement` | Dice | Dice determine movement options (Backgammon) |
+| `turn-order-pass-order` | Turn Order | First to pass goes first next round (Agricola, Caylus) |
+| `hidden-movement` | Information | Hidden player positions (Scotland Yard, Fury of Dracula) |
 
 ## Existing Hook Infrastructure
 

@@ -218,6 +218,18 @@ export interface EngineMechanics {
 
   // Phase 5: Voting & Social
   voting?: VotingMechanicConfig;              // Democratic decision-making
+  negotiation?: NegotiationMechanicConfig;    // Binding/non-binding agreements
+  communication_limits?: CommunicationLimitsConfig;  // Restricted communication
+
+  // Phase 2: Additional Dice mechanics
+  roll_spin_move?: RollSpinMoveConfig;        // Classic board game movement
+  different_dice_movement?: DifferentDiceMovementConfig;  // Dice determine options
+
+  // Phase 3: Additional Turn Order mechanics
+  turn_order_pass_order?: TurnOrderPassOrderConfig;  // Pass order determines next round
+
+  // Phase 4: Additional Visibility mechanics
+  hidden_movement?: HiddenMovementConfig;     // Hidden player positions
 }
 
 // Proposal 007: Grid configuration
@@ -1419,4 +1431,129 @@ export interface ValidationResult {
   config?: GameConfig;           // Parsed config (if YAML valid)
   markdown?: string;             // Raw markdown content
   sections?: ExtractedSections;  // Extracted sections (if requested)
+}
+
+// ============ Phase 2 Additional Dice Config Types ============
+
+/**
+ * Roll Spin and Move mechanic config.
+ * Classic board game movement where dice determine spaces moved.
+ */
+export interface RollSpinMoveConfig {
+  dice_count?: number;           // Number of dice (default: 2)
+  dice_sides?: number;           // Sides per die (default: 6)
+  auto_roll?: boolean;           // Auto roll at turn start
+  doubles_again?: boolean;       // Roll again on doubles
+  doubles_jail?: boolean;        // Three doubles = jail
+  jail_state?: string;           // State name for jail
+  linear_track?: string[];       // Ordered track positions
+  loop?: boolean;                // Track loops back
+}
+
+/**
+ * Different Dice Movement mechanic config.
+ * Dice determine movement options rather than distance.
+ */
+export interface DifferentDiceMovementConfig {
+  dice_count?: number;           // Number of dice
+  dice_sides?: number;           // Sides per die
+  movement_mapping?: Record<number, {
+    type: 'forward' | 'backward' | 'diagonal' | 'jump' | 'any' | 'specific';
+    distance?: number;
+    directions?: string[];
+    targets?: string[];
+  }>;
+  use_individual?: boolean;      // Use each die separately
+  doubles_bonus?: boolean;       // Extra moves on doubles
+  must_use_all?: boolean;        // Must use all dice
+}
+
+// ============ Phase 3 Additional Turn Order Config Types ============
+
+/**
+ * Turn Order Pass Order mechanic config.
+ * Turn order determined by pass order from previous round.
+ */
+export interface TurnOrderPassOrderConfig {
+  first_passer_first?: boolean;  // First passer goes first (default: true)
+  track_within_round?: boolean;  // Track order within round
+  compensation?: {
+    type: 'resource' | 'points' | 'cards';
+    resource?: string;
+    base_amount?: number;
+    per_position?: number;       // Bonus per position
+  };
+}
+
+// ============ Phase 4 Additional Visibility Config Types ============
+
+/**
+ * Hidden Movement mechanic config.
+ * Player positions are hidden from other players.
+ */
+export interface HiddenMovementConfig {
+  hidden_players?: string[];     // Player IDs with hidden movement
+  hidden_roles?: string[];       // Roles with hidden movement
+  reveal_frequency?: number;     // Reveal every N turns
+  reveal_radius?: number;        // Reveal when within N spaces
+  clue_system?: {
+    enabled: boolean;
+    clue_type: 'proximity' | 'direction' | 'region';
+    proximity_ranges?: { near: number; medium: number; far: number };
+  };
+  fog_of_war?: boolean;          // Only see within range
+  visibility_range?: number;     // Range for fog of war
+}
+
+// ============ Phase 5 Additional Social Config Types ============
+
+/**
+ * Negotiation mechanic config.
+ * Binding and non-binding agreements between players.
+ */
+export interface NegotiationMechanicConfig {
+  binding?: boolean;             // Agreements enforceable by default
+  penalty_for_breaking?: {
+    type: 'resource' | 'score' | 'reputation' | 'custom';
+    resource?: string;
+    amount?: number;
+  };
+  max_agreements?: number;       // Max active agreements per player
+  agreement_types?: ('non_aggression' | 'alliance' | 'trade_deal' | 'territory' | 'vote_agreement' | 'custom')[];
+  allow_public?: boolean;        // Allow public agreements
+  allow_private?: boolean;       // Allow private agreements
+  expiration_turns?: number;     // Default expiration in turns
+}
+
+/**
+ * Communication Limits mechanic config.
+ * Restricts when and how players can communicate.
+ */
+export interface CommunicationLimitsConfig {
+  communication_phases?: {
+    phase: 'turn_start' | 'turn_end' | 'round_start' | 'round_end' | 'always' | 'never';
+    duration?: number;
+  }[];
+  message_types?: {
+    type: 'word' | 'phrase' | 'signal' | 'gesture' | 'number' | 'choice';
+    maxLength?: number;
+    vocabulary?: string[];
+  }[];
+  limits?: {
+    messages_per_turn?: number;
+    messages_per_round?: number;
+    words_per_message?: number;
+    characters_per_message?: number;
+    total_messages?: number;
+  };
+  target_restrictions?: {
+    from?: string[];
+    to?: string[];
+    allow?: boolean;
+    same_team_only?: boolean;
+  }[];
+  no_table_talk?: boolean;       // No free communication
+  team_only?: boolean;           // Team communication only
+  one_word_clues?: boolean;      // One word per clue
+  signal_vocabulary?: string[];  // Predefined signals
 }

@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T23:27:50.700Z",
+  "generated": "2026-02-03T23:45:40.707Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -123,6 +123,18 @@
         "describeAction"
       ]
     },
+    "communication-limits": {
+      "config_key": "communication_limits",
+      "since": "3.0.0",
+      "description": "Restricts when and how players can communicate.",
+      "hooks": [
+        "preValidateAction",
+        "onTurnEnd",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
     "deck-building": {
       "config_key": "deck_building",
       "since": "3.0.0",
@@ -165,6 +177,18 @@
         "onAfterRoll"
       ]
     },
+    "different-dice-movement": {
+      "config_key": "different_dice_movement",
+      "since": "3.0.0",
+      "description": "Dice determine movement options rather than just distance.",
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "onAfterRoll"
+      ]
+    },
     "events": {
       "config_key": "events",
       "since": "3.0.0",
@@ -200,6 +224,18 @@
       },
       "hooks": [
         "onBeforeDraw"
+      ]
+    },
+    "hidden-movement": {
+      "config_key": "hidden_movement",
+      "since": "3.0.0",
+      "description": "Player positions hidden from other players.",
+      "hooks": [
+        "describeAction",
+        "onAfterMove",
+        "getVisibleState",
+        "onReveal",
+        "canSeeInfo"
       ]
     },
     "hidden-roles": {
@@ -313,6 +349,17 @@
         "describeAction"
       ]
     },
+    "negotiation": {
+      "config_key": "negotiation",
+      "since": "3.0.0",
+      "description": "Binding and non-binding agreements between players.",
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
     "once-per-game-abilities": {
       "config_key": "once_per_game_abilities",
       "since": "3.0.0",
@@ -420,6 +467,18 @@
         "getAvailableActions"
       ]
     },
+    "roll-spin-and-move": {
+      "config_key": "roll_spin_and_move",
+      "since": "3.0.0",
+      "description": "Classic board game movement where dice determine spaces moved.",
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "onAfterRoll"
+      ]
+    },
     "set-collection": {
       "config_key": "set_collection",
       "since": "3.0.0",
@@ -514,6 +573,16 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "turn-order-pass-order": {
+      "config_key": "turn_order_pass_order",
+      "since": "3.0.0",
+      "description": "Turn order determined by pass order from previous round.",
+      "hooks": [
+        "describeAction",
+        "onDetermineTurnOrder",
+        "onPassPriority"
       ]
     },
     "turn-order-progressive": {
