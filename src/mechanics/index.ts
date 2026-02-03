@@ -32,6 +32,8 @@ import { eventsMechanic } from './events.js';
 import { ladderClimbingMechanic } from './ladder-climbing.js';
 import { oncePerGameAbilitiesMechanic } from './once-per-game-abilities.js';
 import { chainingMechanic } from './chaining.js';
+import { catchTheLeaderMechanic } from './catch-the-leader.js';
+import { areaMovementMechanic } from './area-movement.js';
 
 // Win condition mechanics
 import {
@@ -40,7 +42,8 @@ import {
   emptyHandWinMechanic,
   eliminationWinMechanic,
   timeoutWinnerMechanic,
-  raceWinMechanic
+  raceWinMechanic,
+  suddenDeathMechanic
 } from './win-conditions/index.js';
 
 // Register all extracted mechanics
@@ -70,6 +73,8 @@ mechanicRegistry.register(eventsMechanic);
 mechanicRegistry.register(ladderClimbingMechanic);
 mechanicRegistry.register(oncePerGameAbilitiesMechanic);
 mechanicRegistry.register(chainingMechanic);
+mechanicRegistry.register(catchTheLeaderMechanic);
+mechanicRegistry.register(areaMovementMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
@@ -78,6 +83,7 @@ mechanicRegistry.register(emptyHandWinMechanic);
 mechanicRegistry.register(eliminationWinMechanic);
 mechanicRegistry.register(timeoutWinnerMechanic);
 mechanicRegistry.register(raceWinMechanic);
+mechanicRegistry.register(suddenDeathMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';

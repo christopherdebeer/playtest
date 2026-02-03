@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T13:13:07.191Z",
+  "generated": "2026-02-03T13:23:02.609Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -19,6 +19,26 @@
         "shouldAutoEndTurn",
         "initPlayerState",
         "onTurnStart"
+      ]
+    },
+    "area-movement": {
+      "config_key": "area_movement",
+      "since": "3.0.0",
+      "description": "Movement between named areas with adjacency",
+      "config_schema": {
+        "areas": "array",
+        "starting_area": "string",
+        "use_movement_points": "boolean",
+        "default_cost": "number",
+        "allow_passing": "boolean",
+        "allow_stacking": "boolean",
+        "default_capacity": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions"
       ]
     },
     "auction-english": {
@@ -54,6 +74,23 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ]
+    },
+    "catch-the-leader": {
+      "config_key": "catch_the_leader",
+      "since": "3.0.0",
+      "description": "Balancing mechanic that penalizes leaders/benefits trailers",
+      "config_schema": {
+        "leader_metric": "score | resources | hand_size | position",
+        "resource": "string",
+        "lead_threshold": "number",
+        "leader_penalties": "object",
+        "trailing_bonuses": "object",
+        "targetable_leader": "boolean"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onBeforeResourceChange"
       ]
     },
     "chaining": {
@@ -262,6 +299,19 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "sudden-death-ending": {
+      "config_key": "sudden_death_ending",
+      "since": "3.0.0",
+      "description": "Instant win/lose conditions that end the game immediately",
+      "config_schema": {
+        "conditions": "array",
+        "check_on_action": "boolean",
+        "announce_warning": "boolean"
+      },
+      "hooks": [
+        "onCheckWin"
       ]
     },
     "take-that": {

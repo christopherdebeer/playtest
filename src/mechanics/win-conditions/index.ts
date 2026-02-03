@@ -61,3 +61,4 @@ export { emptyHandWinMechanic } from './empty-hand.js';
 export { eliminationWinMechanic } from './elimination.js';
 export { timeoutWinnerMechanic } from './timeout-winner.js';
 export { raceWinMechanic } from './race.js';
+export { suddenDeathMechanic } from './sudden-death.js';

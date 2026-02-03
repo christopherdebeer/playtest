@@ -76,6 +76,10 @@ export interface PlayerState {
 
   // Chaining state
   canReroll?: boolean;             // Can reroll (from ability)
+
+  // Area movement state
+  currentArea?: string;            // Current area location
+  previousArea?: string;           // Previous area (for tracking)
 }
 
 export interface Effect {
@@ -136,6 +140,9 @@ export interface EngineMechanics {
   once_per_game_abilities?: OncePerGameAbilitiesConfig;  // Special one-time abilities
   chaining?: ChainingConfig;                  // Actions that trigger follow-up effects
   win_race?: RaceWinConfig;                   // First to reach goal wins
+  catch_the_leader?: CatchTheLeaderConfig;    // Balancing mechanic for competitive games
+  sudden_death_ending?: SuddenDeathEndingConfig;  // Instant win conditions
+  area_movement?: AreaMovementConfig;         // Movement between named areas
 }
 
 // Proposal 007: Grid configuration
@@ -451,6 +458,65 @@ export interface RaceWinConfig {
   goal_states?: string[];
   laps?: number;
   checkpoints?: string[];
+}
+
+// Catch The Leader mechanic (slug: catch-the-leader)
+export interface CatchTheLeaderConfig {
+  leader_metric: 'score' | 'resources' | 'hand_size' | 'position';
+  resource?: string;
+  lead_threshold?: number;
+  leader_penalties?: {
+    income_reduction?: number;
+    cost_increase?: number;
+    resource_loss?: Record<string, number>;
+  };
+  trailing_bonuses?: {
+    gap_threshold?: number;
+    extra_resources?: Record<string, number>;
+    extra_draw?: number;
+    score_bonus?: number;
+  };
+  targetable_leader?: boolean;
+}
+
+// Sudden Death Ending mechanic (slug: sudden-death-ending)
+export interface SuddenDeathEndingConfig {
+  conditions: SuddenDeathCondition[];
+  check_on_action?: boolean;
+  announce_warning?: boolean;
+}
+
+export interface SuddenDeathCondition {
+  type: 'resource_depleted' | 'deck_exhausted' | 'state_reached' | 'turn_limit' | 'elimination' | 'score_reached';
+  resource?: string;
+  threshold?: number;
+  target_state?: string;
+  max_turns?: number;
+  score?: number;
+  loser?: 'triggering_player' | 'all_others' | 'no_one';
+  message?: string;
+}
+
+// Area Movement mechanic (slug: area-movement)
+export interface AreaMovementConfig {
+  areas: AreaDefinition[];
+  starting_area: string;
+  use_movement_points?: boolean;
+  default_cost?: number;
+  allow_passing?: boolean;
+  allow_stacking?: boolean;
+  default_capacity?: number;
+}
+
+export interface AreaDefinition {
+  id: string;
+  name?: string;
+  adjacent: string[];
+  entry_cost?: number;
+  capacity?: number;
+  restricted?: boolean;
+  owner?: string;
+  properties?: Record<string, unknown>;
 }
 
 export interface GameConfig {

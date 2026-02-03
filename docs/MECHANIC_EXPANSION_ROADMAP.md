@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 30 of 192 mechanics (16%)**
+**Implemented: 33 of 192 mechanics (17%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -18,10 +18,10 @@
 | Cooperative | 0 | 10 | 0% |
 | Dice | 1 | 6 | 17% |
 | Economic | 2 | 9 | 22% |
-| Ending | 0 | 4 | 0% |
+| Ending | 1 | 4 | 25% |
 | Information | 0 | 8 | 0% |
-| Movement | 2 | 22 | 9% |
-| Other | 9 | 40 | 23% |
+| Movement | 3 | 22 | 14% |
+| Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
 | Social | 0 | 11 | 0% |
 | Turn Order | 0 | 8 | 0% |
@@ -36,11 +36,14 @@
 | `trick-taking` | Cards | Classic trick-taking with trump/follow suit |
 | `ladder-climbing` | Cards | Beat previous play or pass (President, Big Two) |
 | `movement-points` | Movement | Movement budget with terrain costs |
+| `area-movement` | Movement | Movement between named areas with adjacency |
 | `automatic-resource-growth` | Economic | Resources that grow over time |
 | `events` | Other | Random/scheduled game events |
 | `once-per-game-abilities` | Other | Special one-time abilities |
 | `chaining` | Other | Actions that trigger follow-up effects |
+| `catch-the-leader` | Other | Balancing mechanic that penalizes the leader |
 | `win-race` | Victory | First to reach goal wins |
+| `sudden-death-ending` | Ending | Instant win conditions |
 
 ## Existing Hook Infrastructure
 
@@ -94,19 +97,19 @@ These 18 mechanics can be implemented immediately using existing hooks:
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `closed-drafting` | `onExecuteAction`, `getAvailableActions`, turn hooks | Hidden card selection, reveal at round end |
+| ~~`closed-drafting`~~ | ~~`onExecuteAction`, `getAvailableActions`, turn hooks~~ | ✅ Implemented |
 | `deck-bag-and-pool-building` | `onAfterDraw`, `postExecuteAction`, hand hooks | Track acquired cards, deck composition |
-| `trick-taking` | `preValidateAction`, `onExecuteAction`, `onTurnEnd` | Lead card, follow suit validation, trick winner |
-| `ladder-climbing` | `preValidateAction`, `onExecuteAction` | Beat previous play or pass |
+| ~~`trick-taking`~~ | ~~`preValidateAction`, `onExecuteAction`, `onTurnEnd`~~ | ✅ Implemented |
+| ~~`ladder-climbing`~~ | ~~`preValidateAction`, `onExecuteAction`~~ | ✅ Implemented |
 | `multi-use-cards` | `preValidateAction`, `getAvailableActions` | Same card, multiple action options |
 
 ### Movement Mechanics
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `area-movement` | `onBeforeMove`, `onAfterMove` | Non-grid area transitions |
+| ~~`area-movement`~~ | ~~`onBeforeMove`, `onAfterMove`~~ | ✅ Implemented |
 | `point-to-point-movement` | `onBeforeMove`, `onAfterMove` | Graph-based movement |
-| `movement-points` | `preValidateAction`, `onTurnStart`, `initPlayerState` | Like action-points for movement budget |
+| ~~`movement-points`~~ | ~~`preValidateAction`, `onTurnStart`, `initPlayerState`~~ | ✅ Implemented |
 
 ### Auction Mechanics
 
@@ -125,23 +128,23 @@ These 18 mechanics can be implemented immediately using existing hooks:
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `automatic-resource-growth` | `onTurnStart`, `onAfterResourceChange` | Resources grow over time |
+| ~~`automatic-resource-growth`~~ | ~~`onTurnStart`, `onAfterResourceChange`~~ | ✅ Implemented |
 
 ### Victory/Ending Mechanics
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `sudden-death-ending` | `onCheckWin` | Game ends immediately on condition |
-| `race` | `onCheckWin`, `onAfterMove` | First to reach location wins |
-| `catch-the-leader` | `onAfterResourceChange` | Leader gets penalties |
+| ~~`sudden-death-ending`~~ | ~~`onCheckWin`~~ | ✅ Implemented |
+| ~~`race`~~ | ~~`onCheckWin`, `onAfterMove`~~ | ✅ Implemented as `win-race` |
+| ~~`catch-the-leader`~~ | ~~`onAfterResourceChange`~~ | ✅ Implemented |
 
 ### Other Mechanics
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `events` | `onTurnStart` | Random events at turn/round start |
-| `once-per-game-abilities` | `preValidateAction`, player state | Track ability usage |
-| `chaining` | `postExecuteAction` | Trigger follow-up actions |
+| ~~`events`~~ | ~~`onTurnStart`~~ | ✅ Implemented |
+| ~~`once-per-game-abilities`~~ | ~~`preValidateAction`, player state~~ | ✅ Implemented |
+| ~~`chaining`~~ | ~~`postExecuteAction`~~ | ✅ Implemented |
 
 ---
 
