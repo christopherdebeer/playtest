@@ -204,6 +204,9 @@ export interface EngineMechanics {
 
   // Phase 2: Dice System
   dice_rolling?: DiceRollingConfig;           // Core dice rolling with modifiers
+
+  // Phase 3: Dynamic Turn Order
+  turn_order_random?: TurnOrderRandomConfig;  // Randomize turn order at trigger points
 }
 
 // Proposal 007: Grid configuration
@@ -729,6 +732,12 @@ export interface DiceModifiersConfig {
   flat_bonus?: number;                         // Flat bonus to all rolls
   per_die_bonus?: number;                      // Bonus per die
   effect_modifiers?: Record<string, number>;   // Effect-based modifiers
+}
+
+// Turn Order Random mechanic (Phase 3: Dynamic Turn Order)
+export interface TurnOrderRandomConfig {
+  trigger?: 'game_start' | 'round_start' | 'both';  // When to randomize
+  keep_current?: boolean;                           // Keep current player in position
 }
 
 export interface GameConfig {

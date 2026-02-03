@@ -374,6 +374,42 @@ export interface AfterRollContext extends DiceRollContext {
   keptDice?: number[];
 }
 
+// ============ Dynamic Turn Order Types (Phase 3) ============
+
+/**
+ * Context for determining turn order
+ */
+export interface TurnOrderContext {
+  state: GameState;
+  config: GameConfig;
+  /** Current turn order */
+  currentOrder: string[];
+  /** Why turn order is being determined */
+  reason: 'round_start' | 'mid_round' | 'claim' | 'pass';
+}
+
+/**
+ * Result from onDetermineTurnOrder hook
+ */
+export interface TurnOrderResult {
+  /** New turn order (or null to keep current) */
+  order?: string[];
+  /** Players to skip this round */
+  skipPlayers?: string[];
+}
+
+/**
+ * Result from onPassPriority hook
+ */
+export interface PassPriorityResult {
+  /** Next player to receive priority */
+  nextPlayer?: string;
+  /** Remove passing player from this round */
+  removeFromRound?: boolean;
+  /** Skip to next round */
+  skipToNextRound?: boolean;
+}
+
 /**
  * Result from onBeforeMove - can modify target or block
  */
@@ -605,6 +641,20 @@ export interface MechanicHooks {
    * Called after a dice roll. Can react to results and modify state.
    */
   onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
+
+  // ============ Dynamic Turn Order Hooks (Phase 3) ============
+
+  /**
+   * Called to determine turn order at round start or when order changes.
+   * Return new order or null to keep current.
+   */
+  onDetermineTurnOrder?(ctx: TurnOrderContext): TurnOrderResult | null;
+
+  /**
+   * Called when a player passes priority.
+   * Can determine next player or remove from round.
+   */
+  onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 
   // ============ Mechanic Composition ============
 

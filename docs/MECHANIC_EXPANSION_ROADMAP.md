@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 39 of 192 mechanics (20%)**
+**Implemented: 40 of 192 mechanics (21%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -24,7 +24,7 @@
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
 | Social | 0 | 11 | 0% |
-| Turn Order | 0 | 8 | 0% |
+| Turn Order | 1 | 8 | 13% |
 | Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
 
@@ -55,9 +55,15 @@
 | `hidden-roles` | Information | Secret role assignment (Werewolf, Mafia) |
 | `traitor-game` | Information | Traitor vs loyalist asymmetric gameplay |
 
+### Recently Implemented (Phase 3)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `turn-order-random` | Turn Order | Randomize turn order at round/game start |
+
 ## Existing Hook Infrastructure
 
-29 hooks are currently available:
+31 hooks are currently available:
 
 ### Action & Validation
 - `preValidateAction(ctx, action)` - Block invalid actions
@@ -105,6 +111,10 @@
 ### Dice (Phase 2)
 - `onBeforeRoll(ctx)` - Modify dice count/sides or block
 - `onAfterRoll(ctx)` - React to roll results
+
+### Turn Order (Phase 3)
+- `onDetermineTurnOrder(ctx)` - Provide custom turn order
+- `onPassPriority(ctx)` - Handle pass/claim priority
 
 ---
 
@@ -219,26 +229,54 @@ onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 
 ---
 
-## Phase 3: Dynamic Turn Order (2 New Hooks)
+## Phase 3: Dynamic Turn Order (2 New Hooks) ✅ IMPLEMENTED
 
-**Modify**: `src/mechanics/core/turns.ts`
+**Core Service**: `src/mechanics/core/turns.ts`
 
-### New Hooks
+### Hooks (Implemented)
 
 ```typescript
 interface TurnOrderContext {
   state: GameState;
   config: GameConfig;
   currentOrder: string[];
-  reason: 'round_start' | 'mid_round' | 'claim';
+  reason: 'round_start' | 'mid_round' | 'claim' | 'pass';
 }
 
-// Add to MechanicHooks:
-onDetermineTurnOrder?(ctx: TurnOrderContext): string[] | null;
-onPassPriority?(ctx: HookContext): { nextPlayer?: string; removeFromRound?: boolean } | null;
+interface TurnOrderResult {
+  order?: string[];
+  nextPlayer?: string;
+}
+
+interface PassPriorityResult {
+  nextPlayer?: string;
+  removeFromRound?: boolean;
+}
+
+// Added to MechanicHooks:
+onDetermineTurnOrder?(ctx: TurnOrderContext): TurnOrderResult | null;
+onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 ```
 
-### Unlocked Mechanics
+### Core Functions Added
+
+- `setTurnOrder(state, newOrder)` - Set new turn order
+- `shuffleTurnOrder(state, keepCurrentPlayer)` - Shuffle turn order
+- `reverseTurnOrder(state)` - Reverse turn order
+- `movePlayerInOrder(state, playerId, position)` - Move player in order
+- `removeFromTurnOrder(state, playerId)` - Remove player from order
+- `addToTurnOrder(state, playerId, position)` - Add player back
+- `applyDynamicTurnOrder(state, reason)` - Apply mechanic-provided order
+- `sortTurnOrderByProperty(state, property, descending)` - Sort by player stat
+- `createSnakeDraftOrder(players, rounds)` - Create snake draft order
+
+### Implemented Mechanics
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `turn-order-random` | Randomize turn order at round/game start | ✅ Implemented |
+
+### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
@@ -246,7 +284,6 @@ onPassPriority?(ctx: HookContext): { nextPlayer?: string; removeFromRound?: bool
 | `turn-order-claim-action` | Take action to claim position |
 | `turn-order-pass-order` | Pass order from previous round |
 | `turn-order-progressive` | Snake draft order |
-| `turn-order-random` | Randomize each round |
 | `turn-order-stat-based` | Order by player stat |
 | `turn-order-time-track` | Time-based order |
 | `turn-order-role-order` | Role determines order |
@@ -481,15 +518,16 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 |-------|------------|-----------|-------------------|------------------|--------|
 | 1 | Low | 0 | 18 | 36 (19%) | 83% |
 | 2 | Low | 2 | 1 (+4 unlocked) | 39 (20%) | ✅ **Done** |
-| 3 | Medium | 2 | 8 | 47 (24%) | Next |
-| 4 | Medium | 3 | 2 (+6 unlocked) | 39 (20%) | ✅ **Done** |
-| 5 | Medium | 2 | 6 | 45 (23%) | Pending |
-| 6 | High | 6 | 8 | 53 (28%) | Pending |
-| 7 | High | 5 | 3 | 56 (29%) | Pending |
-| 8 | High | 5 | 10 | 66 (34%) | Pending |
+| 3 | Medium | 2 | 1 (+7 unlocked) | 40 (21%) | ✅ **Done** |
+| 4 | Medium | 3 | 2 (+6 unlocked) | 40 (21%) | ✅ **Done** |
+| 5 | Medium | 2 | 6 | 46 (24%) | Next |
+| 6 | High | 6 | 8 | 54 (28%) | Pending |
+| 7 | High | 5 | 3 | 57 (30%) | Pending |
+| 8 | High | 5 | 10 | 67 (35%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
 **Phase 2 Progress**: 1 of 5 mechanics implemented (20%) - Dice infrastructure complete
+**Phase 3 Progress**: 1 of 8 mechanics implemented (13%) - Turn order infrastructure complete
 **Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
 
 ---
@@ -513,11 +551,12 @@ These mechanics require physical components or real-time elements unsuitable for
 
 1. ~~**Create `core/visibility.ts`** - Enable hidden information games~~ ✅ Done
 2. ~~**Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)~~ ✅ Done
-3. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
-4. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
-5. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
-6. **Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)
-7. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
+3. ~~**Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)~~ ✅ Done
+4. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
+5. **Implement remaining Phase 3 mechanics** - turn-order-auction, turn-order-stat-based, etc.
+6. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
+7. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
+8. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
 
 ---
 
