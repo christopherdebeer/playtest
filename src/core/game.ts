@@ -650,7 +650,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     discardPile,
     config,
     rulesMarkdown: markdown,
-    log: logPath
+    log: logPath,
+    created: Date.now()
   };
 
   saveState(state);

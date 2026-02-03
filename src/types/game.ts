@@ -341,6 +341,7 @@ export interface GameState {
   config: GameConfig;
   rulesMarkdown: string;
   log: string;  // path to log file
+  created?: number;  // Unix timestamp in milliseconds when game was initialized
 }
 
 export interface WaitResult {

@@ -287,6 +287,7 @@ program
         turnNumber: number;
         created?: number;
         lastUpdated?: number;
+        elapsed?: number;
         stalled?: boolean;
         stalledMinutes?: number;
       }
@@ -323,9 +324,25 @@ program
         }
       };
 
-      // Get creation time from state file
-      const getCreationTime = (instanceId: string): number | undefined => {
+      // Get creation time - prefers state.created, falls back to instance ID parsing (backfill), then file birthtime
+      const getCreationTime = (state: any, instanceId: string): number | undefined => {
         try {
+          // Primary method: Use state.created if available (proper way going forward)
+          if (state.created && typeof state.created === 'number') {
+            return state.created;
+          }
+
+          // Backfill method: Parse timestamp from instance ID (for existing games)
+          const parts = instanceId.split('-');
+          const lastPart = parts[parts.length - 1];
+          const timestamp = parseInt(lastPart, 10);
+
+          // Validate it looks like a millisecond timestamp (13 digits)
+          if (!isNaN(timestamp) && timestamp.toString().length === 13) {
+            return timestamp;
+          }
+
+          // Last resort: Fall back to file system birthtime (least reliable)
           const statePath = getStatePath(instanceId);
           const stats = fs.statSync(statePath);
           return stats.birthtimeMs;
@@ -351,9 +368,10 @@ program
           try {
             const state = loadState(instanceId);
             const lastUpdated = getLastUpdate(gameName, instanceId);
-            const created = getCreationTime(instanceId);
+            const created = getCreationTime(state, instanceId);
             const now = Date.now();
             const stalledMinutes = lastUpdated ? (now - lastUpdated) / (60 * 1000) : undefined;
+            const elapsed = (created && lastUpdated) ? lastUpdated - created : undefined;
 
             results.push({
               gameName: state.gameName,
@@ -363,7 +381,10 @@ program
               turnNumber: state.turnNumber,
               created,
               lastUpdated,
-              stalled: stalledMinutes !== undefined && stalledMinutes > parseTime(options?.threshold || '5m') / (60 * 1000),
+              elapsed,
+              stalled: state.status === 'in_progress' &&
+                       stalledMinutes !== undefined &&
+                       stalledMinutes > parseTime(options?.threshold || '5m') / (60 * 1000),
               stalledMinutes
             });
           } catch {
@@ -419,15 +440,15 @@ program
         console.log('\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐');
         console.log('│ Game Instances                                                                              │');
         console.log('├──────────────────┬──────────────────────────────────┬─────────────┬────────┬────────┬────────┤');
-        console.log('│ Game             │ Instance ID                      │ Status      │ Round  │ Turns  │ Updated│');
+        console.log('│ Game             │ Instance ID                      │ Status      │ Round  │ Turns  │ Elapsed│');
         console.log('├──────────────────┼──────────────────────────────────┼─────────────┼────────┼────────┼────────┤');
 
         for (const inst of filtered) {
-          const updatedAgo = inst.lastUpdated
-            ? formatTimeSince(Date.now() - inst.lastUpdated)
+          const elapsedDisplay = inst.elapsed
+            ? formatTimeSince(inst.elapsed)
             : 'unknown';
           const stallFlag = inst.stalled ? ' ⚠️' : '';
-          console.log(`│ ${inst.gameName.padEnd(16)} │ ${inst.instanceId.padEnd(32)} │ ${inst.status.padEnd(11)} │ ${String(inst.round).padStart(6)} │ ${String(inst.turnNumber).padStart(6)} │ ${(updatedAgo + stallFlag).padEnd(6)} │`);
+          console.log(`│ ${inst.gameName.padEnd(16)} │ ${inst.instanceId.padEnd(32)} │ ${inst.status.padEnd(11)} │ ${String(inst.round).padStart(6)} │ ${String(inst.turnNumber).padStart(6)} │ ${(elapsedDisplay + stallFlag).padEnd(6)} │`);
         }
 
         console.log('└──────────────────┴──────────────────────────────────┴─────────────┴────────┴────────┴────────┘');
@@ -435,11 +456,11 @@ program
       } else if (format === 'compact') {
         // Compact format
         for (const inst of filtered) {
-          const updatedAgo = inst.lastUpdated
-            ? formatTimeSince(Date.now() - inst.lastUpdated)
+          const elapsedDisplay = inst.elapsed
+            ? formatTimeSince(inst.elapsed)
             : '?';
           const stallFlag = inst.stalled ? ' [STALLED]' : '';
-          console.log(`${inst.instanceId} | ${inst.status} | T${inst.turnNumber} | ${updatedAgo} ago${stallFlag}`);
+          console.log(`${inst.instanceId} | ${inst.status} | T${inst.turnNumber} | ${elapsedDisplay}${stallFlag}`);
         }
       }
 
