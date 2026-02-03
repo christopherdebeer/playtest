@@ -58,6 +58,16 @@ import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 // Mechanics hook system (incremental extraction)
 import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
 
+// Core services (trunk mechanics)
+import {
+  drawFromDeck,
+  addToDiscard,
+  addToHand,
+  removeFromHandByIndex,
+  removeFromHandByName,
+  removeCardsFromHand
+} from '../mechanics/core/index.js';
+
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
@@ -1256,48 +1266,22 @@ export function drawCards(state: GameState, playerId: string, count: number): Ca
     throw new Error(`Player ${playerId} not found`);
   }
 
-  const drawn: Card[] = [];
-
-  for (let i = 0; i < count; i++) {
-    if (state.deck.length === 0) {
-      // Reshuffle discard pile
-      if (state.discardPile.length === 0) {
-        break; // No cards left anywhere
-      }
-      state.deck = shuffleDeck(state.discardPile);
-      state.discardPile = [];
-    }
-
-    const card = state.deck.shift();
-    if (card) {
-      drawn.push(card);
-      player.hand.push(card);
-    }
-  }
+  // Use core services for deck and hand operations
+  const { cards: drawn } = drawFromDeck(state, count);
+  addToHand(state, playerId, drawn);
 
   saveState(state);
   return drawn;
 }
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  const player = state.players[playerId];
-  if (!player) {
-    throw new Error(`Player ${playerId} not found`);
-  }
-
-  if (cardIndex < 0 || cardIndex >= player.hand.length) {
+  // Use core services for hand and discard operations
+  const card = removeFromHandByIndex(state, playerId, cardIndex);
+  if (!card) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
-  state.discardPile.push(card);
-
-  // Update top card tracking
-  state.shared.topCard = card;
-  if (card.effect?.color) {
-    state.shared.currentColor = card.effect.color;
-  }
-
+  addToDiscard(state, [card]);
   saveState(state);
 
   return card;
@@ -1309,23 +1293,17 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Find card in hand by name
-  const cardIndex = player.hand.findIndex(c => c.name === cardName);
-  if (cardIndex === -1) {
+  // Use core services for hand/discard operations
+  const card = removeFromHandByName(state, playerId, cardName);
+  if (!card) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
-  state.discardPile.push(card);
+  addToDiscard(state, [card]);
 
-  // Update top card tracking
-  state.shared.topCard = card;
-
-  // Handle wild cards - use declared color
+  // Handle wild cards - override color set by addToDiscard
   if (card.type === 'wild' && declaredColor) {
     state.shared.currentColor = declaredColor;
-  } else if (card.effect?.color) {
-    state.shared.currentColor = card.effect.color;
   }
 
   saveState(state);
@@ -2485,8 +2463,11 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
           if (handPolicy === 'discard_oldest') {
             // Auto-discard the oldest (first) cards in hand
-            discardedCards = player.hand.splice(0, excess);
-            state.discardPile.push(...discardedCards);
+            for (let i = 0; i < excess; i++) {
+              const card = removeFromHandByIndex(state, playerId, 0);
+              if (card) discardedCards.push(card);
+            }
+            addToDiscard(state, discardedCards);
           } else if (handPolicy === 'discard_choice') {
             // Note: Full implementation would require a pending_discard state
             // For now, log a warning - the player should discard manually
@@ -2895,24 +2876,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         pendingTrades.splice(tradeIndex, 1);
 
         if (respondAction.accept) {
-          // Execute the trade - swap cards between players
+          // Execute the trade - swap cards between players using core services
           // Remove offered cards from offerer and add to responder
-          for (const cardName of trade.offer) {
-            const cardIndex = fromPlayer.hand.findIndex(c => c.name === cardName);
-            if (cardIndex !== -1) {
-              const [card] = fromPlayer.hand.splice(cardIndex, 1);
-              player.hand.push(card);
-            }
-          }
+          const offeredCards = removeCardsFromHand(state, trade.from, trade.offer);
+          addToHand(state, playerId, offeredCards);
 
           // Remove requested cards from responder and add to offerer
-          for (const cardName of trade.request) {
-            const cardIndex = player.hand.findIndex(c => c.name === cardName);
-            if (cardIndex !== -1) {
-              const [card] = player.hand.splice(cardIndex, 1);
-              fromPlayer.hand.push(card);
-            }
-          }
+          const requestedCards = removeCardsFromHand(state, playerId, trade.request);
+          addToHand(state, trade.from, requestedCards);
 
           // Track completed trades for objectives
           if (!player.completedTrades) player.completedTrades = 0;
