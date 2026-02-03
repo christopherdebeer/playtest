@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T22:43:05.086Z",
+  "generated": "2026-02-03T23:27:50.700Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -220,6 +220,21 @@
         "canSeeInfo"
       ]
     },
+    "hidden-victory-points": {
+      "config_key": "hidden_victory_points",
+      "since": "3.0.0",
+      "description": "Keeps player scores hidden until end game or specific conditions.",
+      "config_schema": {
+        "reveal_at_end": "boolean",
+        "reveal_threshold": "number",
+        "show_relative": "boolean",
+        "reveal_own": "boolean"
+      },
+      "hooks": [
+        "getVisibleState",
+        "canSeeInfo"
+      ]
+    },
     "income": {
       "config_key": "income",
       "since": "3.0.0",
@@ -389,6 +404,22 @@
         "describeAction"
       ]
     },
+    "re-rolling-and-locking": {
+      "config_key": "re_rolling_and_locking",
+      "since": "3.0.0",
+      "description": "Yahtzee-style dice: roll, keep some, re-roll others.",
+      "config_schema": {
+        "dice_count": "number",
+        "dice_sides": "number",
+        "max_rerolls": "number",
+        "auto_lock_on_max": "boolean"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions"
+      ]
+    },
     "set-collection": {
       "config_key": "set_collection",
       "since": "3.0.0",
@@ -485,9 +516,34 @@
         "describeAction"
       ]
     },
+    "turn-order-progressive": {
+      "config_key": "turn_order_progressive",
+      "since": "3.0.0",
+      "description": "Snake draft order that reverses each round.",
+      "config_schema": {
+        "reverse_each_round": "boolean",
+        "reverse_on_tie": "boolean"
+      },
+      "hooks": [
+        "onDetermineTurnOrder"
+      ]
+    },
     "turn-order-random": {
       "config_key": "turn_order_random",
       "since": "3.0.0",
+      "hooks": [
+        "onDetermineTurnOrder"
+      ]
+    },
+    "turn-order-stat-based": {
+      "config_key": "turn_order_stat_based",
+      "since": "3.0.0",
+      "description": "Determines turn order based on player statistics.",
+      "config_schema": {
+        "stat": "string",
+        "descending": "boolean",
+        "trigger": "game_start | round_start | both"
+      },
       "hooks": [
         "onDetermineTurnOrder"
       ]

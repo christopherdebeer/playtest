@@ -41,12 +41,16 @@ import { pointToPointMovementMechanic } from './point-to-point-movement.js';
 // Phase 4: Visibility System mechanics
 import { hiddenRolesMechanic } from './hidden-roles.js';
 import { traitorGameMechanic } from './traitor-game.js';
+import { hiddenVictoryPointsMechanic } from './hidden-victory-points.js';
 
 // Phase 2: Dice System mechanics
 import { diceRollingMechanic } from './dice-rolling.js';
+import { rerollingAndLockingMechanic } from './re-rolling-and-locking.js';
 
 // Phase 3: Dynamic Turn Order mechanics
 import { turnOrderRandomMechanic } from './turn-order-random.js';
+import { turnOrderStatBasedMechanic } from './turn-order-stat-based.js';
+import { turnOrderProgressiveMechanic } from './turn-order-progressive.js';
 
 // Phase 5: Voting & Social mechanics
 import { votingMechanic } from './voting.js';
@@ -98,12 +102,16 @@ mechanicRegistry.register(pointToPointMovementMechanic);
 // Register Phase 4: Visibility System mechanics
 mechanicRegistry.register(hiddenRolesMechanic);
 mechanicRegistry.register(traitorGameMechanic);
+mechanicRegistry.register(hiddenVictoryPointsMechanic);
 
 // Register Phase 2: Dice System mechanics
 mechanicRegistry.register(diceRollingMechanic);
+mechanicRegistry.register(rerollingAndLockingMechanic);
 
 // Register Phase 3: Dynamic Turn Order mechanics
 mechanicRegistry.register(turnOrderRandomMechanic);
+mechanicRegistry.register(turnOrderStatBasedMechanic);
+mechanicRegistry.register(turnOrderProgressiveMechanic);
 
 // Register Phase 5: Voting & Social mechanics
 mechanicRegistry.register(votingMechanic);
