@@ -149,10 +149,11 @@ interface MechanicHooks {
 | Concept | Lines | Description | Status |
 |---------|-------|-------------|--------|
 | **Win Conditions** | 1091-1260 | Pattern matching ("reach state", "score >= N", "empty hand") | Pending - use `onCheckWin` |
-| **Push Your Luck** | 3154-3236 | Dice rolling, bust detection, banking | ✅ Migrated to `onExecuteAction` |
-| **Set Collection Execution** | 3058-3149 | Set validation, points award | Pending - use `onExecuteAction` |
+| **Push Your Luck** | 3154-3236 | Dice rolling, bust detection, banking | ✅ Migrated |
+| **Set Collection** | 3058-3149 | Set validation, points award | ✅ Migrated |
+| **Trading** | 2795-2927 | Trade creation, card transfer | ✅ Migrated |
+| **Open Drafting** | 3283-3334 | Card draft from display | ✅ Migrated |
 | **Take-That Effects** | 2323-2360 | Effect application to targets | Pending - use `postExecuteAction` |
-| **Trading Execution** | 2795-2927 | Trade creation, card transfer | Pending - use `onExecuteAction` |
 | **Board Movement** | 2540-2670 | State transitions, placed card effects | Pending - use `onExecuteAction` |
 | **Place Card/Location** | 2675-2790 | Card/location placement | Pending - use `onExecuteAction` |
 
@@ -163,23 +164,23 @@ interface MechanicHooks {
 | Turn Management | Turn cycling, effect decrement | Use `onTurnEnd` hook |
 | Hand Limit Policies | discard_oldest, discard_choice | Extend `onBeforeDraw`/`onAfterAddToHand` |
 | Resource/Currency | Resource spending | New `resource` core service |
-| Draft Execution | Card pickup from display | Add `onExecuteAction` hook |
 | Color Matching | UNO-style card matching | New `card-matching` mechanic |
 
 ## Path Forward
 
-### Phase 6: Migrate Remaining Mechanics to onExecuteAction
+### Phase 6: Migrate Remaining Mechanics to onExecuteAction (In Progress)
 
-With the infrastructure in place, migrate remaining mechanics:
+Mechanics migrated to full `onExecuteAction` pattern:
 
-| Mechanic | Actions | Priority |
-|----------|---------|----------|
-| `set-collection` | `claim_set` | High |
-| `trading` | `trade_offer`, `trade_respond` | High |
-| `open-drafting` | `draft` | Medium |
-| `board-state` | `move` | Medium |
-| `place-card` | `place_card` | Medium |
-| `place-location` | `place_location` | Medium |
+| Mechanic | Actions | Status |
+|----------|---------|--------|
+| `push-your-luck` | `roll`, `bank` | ✅ Complete |
+| `set-collection` | `collect_set` | ✅ Complete |
+| `trading` | `trade_offer`, `trade_respond` | ✅ Complete |
+| `open-drafting` | `draft` | ✅ Complete |
+| `board-state` | `move` | Pending |
+| `place-card` | `place_card` | Pending |
+| `place-location` | `place_location` | Pending |
 
 Each migration follows the push-your-luck pattern:
 1. Add `onExecuteAction` to handle the action
@@ -355,6 +356,9 @@ class MechanicRegistry {
 | `src/mechanics/registry.ts` | Added onTurnEnd, onCheckWin, executeAction, getAvailableActions, describeAction routing |
 | `src/mechanics/hand-management.ts` | Migrated to use onBeforeDraw |
 | `src/mechanics/push-your-luck.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/set-collection.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/trading.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/open-drafting.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/core/card-piles.ts` | Added hooks (onBeforeDraw, onAfterDraw, onDiscard) |
 | `src/mechanics/core/hand.ts` | Added hooks (onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand) |
 | `src/core/game.ts` | Updated to use core services with playerId for hooks |
@@ -364,4 +368,5 @@ class MechanicRegistry {
 1. `b6f4dc5` - Core card services (trunk mechanics)
 2. `6793899` - Core operation hooks
 3. `240afb7` - Turn lifecycle and win condition hooks
-4. (pending) - Action execution and registration hooks
+4. `41cac14` - Action execution and registration hooks
+5. (pending) - Migrate set-collection, trading, open-drafting

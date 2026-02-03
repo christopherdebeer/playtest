@@ -5,18 +5,63 @@
  *
  * Hooks used:
  * - preValidateAction: Validate collect_set action
+ * - onExecuteAction: Handle set collection execution
+ * - getAvailableActions: Expose collect_set action
+ * - describeAction: Describe collect_set action
  */
 
-import { MechanicHooks, HookContext, ValidationResult } from './types.js';
-import { GameAction } from '../types/game.js';
-
-interface SetDefinition {
-  name: string;
-  size: number;
-}
+import {
+  MechanicHooks,
+  HookContext,
+  ValidationResult,
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription
+} from './types.js';
+import { GameAction, Card, SetDefinition, CollectSetAction } from '../types/game.js';
+import { removeCardsFromHand } from './core/hand.js';
+import { addToDiscard } from './core/card-piles.js';
 
 interface SetCollectionConfig {
   sets: SetDefinition[];
+  points_per_set?: number;
+}
+
+/**
+ * Validate that cards form a valid set matching the definition
+ */
+function validateSet(cards: Card[], setDef: SetDefinition): boolean {
+  if (cards.length !== setDef.size) return false;
+
+  // Get the field value from a card using dot notation (e.g., "effect.color")
+  const getFieldValue = (card: Card, field: string): unknown => {
+    const parts = field.split('.');
+    let value: unknown = card;
+    for (const part of parts) {
+      if (value && typeof value === 'object') {
+        value = (value as Record<string, unknown>)[part];
+      } else {
+        return undefined;
+      }
+    }
+    return value;
+  };
+
+  const values = cards.map(c => getFieldValue(c, setDef.match_field));
+
+  // All values must be the same for a matching set
+  const firstValue = values[0];
+  const allMatch = values.every(v => v === firstValue);
+
+  // If unique is required, all cards must be different
+  if (setDef.unique) {
+    const cardNames = cards.map(c => c.name);
+    const uniqueNames = new Set(cardNames);
+    if (uniqueNames.size !== cards.length) return false;
+  }
+
+  return allMatch;
 }
 
 export const setCollectionMechanic: MechanicHooks = {
@@ -31,7 +76,7 @@ export const setCollectionMechanic: MechanicHooks = {
       return { valid: false, error: 'Set collection is not enabled for this game.' };
     }
 
-    const collectAction = action as { cards: string[]; setType: string };
+    const collectAction = action as CollectSetAction;
     const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
 
     if (!setDef) {
@@ -57,5 +102,105 @@ export const setCollectionMechanic: MechanicHooks = {
     }
 
     return { valid: true };
+  },
+
+  onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
+    const { action, player, playerId, state } = ctx;
+
+    if (action.type !== 'collect_set') return null;
+
+    const setConfig = ctx.config.engine_mechanics?.set_collection as SetCollectionConfig | undefined;
+    if (!setConfig) return null;
+
+    const collectAction = action as CollectSetAction;
+    const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
+    if (!setDef) return null;
+
+    // Remove cards from hand using core service
+    const collectedCards = removeCardsFromHand(state, playerId, collectAction.cards);
+
+    // Validate the set matches the definition
+    if (!validateSet(collectedCards, setDef)) {
+      // Put cards back (this shouldn't happen if preValidateAction worked correctly)
+      player.hand.push(...collectedCards);
+      return {
+        handled: true,
+        stateChanges: {},
+        advanceTurn: false,
+        checkWin: false,
+        logMessage: 'set_collection_invalid',
+        logData: { setType: collectAction.setType, error: 'Cards do not form a valid set' }
+      };
+    }
+
+    // Calculate new state
+    const collectedSets = [...(player.collectedSets || []), collectAction.setType];
+    const pointsAwarded = setConfig.points_per_set ?? 0;
+    const newScore = (player.score ?? 0) + pointsAwarded;
+
+    // Add cards to discard using core service
+    addToDiscard(state, collectedCards, playerId);
+
+    return {
+      handled: true,
+      stateChanges: {
+        playerStateChanges: {
+          [playerId]: {
+            collectedSets,
+            score: newScore
+          }
+        }
+      },
+      advanceTurn: true,
+      checkWin: true,
+      logMessage: 'set_collected',
+      logData: {
+        setType: collectAction.setType,
+        cards: collectAction.cards,
+        points: pointsAwarded,
+        totalSets: collectedSets.length
+      }
+    };
+  },
+
+  getAvailableActions(ctx: HookContext): AvailableAction[] {
+    const setConfig = ctx.config.engine_mechanics?.set_collection as SetCollectionConfig | undefined;
+    if (!setConfig) return [];
+
+    const handCards = ctx.player.hand.map(c => c.name);
+    const minSetSize = Math.min(...setConfig.sets.map(s => s.size));
+
+    // Only show action if player has enough cards for smallest set
+    if (handCards.length < minSetSize) return [];
+
+    // Generate example actions for each set type
+    const actions: AvailableAction[] = [];
+
+    for (const setDef of setConfig.sets) {
+      if (handCards.length >= setDef.size) {
+        actions.push({
+          action: {
+            type: 'collect_set',
+            cards: handCards.slice(0, setDef.size),
+            setType: setDef.name
+          } as GameAction,
+          priority: 40,
+          category: 'set-collection'
+        });
+      }
+    }
+
+    return actions;
+  },
+
+  describeAction(action: GameAction): ActionDescription | null {
+    if (action.type !== 'collect_set') return null;
+
+    return {
+      type: 'collect_set',
+      label: 'Collect Set',
+      description: 'Claim a matching set of cards to earn points.',
+      examples: ['collect_set cards:["Red 1","Red 2","Red 3"] setType:"Color Set"']
+    };
   }
 };

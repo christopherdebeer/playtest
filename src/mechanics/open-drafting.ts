@@ -5,10 +5,28 @@
  *
  * Hooks used:
  * - preValidateAction: Validate draft action (card in display)
+ * - onExecuteAction: Handle draft execution
+ * - getAvailableActions: Expose draft action
+ * - describeAction: Describe draft action
  */
 
-import { MechanicHooks, HookContext, ValidationResult } from './types.js';
-import { GameAction, Card } from '../types/game.js';
+import {
+  MechanicHooks,
+  HookContext,
+  ValidationResult,
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription
+} from './types.js';
+import { GameAction, Card, DraftAction } from '../types/game.js';
+import { addToHand } from './core/hand.js';
+import { drawFromDeck } from './core/card-piles.js';
+
+interface OpenDraftingConfig {
+  display_size: number;
+  refill?: 'immediate' | 'round_end' | 'none';
+}
 
 export const openDraftingMechanic: MechanicHooks = {
   slug: 'open-drafting',
@@ -17,12 +35,12 @@ export const openDraftingMechanic: MechanicHooks = {
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'draft') return null;
 
-    const draftConfig = ctx.config.engine_mechanics?.open_drafting;
+    const draftConfig = ctx.config.engine_mechanics?.open_drafting as OpenDraftingConfig | undefined;
     if (!draftConfig) {
       return { valid: false, error: 'Open drafting is not enabled for this game.' };
     }
 
-    const draftAction = action as { card: string };
+    const draftAction = action as DraftAction;
     const display = (ctx.state.shared.draftDisplay || []) as Card[];
 
     if (!display.find(c => c.name === draftAction.card)) {
@@ -33,5 +51,89 @@ export const openDraftingMechanic: MechanicHooks = {
     }
 
     return { valid: true };
+  },
+
+  onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
+    const { action, player, playerId, state } = ctx;
+
+    if (action.type !== 'draft') return null;
+
+    const draftConfig = ctx.config.engine_mechanics?.open_drafting as OpenDraftingConfig | undefined;
+    if (!draftConfig) return null;
+
+    const draftAction = action as DraftAction;
+    const display = (state.shared.draftDisplay || []) as Card[];
+    const cardIndex = display.findIndex(c => c.name === draftAction.card);
+
+    if (cardIndex === -1) {
+      return {
+        handled: true,
+        stateChanges: {},
+        advanceTurn: false,
+        checkWin: false,
+        logMessage: 'draft_failed',
+        logData: { card: draftAction.card, error: 'Card not in display' }
+      };
+    }
+
+    // Remove card from display
+    const [draftedCard] = display.splice(cardIndex, 1);
+
+    // Add to player's hand using core service
+    addToHand(state, playerId, [draftedCard]);
+
+    // Refill display if configured
+    let newDisplay = [...display];
+    if (draftConfig.refill === 'immediate' && state.deck.length > 0) {
+      const { cards: drawn } = drawFromDeck(state, 1);
+      if (drawn.length > 0) {
+        newDisplay.push(drawn[0]);
+      }
+    }
+
+    return {
+      handled: true,
+      stateChanges: {
+        sharedStateChanges: {
+          draftDisplay: newDisplay
+        }
+      },
+      advanceTurn: true,
+      checkWin: false,
+      logMessage: 'card_drafted',
+      logData: {
+        card: draftedCard.name,
+        displayRemaining: newDisplay.length
+      }
+    };
+  },
+
+  getAvailableActions(ctx: HookContext): AvailableAction[] {
+    const draftConfig = ctx.config.engine_mechanics?.open_drafting as OpenDraftingConfig | undefined;
+    if (!draftConfig) return [];
+
+    const display = (ctx.state.shared.draftDisplay || []) as Card[];
+    if (display.length === 0) return [];
+
+    // Return one action per card in display
+    return display.map(card => ({
+      action: {
+        type: 'draft',
+        card: card.name
+      } as GameAction,
+      priority: 45,
+      category: 'drafting'
+    }));
+  },
+
+  describeAction(action: GameAction): ActionDescription | null {
+    if (action.type !== 'draft') return null;
+
+    return {
+      type: 'draft',
+      label: 'Draft Card',
+      description: 'Draft a card from the visible display into your hand.',
+      examples: ['draft card:"Fire Spell"']
+    };
   }
 };
