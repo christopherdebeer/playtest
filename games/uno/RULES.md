@@ -11,6 +11,19 @@ mechanics:
   - set-collection
   - take-that
   - lose-a-turn
+  - win-empty-hand
+
+# Engine mechanics configuration
+engine_mechanics:
+  # Take-that: Attack cards (Draw Two, Wild Draw Four)
+  take_that: {}
+
+  # Lose-a-turn: Skip cards
+  lose_a_turn: {}
+
+  # Win condition: First to empty hand wins
+  win_empty_hand:
+    enabled: true
 
 # Structured config for engine
 deck:

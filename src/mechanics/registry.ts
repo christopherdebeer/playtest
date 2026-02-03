@@ -249,7 +249,8 @@ class MechanicRegistry {
       }
     }
 
-    if (telemetryEnabled) {
+    // Only log telemetry if mechanics are enabled (avoid noise from 0/0 mechanics)
+    if (telemetryEnabled && enabledMechanics.length > 0) {
       logEvent(state, {
         event: 'hook_invoked',
         player: playerId,
@@ -489,7 +490,8 @@ class MechanicRegistry {
       }
     }
 
-    if (telemetryEnabled) {
+    // Only log telemetry if mechanics are enabled (avoid noise from 0/0 mechanics)
+    if (telemetryEnabled && enabledMechanics.length > 0) {
       logEvent(state, {
         event: 'hook_invoked',
         player: playerId,
