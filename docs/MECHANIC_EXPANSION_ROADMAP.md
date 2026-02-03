@@ -6,27 +6,41 @@
 
 ## Current State
 
-**Implemented: 21 of 192 mechanics (11%)**
+**Implemented: 30 of 192 mechanics (16%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
 | Action | 1 | 7 | 14% |
 | Auction | 1 | 12 | 8% |
 | Building | 0 | 11 | 0% |
-| Cards | 5 | 15 | 33% |
+| Cards | 8 | 15 | 53% |
 | Conflict | 0 | 8 | 0% |
 | Cooperative | 0 | 10 | 0% |
 | Dice | 1 | 6 | 17% |
-| Economic | 1 | 9 | 11% |
+| Economic | 2 | 9 | 22% |
 | Ending | 0 | 4 | 0% |
 | Information | 0 | 8 | 0% |
-| Movement | 1 | 22 | 5% |
-| Other | 6 | 40 | 15% |
+| Movement | 2 | 22 | 9% |
+| Other | 9 | 40 | 23% |
 | Physical | 0 | 8 | 0% |
 | Social | 0 | 11 | 0% |
 | Turn Order | 0 | 8 | 0% |
-| Victory | 4 | 5 | 80% |
+| Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
+
+### Recently Implemented (Phase 1)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `closed-drafting` | Cards | Simultaneous selection with passing (7 Wonders) |
+| `trick-taking` | Cards | Classic trick-taking with trump/follow suit |
+| `ladder-climbing` | Cards | Beat previous play or pass (President, Big Two) |
+| `movement-points` | Movement | Movement budget with terrain costs |
+| `automatic-resource-growth` | Economic | Resources that grow over time |
+| `events` | Other | Random/scheduled game events |
+| `once-per-game-abilities` | Other | Special one-time abilities |
+| `chaining` | Other | Actions that trigger follow-up effects |
+| `win-race` | Victory | First to reach goal wins |
 
 ## Existing Hook Infrastructure
 

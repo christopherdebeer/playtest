@@ -29,6 +29,9 @@ import { trickTakingMechanic } from './trick-taking.js';
 import { movementPointsMechanic } from './movement-points.js';
 import { automaticResourceGrowthMechanic } from './automatic-resource-growth.js';
 import { eventsMechanic } from './events.js';
+import { ladderClimbingMechanic } from './ladder-climbing.js';
+import { oncePerGameAbilitiesMechanic } from './once-per-game-abilities.js';
+import { chainingMechanic } from './chaining.js';
 
 // Win condition mechanics
 import {
@@ -36,7 +39,8 @@ import {
   scoreThresholdWinMechanic,
   emptyHandWinMechanic,
   eliminationWinMechanic,
-  timeoutWinnerMechanic
+  timeoutWinnerMechanic,
+  raceWinMechanic
 } from './win-conditions/index.js';
 
 // Register all extracted mechanics
@@ -63,6 +67,9 @@ mechanicRegistry.register(trickTakingMechanic);
 mechanicRegistry.register(movementPointsMechanic);
 mechanicRegistry.register(automaticResourceGrowthMechanic);
 mechanicRegistry.register(eventsMechanic);
+mechanicRegistry.register(ladderClimbingMechanic);
+mechanicRegistry.register(oncePerGameAbilitiesMechanic);
+mechanicRegistry.register(chainingMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
@@ -70,6 +77,7 @@ mechanicRegistry.register(scoreThresholdWinMechanic);
 mechanicRegistry.register(emptyHandWinMechanic);
 mechanicRegistry.register(eliminationWinMechanic);
 mechanicRegistry.register(timeoutWinnerMechanic);
+mechanicRegistry.register(raceWinMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';

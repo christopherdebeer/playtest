@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-03T13:02:50.702Z",
+  "generated": "2026-02-03T13:13:07.191Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -54,6 +54,18 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ]
+    },
+    "chaining": {
+      "config_key": "chaining",
+      "since": "3.0.0",
+      "description": "Actions that trigger follow-up effects",
+      "config_schema": {
+        "rules": "array",
+        "max_chain_depth": "number"
+      },
+      "hooks": [
+        "postExecuteAction"
       ]
     },
     "closed-drafting": {
@@ -120,6 +132,28 @@
         "onTurnStart"
       ]
     },
+    "ladder-climbing": {
+      "config_key": "ladder_climbing",
+      "since": "3.0.0",
+      "description": "Beat the previous play or pass (President, Big Two style)",
+      "config_schema": {
+        "comparison": "value | rank",
+        "rank_order": "array",
+        "higher_wins": "boolean",
+        "allow_combinations": "boolean",
+        "combination_types": "array",
+        "min_run_length": "number",
+        "pass_eliminates": "boolean",
+        "wild_cards": "array",
+        "bomb_cards": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
     "lose-a-turn": {
       "config_key": "lose_a_turn",
       "since": "3.0.0",
@@ -144,6 +178,23 @@
         "postExecuteAction",
         "initPlayerState",
         "onTurnStart"
+      ]
+    },
+    "once-per-game-abilities": {
+      "config_key": "once_per_game_abilities",
+      "since": "3.0.0",
+      "description": "Special abilities usable once per game",
+      "config_schema": {
+        "abilities": "array",
+        "assignment": "all | choose | random",
+        "abilities_per_player": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
       ]
     },
     "open-drafting": {
@@ -289,6 +340,21 @@
       },
       "hooks": [
         "onCheckWin"
+      ]
+    },
+    "win-race": {
+      "config_key": "win_race",
+      "since": "3.0.0",
+      "description": "First to reach the goal wins",
+      "config_schema": {
+        "goal_state": "string",
+        "goal_states": "array",
+        "laps": "number",
+        "checkpoints": "array"
+      },
+      "hooks": [
+        "onCheckWin",
+        "onAfterMove"
       ]
     },
     "win-reach-state": {

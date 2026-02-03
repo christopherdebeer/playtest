@@ -61,6 +61,21 @@ export interface PlayerState {
 
   // Trick-taking state
   tricksWon?: number;              // Number of tricks won
+
+  // Ladder climbing state
+  ladderEliminated?: boolean;      // Eliminated from current round (passed)
+
+  // Once per game abilities state
+  availableAbilities?: string[];   // Abilities assigned to player
+  usedAbilities?: string[];        // Abilities already used
+  extraActions?: number;           // Extra actions from abilities
+
+  // Race win condition state
+  visitedCheckpoints?: string[];   // Checkpoints visited
+  lapsCompleted?: number;          // Laps completed (for circuit races)
+
+  // Chaining state
+  canReroll?: boolean;             // Can reroll (from ability)
 }
 
 export interface Effect {
@@ -117,6 +132,10 @@ export interface EngineMechanics {
   movement_points?: MovementPointsConfig;     // Movement budget per turn
   automatic_resource_growth?: AutomaticResourceGrowthConfig;  // Resources that grow over time
   events?: EventsConfig;                      // Random/scheduled game events
+  ladder_climbing?: LadderClimbingConfig;     // Beat previous play or pass
+  once_per_game_abilities?: OncePerGameAbilitiesConfig;  // Special one-time abilities
+  chaining?: ChainingConfig;                  // Actions that trigger follow-up effects
+  win_race?: RaceWinConfig;                   // First to reach goal wins
 }
 
 // Proposal 007: Grid configuration
@@ -352,6 +371,88 @@ export interface GameEventEffect {
   state?: string;
 }
 
+// Ladder Climbing mechanic (slug: ladder-climbing)
+export interface LadderClimbingConfig {
+  comparison: 'value' | 'rank';
+  rank_order?: string[];
+  higher_wins?: boolean;
+  allow_combinations?: boolean;
+  combination_types?: ('single' | 'pair' | 'triple' | 'quad' | 'run')[];
+  min_run_length?: number;
+  pass_eliminates?: boolean;
+  wild_cards?: string[];
+  bomb_cards?: string[];
+}
+
+// Once Per Game Abilities mechanic (slug: once-per-game-abilities)
+export interface OncePerGameAbilitiesConfig {
+  abilities: AbilityDef[];
+  assignment?: 'all' | 'choose' | 'random';
+  abilities_per_player?: number;
+}
+
+export interface AbilityDef {
+  id: string;
+  name: string;
+  description: string;
+  effect: {
+    type: 'draw' | 'resource' | 'extra_action' | 'skip_turn' | 'reroll' | 'teleport' | 'score' | 'custom';
+    count?: number;
+    amount?: number;
+    resource?: string;
+    target?: string;
+    custom_id?: string;
+  };
+  condition?: {
+    type: 'min_score' | 'max_hand' | 'state' | 'round' | 'losing';
+    value?: number | string;
+  };
+}
+
+// Chaining mechanic (slug: chaining)
+export interface ChainingConfig {
+  rules: ChainRuleDef[];
+  max_chain_depth?: number;
+}
+
+export interface ChainRuleDef {
+  id: string;
+  name: string;
+  trigger: {
+    type: 'action' | 'card_type' | 'card_name' | 'state_enter' | 'state_leave' | 'resource_threshold';
+    action_type?: string;
+    match?: string;
+    state?: string;
+    resource?: string;
+    threshold?: number;
+    comparison?: '>=' | '>' | '<=' | '<' | '==';
+  };
+  effect: {
+    type: 'draw' | 'resource' | 'extra_action' | 'score' | 'effect' | 'move';
+    count?: number;
+    amount?: number;
+    resource?: string;
+    effect?: { type: string; duration?: number; value?: number };
+    target?: string;
+  };
+  max_per_turn?: number;
+  max_per_game?: number;
+  condition?: {
+    type: 'has_card' | 'has_resource' | 'in_state' | 'hand_size';
+    match?: string;
+    value?: number | string;
+    comparison?: '>=' | '>' | '<=' | '<' | '==';
+  };
+}
+
+// Race Win Condition mechanic (slug: win-race)
+export interface RaceWinConfig {
+  goal_state: string;
+  goal_states?: string[];
+  laps?: number;
+  checkpoints?: string[];
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -514,7 +615,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability';
 
 export interface BaseAction {
   type: ActionType;
@@ -594,6 +695,13 @@ export interface DraftSelectAction extends BaseAction {
   card: string;                      // Card name to select from draft pool
 }
 
+// Once Per Game Ability action
+export interface UseAbilityAction extends BaseAction {
+  type: 'use_ability';
+  ability: string;                   // Ability ID to use
+  target?: string;                   // Optional target
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -642,7 +750,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction;
 
 // Action validation result
 export interface ActionValidationResult {
