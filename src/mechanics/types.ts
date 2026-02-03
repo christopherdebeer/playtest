@@ -331,6 +331,49 @@ export interface VisibleState {
   };
 }
 
+// ============ Dice System Types (Phase 2) ============
+
+/**
+ * Context for dice roll operations
+ */
+export interface DiceRollContext {
+  state: GameState;
+  playerId: string;
+  diceCount: number;
+  diceSides: number;
+  /** Purpose of the roll ('movement', 'combat', 'resource', etc.) */
+  purpose?: string;
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeRoll hook
+ */
+export interface DiceRollHookResult {
+  /** Modified dice count */
+  diceCount?: number;
+  /** Modified dice sides */
+  diceSides?: number;
+  /** Modifier to add to total */
+  modifier?: number;
+  /** Block the roll entirely */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Context for after-roll operations
+ */
+export interface AfterRollContext extends DiceRollContext {
+  /** Individual die results */
+  results: number[];
+  /** Sum of all dice */
+  total: number;
+  /** Dice that were kept (for re-roll mechanics) */
+  keptDice?: number[];
+}
+
 /**
  * Result from onBeforeMove - can modify target or block
  */
@@ -550,6 +593,18 @@ export interface MechanicHooks {
    * @param targetPlayerId - Optional target player (for viewing another player's info)
    */
   canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean | undefined;
+
+  // ============ Dice System Hooks (Phase 2) ============
+
+  /**
+   * Called before a dice roll. Can modify dice count/sides or block.
+   */
+  onBeforeRoll?(ctx: DiceRollContext): DiceRollHookResult | null;
+
+  /**
+   * Called after a dice roll. Can react to results and modify state.
+   */
+  onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 
   // ============ Mechanic Composition ============
 

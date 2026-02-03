@@ -42,6 +42,9 @@ import { pointToPointMovementMechanic } from './point-to-point-movement.js';
 import { hiddenRolesMechanic } from './hidden-roles.js';
 import { traitorGameMechanic } from './traitor-game.js';
 
+// Phase 2: Dice System mechanics
+import { diceRollingMechanic } from './dice-rolling.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -90,6 +93,9 @@ mechanicRegistry.register(pointToPointMovementMechanic);
 mechanicRegistry.register(hiddenRolesMechanic);
 mechanicRegistry.register(traitorGameMechanic);
 
+// Register Phase 2: Dice System mechanics
+mechanicRegistry.register(diceRollingMechanic);
+
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
 mechanicRegistry.register(scoreThresholdWinMechanic);
@@ -131,5 +137,9 @@ export type {
   // Visibility system types (Phase 4)
   VisibilityContext,
   RevealContext,
-  VisibleState
+  VisibleState,
+  // Dice system types (Phase 2)
+  DiceRollContext,
+  AfterRollContext,
+  DiceRollHookResult
 } from './types.js';

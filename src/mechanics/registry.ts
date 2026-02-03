@@ -40,6 +40,9 @@ import {
   VisibilityContext,
   RevealContext,
   VisibleState,
+  DiceRollContext,
+  AfterRollContext,
+  DiceRollHookResult,
   isMechanicEnabled
 } from './types.js';
 import { Effect } from '../types/game.js';
@@ -171,7 +174,9 @@ class MechanicRegistry {
         'onBeforeAddEffect', 'onAfterAddEffect', 'onBeforeRemoveEffect', 'onEffectExpired',
         'onBeforeMove', 'onAfterMove',
         // Visibility System (Phase 4)
-        'getVisibleState', 'onReveal', 'canSeeInfo'
+        'getVisibleState', 'onReveal', 'canSeeInfo',
+        // Dice System (Phase 2)
+        'onBeforeRoll', 'onAfterRoll'
       ];
 
       for (const hookName of hookNames) {
@@ -1082,6 +1087,72 @@ class MechanicRegistry {
 
     if (!hasOpinion) return undefined;
     return !anyDenied;
+  }
+
+  // ============ Dice System Hook Routing (Phase 2) ============
+
+  /**
+   * Run onBeforeRoll hooks. Returns merged result with possibly modified dice.
+   * If any mechanic blocks, returns blocked: true.
+   */
+  onBeforeRoll(
+    state: GameState,
+    playerId: string,
+    ctx: DiceRollContext
+  ): DiceRollHookResult {
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    let finalDiceCount = ctx.diceCount;
+    let finalDiceSides = ctx.diceSides;
+    let totalModifier = 0;
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onBeforeRoll) {
+        const result = mechanic.onBeforeRoll(ctx);
+        if (result) {
+          if (result.blocked) {
+            return { blocked: true, blockReason: result.blockReason };
+          }
+          if (result.diceCount !== undefined) {
+            finalDiceCount = result.diceCount;
+          }
+          if (result.diceSides !== undefined) {
+            finalDiceSides = result.diceSides;
+          }
+          if (result.modifier !== undefined) {
+            totalModifier += result.modifier;
+          }
+        }
+      }
+    }
+
+    return {
+      diceCount: finalDiceCount,
+      diceSides: finalDiceSides,
+      modifier: totalModifier !== 0 ? totalModifier : undefined
+    };
+  }
+
+  /**
+   * Run onAfterRoll hooks. Returns merged state changes.
+   */
+  onAfterRoll(
+    state: GameState,
+    playerId: string,
+    ctx: AfterRollContext
+  ): StateChanges {
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onAfterRoll) {
+        const changes = mechanic.onAfterRoll(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
   }
 
   /**

@@ -98,6 +98,24 @@ export interface PlayerState {
   hiddenRole?: string;             // Player's secret role (traitor, villager, etc.)
   team?: string;                   // Player's team affiliation
   knowledge?: PlayerKnowledge;     // What this player knows about others
+
+  // Dice system state (Phase 2)
+  lastRoll?: DiceRollState;        // Last roll result
+  lastRollResults?: number[];      // Last roll individual results
+  lastRollTotal?: number;          // Last roll total
+  rerollsUsed?: number;            // Re-rolls used this turn
+}
+
+/**
+ * State of the last dice roll
+ */
+export interface DiceRollState {
+  results: number[];
+  total: number;
+  modifier?: number;
+  finalTotal?: number;
+  keptDice?: number[];
+  rerolledDice?: number[];
 }
 
 /**
@@ -183,6 +201,9 @@ export interface EngineMechanics {
   // Phase 4: Visibility System
   hidden_roles?: HiddenRolesConfig;           // Secret role assignment
   traitor_game?: TraitorGameConfig;           // Traitor vs loyalist gameplay
+
+  // Phase 2: Dice System
+  dice_rolling?: DiceRollingConfig;           // Core dice rolling with modifiers
 }
 
 // Proposal 007: Grid configuration
@@ -693,6 +714,23 @@ export interface LoyalistWinCondition {
   customCondition?: string;
 }
 
+// Dice Rolling mechanic (Phase 2: Dice System)
+export interface DiceRollingConfig {
+  dice_count?: number;                         // Default number of dice
+  dice_sides?: number;                         // Default sides per die (default: 6)
+  roll_action?: boolean;                       // Expose a 'roll' action
+  roll_purposes?: string[];                    // Purposes for rolls
+  modifiers?: DiceModifiersConfig;             // Static modifiers
+  max_rerolls?: number;                        // Maximum re-rolls per turn
+  track_last_roll?: boolean;                   // Track last roll in player state
+}
+
+export interface DiceModifiersConfig {
+  flat_bonus?: number;                         // Flat bonus to all rolls
+  per_die_bonus?: number;                      // Bonus per die
+  effect_modifiers?: Record<string, number>;   // Effect-based modifiers
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -915,7 +953,10 @@ export interface CollectSetAction extends BaseAction {
 // Push Your Luck actions
 export interface RollAction extends BaseAction {
   type: 'roll';
-  // No additional fields - just roll the dice
+  diceCount?: number;              // Number of dice to roll
+  diceSides?: number;              // Number of sides per die
+  purpose?: string;                // Purpose of the roll
+  keepIndices?: number[];          // Indices of dice to keep (for re-rolling)
 }
 
 export interface BankAction extends BaseAction {
