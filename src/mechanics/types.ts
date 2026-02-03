@@ -57,6 +57,59 @@ export interface WinCheckResult {
   reason?: string;
 }
 
+// ============ Action Execution & Registration Types ============
+
+/**
+ * Context for action execution
+ */
+export interface ActionExecutionContext extends HookContext {
+  action: GameAction;
+}
+
+/**
+ * Result from action execution
+ */
+export interface ActionExecutionResult {
+  /** True if this mechanic handled the action */
+  handled: boolean;
+  /** State changes to apply */
+  stateChanges?: StateChanges;
+  /** Should turn advance after this action? */
+  advanceTurn?: boolean;
+  /** Should check win conditions after this action? */
+  checkWin?: boolean;
+  /** Log message for the action */
+  logMessage?: string;
+  /** Additional log data */
+  logData?: Record<string, unknown>;
+}
+
+/**
+ * An available action exposed by a mechanic
+ */
+export interface AvailableAction {
+  /** The action object */
+  action: GameAction;
+  /** Priority for display ordering (higher = first) */
+  priority?: number;
+  /** Category for grouping in UI */
+  category?: string;
+}
+
+/**
+ * Description of an action for display
+ */
+export interface ActionDescription {
+  /** Action type */
+  type: string;
+  /** Human-readable label */
+  label: string;
+  /** Detailed description */
+  description: string;
+  /** Example usage strings */
+  examples?: string[];
+}
+
 /**
  * Result of action validation
  */
@@ -216,6 +269,29 @@ export interface MechanicHooks {
    * Multiple mechanics can define win conditions; first to return won: true wins.
    */
   onCheckWin?(ctx: WinCheckContext): WinCheckResult | null;
+
+  // ============ Action Execution & Registration Hooks ============
+  // These hooks enable mechanics to handle their own actions and
+  // dynamically expose available actions based on game state.
+
+  /**
+   * Execute an action owned by this mechanic.
+   * Return { handled: true } to prevent default execution in game.ts.
+   * Return null if this action is not owned by this mechanic.
+   */
+  onExecuteAction?(ctx: ActionExecutionContext): ActionExecutionResult | null;
+
+  /**
+   * Return actions this mechanic provides for the current player.
+   * Called when building available actions list.
+   */
+  getAvailableActions?(ctx: HookContext): AvailableAction[];
+
+  /**
+   * Describe an action for display purposes.
+   * Return null if this action is not owned by this mechanic.
+   */
+  describeAction?(action: GameAction): ActionDescription | null;
 
   // ============ Core Operation Hooks ============
   // These hooks are called by core services (card-piles, hand)

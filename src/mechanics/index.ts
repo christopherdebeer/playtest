@@ -55,6 +55,11 @@ export type {
   // Win condition types
   WinCheckContext,
   WinCheckResult,
+  // Action execution & registration types
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription,
   // Core operation hook types
   DrawContext,
   DrawHookResult,

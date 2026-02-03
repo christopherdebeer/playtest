@@ -24,6 +24,10 @@ import {
   HandRemoveContext,
   WinCheckContext,
   WinCheckResult,
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription,
   isMechanicEnabled
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
@@ -262,6 +266,71 @@ class MechanicRegistry {
       const result = this.onCheckWin(state, playerId, trigger);
       if (result?.won) {
         return { playerId, reason: result.reason || 'Win condition met' };
+      }
+    }
+
+    return null;
+  }
+
+  // ============ Action Execution & Registration ============
+
+  /**
+   * Execute an action through mechanics.
+   * Returns the first mechanic's result that handles the action, or null.
+   */
+  executeAction(state: GameState, playerId: string, action: GameAction): ActionExecutionResult | null {
+    const baseCtx = this.createContext(state, playerId);
+    const ctx: ActionExecutionContext = { ...baseCtx, action };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onExecuteAction) {
+        const result = mechanic.onExecuteAction(ctx);
+        if (result?.handled) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Collect available actions from all enabled mechanics.
+   * Returns actions sorted by priority (highest first).
+   */
+  getAvailableActions(state: GameState, playerId: string): AvailableAction[] {
+    const ctx = this.createContext(state, playerId);
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const actions: AvailableAction[] = [];
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.getAvailableActions) {
+        const mechanicActions = mechanic.getAvailableActions(ctx);
+        actions.push(...mechanicActions);
+      }
+    }
+
+    // Sort by priority (higher first), then by type
+    return actions.sort((a, b) => {
+      const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.action.type.localeCompare(b.action.type);
+    });
+  }
+
+  /**
+   * Get description for an action from the owning mechanic.
+   */
+  describeAction(state: GameState, action: GameAction): ActionDescription | null {
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.describeAction) {
+        const description = mechanic.describeAction(action);
+        if (description) {
+          return description;
+        }
       }
     }
 

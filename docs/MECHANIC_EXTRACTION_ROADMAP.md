@@ -80,6 +80,33 @@ Registry methods:
 - `onCheckWin(state, playerId, trigger)`
 - `checkAllWinConditions(state, trigger)`
 
+### Phase 5: Action Execution & Registration (Complete)
+
+Added hooks for mechanics to own their action execution and registration:
+
+| Hook | Context/Return | Purpose |
+|------|----------------|---------|
+| `onExecuteAction` | `ActionExecutionContext` → `ActionExecutionResult` | Handle action execution |
+| `getAvailableActions` | `HookContext` → `AvailableAction[]` | Expose available actions |
+| `describeAction` | `GameAction` → `ActionDescription` | Describe action for UI |
+
+**ActionExecutionResult** enables mechanics to:
+- Return `handled: true` to prevent default execution
+- Specify `stateChanges` to apply
+- Control `advanceTurn` and `checkWin` behavior
+- Provide `logMessage` and `logData` for event logging
+
+**Proof of Concept**: `push-your-luck` mechanic now fully owns:
+- Validation via `preValidateAction`
+- Execution via `onExecuteAction` (roll dice, handle bust, bank points)
+- Action exposure via `getAvailableActions` (roll/bank when available)
+- Action description via `describeAction`
+
+Registry methods:
+- `executeAction(state, playerId, action)` - Routes to mechanic handlers
+- `getAvailableActions(state, playerId)` - Collects actions from all mechanics
+- `describeAction(state, action)` - Gets description from owning mechanic
+
 ## Current Hook Infrastructure
 
 ```typescript
@@ -92,13 +119,18 @@ interface MechanicHooks {
   onTurnStart?(ctx: TurnStartContext): StateChanges | null;
   onTurnEnd?(ctx: TurnEndContext): StateChanges | null;
 
-  // Action hooks
+  // Action validation hooks
   preValidateAction?(ctx: HookContext, action: GameAction): ValidationResult | null;
   postExecuteAction?(ctx: HookContext, action: GameAction): StateChanges | null;
   shouldAutoEndTurn?(ctx: HookContext): boolean;
 
   // Win condition
   onCheckWin?(ctx: WinCheckContext): WinCheckResult | null;
+
+  // Action execution & registration hooks
+  onExecuteAction?(ctx: ActionExecutionContext): ActionExecutionResult | null;
+  getAvailableActions?(ctx: HookContext): AvailableAction[];
+  describeAction?(action: GameAction): ActionDescription | null;
 
   // Core operation hooks
   onBeforeDraw?(ctx: DrawContext): DrawHookResult | null;
@@ -114,15 +146,15 @@ interface MechanicHooks {
 
 ### High Priority (Core Game Rules)
 
-| Concept | Lines | Description | Extraction Approach |
-|---------|-------|-------------|---------------------|
-| **Win Conditions** | 1091-1260 | Pattern matching ("reach state", "score >= N", "empty hand") | Move to `onCheckWin` hooks per mechanic |
-| **Push Your Luck Execution** | 3154-3236 | Dice rolling, bust detection, banking | Add `onExecuteAction` hook |
-| **Set Collection Execution** | 3058-3149 | Set validation, points award | Add `onExecuteAction` hook |
-| **Take-That Effects** | 2323-2360 | Effect application to targets | Move to `postExecuteAction` |
-| **Trading Execution** | 2795-2927 | Trade creation, card transfer | Add `onExecuteAction` hook |
-| **Board Movement** | 2540-2670 | State transitions, placed card effects | Add `onExecuteAction` hook |
-| **Place Card/Location** | 2675-2790 | Card/location placement | Add `onExecuteAction` hook |
+| Concept | Lines | Description | Status |
+|---------|-------|-------------|--------|
+| **Win Conditions** | 1091-1260 | Pattern matching ("reach state", "score >= N", "empty hand") | Pending - use `onCheckWin` |
+| **Push Your Luck** | 3154-3236 | Dice rolling, bust detection, banking | ✅ Migrated to `onExecuteAction` |
+| **Set Collection Execution** | 3058-3149 | Set validation, points award | Pending - use `onExecuteAction` |
+| **Take-That Effects** | 2323-2360 | Effect application to targets | Pending - use `postExecuteAction` |
+| **Trading Execution** | 2795-2927 | Trade creation, card transfer | Pending - use `onExecuteAction` |
+| **Board Movement** | 2540-2670 | State transitions, placed card effects | Pending - use `onExecuteAction` |
+| **Place Card/Location** | 2675-2790 | Card/location placement | Pending - use `onExecuteAction` |
 
 ### Medium Priority (Partially Extracted)
 
@@ -136,82 +168,24 @@ interface MechanicHooks {
 
 ## Path Forward
 
-### Phase 5: Action Execution Hooks
+### Phase 6: Migrate Remaining Mechanics to onExecuteAction
 
-Add `onExecuteAction` hook for mechanics to handle their own action execution:
+With the infrastructure in place, migrate remaining mechanics:
 
-```typescript
-interface ActionExecutionContext extends HookContext {
-  action: GameAction;
-}
+| Mechanic | Actions | Priority |
+|----------|---------|----------|
+| `set-collection` | `claim_set` | High |
+| `trading` | `trade_offer`, `trade_respond` | High |
+| `open-drafting` | `draft` | Medium |
+| `board-state` | `move` | Medium |
+| `place-card` | `place_card` | Medium |
+| `place-location` | `place_location` | Medium |
 
-interface ActionExecutionResult {
-  handled: boolean;      // True if mechanic handled this action
-  stateChanges?: StateChanges;
-  advanceTurn?: boolean; // Should turn advance after?
-  checkWin?: boolean;    // Should check win conditions?
-}
-
-interface MechanicHooks {
-  // ... existing hooks ...
-
-  /**
-   * Execute an action. Return { handled: true } to prevent
-   * default execution in game.ts.
-   */
-  onExecuteAction?(ctx: ActionExecutionContext): ActionExecutionResult | null;
-}
-```
-
-This allows mechanics like push-your-luck to handle `roll` and `bank` actions entirely.
-
-### Phase 6: Action Registration
-
-Mechanics self-register their available actions:
-
-```typescript
-interface MechanicHooks {
-  // ... existing hooks ...
-
-  /**
-   * Return actions this mechanic provides.
-   * Called when building available actions for a player.
-   */
-  getAvailableActions?(ctx: HookContext): GameAction[];
-
-  /**
-   * Describe action for display purposes.
-   */
-  describeAction?(action: GameAction): ActionDescription | null;
-}
-
-interface ActionDescription {
-  type: string;
-  label: string;
-  description: string;
-  examples?: string[];
-}
-```
-
-Game.ts `getAvailableActions` becomes:
-```typescript
-function getAvailableActions(state, playerId) {
-  const actions: GameAction[] = [];
-
-  // Collect from all enabled mechanics
-  for (const mechanic of registry.getEnabledMechanics(state.config)) {
-    if (mechanic.getAvailableActions) {
-      const ctx = createContext(state, playerId);
-      actions.push(...mechanic.getAvailableActions(ctx));
-    }
-  }
-
-  // Run preValidateAction to filter
-  return actions.filter(a =>
-    registry.preValidateAction(state, playerId, a).valid
-  );
-}
-```
+Each migration follows the push-your-luck pattern:
+1. Add `onExecuteAction` to handle the action
+2. Add `getAvailableActions` to expose the action
+3. Add `describeAction` for UI descriptions
+4. Keep `preValidateAction` for validation
 
 ### Phase 7: Core Service Extraction
 
@@ -377,9 +351,10 @@ class MechanicRegistry {
 
 | File | Changes |
 |------|---------|
-| `src/mechanics/types.ts` | Added TurnEndContext, WinCheckContext, WinCheckResult |
-| `src/mechanics/registry.ts` | Added onTurnEnd, onCheckWin, checkAllWinConditions routing |
+| `src/mechanics/types.ts` | Added TurnEndContext, WinCheckContext, ActionExecutionContext, AvailableAction, ActionDescription |
+| `src/mechanics/registry.ts` | Added onTurnEnd, onCheckWin, executeAction, getAvailableActions, describeAction routing |
 | `src/mechanics/hand-management.ts` | Migrated to use onBeforeDraw |
+| `src/mechanics/push-your-luck.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/core/card-piles.ts` | Added hooks (onBeforeDraw, onAfterDraw, onDiscard) |
 | `src/mechanics/core/hand.ts` | Added hooks (onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand) |
 | `src/core/game.ts` | Updated to use core services with playerId for hooks |
@@ -389,3 +364,4 @@ class MechanicRegistry {
 1. `b6f4dc5` - Core card services (trunk mechanics)
 2. `6793899` - Core operation hooks
 3. `240afb7` - Turn lifecycle and win condition hooks
+4. (pending) - Action execution and registration hooks
