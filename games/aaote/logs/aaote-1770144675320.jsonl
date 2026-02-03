@@ -1,0 +1,35 @@
+{"timestamp":"2026-02-03T18:51:15.324Z","event":"game_init","data":{"gameId":"aaote-1770144675320","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-03T18:51:39.582Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T18:52:11.009Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:52:30.998Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T18:53:02.670Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Mountain Pass","adjacentTo":"origin"}}
+{"timestamp":"2026-02-03T18:53:15.057Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Mountain Pass","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:53:28.259Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T18:54:00.526Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_location","card":"Watchtower","adjacentTo":"origin"}}
+{"timestamp":"2026-02-03T18:54:12.692Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","target":"Watchtower","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:54:25.545Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T18:54:52.683Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"move","target":"Mountain Pass","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:55:06.713Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-03T18:55:21.448Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"play_card","card":"Theft","effect":{"type":"steal_item","description":"Steal random item from adjacent player"}}}
+{"timestamp":"2026-02-03T18:55:41.548Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"move","target":"Watchtower","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:55:58.224Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:56:19.800Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:56:37.385Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"place_location","card":"Crossroads","adjacentTo":"Watchtower"}}
+{"timestamp":"2026-02-03T18:56:55.557Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"place_location","card":"Forbidden Temple","adjacentTo":"Crossroads"}}
+{"timestamp":"2026-02-03T18:57:08.984Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"move","target":"Crossroads","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:57:23.809Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T18:57:44.641Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"play_card","card":"Roadblock","effect":{"type":"block_tile","duration":1,"description":"Block a location for 1 round"}}}
+{"timestamp":"2026-02-03T18:58:01.459Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"Watchtower"}}
+{"timestamp":"2026-02-03T18:58:15.567Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"move","target":"Ancient Ruins","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:58:41.366Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"move","target":"Forbidden Temple","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:58:58.508Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T18:59:26.532Z","event":"action_executed","round":4,"turnNumber":10,"player":"player-1","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"Crossroads"}}
+{"timestamp":"2026-02-03T18:59:43.130Z","event":"action_executed","round":4,"turnNumber":10,"player":"player-1","data":{"type":"move","target":"Forest Clearing","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T18:59:58.241Z","event":"action_executed","round":4,"turnNumber":10,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T19:00:32.281Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"move","target":"Crossroads","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T19:00:46.378Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"move","target":"Forest Clearing","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T19:01:04.485Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T19:01:27.211Z","event":"resignation_submitted","round":4,"turnNumber":12,"player":"player-3","data":{"reason":"Player-2 has won as The Explorer. I cannot collect the remaining Forbidden Items in time to win as The Enemy."}}
+{"timestamp":"2026-02-03T19:02:20.900Z","event":"game_end","round":4,"turnNumber":12,"data":{"winner":"none","reason":"Resignation accepted: Player-2 has won as The Explorer. I cannot collect the remaining Forbidden Items in time to win as The Enemy.","resignedPlayer":"player-3"}}
+{"timestamp":"2026-02-03T19:02:20.903Z","event":"resignation_adjudicated","round":4,"turnNumber":12,"data":{"player":"player-3","accepted":true,"rulingReason":"Resignation accepted. Player-3 (The Enemy) concedes defeat, acknowledging player-2's successful completion of The Explorer objective (6 locations visited). Valid strategic resignation."}}
+{"timestamp":"2026-02-03T19:04:13.429Z","event":"analysis_submitted","round":4,"turnNumber":12,"data":{"file":"playtest-analysis-v0.2-1770144675320.md","version":"v0.2"}}
