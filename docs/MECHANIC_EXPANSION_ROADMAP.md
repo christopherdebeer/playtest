@@ -6,21 +6,21 @@
 
 ## Current State
 
-**Implemented: 33 of 192 mechanics (17%)**
+**Implemented: 36 of 192 mechanics (19%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
 | Action | 1 | 7 | 14% |
 | Auction | 1 | 12 | 8% |
-| Building | 0 | 11 | 0% |
-| Cards | 8 | 15 | 53% |
+| Building | 1 | 11 | 9% |
+| Cards | 10 | 15 | 67% |
 | Conflict | 0 | 8 | 0% |
 | Cooperative | 0 | 10 | 0% |
 | Dice | 1 | 6 | 17% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
 | Information | 0 | 8 | 0% |
-| Movement | 3 | 22 | 14% |
+| Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
 | Social | 0 | 11 | 0% |
@@ -35,8 +35,11 @@
 | `closed-drafting` | Cards | Simultaneous selection with passing (7 Wonders) |
 | `trick-taking` | Cards | Classic trick-taking with trump/follow suit |
 | `ladder-climbing` | Cards | Beat previous play or pass (President, Big Two) |
+| `deck-building` | Building/Cards | Personal deck acquisition (Dominion, Star Realms) |
+| `multi-use-cards` | Cards | Cards with multiple use options (Race for the Galaxy) |
 | `movement-points` | Movement | Movement budget with terrain costs |
 | `area-movement` | Movement | Movement between named areas with adjacency |
+| `point-to-point-movement` | Movement | Graph-based node movement (Ticket to Ride, Pandemic) |
 | `automatic-resource-growth` | Economic | Resources that grow over time |
 | `events` | Other | Random/scheduled game events |
 | `once-per-game-abilities` | Other | Special one-time abilities |
@@ -98,17 +101,17 @@ These 18 mechanics can be implemented immediately using existing hooks:
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
 | ~~`closed-drafting`~~ | ~~`onExecuteAction`, `getAvailableActions`, turn hooks~~ | ✅ Implemented |
-| `deck-bag-and-pool-building` | `onAfterDraw`, `postExecuteAction`, hand hooks | Track acquired cards, deck composition |
+| ~~`deck-bag-and-pool-building`~~ | ~~`onAfterDraw`, `postExecuteAction`, hand hooks~~ | ✅ Implemented as `deck-building` |
 | ~~`trick-taking`~~ | ~~`preValidateAction`, `onExecuteAction`, `onTurnEnd`~~ | ✅ Implemented |
 | ~~`ladder-climbing`~~ | ~~`preValidateAction`, `onExecuteAction`~~ | ✅ Implemented |
-| `multi-use-cards` | `preValidateAction`, `getAvailableActions` | Same card, multiple action options |
+| ~~`multi-use-cards`~~ | ~~`preValidateAction`, `getAvailableActions`~~ | ✅ Implemented |
 
 ### Movement Mechanics
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
 | ~~`area-movement`~~ | ~~`onBeforeMove`, `onAfterMove`~~ | ✅ Implemented |
-| `point-to-point-movement` | `onBeforeMove`, `onAfterMove` | Graph-based movement |
+| ~~`point-to-point-movement`~~ | ~~`onBeforeMove`, `onAfterMove`~~ | ✅ Implemented |
 | ~~`movement-points`~~ | ~~`preValidateAction`, `onTurnStart`, `initPlayerState`~~ | ✅ Implemented |
 
 ### Auction Mechanics
@@ -449,14 +452,16 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 
 | Phase | Complexity | New Hooks | Mechanics Unlocked | Cumulative Total |
 |-------|------------|-----------|-------------------|------------------|
-| 1 | Low | 0 | 18 | 39 (20%) |
-| 2 | Low | 2 | 5 | 44 (23%) |
-| 3 | Medium | 2 | 8 | 52 (27%) |
-| 4 | Medium | 3 | 8 | 60 (31%) |
-| 5 | Medium | 2 | 6 | 66 (34%) |
-| 6 | High | 6 | 8 | 74 (39%) |
-| 7 | High | 5 | 3 | 77 (40%) |
-| 8 | High | 5 | 10 | 87 (45%) |
+| 1 | Low | 0 | 18 | 36 (19%) ← **Current** |
+| 2 | Low | 2 | 5 | 41 (21%) |
+| 3 | Medium | 2 | 8 | 49 (26%) |
+| 4 | Medium | 3 | 8 | 57 (30%) |
+| 5 | Medium | 2 | 6 | 63 (33%) |
+| 6 | High | 6 | 8 | 71 (37%) |
+| 7 | High | 5 | 3 | 74 (39%) |
+| 8 | High | 5 | 10 | 84 (44%) |
+
+**Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
 
 ---
 
@@ -481,6 +486,56 @@ These mechanics require physical components or real-time elements unsuitable for
 2. **Create `core/dice.ts`** - Unlock dice mechanics
 3. **Extend `core/turns.ts`** - Support dynamic turn order
 4. **Create `core/visibility.ts`** - Enable hidden information games
+
+---
+
+---
+
+## Refactoring Opportunities
+
+Based on mechanic library review, the following abstractions would reduce duplication and improve safety:
+
+### High Priority
+
+#### Movement System Unification
+4 movement mechanics share similar patterns but don't share code:
+- `area-movement`
+- `point-to-point-movement`
+- `movement-points`
+- `grid-movement`
+
+**Recommendation**: Extract base movement class with shared validation and state tracking.
+
+#### Conflict Declaration
+No mechanics currently declare `dependencies` or `conflicts` despite several potential issues:
+- Movement mechanics should conflict with each other
+- `trick-taking` and `ladder-climbing` both claim card plays
+
+**Recommendation**: Add explicit conflict declarations to movement and card-play mechanics.
+
+### Medium Priority
+
+#### Point Economy Extraction
+`action-points` and `movement-points` are nearly identical patterns.
+
+**Recommendation**: Extract shared "point budget" base mechanic (~200 line reduction).
+
+#### Win Condition Consolidation
+7 win condition mechanics doing similar conditional checks.
+
+**Recommendation**: Create single configurable win condition mechanic with multiple condition types.
+
+### Lower Priority
+
+#### Drafting Base Class
+`open-drafting` and `closed-drafting` share significant logic.
+
+**Recommendation**: Extract common drafting operations.
+
+#### State Property Standardization
+Position tracked in 3+ different properties (`state`, `currentArea`, `currentNode`).
+
+**Recommendation**: Standardize position tracking across movement mechanics.
 
 ---
 
