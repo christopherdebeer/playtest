@@ -15,6 +15,9 @@ export interface Card {
   };
   placeable?: boolean;  // Can this card be placed on board states?
   targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  // Trick-taking card attributes
+  suit?: string;  // Card suit (e.g., "hearts", "spades")
+  value?: number | string;  // Card value (e.g., 1-13, "A", "K", "Q", "J")
 }
 
 export interface PlayerState {
@@ -46,6 +49,37 @@ export interface PlayerState {
     condition?: string;  // Win condition description
     revealed?: boolean;  // Whether the objective has been revealed
   };
+
+  // Closed drafting state
+  draftPool?: Card[];              // Cards available to draft from
+  draftSelection?: Card | null;    // Currently selected card (hidden until reveal)
+  hasDraftSelected?: boolean;      // Whether player has made selection this pick
+
+  // Movement points state
+  movementPoints?: number;         // Remaining movement points this turn
+  movementPointsUsed?: number;     // Movement points used this turn
+
+  // Trick-taking state
+  tricksWon?: number;              // Number of tricks won
+
+  // Ladder climbing state
+  ladderEliminated?: boolean;      // Eliminated from current round (passed)
+
+  // Once per game abilities state
+  availableAbilities?: string[];   // Abilities assigned to player
+  usedAbilities?: string[];        // Abilities already used
+  extraActions?: number;           // Extra actions from abilities
+
+  // Race win condition state
+  visitedCheckpoints?: string[];   // Checkpoints visited
+  lapsCompleted?: number;          // Laps completed (for circuit races)
+
+  // Chaining state
+  canReroll?: boolean;             // Can reroll (from ability)
+
+  // Area movement state
+  currentArea?: string;            // Current area location
+  previousArea?: string;           // Previous area (for tracking)
 }
 
 export interface Effect {
@@ -88,6 +122,27 @@ export interface EngineMechanics {
 
   // Proposal 010: Configurable default winner on timeout
   timeout_winner?: TimeoutWinnerConfig;  // Who wins when max_turns is reached
+
+  // Win condition mechanics (composable)
+  win_reach_state?: WinReachStateConfig;      // Win by reaching a board state
+  win_score_threshold?: WinScoreThresholdConfig;  // Win by reaching a score threshold
+  win_empty_hand?: boolean;                   // Win by emptying hand
+  win_elimination?: boolean;                  // Win by being last player standing
+  win_timeout?: WinTimeoutConfig;             // Winner determination on timeout
+
+  // New mechanics (Phase 1 expansion)
+  closed_drafting?: ClosedDraftingConfig;     // Simultaneous card drafting with passing
+  trick_taking?: TrickTakingConfig;           // Trick-taking card game mechanic
+  movement_points?: MovementPointsConfig;     // Movement budget per turn
+  automatic_resource_growth?: AutomaticResourceGrowthConfig;  // Resources that grow over time
+  events?: EventsConfig;                      // Random/scheduled game events
+  ladder_climbing?: LadderClimbingConfig;     // Beat previous play or pass
+  once_per_game_abilities?: OncePerGameAbilitiesConfig;  // Special one-time abilities
+  chaining?: ChainingConfig;                  // Actions that trigger follow-up effects
+  win_race?: RaceWinConfig;                   // First to reach goal wins
+  catch_the_leader?: CatchTheLeaderConfig;    // Balancing mechanic for competitive games
+  sudden_death_ending?: SuddenDeathEndingConfig;  // Instant win conditions
+  area_movement?: AreaMovementConfig;         // Movement between named areas
 }
 
 // Proposal 007: Grid configuration
@@ -130,6 +185,25 @@ export interface CardTypeRules {
 // Proposal 010: Timeout winner configuration
 export interface TimeoutWinnerConfig {
   type: 'role' | 'highest_score' | 'specific_player' | 'no_winner';  // How to determine winner
+  role?: string;           // For type "role": the role/objective type that wins
+  role_name?: string;      // For type "role": match by objective name
+  player_condition?: string;  // For type "specific_player": condition to evaluate
+  reveal_role?: boolean;   // Whether to reveal the winner's hidden role
+  reason?: string;         // Custom reason message (for "no_winner")
+}
+
+// Win condition mechanic configs (composable)
+export interface WinReachStateConfig {
+  target_state: string;    // The board state to reach to win
+}
+
+export interface WinScoreThresholdConfig {
+  threshold: number;       // Score threshold to reach
+  operator?: '>=' | '>' | '==' | '=';  // Comparison operator (default: ">=")
+}
+
+export interface WinTimeoutConfig {
+  type?: 'highest_score' | 'role' | 'specific_player' | 'no_winner';  // How to determine winner
   role?: string;           // For type "role": the role/objective type that wins
   role_name?: string;      // For type "role": match by objective name
   player_condition?: string;  // For type "specific_player": condition to evaluate
@@ -232,6 +306,219 @@ export interface SimultaneousActionConfig {
   resolution_order: 'random' | 'clockwise' | 'priority';  // How to resolve conflicts
 }
 
+// Closed Drafting mechanic (slug: closed-drafting)
+export interface ClosedDraftingConfig {
+  pool_size: number;                 // Cards per player's draft pool
+  pass_direction: 'left' | 'right'; // Direction to pass remaining cards
+  alternate_direction?: boolean;     // Alternate direction each round
+  final_pool_keep?: number;          // Cards kept from final pool
+}
+
+// Trick-Taking mechanic (slug: trick-taking)
+export interface TrickTakingConfig {
+  trump_suit?: string;               // Trump suit (optional)
+  can_lead_trump?: boolean;          // Can lead trump when having other suits
+  suit_order?: string[];             // Suit hierarchy for tiebreaks
+  value_order?: string[];            // Value hierarchy (first is highest)
+  points_per_trick?: number;         // Points per trick won
+  card_values?: Record<string, number>;  // Explicit card values
+}
+
+// Movement Points mechanic (slug: movement-points)
+export interface MovementPointsConfig {
+  points_per_turn: number;           // Movement points per turn
+  rollover?: boolean;                // Carry over unused points
+  max_points?: number;               // Max accumulated points
+  terrain_costs?: Record<string, number>;  // Cost per terrain type
+  default_cost?: number;             // Default movement cost
+  movement_actions?: string[];       // Actions that consume MP
+}
+
+// Automatic Resource Growth mechanic (slug: automatic-resource-growth)
+export interface AutomaticResourceGrowthConfig {
+  rules: ResourceGrowthRule[];       // Growth rules
+}
+
+export interface ResourceGrowthRule {
+  resource: string;                  // Resource to grow
+  rate?: number;                     // Growth rate (0.1 = 10%)
+  fixed_per?: number;                // Fixed amount per threshold
+  threshold?: number;                // Threshold for fixed_per
+  min?: number;                      // Minimum after growth
+  max?: number;                      // Maximum after growth
+  rounding?: 'floor' | 'round' | 'ceil';
+  timing?: 'turn' | 'round';
+}
+
+// Events mechanic (slug: events)
+export interface EventsConfig {
+  events: GameEventDef[];            // Available events
+  timing?: 'turn_start' | 'round_start' | 'both';
+  probability?: number;              // Chance of event occurring
+  max_per_trigger?: number;          // Max events per trigger
+  use_deck?: boolean;                // Remove events after occurring
+}
+
+export interface GameEventDef {
+  id: string;                        // Unique identifier
+  name: string;                      // Display name
+  description?: string;              // Description
+  weight?: number;                   // Selection weight
+  on_rounds?: number[];              // Specific rounds only
+  effects: GameEventEffect[];        // Effects when triggered
+  once?: boolean;                    // Can only occur once
+}
+
+export interface GameEventEffect {
+  type: 'resource' | 'effect' | 'state' | 'score';
+  target?: 'current' | 'all' | 'random' | string;
+  resource?: string;
+  amount?: number;
+  effect?: Partial<Effect>;
+  state?: string;
+}
+
+// Ladder Climbing mechanic (slug: ladder-climbing)
+export interface LadderClimbingConfig {
+  comparison: 'value' | 'rank';
+  rank_order?: string[];
+  higher_wins?: boolean;
+  allow_combinations?: boolean;
+  combination_types?: ('single' | 'pair' | 'triple' | 'quad' | 'run')[];
+  min_run_length?: number;
+  pass_eliminates?: boolean;
+  wild_cards?: string[];
+  bomb_cards?: string[];
+}
+
+// Once Per Game Abilities mechanic (slug: once-per-game-abilities)
+export interface OncePerGameAbilitiesConfig {
+  abilities: AbilityDef[];
+  assignment?: 'all' | 'choose' | 'random';
+  abilities_per_player?: number;
+}
+
+export interface AbilityDef {
+  id: string;
+  name: string;
+  description: string;
+  effect: {
+    type: 'draw' | 'resource' | 'extra_action' | 'skip_turn' | 'reroll' | 'teleport' | 'score' | 'custom';
+    count?: number;
+    amount?: number;
+    resource?: string;
+    target?: string;
+    custom_id?: string;
+  };
+  condition?: {
+    type: 'min_score' | 'max_hand' | 'state' | 'round' | 'losing';
+    value?: number | string;
+  };
+}
+
+// Chaining mechanic (slug: chaining)
+export interface ChainingConfig {
+  rules: ChainRuleDef[];
+  max_chain_depth?: number;
+}
+
+export interface ChainRuleDef {
+  id: string;
+  name: string;
+  trigger: {
+    type: 'action' | 'card_type' | 'card_name' | 'state_enter' | 'state_leave' | 'resource_threshold';
+    action_type?: string;
+    match?: string;
+    state?: string;
+    resource?: string;
+    threshold?: number;
+    comparison?: '>=' | '>' | '<=' | '<' | '==';
+  };
+  effect: {
+    type: 'draw' | 'resource' | 'extra_action' | 'score' | 'effect' | 'move';
+    count?: number;
+    amount?: number;
+    resource?: string;
+    effect?: { type: string; duration?: number; value?: number };
+    target?: string;
+  };
+  max_per_turn?: number;
+  max_per_game?: number;
+  condition?: {
+    type: 'has_card' | 'has_resource' | 'in_state' | 'hand_size';
+    match?: string;
+    value?: number | string;
+    comparison?: '>=' | '>' | '<=' | '<' | '==';
+  };
+}
+
+// Race Win Condition mechanic (slug: win-race)
+export interface RaceWinConfig {
+  goal_state: string;
+  goal_states?: string[];
+  laps?: number;
+  checkpoints?: string[];
+}
+
+// Catch The Leader mechanic (slug: catch-the-leader)
+export interface CatchTheLeaderConfig {
+  leader_metric: 'score' | 'resources' | 'hand_size' | 'position';
+  resource?: string;
+  lead_threshold?: number;
+  leader_penalties?: {
+    income_reduction?: number;
+    cost_increase?: number;
+    resource_loss?: Record<string, number>;
+  };
+  trailing_bonuses?: {
+    gap_threshold?: number;
+    extra_resources?: Record<string, number>;
+    extra_draw?: number;
+    score_bonus?: number;
+  };
+  targetable_leader?: boolean;
+}
+
+// Sudden Death Ending mechanic (slug: sudden-death-ending)
+export interface SuddenDeathEndingConfig {
+  conditions: SuddenDeathCondition[];
+  check_on_action?: boolean;
+  announce_warning?: boolean;
+}
+
+export interface SuddenDeathCondition {
+  type: 'resource_depleted' | 'deck_exhausted' | 'state_reached' | 'turn_limit' | 'elimination' | 'score_reached';
+  resource?: string;
+  threshold?: number;
+  target_state?: string;
+  max_turns?: number;
+  score?: number;
+  loser?: 'triggering_player' | 'all_others' | 'no_one';
+  message?: string;
+}
+
+// Area Movement mechanic (slug: area-movement)
+export interface AreaMovementConfig {
+  areas: AreaDefinition[];
+  starting_area: string;
+  use_movement_points?: boolean;
+  default_cost?: number;
+  allow_passing?: boolean;
+  allow_stacking?: boolean;
+  default_capacity?: number;
+}
+
+export interface AreaDefinition {
+  id: string;
+  name?: string;
+  adjacent: string[];
+  entry_cost?: number;
+  capacity?: number;
+  restricted?: boolean;
+  owner?: string;
+  properties?: Record<string, unknown>;
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -243,6 +530,9 @@ export interface GameConfig {
   board?: BoardConfig;
   mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
   engine_mechanics?: EngineMechanics;  // Enable/disable engine capabilities
+  engine_debug?: {
+    hook_telemetry?: boolean;  // Enable hook telemetry logging
+  };
   [key: string]: unknown;  // game-specific config
 }
 
@@ -312,6 +602,7 @@ export interface GameState {
   config: GameConfig;
   rulesMarkdown: string;
   log: string;  // path to log file
+  created?: number;  // Unix timestamp in milliseconds when game was initialized
 }
 
 export interface WaitResult {
@@ -390,7 +681,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability';
 
 export interface BaseAction {
   type: ActionType;
@@ -464,6 +755,19 @@ export interface DraftAction extends BaseAction {
   card: string;                      // Card name to draft from display
 }
 
+// Closed Drafting action
+export interface DraftSelectAction extends BaseAction {
+  type: 'draft_select';
+  card: string;                      // Card name to select from draft pool
+}
+
+// Once Per Game Ability action
+export interface UseAbilityAction extends BaseAction {
+  type: 'use_ability';
+  ability: string;                   // Ability ID to use
+  target?: string;                   // Optional target
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -512,7 +816,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction;
 
 // Action validation result
 export interface ActionValidationResult {

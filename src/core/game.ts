@@ -55,6 +55,19 @@ import type {
 } from '../types/game.js';
 import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
 
+// Mechanics hook system (incremental extraction)
+import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
+
+// Core services (trunk mechanics)
+import {
+  drawFromDeck,
+  addToDiscard,
+  addToHand,
+  removeFromHandByIndex,
+  removeFromHandByName,
+  removeCardsFromHand
+} from '../mechanics/core/index.js';
+
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
@@ -524,6 +537,13 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     throw new Error(`Player count ${playerCount} out of range [${min}, ${max}] for ${gameName}`);
   }
 
+  // Validate mechanic dependencies and conflicts
+  const mechanicErrors = mechanicRegistry.validateDependencies(config);
+  if (mechanicErrors.length > 0) {
+    const errorMessages = mechanicErrors.map(e => `  - ${e.message}`).join('\n');
+    throw new Error(`Mechanic configuration errors for ${gameName}:\n${errorMessages}`);
+  }
+
   const gameId = `${gameName}-${Date.now()}`;
 
   // Build and shuffle deck if configured
@@ -561,32 +581,14 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       }
     }
 
-    // Initialize action points if configured
-    let actionPoints: number | undefined;
-    if (config.engine_mechanics?.action_points) {
-      actionPoints = config.engine_mechanics.action_points.points_per_turn;
-    }
-
-    // Assign player power if variable powers enabled
-    let powerId: string | undefined;
-    if (config.engine_mechanics?.variable_powers) {
-      const powers = config.engine_mechanics.variable_powers.powers;
-      if (config.engine_mechanics.variable_powers.assignment === 'random') {
-        // Random assignment - each player gets a different power
-        const availablePowers = powers.filter(p =>
-          !Object.values(players).some(pl => pl.powerId === p.id)
-        );
-        if (availablePowers.length > 0) {
-          powerId = availablePowers[Math.floor(Math.random() * availablePowers.length)].id;
-        }
-      } else if (config.engine_mechanics.variable_powers.assignment === 'fixed') {
-        // Fixed assignment by player index
-        const playerIndex = parseInt(playerId.replace('player-', '')) - 1;
-        if (playerIndex < powers.length) {
-          powerId = powers[playerIndex].id;
-        }
-      }
-    }
+    // ============ Mechanic Hooks: Player initialization ============
+    // Get initial player state from all enabled mechanics
+    // Pass existing players for cross-player coordination (e.g., unique power assignment)
+    const playerIndex = i - 1;
+    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players);
+    const actionPoints = mechanicState.actionPoints as number | undefined;
+    const actionPointsUsed = mechanicState.actionPointsUsed as number | undefined;
+    const powerId = mechanicState.powerId as string | undefined;
 
     players[playerId] = {
       state: config.board?.start ?? 'start',
@@ -595,7 +597,7 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       persona,
       resources,
       actionPoints,
-      actionPointsUsed: actionPoints !== undefined ? 0 : undefined,
+      actionPointsUsed,
       collectedSets: [],
       rollAccumulator: 0,
       rollCount: 0,
@@ -648,7 +650,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     discardPile,
     config,
     rulesMarkdown: markdown,
-    log: logPath
+    log: logPath,
+    created: Date.now()
   };
 
   saveState(state);
@@ -939,59 +942,10 @@ export function advanceTurn(state: GameState): void {
       .filter(e => e.duration > 0);
   }
 
-  // === NEW MECHANICS: Income generation ===
-  if (state.config.engine_mechanics?.income && nextPlayer.resources) {
-    const income = state.config.engine_mechanics.income;
-
-    // Per-turn income
-    if (income.per_turn) {
-      for (const [resource, amount] of Object.entries(income.per_turn)) {
-        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
-
-        // Apply resource cap if configured
-        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
-        }
-      }
-
-      logEvent(state, {
-        event: 'income_generated',
-        round: state.round,
-        turnNumber: state.turnNumber,
-        player: state.currentPlayer,
-        data: { income: income.per_turn }
-      });
-    }
-
-    // Per-round income (only at start of new round)
-    if (isNewRound && income.per_round) {
-      for (const [resource, amount] of Object.entries(income.per_round)) {
-        nextPlayer.resources[resource] = (nextPlayer.resources[resource] || 0) + amount;
-
-        const resourceConfig = state.config.engine_mechanics.resources?.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          nextPlayer.resources[resource] = Math.min(nextPlayer.resources[resource], resourceConfig.max);
-        }
-      }
-
-      logEvent(state, {
-        event: 'round_income_generated',
-        round: state.round,
-        turnNumber: state.turnNumber,
-        player: state.currentPlayer,
-        data: { income: income.per_round }
-      });
-    }
-  }
-
-  // === NEW MECHANICS: Action points refresh ===
-  if (state.config.engine_mechanics?.action_points) {
-    const apConfig = state.config.engine_mechanics.action_points;
-    const rollover = apConfig.rollover ? (nextPlayer.actionPoints || 0) : 0;
-    nextPlayer.actionPoints = apConfig.points_per_turn + rollover;
-    nextPlayer.actionPointsUsed = 0;
-  }
+  // ============ Mechanic Hooks: Turn start ============
+  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP, income)
+  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer, isNewRound);
+  applyStateChanges(state, turnStartChanges);
 
   saveState(state);
 }
@@ -1320,23 +1274,10 @@ export function drawCards(state: GameState, playerId: string, count: number): Ca
     throw new Error(`Player ${playerId} not found`);
   }
 
-  const drawn: Card[] = [];
-
-  for (let i = 0; i < count; i++) {
-    if (state.deck.length === 0) {
-      // Reshuffle discard pile
-      if (state.discardPile.length === 0) {
-        break; // No cards left anywhere
-      }
-      state.deck = shuffleDeck(state.discardPile);
-      state.discardPile = [];
-    }
-
-    const card = state.deck.shift();
-    if (card) {
-      drawn.push(card);
-      player.hand.push(card);
-    }
+  // Use core services for deck and hand operations (with playerId for hooks)
+  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
+  if (!blocked && drawn.length > 0) {
+    addToHand(state, playerId, drawn);
   }
 
   saveState(state);
@@ -1344,24 +1285,13 @@ export function drawCards(state: GameState, playerId: string, count: number): Ca
 }
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  const player = state.players[playerId];
-  if (!player) {
-    throw new Error(`Player ${playerId} not found`);
-  }
-
-  if (cardIndex < 0 || cardIndex >= player.hand.length) {
+  // Use core services for hand and discard operations (with playerId for hooks)
+  const card = removeFromHandByIndex(state, playerId, cardIndex);
+  if (!card) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
-  state.discardPile.push(card);
-
-  // Update top card tracking
-  state.shared.topCard = card;
-  if (card.effect?.color) {
-    state.shared.currentColor = card.effect.color;
-  }
-
+  addToDiscard(state, [card], playerId);
   saveState(state);
 
   return card;
@@ -1373,23 +1303,17 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Find card in hand by name
-  const cardIndex = player.hand.findIndex(c => c.name === cardName);
-  if (cardIndex === -1) {
+  // Use core services for hand/discard operations (with playerId for hooks)
+  const card = removeFromHandByName(state, playerId, cardName);
+  if (!card) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
-  state.discardPile.push(card);
+  addToDiscard(state, [card], playerId);
 
-  // Update top card tracking
-  state.shared.topCard = card;
-
-  // Handle wild cards - use declared color
+  // Handle wild cards - override color set by addToDiscard
   if (card.type === 'wild' && declaredColor) {
     state.shared.currentColor = declaredColor;
-  } else if (card.effect?.color) {
-    state.shared.currentColor = card.effect.color;
   }
 
   saveState(state);
@@ -2218,21 +2142,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
   }
 
-  // ============ NEW: Check for blocking effects ============
-  // Effects like 'block_turn', 'skip', 'Block' prevent the player from taking actions
-  const blockingEffects = player.effects.filter(e => {
-    const effectType = e.type.toLowerCase();
-    return effectType === 'block_turn' || effectType === 'block' || effectType === 'skip';
-  });
-
-  if (blockingEffects.length > 0 && action.type !== 'pass') {
-    // Player is blocked - they can only pass (or draw in some games)
-    const effectNames = blockingEffects.map(e => e.type).join(', ');
-    return {
-      valid: false,
-      errors: [`You are blocked this turn by effect: ${effectNames}. You can only pass.`]
-    };
-  }
+  // Note: Blocking effects check moved to lose-a-turn mechanic
 
   // ============ NEW: Check for multiple actions per round ============
   // Prevent players from submitting multiple actions in the same round
@@ -2245,30 +2155,14 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     };
   }
 
-  // ============ NEW: Action Points validation ============
-  // Proposal 006: AP cost per card - multiply by count for quantified actions
-  if (apConfig) {
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
-    let actionCost = baseCost;
-
-    // For draw actions, cost is per card drawn
-    if (action.type === 'draw') {
-      const drawAction = action as DrawAction;
-      const count = drawAction.count ?? 1;
-      actionCost = baseCost * count;
-    }
-
-    const remainingAP = player.actionPoints ?? 0;
-
-    if (actionCost > remainingAP) {
-      const costExplanation = action.type === 'draw' && (action as DrawAction).count && (action as DrawAction).count! > 1
-        ? ` (${(action as DrawAction).count} cards × ${baseCost} AP each)`
-        : '';
-      return {
-        valid: false,
-        errors: [`Not enough action points. Action "${action.type}" costs ${actionCost} AP${costExplanation}, you have ${remainingAP} AP remaining.`]
-      };
-    }
+  // ============ Mechanic Hooks: Pre-validation ============
+  // Run preValidateAction hooks for all enabled mechanics
+  const preValidationResult = mechanicRegistry.preValidateAction(state, playerId, action);
+  if (!preValidationResult.valid) {
+    return {
+      valid: false,
+      errors: [preValidationResult.error || 'Action blocked by mechanic']
+    };
   }
 
   // ============ NEW: Resource spending validation ============
@@ -2283,93 +2177,10 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
   }
 
-  // ============ NEW: Bid validation ============
-  if (action.type === 'bid') {
-    const bidAction = action as BidAction;
-    const auctionConfig = state.config.engine_mechanics?.auction;
-    if (!auctionConfig) {
-      return { valid: false, errors: ['Bidding is not enabled for this game.'] };
-    }
-    const currency = auctionConfig.currency;
-    const available = player.resources?.[currency] ?? 0;
-    if (bidAction.amount > available) {
-      return {
-        valid: false,
-        errors: [`Not enough ${currency} to bid. You have ${available}, trying to bid ${bidAction.amount}.`]
-      };
-    }
-    // Check minimum increment for English auctions
-    const currentHighBid = (state.shared.currentBid as number) ?? 0;
-    if (auctionConfig.type === 'english' && bidAction.amount <= currentHighBid) {
-      const minBid = currentHighBid + (auctionConfig.min_increment ?? 1);
-      return {
-        valid: false,
-        errors: [`Bid too low. Current high bid is ${currentHighBid}. Minimum bid: ${minBid}.`]
-      };
-    }
-  }
-
-  // ============ NEW: Set collection validation ============
-  if (action.type === 'collect_set') {
-    const collectAction = action as CollectSetAction;
-    const setConfig = state.config.engine_mechanics?.set_collection;
-    if (!setConfig) {
-      return { valid: false, errors: ['Set collection is not enabled for this game.'] };
-    }
-    const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
-    if (!setDef) {
-      return {
-        valid: false,
-        errors: [`Unknown set type "${collectAction.setType}". Available: ${setConfig.sets.map(s => s.name).join(', ')}`]
-      };
-    }
-    // Verify player has all the cards
-    for (const cardName of collectAction.cards) {
-      if (!player.hand.find(c => c.name === cardName)) {
-        return {
-          valid: false,
-          errors: [`Card "${cardName}" not in your hand.`]
-        };
-      }
-    }
-    // Verify set size matches
-    if (collectAction.cards.length !== setDef.size) {
-      return {
-        valid: false,
-        errors: [`Set "${collectAction.setType}" requires exactly ${setDef.size} cards, you provided ${collectAction.cards.length}.`]
-      };
-    }
-  }
-
-  // ============ NEW: Push Your Luck validation ============
-  if (action.type === 'roll' || action.type === 'bank') {
-    const pylConfig = state.config.engine_mechanics?.push_your_luck;
-    if (!pylConfig) {
-      return { valid: false, errors: ['Push your luck is not enabled for this game.'] };
-    }
-    if (action.type === 'bank' && (player.rollAccumulator ?? 0) === 0) {
-      return { valid: false, errors: ['No accumulated points to bank. Roll first!'] };
-    }
-    if (action.type === 'roll' && pylConfig.max_rolls && (player.rollCount ?? 0) >= pylConfig.max_rolls) {
-      return { valid: false, errors: [`Maximum rolls (${pylConfig.max_rolls}) reached. You must bank.`] };
-    }
-  }
-
-  // ============ NEW: Draft validation ============
-  if (action.type === 'draft') {
-    const draftAction = action as DraftAction;
-    const draftConfig = state.config.engine_mechanics?.open_drafting;
-    if (!draftConfig) {
-      return { valid: false, errors: ['Open drafting is not enabled for this game.'] };
-    }
-    const display = (state.shared.draftDisplay || []) as Card[];
-    if (!display.find(c => c.name === draftAction.card)) {
-      return {
-        valid: false,
-        errors: [`Card "${draftAction.card}" not in draft display. Available: ${display.map(c => c.name).join(', ')}`]
-      };
-    }
-  }
+  // Note: Bid validation moved to auction-english mechanic
+  // Note: Set collection validation moved to set-collection mechanic
+  // Note: Push your luck validation moved to push-your-luck mechanic
+  // Note: Draft validation moved to open-drafting mechanic
 
   // Action-specific validation
   switch (action.type) {
@@ -2382,19 +2193,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       }
 
       const card = player.hand[cardIndex];
-
-      // Proposal 008: Card type restrictions
-      // Check if this card type is playable according to card_type_rules config
-      const cardTypeRules = state.config.engine_mechanics?.card_type_rules as Record<string, { playable?: boolean }> | undefined;
-      if (cardTypeRules && cardTypeRules[card.type]) {
-        const rules = cardTypeRules[card.type];
-        if (rules.playable === false) {
-          const hint = card.type === 'item' ? ' Items are held in hand until used or traded.' :
-                       card.type === 'location' ? ' Use a place_location or move action instead.' : '';
-          errors.push(`Cannot play "${card.name}". Cards of type "${card.type}" cannot be played.${hint}`);
-          break;
-        }
-      }
+      // Note: Card type playable validation moved to card-type-rules mechanic
 
       const topCard = state.shared.topCard as Card | undefined;
       const currentColor = state.shared.currentColor as string | undefined;
@@ -2430,26 +2229,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         }
       }
 
-      // ============ NEW: Interference card target validation ============
-      // Cards that affect other players require a target specification
-      const interferenceEffects = ['block_turn', 'probability_penalty', 'force_discard', 'skip'];
-      const isInterferenceCard = card.type === 'interference' ||
-                                 (card.effect?.type && interferenceEffects.includes(card.effect.type));
-
-      if (isInterferenceCard) {
-        const opponents = state.turnOrder.filter(pid => pid !== playerId);
-
-        if (opponents.length > 1 && !playAction.target) {
-          // Multiple opponents - require explicit target
-          errors.push(`Interference card "${card.name}" requires a "target" field. Valid targets: ${opponents.join(', ')}`);
-        } else if (playAction.target) {
-          // Validate target is a valid opponent
-          if (!opponents.includes(playAction.target)) {
-            errors.push(`Invalid target "${playAction.target}". Valid targets: ${opponents.join(', ')}`);
-          }
-        }
-        // If only 1 opponent, target is implicit (no need to specify)
-      }
+      // Note: Interference card targeting validation moved to take-that mechanic
       break;
     }
 
@@ -2458,27 +2238,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       if (state.deck.length === 0 && state.discardPile.length <= 1) {
         warnings.push('Draw pile is empty and cannot be reshuffled');
       }
-
-      // Proposal 008: Hand limit validation
-      const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
-      if (handLimit !== undefined) {
-        const drawAction = action as DrawAction;
-        const drawCount = drawAction.count ?? 1;
-        const currentHandSize = player.hand.length;
-        const projectedHandSize = currentHandSize + drawCount;
-
-        const policy = (state.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
-
-        if (policy === 'cannot_draw' && projectedHandSize > handLimit) {
-          const maxDrawable = Math.max(0, handLimit - currentHandSize);
-          if (maxDrawable === 0) {
-            errors.push(`Hand limit (${handLimit}) reached. You have ${currentHandSize} cards and cannot draw more.`);
-          } else {
-            errors.push(`Drawing ${drawCount} cards would exceed hand limit (${handLimit}). You have ${currentHandSize} cards. Max you can draw: ${maxDrawable}.`);
-          }
-        }
-        // Other policies (discard_choice, discard_oldest) are handled in executeAction
-      }
+      // Note: Hand limit validation (cannot_draw policy) moved to hand-management mechanic
+      // Other policies (discard_choice, discard_oldest) are handled in executeAction
       break;
     }
 
@@ -2495,204 +2256,39 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
 
     case 'move': {
-      const moveAction = action as { target: string };
-
-      // For board games - check if target is valid state
-      if (state.config.board) {
-        const validStates = state.config.board.states || [];
-        if (!validStates.includes(moveAction.target)) {
-          errors.push(`Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`);
-        }
-      }
-
-      // Proposal 007: Grid movement validation
-      // For grid-based games - check if target is a placed location or starting tile
-      const gridConfig = state.config.grid as { type?: string; starting_tile?: string } | undefined;
-      if (gridConfig) {
-        const placedLocations = (state.shared.placedLocations as string[]) || [];
-        const startingTile = gridConfig.starting_tile || 'origin';
-        const validLocations = [startingTile, ...placedLocations];
-
-        if (!validLocations.includes(moveAction.target)) {
-          errors.push(`Invalid move target "${moveAction.target}". You can only move to placed locations. Valid: ${validLocations.join(', ')}`);
-        }
-      }
+      // Note: Move validation moved to grid-movement and board-state mechanics
       break;
     }
 
     case 'place_card': {
+      // Note: place_card validation moved to place-card mechanic
+      // Core still handles card-in-hand check
       const placeAction = action as PlaceCardAction;
       const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-
       if (cardIndex === -1) {
         errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-        break;
-      }
-
-      const card = player.hand[cardIndex];
-
-      // Check if card is placeable
-      if (!card.placeable) {
-        errors.push(`Card "${placeAction.card}" cannot be placed on states. Only cards marked as placeable can be used with place_card action.`);
-        break;
-      }
-
-      // Check if target state is valid
-      if (state.config.board) {
-        const validStates = state.config.board.states || [];
-        if (!validStates.includes(placeAction.targetState)) {
-          errors.push(`Invalid target state "${placeAction.targetState}". Valid states: ${validStates.join(', ')}`);
-        }
-      } else {
-        errors.push('place_card action requires a game with board states defined.');
       }
       break;
     }
 
     case 'place_location': {
+      // Note: place_location validation moved to place-location mechanic
+      // Core still handles card-in-hand check
       const placeAction = action as { card: string; adjacentTo: string };
       const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-
       if (cardIndex === -1) {
         errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-        break;
-      }
-
-      const card = player.hand[cardIndex];
-
-      // Check if card is a location type
-      if (card.type !== 'location') {
-        errors.push(`Card "${placeAction.card}" is not a location card. Only location cards can be placed on the grid.`);
-        break;
-      }
-
-      // Check if grid config exists
-      const gridConfig = state.config.engine_mechanics?.grid as { starting_tile?: string } | undefined;
-      if (!gridConfig) {
-        errors.push('place_location action requires a game with grid mechanics defined.');
-        break;
-      }
-
-      // Check if adjacentTo is a valid existing location
-      const placedLocations = (state.shared.placedLocations as string[]) || [];
-      const startingTile = gridConfig.starting_tile || 'origin';
-      const validLocations = [startingTile, ...placedLocations];
-
-      if (!validLocations.includes(placeAction.adjacentTo)) {
-        errors.push(`Invalid adjacentTo target "${placeAction.adjacentTo}". Must be an existing location: ${validLocations.join(', ')}`);
       }
       break;
     }
 
     case 'trade_offer': {
-      const tradeAction = action as { target: string; offer: string[]; request: string[] };
-      const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; require_adjacent_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
-
-      // Check if trading is enabled
-      if (!tradeConfig?.enabled) {
-        errors.push('Trading is not enabled for this game.');
-        break;
-      }
-
-      // Validate target player exists
-      if (!state.players[tradeAction.target]) {
-        errors.push(`Invalid trade target "${tradeAction.target}". Player not found.`);
-        break;
-      }
-
-      if (tradeAction.target === playerId) {
-        errors.push('Cannot trade with yourself.');
-        break;
-      }
-
-      // Check location constraints
-      if (tradeConfig.require_same_location) {
-        const targetPlayer = state.players[tradeAction.target];
-        if (player.state !== targetPlayer.state) {
-          errors.push(`Cannot trade with ${tradeAction.target}. You must be at the same location. You are at "${player.state}", they are at "${targetPlayer.state}".`);
-        }
-      }
-
-      if (tradeConfig.require_adjacent_location) {
-        // For grid games, check if players are at adjacent locations
-        const gridConfig = state.config.engine_mechanics?.grid;
-        if (gridConfig) {
-          const targetPlayer = state.players[tradeAction.target];
-          // For now, allow if same location (adjacent includes same)
-          // Full adjacency check would need grid coordinate tracking
-          if (player.state !== targetPlayer.state) {
-            warnings.push(`Trading with non-adjacent player. Full adjacency validation not implemented yet.`);
-          }
-        }
-      }
-
-      // Validate offered cards exist in player's hand
-      for (const cardName of tradeAction.offer) {
-        const cardIndex = player.hand.findIndex(c => c.name === cardName);
-        if (cardIndex === -1) {
-          errors.push(`Card "${cardName}" not in your hand. Cannot offer it.`);
-        } else if (tradeConfig.item_types_only) {
-          const card = player.hand[cardIndex];
-          if (card.type !== 'item') {
-            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
-          }
-        }
-      }
-
-      // Validate requested cards exist in target's hand
-      const targetPlayer = state.players[tradeAction.target];
-      for (const cardName of tradeAction.request) {
-        const cardIndex = targetPlayer.hand.findIndex(c => c.name === cardName);
-        if (cardIndex === -1) {
-          errors.push(`Card "${cardName}" not in ${tradeAction.target}'s hand. Cannot request it.`);
-        } else if (tradeConfig.item_types_only) {
-          const card = targetPlayer.hand[cardIndex];
-          if (card.type !== 'item') {
-            errors.push(`Card "${cardName}" is not an item. Only items can be traded.`);
-          }
-        }
-      }
-
-      // Check if gifts are allowed
-      if (tradeAction.request.length === 0 && !tradeConfig.allow_gifts) {
-        errors.push('One-sided trades (gifts) are not allowed. You must request something in return.');
-      }
-
-      if (tradeAction.offer.length === 0) {
-        errors.push('You must offer at least one card to trade.');
-      }
+      // Note: trade_offer validation moved to trading mechanic
       break;
     }
 
     case 'trade_respond': {
-      const respondAction = action as { offerId: string; accept: boolean };
-      const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
-      const trade = pendingTrades.find(t => t.id === respondAction.offerId);
-
-      if (!trade) {
-        errors.push(`Trade offer "${respondAction.offerId}" not found or has expired.`);
-        break;
-      }
-
-      if (trade.to !== playerId) {
-        errors.push(`This trade offer is not for you. It was sent to ${trade.to}.`);
-        break;
-      }
-
-      // If accepting, verify both players still have the cards
-      if (respondAction.accept) {
-        const fromPlayer = state.players[trade.from];
-        for (const cardName of trade.offer) {
-          if (!fromPlayer.hand.find(c => c.name === cardName)) {
-            errors.push(`Offerer no longer has card "${cardName}". Trade cannot be completed.`);
-          }
-        }
-        for (const cardName of trade.request) {
-          if (!player.hand.find(c => c.name === cardName)) {
-            errors.push(`You no longer have card "${cardName}". Trade cannot be completed.`);
-          }
-        }
-      }
+      // Note: trade_respond validation moved to trading mechanic
       break;
     }
   }
@@ -2718,22 +2314,10 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   // Mark that player has acted this round (prevents multiple actions without action points)
   player.lastActionRound = state.round;
 
-  // === NEW: Deduct action points if enabled ===
-  // Proposal 006: AP cost per card - multiply by count for quantified actions
-  const apConfig = state.config.engine_mechanics?.action_points;
-  if (apConfig && player.actionPoints !== undefined) {
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
-    let cost = baseCost;
-
-    // For draw actions, cost is per card drawn
-    if (action.type === 'draw') {
-      const drawAction = action as DrawAction;
-      cost = baseCost * (drawAction.count ?? 1);
-    }
-
-    player.actionPoints -= cost;
-    player.actionPointsUsed = (player.actionPointsUsed ?? 0) + cost;
-  }
+  // ============ Mechanic Hooks: Post-execution state changes ============
+  // Run postExecuteAction hooks for all enabled mechanics (e.g., deduct AP)
+  const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
+  applyStateChanges(state, postExecuteChanges);
 
   try {
     switch (action.type) {
@@ -2889,8 +2473,11 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
           if (handPolicy === 'discard_oldest') {
             // Auto-discard the oldest (first) cards in hand
-            discardedCards = player.hand.splice(0, excess);
-            state.discardPile.push(...discardedCards);
+            for (let i = 0; i < excess; i++) {
+              const card = removeFromHandByIndex(state, playerId, 0);
+              if (card) discardedCards.push(card);
+            }
+            addToDiscard(state, discardedCards, playerId);
           } else if (handPolicy === 'discard_choice') {
             // Note: Full implementation would require a pending_discard state
             // For now, log a warning - the player should discard manually
@@ -3299,24 +2886,14 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         pendingTrades.splice(tradeIndex, 1);
 
         if (respondAction.accept) {
-          // Execute the trade - swap cards between players
+          // Execute the trade - swap cards between players using core services
           // Remove offered cards from offerer and add to responder
-          for (const cardName of trade.offer) {
-            const cardIndex = fromPlayer.hand.findIndex(c => c.name === cardName);
-            if (cardIndex !== -1) {
-              const [card] = fromPlayer.hand.splice(cardIndex, 1);
-              player.hand.push(card);
-            }
-          }
+          const offeredCards = removeCardsFromHand(state, trade.from, trade.offer);
+          addToHand(state, playerId, offeredCards);
 
           // Remove requested cards from responder and add to offerer
-          for (const cardName of trade.request) {
-            const cardIndex = player.hand.findIndex(c => c.name === cardName);
-            if (cardIndex !== -1) {
-              const [card] = player.hand.splice(cardIndex, 1);
-              fromPlayer.hand.push(card);
-            }
-          }
+          const requestedCards = removeCardsFromHand(state, playerId, trade.request);
+          addToHand(state, trade.from, requestedCards);
 
           // Track completed trades for objectives
           if (!player.completedTrades) player.completedTrades = 0;

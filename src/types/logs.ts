@@ -49,6 +49,10 @@ export const LOG_EVENT_TYPES = [
 
   // Hand limit enforcement (Proposal 008)
   'hand_limit_exceeded',
+
+  // Hook telemetry (mechanic debugging)
+  'hook_invoked',
+  'mechanic_response',
 ] as const;
 
 export type LogEventType = (typeof LOG_EVENT_TYPES)[number];
@@ -198,6 +202,23 @@ export interface LogEventDataSchemas {
     excess: number;
     policy: string;
     message: string;
+  };
+
+  hook_invoked: {
+    hook: string;
+    action_type?: string;
+    enabled_mechanics: string[];
+    responding_mechanics: string[];
+    duration_ms: number;
+    result: 'blocked' | 'allowed' | 'modified' | 'no_response';
+  };
+
+  mechanic_response: {
+    mechanic: string;
+    hook: string;
+    response_type: 'blocked' | 'allowed' | 'modified' | 'state_changes';
+    duration_ms: number;
+    response_data?: Record<string, unknown>;
   };
 }
 

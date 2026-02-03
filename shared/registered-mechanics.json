@@ -1,127 +1,450 @@
 {
-  "_comment": "Engine-registered mechanics. This file is the source of truth for what mechanics the engine supports. Site reads this to show implementation status.",
-  "version": "3.0.0",
-  "generated": false,
+  "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
+  "version": "4.0.0",
+  "generated": "2026-02-03T13:23:02.609Z",
+  "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
       "config_key": "action_points",
-      "since": "1.0.0",
-      "description": "Resource budget per turn for actions",
+      "since": "3.0.0",
+      "description": "Action economy: points per turn, costs per action type",
       "config_schema": {
         "points_per_turn": "number",
-        "action_costs": "Record<string, number>"
-      }
+        "action_costs": "object",
+        "rollover": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "postExecuteAction",
+        "shouldAutoEndTurn",
+        "initPlayerState",
+        "onTurnStart"
+      ]
     },
-    "income": {
-      "config_key": "income",
-      "since": "1.0.0",
-      "description": "Automatic resource generation each turn",
+    "area-movement": {
+      "config_key": "area_movement",
+      "since": "3.0.0",
+      "description": "Movement between named areas with adjacency",
       "config_schema": {
-        "resource": "string",
-        "amount": "number",
-        "timing": "start_of_turn | end_of_turn"
-      }
+        "areas": "array",
+        "starting_area": "string",
+        "use_movement_points": "boolean",
+        "default_cost": "number",
+        "allow_passing": "boolean",
+        "allow_stacking": "boolean",
+        "default_capacity": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions"
+      ]
     },
     "auction-english": {
-      "config_key": "auction",
-      "since": "1.0.0",
-      "description": "English auction bidding system",
-      "config_schema": {
-        "type": "english",
-        "currency": "string",
-        "min_increment": "number"
-      }
+      "config_key": "auction_english",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction"
+      ]
     },
-    "set-collection": {
-      "config_key": "set_collection",
-      "since": "1.0.0",
-      "description": "Collecting matching sets for scoring",
+    "automatic-resource-growth": {
+      "config_key": "automatic_resource_growth",
+      "since": "3.0.0",
+      "description": "Resources that grow based on current value (interest, regeneration)",
       "config_schema": {
-        "sets": "SetDefinition[]",
-        "scoring": "per_set | largest_set | most_sets",
-        "points_per_set": "number"
-      }
+        "rules": "array"
+      },
+      "hooks": [
+        "onTurnStart"
+      ]
     },
-    "push-your-luck": {
-      "config_key": "push_your_luck",
-      "since": "1.0.0",
-      "description": "Risk/reward dice rolling mechanic",
-      "config_schema": {
-        "dice_sides": "number",
-        "bust_threshold": "number",
-        "points_per_success": "number"
-      }
+    "board-state": {
+      "config_key": "board_state",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
     },
-    "variable-player-powers": {
-      "config_key": "variable_powers",
-      "since": "1.0.0",
-      "description": "Asymmetric player abilities",
-      "config_schema": {
-        "powers": "PowerDefinition[]",
-        "assignment": "random | draft | fixed"
-      }
+    "card-type-rules": {
+      "config_key": "card_type_rules",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction"
+      ]
     },
-    "open-drafting": {
-      "config_key": "open_drafting",
-      "since": "1.0.0",
-      "description": "Drafting from visible card display",
+    "catch-the-leader": {
+      "config_key": "catch_the_leader",
+      "since": "3.0.0",
+      "description": "Balancing mechanic that penalizes leaders/benefits trailers",
       "config_schema": {
-        "display_size": "number",
-        "refill": "immediate | end_of_round"
-      }
+        "leader_metric": "score | resources | hand_size | position",
+        "resource": "string",
+        "lead_threshold": "number",
+        "leader_penalties": "object",
+        "trailing_bonuses": "object",
+        "targetable_leader": "boolean"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onBeforeResourceChange"
+      ]
     },
-    "turn-order-stat-based": {
-      "config_key": "turn_order",
-      "since": "1.0.0",
-      "description": "Turn order based on player stats",
+    "chaining": {
+      "config_key": "chaining",
+      "since": "3.0.0",
+      "description": "Actions that trigger follow-up effects",
       "config_schema": {
-        "type": "stat-based",
-        "stat": "string",
-        "order": "highest_first | lowest_first"
-      }
+        "rules": "array",
+        "max_chain_depth": "number"
+      },
+      "hooks": [
+        "postExecuteAction"
+      ]
+    },
+    "closed-drafting": {
+      "config_key": "closed_drafting",
+      "since": "3.0.0",
+      "description": "Simultaneous card selection with passing (7 Wonders style)",
+      "config_schema": {
+        "pool_size": "number",
+        "pass_direction": "left | right",
+        "alternate_direction": "boolean",
+        "final_pool_keep": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "events": {
+      "config_key": "events",
+      "since": "3.0.0",
+      "description": "Random or scheduled game events",
+      "config_schema": {
+        "events": "array",
+        "timing": "turn_start | round_start | both",
+        "probability": "number",
+        "max_per_trigger": "number",
+        "use_deck": "boolean"
+      },
+      "hooks": [
+        "onTurnStart"
+      ]
     },
     "grid-movement": {
-      "config_key": "grid",
-      "since": "2.0.0",
-      "description": "Tile-based movement on a grid",
-      "config_schema": {
-        "type": "bounded | infinite",
-        "adjacency": "orthogonal | diagonal | hexagonal"
-      }
-    },
-    "trading": {
-      "config_key": "trade",
-      "since": "2.0.0",
-      "description": "Player-to-player trading system",
-      "config_schema": {
-        "requires_acceptance": "boolean",
-        "tradeable_types": "string[]"
-      }
+      "config_key": "grid_movement",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction"
+      ]
     },
     "hand-management": {
-      "config_key": "hand_limit",
-      "since": "1.0.0",
+      "config_key": "hand_management",
+      "since": "3.0.0",
       "description": "Hand size limits and discard policies",
       "config_schema": {
         "hand_limit": "number",
         "hand_limit_policy": "cannot_draw | discard_choice | discard_oldest"
-      }
+      },
+      "hooks": [
+        "onBeforeDraw"
+      ]
+    },
+    "income": {
+      "config_key": "income",
+      "since": "3.0.0",
+      "description": "Automatic resource generation each turn or round",
+      "config_schema": {
+        "per_turn": "object",
+        "per_round": "object"
+      },
+      "hooks": [
+        "onTurnStart"
+      ]
+    },
+    "ladder-climbing": {
+      "config_key": "ladder_climbing",
+      "since": "3.0.0",
+      "description": "Beat the previous play or pass (President, Big Two style)",
+      "config_schema": {
+        "comparison": "value | rank",
+        "rank_order": "array",
+        "higher_wins": "boolean",
+        "allow_combinations": "boolean",
+        "combination_types": "array",
+        "min_run_length": "number",
+        "pass_eliminates": "boolean",
+        "wild_cards": "array",
+        "bomb_cards": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
     },
     "lose-a-turn": {
-      "config_key": "card_type_rules",
-      "since": "2.5.0",
-      "description": "Skip actions via card effects",
+      "config_key": "lose_a_turn",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction"
+      ]
+    },
+    "movement-points": {
+      "config_key": "movement_points",
+      "since": "3.0.0",
+      "description": "Movement economy: points per turn, terrain costs",
       "config_schema": {
-        "card_type_rules": "Record<string, CardTypeRules>"
-      }
+        "points_per_turn": "number",
+        "rollover": "boolean",
+        "max_points": "number",
+        "terrain_costs": "object",
+        "default_cost": "number",
+        "movement_actions": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "postExecuteAction",
+        "initPlayerState",
+        "onTurnStart"
+      ]
+    },
+    "once-per-game-abilities": {
+      "config_key": "once_per_game_abilities",
+      "since": "3.0.0",
+      "description": "Special abilities usable once per game",
+      "config_schema": {
+        "abilities": "array",
+        "assignment": "all | choose | random",
+        "abilities_per_player": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "open-drafting": {
+      "config_key": "open_drafting",
+      "since": "3.0.0",
+      "description": "Draft cards from a visible display",
+      "config_schema": {
+        "display_size": "number",
+        "refill": "immediate | round_end | none"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "place-card": {
+      "config_key": "place_card",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "place-location": {
+      "config_key": "place_location",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "push-your-luck": {
+      "config_key": "push_your_luck",
+      "since": "3.0.0",
+      "description": "Risk/reward dice rolling with banking",
+      "config_schema": {
+        "dice_sides": "number",
+        "bust_threshold": "number",
+        "points_per_success": "number",
+        "max_rolls": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "set-collection": {
+      "config_key": "set_collection",
+      "since": "3.0.0",
+      "description": "Collect matching sets of cards for points/effects",
+      "config_schema": {
+        "sets": "array",
+        "points_per_set": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "sudden-death-ending": {
+      "config_key": "sudden_death_ending",
+      "since": "3.0.0",
+      "description": "Instant win/lose conditions that end the game immediately",
+      "config_schema": {
+        "conditions": "array",
+        "check_on_action": "boolean",
+        "announce_warning": "boolean"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
     },
     "take-that": {
-      "config_key": "card_type_rules",
-      "since": "2.5.0",
-      "description": "Direct attack cards targeting opponents",
+      "config_key": "take_that",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction"
+      ]
+    },
+    "trading": {
+      "config_key": "trading",
+      "since": "3.0.0",
+      "description": "Player-to-player trading with configurable constraints",
       "config_schema": {
-        "targetMode": "opponents | any_player"
-      }
+        "enabled": "boolean",
+        "require_same_location": "boolean",
+        "require_adjacent_location": "boolean",
+        "item_types_only": "boolean",
+        "allow_gifts": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "trick-taking": {
+      "config_key": "trick_taking",
+      "since": "3.0.0",
+      "description": "Classic trick-taking card game mechanic",
+      "config_schema": {
+        "trump_suit": "string",
+        "can_lead_trump": "boolean",
+        "suit_order": "array",
+        "value_order": "array",
+        "points_per_trick": "number",
+        "card_values": "object"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction"
+      ]
+    },
+    "variable-player-powers": {
+      "config_key": "variable_player_powers",
+      "since": "3.0.0",
+      "description": "Assign unique powers/abilities to each player",
+      "config_schema": {
+        "assignment": "random | fixed",
+        "powers": "array"
+      },
+      "hooks": [
+        "initPlayerState"
+      ]
+    },
+    "win-elimination": {
+      "config_key": "win_elimination",
+      "since": "3.0.0",
+      "description": "Win by being the last player standing",
+      "config_schema": {
+        "enabled": "boolean"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-empty-hand": {
+      "config_key": "win_empty_hand",
+      "since": "3.0.0",
+      "description": "Win by emptying your hand",
+      "config_schema": {
+        "enabled": "boolean"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-race": {
+      "config_key": "win_race",
+      "since": "3.0.0",
+      "description": "First to reach the goal wins",
+      "config_schema": {
+        "goal_state": "string",
+        "goal_states": "array",
+        "laps": "number",
+        "checkpoints": "array"
+      },
+      "hooks": [
+        "onCheckWin",
+        "onAfterMove"
+      ]
+    },
+    "win-reach-state": {
+      "config_key": "win_reach_state",
+      "since": "3.0.0",
+      "description": "Win by reaching a specific board state",
+      "config_schema": {
+        "target_state": "string"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-score-threshold": {
+      "config_key": "win_score_threshold",
+      "since": "3.0.0",
+      "description": "Win by reaching a score threshold",
+      "config_schema": {
+        "threshold": "number",
+        "operator": ">= | > | == | ="
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-timeout": {
+      "config_key": "win_timeout",
+      "since": "3.0.0",
+      "description": "Determine winner when max_rounds is reached",
+      "config_schema": {
+        "type": "highest_score | role | specific_player | no_winner",
+        "role": "string",
+        "role_name": "string",
+        "reveal_role": "boolean",
+        "player_condition": "string",
+        "reason": "string"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
     }
   },
   "partial": {

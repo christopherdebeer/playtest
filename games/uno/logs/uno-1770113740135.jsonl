@@ -1,0 +1,242 @@
+{"timestamp":"2026-02-03T10:15:40.137Z","event":"game_init","data":{"gameId":"uno-1770113740135","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-02-03T10:16:10.648Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T10:16:15.636Z","event":"effect_applied","round":1,"turnNumber":1,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Green Skip","duration":1}}
+{"timestamp":"2026-02-03T10:16:15.636Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Green Skip","effect":{"type":"skip","color":"Green"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T10:16:19.924Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:16:26.445Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:16:31.703Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Green 2","effect":{"type":"none","color":"Green","value":2}}}
+{"timestamp":"2026-02-03T10:16:37.581Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:16:43.494Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:16:47.519Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Green 7","effect":{"type":"none","color":"Green","value":7}}}
+{"timestamp":"2026-02-03T10:16:51.122Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:16:55.203Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:16:58.919Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:17:02.771Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:17:12.437Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Red"}}
+{"timestamp":"2026-02-03T10:17:17.035Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"play_card","card":"Red 0","effect":{"type":"none","color":"Red","value":0}}}
+{"timestamp":"2026-02-03T10:17:21.671Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Red 2","effect":{"type":"none","color":"Red","value":2}}}
+{"timestamp":"2026-02-03T10:17:25.581Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"play_card","card":"Red 2","effect":{"type":"none","color":"Red","value":2}}}
+{"timestamp":"2026-02-03T10:17:29.358Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"play_card","card":"Red 3","effect":{"type":"none","color":"Red","value":3}}}
+{"timestamp":"2026-02-03T10:17:38.355Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"play_card","card":"Red 4","effect":{"type":"none","color":"Red","value":4}}}
+{"timestamp":"2026-02-03T10:17:42.283Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"play_card","card":"Red 5","effect":{"type":"none","color":"Red","value":5}}}
+{"timestamp":"2026-02-03T10:17:46.447Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"play_card","card":"Red 7","effect":{"type":"none","color":"Red","value":7}}}
+{"timestamp":"2026-02-03T10:17:51.107Z","event":"effect_applied","round":10,"turnNumber":20,"player":"player-1","data":{"effectType":"skip","appliedBy":"player-2","card":"Red Skip","duration":1}}
+{"timestamp":"2026-02-03T10:17:51.108Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"play_card","card":"Red Skip","effect":{"type":"skip","color":"Red"},"effectTarget":"player-1"}}
+{"timestamp":"2026-02-03T10:17:57.824Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:18:01.764Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:07.438Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:13.108Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"play_card","card":"Red 5","effect":{"type":"none","color":"Red","value":5}}}
+{"timestamp":"2026-02-03T10:18:18.407Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"play_card","card":"Red Draw Two","effect":{"type":"draw","color":"Red","value":2}}}
+{"timestamp":"2026-02-03T10:18:24.268Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T10:18:29.594Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:34.772Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:40.658Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:45.255Z","event":"action_executed","round":15,"turnNumber":30,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:18:55.497Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"play_card","card":"Red 1","effect":{"type":"none","color":"Red","value":1}}}
+{"timestamp":"2026-02-03T10:19:00.038Z","event":"action_executed","round":16,"turnNumber":32,"player":"player-2","data":{"type":"play_card","card":"Wild Draw Four","effect":{"type":"wild_draw","value":4},"declaredColor":"Green"}}
+{"timestamp":"2026-02-03T10:19:06.638Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"draw","count":4}}
+{"timestamp":"2026-02-03T10:19:11.547Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"play_card","card":"Green 2","effect":{"type":"none","color":"Green","value":2}}}
+{"timestamp":"2026-02-03T10:19:17.310Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"play_card","card":"Green 9","effect":{"type":"none","color":"Green","value":9}}}
+{"timestamp":"2026-02-03T10:19:22.639Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"play_card","card":"Green 3","effect":{"type":"none","color":"Green","value":3}}}
+{"timestamp":"2026-02-03T10:19:29.123Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"play_card","card":"Green Reverse","effect":{"type":"reverse","color":"Green"}}}
+{"timestamp":"2026-02-03T10:19:34.184Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"play_card","card":"Green 5","effect":{"type":"none","color":"Green","value":5}}}
+{"timestamp":"2026-02-03T10:19:40.387Z","event":"action_executed","round":20,"turnNumber":39,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:19:45.516Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:00.755Z","event":"action_executed","round":21,"turnNumber":41,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:06.370Z","event":"action_executed","round":21,"turnNumber":42,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:19.367Z","event":"action_executed","round":22,"turnNumber":43,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:25.820Z","event":"action_executed","round":22,"turnNumber":44,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:36.910Z","event":"action_executed","round":23,"turnNumber":45,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:51.221Z","event":"action_executed","round":23,"turnNumber":46,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:20:57.564Z","event":"action_executed","round":24,"turnNumber":47,"player":"player-1","data":{"type":"play_card","card":"Green 8","effect":{"type":"none","color":"Green","value":8}}}
+{"timestamp":"2026-02-03T10:21:16.830Z","event":"action_executed","round":24,"turnNumber":48,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:21:32.584Z","event":"action_executed","round":25,"turnNumber":49,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:21:40.435Z","event":"action_executed","round":25,"turnNumber":50,"player":"player-2","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Yellow"}}
+{"timestamp":"2026-02-03T10:21:54.489Z","event":"action_executed","round":26,"turnNumber":51,"player":"player-1","data":{"type":"play_card","card":"Yellow 1","effect":{"type":"none","color":"Yellow","value":1}}}
+{"timestamp":"2026-02-03T10:22:15.407Z","event":"action_executed","round":26,"turnNumber":52,"player":"player-2","data":{"type":"play_card","card":"Yellow 0","effect":{"type":"none","color":"Yellow","value":0}}}
+{"timestamp":"2026-02-03T10:22:31.294Z","event":"action_executed","round":27,"turnNumber":53,"player":"player-1","data":{"type":"play_card","card":"Yellow 2","effect":{"type":"none","color":"Yellow","value":2}}}
+{"timestamp":"2026-02-03T10:22:48.723Z","event":"action_executed","round":27,"turnNumber":54,"player":"player-2","data":{"type":"play_card","card":"Yellow 4","effect":{"type":"none","color":"Yellow","value":4}}}
+{"timestamp":"2026-02-03T10:22:59.696Z","event":"action_executed","round":28,"turnNumber":55,"player":"player-1","data":{"type":"play_card","card":"Yellow 9","effect":{"type":"none","color":"Yellow","value":9}}}
+{"timestamp":"2026-02-03T10:23:10.445Z","event":"action_executed","round":28,"turnNumber":56,"player":"player-2","data":{"type":"play_card","card":"Yellow 6","effect":{"type":"none","color":"Yellow","value":6}}}
+{"timestamp":"2026-02-03T10:23:20.735Z","event":"action_executed","round":29,"turnNumber":57,"player":"player-1","data":{"type":"play_card","card":"Yellow 9","effect":{"type":"none","color":"Yellow","value":9}}}
+{"timestamp":"2026-02-03T10:23:30.180Z","event":"effect_applied","round":29,"turnNumber":58,"player":"player-1","data":{"effectType":"skip","appliedBy":"player-2","card":"Yellow Skip","duration":1}}
+{"timestamp":"2026-02-03T10:23:30.181Z","event":"action_executed","round":29,"turnNumber":58,"player":"player-2","data":{"type":"play_card","card":"Yellow Skip","effect":{"type":"skip","color":"Yellow"},"effectTarget":"player-1"}}
+{"timestamp":"2026-02-03T10:23:41.328Z","event":"action_executed","round":30,"turnNumber":59,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:23:47.075Z","event":"action_executed","round":30,"turnNumber":60,"player":"player-2","data":{"type":"play_card","card":"Yellow Reverse","effect":{"type":"reverse","color":"Yellow"}}}
+{"timestamp":"2026-02-03T10:23:59.486Z","event":"action_executed","round":31,"turnNumber":61,"player":"player-1","data":{"type":"play_card","card":"Yellow Reverse","effect":{"type":"reverse","color":"Yellow"}}}
+{"timestamp":"2026-02-03T10:24:06.373Z","event":"action_executed","round":31,"turnNumber":62,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:24:20.186Z","event":"action_executed","round":32,"turnNumber":63,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:24:25.758Z","event":"action_executed","round":32,"turnNumber":64,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:24:42.075Z","event":"action_executed","round":33,"turnNumber":65,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:24:49.496Z","event":"action_executed","round":33,"turnNumber":66,"player":"player-2","data":{"type":"play_card","card":"Yellow 5","effect":{"type":"none","color":"Yellow","value":5}}}
+{"timestamp":"2026-02-03T10:25:03.105Z","event":"action_executed","round":34,"turnNumber":67,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:25:16.261Z","event":"action_executed","round":34,"turnNumber":68,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:25:33.570Z","event":"action_executed","round":35,"turnNumber":69,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:25:47.568Z","event":"action_executed","round":35,"turnNumber":70,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:26:03.161Z","event":"action_executed","round":36,"turnNumber":71,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:26:14.777Z","event":"action_executed","round":36,"turnNumber":72,"player":"player-2","data":{"type":"play_card","card":"Yellow 5","effect":{"type":"none","color":"Yellow","value":5}}}
+{"timestamp":"2026-02-03T10:26:26.201Z","event":"action_executed","round":37,"turnNumber":73,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:26:37.779Z","event":"action_executed","round":37,"turnNumber":74,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:26:53.324Z","event":"action_executed","round":38,"turnNumber":75,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:27:05.720Z","event":"action_executed","round":38,"turnNumber":76,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:27:28.463Z","event":"action_executed","round":39,"turnNumber":77,"player":"player-1","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Blue"}}
+{"timestamp":"2026-02-03T10:27:43.117Z","event":"action_executed","round":39,"turnNumber":78,"player":"player-2","data":{"type":"play_card","card":"Blue 6","effect":{"type":"none","color":"Blue","value":6}}}
+{"timestamp":"2026-02-03T10:27:57.911Z","event":"action_executed","round":40,"turnNumber":79,"player":"player-1","data":{"type":"play_card","card":"Blue 7","effect":{"type":"none","color":"Blue","value":7}}}
+{"timestamp":"2026-02-03T10:28:12.510Z","event":"action_executed","round":40,"turnNumber":80,"player":"player-2","data":{"type":"play_card","card":"Blue 9","effect":{"type":"none","color":"Blue","value":9}}}
+{"timestamp":"2026-02-03T10:28:26.962Z","event":"action_executed","round":41,"turnNumber":81,"player":"player-1","data":{"type":"play_card","card":"Blue 1","effect":{"type":"none","color":"Blue","value":1}}}
+{"timestamp":"2026-02-03T10:28:39.352Z","event":"action_executed","round":41,"turnNumber":82,"player":"player-2","data":{"type":"play_card","card":"Blue Reverse","effect":{"type":"reverse","color":"Blue"}}}
+{"timestamp":"2026-02-03T10:28:51.871Z","event":"action_executed","round":42,"turnNumber":83,"player":"player-1","data":{"type":"play_card","card":"Blue Reverse","effect":{"type":"reverse","color":"Blue"}}}
+{"timestamp":"2026-02-03T10:30:20.332Z","event":"action_executed","round":42,"turnNumber":84,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:30:32.160Z","event":"effect_applied","round":43,"turnNumber":85,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Blue Skip","duration":1}}
+{"timestamp":"2026-02-03T10:30:32.161Z","event":"action_executed","round":43,"turnNumber":85,"player":"player-1","data":{"type":"play_card","card":"Blue Skip","effect":{"type":"skip","color":"Blue"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T10:30:49.496Z","event":"action_executed","round":43,"turnNumber":86,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:31:02.185Z","event":"action_executed","round":44,"turnNumber":87,"player":"player-1","data":{"type":"play_card","card":"Blue 0","effect":{"type":"none","color":"Blue","value":0}}}
+{"timestamp":"2026-02-03T10:31:12.955Z","event":"action_executed","round":44,"turnNumber":88,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:31:28.131Z","event":"action_executed","round":45,"turnNumber":89,"player":"player-1","data":{"type":"play_card","card":"Blue 4","effect":{"type":"none","color":"Blue","value":4}}}
+{"timestamp":"2026-02-03T10:31:40.402Z","event":"action_executed","round":45,"turnNumber":90,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:31:52.750Z","event":"action_executed","round":46,"turnNumber":91,"player":"player-1","data":{"type":"play_card","card":"Blue 4","effect":{"type":"none","color":"Blue","value":4}}}
+{"timestamp":"2026-02-03T10:32:08.198Z","event":"action_executed","round":46,"turnNumber":92,"player":"player-2","data":{"type":"play_card","card":"Blue 5","effect":{"type":"none","color":"Blue","value":5}}}
+{"timestamp":"2026-02-03T10:32:20.258Z","event":"action_executed","round":47,"turnNumber":93,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:32:33.692Z","event":"action_executed","round":47,"turnNumber":94,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:32:56.170Z","event":"action_executed","round":48,"turnNumber":95,"player":"player-1","data":{"type":"play_card","card":"Blue 7","effect":{"type":"none","color":"Blue","value":7}}}
+{"timestamp":"2026-02-03T10:33:07.284Z","event":"action_executed","round":48,"turnNumber":96,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:33:30.512Z","event":"action_executed","round":49,"turnNumber":97,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:33:48.349Z","event":"action_executed","round":49,"turnNumber":98,"player":"player-2","data":{"type":"play_card","card":"Blue 6","effect":{"type":"none","color":"Blue","value":6}}}
+{"timestamp":"2026-02-03T10:34:05.756Z","event":"action_executed","round":50,"turnNumber":99,"player":"player-1","data":{"type":"play_card","card":"Blue 1","effect":{"type":"none","color":"Blue","value":1}}}
+{"timestamp":"2026-02-03T10:34:24.775Z","event":"action_executed","round":50,"turnNumber":100,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:34:44.717Z","event":"action_executed","round":51,"turnNumber":101,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:35:07.141Z","event":"action_executed","round":51,"turnNumber":102,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:35:29.152Z","event":"action_executed","round":52,"turnNumber":103,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:35:48.548Z","event":"action_executed","round":52,"turnNumber":104,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:36:01.963Z","event":"action_executed","round":53,"turnNumber":105,"player":"player-1","data":{"type":"play_card","card":"Wild Draw Four","effect":{"type":"wild_draw","value":4},"declaredColor":"Red"}}
+{"timestamp":"2026-02-03T10:36:08.541Z","event":"action_executed","round":53,"turnNumber":106,"player":"player-2","data":{"type":"play_card","card":"Wild Draw Four","effect":{"type":"wild_draw","value":4},"declaredColor":"Green"}}
+{"timestamp":"2026-02-03T10:36:23.109Z","event":"action_executed","round":54,"turnNumber":107,"player":"player-1","data":{"type":"play_card","card":"Green 3","effect":{"type":"none","color":"Green","value":3}}}
+{"timestamp":"2026-02-03T10:36:35.913Z","event":"action_executed","round":54,"turnNumber":108,"player":"player-2","data":{"type":"play_card","card":"Green 4","effect":{"type":"none","color":"Green","value":4}}}
+{"timestamp":"2026-02-03T10:36:59.359Z","event":"action_executed","round":55,"turnNumber":109,"player":"player-1","data":{"type":"play_card","card":"Green Draw Two","effect":{"type":"draw","color":"Green","value":2}}}
+{"timestamp":"2026-02-03T10:37:26.106Z","event":"action_executed","round":55,"turnNumber":110,"player":"player-2","data":{"type":"play_card","card":"Green 6","effect":{"type":"none","color":"Green","value":6}}}
+{"timestamp":"2026-02-03T10:37:43.067Z","event":"action_executed","round":56,"turnNumber":111,"player":"player-1","data":{"type":"play_card","card":"Green 9","effect":{"type":"none","color":"Green","value":9}}}
+{"timestamp":"2026-02-03T10:37:55.504Z","event":"action_executed","round":56,"turnNumber":112,"player":"player-2","data":{"type":"play_card","card":"Green 7","effect":{"type":"none","color":"Green","value":7}}}
+{"timestamp":"2026-02-03T10:38:12.181Z","event":"effect_applied","round":57,"turnNumber":113,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Green Skip","duration":1}}
+{"timestamp":"2026-02-03T10:38:12.181Z","event":"action_executed","round":57,"turnNumber":113,"player":"player-1","data":{"type":"play_card","card":"Green Skip","effect":{"type":"skip","color":"Green"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T10:38:26.078Z","event":"action_executed","round":57,"turnNumber":114,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:38:44.695Z","event":"action_executed","round":58,"turnNumber":115,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:38:56.160Z","event":"action_executed","round":58,"turnNumber":116,"player":"player-2","data":{"type":"play_card","card":"Green 1","effect":{"type":"none","color":"Green","value":1}}}
+{"timestamp":"2026-02-03T10:39:10.174Z","event":"action_executed","round":59,"turnNumber":117,"player":"player-1","data":{"type":"play_card","card":"Green 1","effect":{"type":"none","color":"Green","value":1}}}
+{"timestamp":"2026-02-03T10:39:22.967Z","event":"action_executed","round":59,"turnNumber":118,"player":"player-2","data":{"type":"play_card","card":"Green 6","effect":{"type":"none","color":"Green","value":6}}}
+{"timestamp":"2026-02-03T10:39:37.736Z","event":"action_executed","round":60,"turnNumber":119,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:39:57.617Z","event":"action_executed","round":60,"turnNumber":120,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:40:23.495Z","event":"action_executed","round":61,"turnNumber":121,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:40:40.371Z","event":"action_executed","round":61,"turnNumber":122,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:40:55.773Z","event":"action_executed","round":62,"turnNumber":123,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:41:11.824Z","event":"action_executed","round":62,"turnNumber":124,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:41:27.149Z","event":"action_executed","round":63,"turnNumber":125,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:41:42.141Z","event":"action_executed","round":63,"turnNumber":126,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:41:59.445Z","event":"action_executed","round":64,"turnNumber":127,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:42:14.696Z","event":"action_executed","round":64,"turnNumber":128,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:42:29.782Z","event":"action_executed","round":65,"turnNumber":129,"player":"player-1","data":{"type":"play_card","card":"Wild Draw Four","effect":{"type":"wild_draw","value":4},"declaredColor":"Yellow"}}
+{"timestamp":"2026-02-03T10:42:43.848Z","event":"action_executed","round":65,"turnNumber":130,"player":"player-2","data":{"type":"play_card","card":"Yellow 6","effect":{"type":"none","color":"Yellow","value":6}}}
+{"timestamp":"2026-02-03T10:43:13.374Z","event":"action_executed","round":66,"turnNumber":131,"player":"player-1","data":{"type":"play_card","card":"Yellow 4","effect":{"type":"none","color":"Yellow","value":4}}}
+{"timestamp":"2026-02-03T10:43:35.097Z","event":"action_executed","round":66,"turnNumber":132,"player":"player-2","data":{"type":"play_card","card":"Yellow 1","effect":{"type":"none","color":"Yellow","value":1}}}
+{"timestamp":"2026-02-03T10:43:51.899Z","event":"action_executed","round":67,"turnNumber":133,"player":"player-1","data":{"type":"play_card","card":"Yellow Draw Two","effect":{"type":"draw","color":"Yellow","value":2}}}
+{"timestamp":"2026-02-03T10:44:02.674Z","event":"action_executed","round":67,"turnNumber":134,"player":"player-2","data":{"type":"play_card","card":"Yellow 7","effect":{"type":"none","color":"Yellow","value":7}}}
+{"timestamp":"2026-02-03T10:44:19.779Z","event":"action_executed","round":68,"turnNumber":135,"player":"player-1","data":{"type":"play_card","card":"Yellow Draw Two","effect":{"type":"draw","color":"Yellow","value":2}}}
+{"timestamp":"2026-02-03T10:44:26.965Z","event":"action_executed","round":68,"turnNumber":136,"player":"player-2","data":{"type":"play_card","card":"Yellow 8","effect":{"type":"none","color":"Yellow","value":8}}}
+{"timestamp":"2026-02-03T10:44:49.995Z","event":"action_executed","round":69,"turnNumber":137,"player":"player-1","data":{"type":"play_card","card":"Blue 8","effect":{"type":"none","color":"Blue","value":8}}}
+{"timestamp":"2026-02-03T10:45:03.365Z","event":"action_executed","round":69,"turnNumber":138,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:45:20.061Z","event":"action_executed","round":70,"turnNumber":139,"player":"player-1","data":{"type":"play_card","card":"Blue 2","effect":{"type":"none","color":"Blue","value":2}}}
+{"timestamp":"2026-02-03T10:45:33.787Z","event":"action_executed","round":70,"turnNumber":140,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:45:48.714Z","event":"effect_applied","round":71,"turnNumber":141,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Blue Skip","duration":1}}
+{"timestamp":"2026-02-03T10:45:48.714Z","event":"action_executed","round":71,"turnNumber":141,"player":"player-1","data":{"type":"play_card","card":"Blue Skip","effect":{"type":"skip","color":"Blue"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T10:46:14.944Z","event":"action_executed","round":71,"turnNumber":142,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T10:46:43.310Z","event":"action_executed","round":72,"turnNumber":143,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:47:05.243Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05912500000000165,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:47:05.246Z","event":"action_executed","round":72,"turnNumber":144,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:47:19.429Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05937500000000284,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:47:19.431Z","event":"action_executed","round":73,"turnNumber":145,"player":"player-1","data":{"type":"play_card","card":"Blue 2","effect":{"type":"none","color":"Blue","value":2}}}
+{"timestamp":"2026-02-03T10:47:32.671Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.050499999999999545,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:47:32.676Z","event":"action_executed","round":73,"turnNumber":146,"player":"player-2","data":{"type":"play_card","card":"Blue Draw Two","effect":{"type":"draw","color":"Blue","value":2}}}
+{"timestamp":"2026-02-03T10:47:54.633Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.059457999999999345,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:47:54.635Z","event":"action_executed","round":74,"turnNumber":147,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T10:48:09.154Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.04654100000000483,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:48:09.155Z","event":"action_executed","round":74,"turnNumber":148,"player":"player-2","data":{"type":"play_card","card":"Red Draw Two","effect":{"type":"draw","color":"Red","value":2}}}
+{"timestamp":"2026-02-03T10:48:27.084Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.06112499999999699,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:48:27.086Z","event":"action_executed","round":75,"turnNumber":149,"player":"player-1","data":{"type":"play_card","card":"Red 8","effect":{"type":"none","color":"Red","value":8}}}
+{"timestamp":"2026-02-03T10:48:40.867Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.058917000000000996,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:48:40.868Z","event":"action_executed","round":75,"turnNumber":150,"player":"player-2","data":{"type":"play_card","card":"Red 8","effect":{"type":"none","color":"Red","value":8}}}
+{"timestamp":"2026-02-03T10:48:55.592Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.06512499999999477,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:48:55.594Z","event":"action_executed","round":76,"turnNumber":151,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:49:04.994Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.057709000000002675,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:49:04.997Z","event":"action_executed","round":76,"turnNumber":152,"player":"player-2","data":{"type":"play_card","card":"Red 7","effect":{"type":"none","color":"Red","value":7}}}
+{"timestamp":"2026-02-03T10:49:32.202Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.06154200000000287,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:49:32.205Z","event":"action_executed","round":77,"turnNumber":153,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T10:49:40.959Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05312500000000142,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:49:40.961Z","event":"action_executed","round":77,"turnNumber":154,"player":"player-2","data":{"type":"play_card","card":"Red 6","effect":{"type":"none","color":"Red","value":6}}}
+{"timestamp":"2026-02-03T10:58:29.453Z","event":"operator_hint","data":{"message":"The game is nearing completion. You have 4 cards left (player-1) and your opponent has 3 cards. Continue playing to finish the game.","reason":"Agent appears stalled after 1 hour","targetPlayer":"player-1","expiresAfterTurns":5}}
+{"timestamp":"2026-02-03T10:59:57.588Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.058416000000001134,"result":"allowed"}}
+{"timestamp":"2026-02-03T10:59:57.589Z","event":"action_executed","round":78,"turnNumber":155,"player":"player-1","data":{"type":"play_card","card":"Red Reverse","effect":{"type":"reverse","color":"Red"}}}
+{"timestamp":"2026-02-03T11:00:05.275Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.058332999999997526,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:05.277Z","event":"action_executed","round":78,"turnNumber":156,"player":"player-2","data":{"type":"play_card","card":"Red 9","effect":{"type":"none","color":"Red","value":9}}}
+{"timestamp":"2026-02-03T11:00:09.757Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.0682910000000021,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:09.761Z","event":"action_executed","round":79,"turnNumber":157,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:00:25.899Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05658300000000338,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:25.901Z","event":"action_executed","round":79,"turnNumber":158,"player":"player-2","data":{"type":"play_card","card":"Red 4","effect":{"type":"none","color":"Red","value":4}}}
+{"timestamp":"2026-02-03T11:00:29.952Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05458399999999841,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:29.953Z","event":"action_executed","round":80,"turnNumber":159,"player":"player-1","data":{"type":"play_card","card":"Red 6","effect":{"type":"none","color":"Red","value":6}}}
+{"timestamp":"2026-02-03T11:00:44.076Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05716600000000227,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:51.649Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.054541000000000395,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:51.652Z","event":"action_executed","round":80,"turnNumber":160,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:00:55.867Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.059291999999999234,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:00:55.869Z","event":"action_executed","round":81,"turnNumber":161,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:01:08.314Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.0663330000000002,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:08.316Z","event":"action_executed","round":81,"turnNumber":162,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:01:12.660Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05766600000000466,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:12.662Z","event":"action_executed","round":82,"turnNumber":163,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:01:26.568Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05429200000000378,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:26.572Z","event":"action_executed","round":82,"turnNumber":164,"player":"player-2","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Yellow"}}
+{"timestamp":"2026-02-03T11:01:31.429Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.0643749999999983,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:31.431Z","event":"action_executed","round":83,"turnNumber":165,"player":"player-1","data":{"type":"play_card","card":"Blue 9","effect":{"type":"none","color":"Blue","value":9}}}
+{"timestamp":"2026-02-03T11:01:47.572Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.08408299999999969,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:54.581Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.048875000000002444,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:01:54.583Z","event":"action_executed","round":83,"turnNumber":166,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:02:02.744Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.04616699999999696,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:02.745Z","event":"action_executed","round":84,"turnNumber":167,"player":"player-1","data":{"type":"play_card","card":"Blue Draw Two","effect":{"type":"draw","color":"Blue","value":2}}}
+{"timestamp":"2026-02-03T11:02:10.916Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.059499999999999886,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:10.918Z","event":"action_executed","round":84,"turnNumber":168,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:02:16.438Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.051333999999997104,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:16.439Z","event":"action_executed","round":85,"turnNumber":169,"player":"player-1","data":{"type":"play_card","card":"Blue 5","effect":{"type":"none","color":"Blue","value":5}}}
+{"timestamp":"2026-02-03T11:02:27.147Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05808400000000091,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:41.579Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.06237499999999585,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:41.581Z","event":"action_executed","round":85,"turnNumber":170,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:02:50.445Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.050457999999999004,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:50.447Z","event":"action_executed","round":86,"turnNumber":171,"player":"player-1","data":{"type":"play_card","card":"Blue 8","effect":{"type":"none","color":"Blue","value":8}}}
+{"timestamp":"2026-02-03T11:02:58.344Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.04954200000000242,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:02:58.346Z","event":"action_executed","round":86,"turnNumber":172,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:03:05.398Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.054791999999999064,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:05.401Z","event":"action_executed","round":87,"turnNumber":173,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:03:16.105Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.046584000000002845,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:16.106Z","event":"action_executed","round":87,"turnNumber":174,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:03:20.765Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.055165999999999826,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:20.766Z","event":"action_executed","round":88,"turnNumber":175,"player":"player-1","data":{"type":"play_card","card":"Blue 3","effect":{"type":"none","color":"Blue","value":3}}}
+{"timestamp":"2026-02-03T11:03:34.097Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05216699999999719,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:34.099Z","event":"action_executed","round":88,"turnNumber":176,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:03:42.418Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.054291000000006306,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:54.059Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.055249999999993804,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:03:54.060Z","event":"action_executed","round":89,"turnNumber":177,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:04:13.597Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"play_card","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05491699999999611,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:04:13.599Z","event":"action_executed","round":89,"turnNumber":178,"player":"player-2","data":{"type":"play_card","card":"Blue 3","effect":{"type":"none","color":"Blue","value":3}}}
+{"timestamp":"2026-02-03T11:04:19.014Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05370800000000031,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:04:19.016Z","event":"action_executed","round":90,"turnNumber":179,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:04:36.218Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05695800000000162,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:04:36.220Z","event":"action_executed","round":90,"turnNumber":180,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:04:43.204Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.04704100000000011,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:04:43.206Z","event":"action_executed","round":91,"turnNumber":181,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:04:57.741Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.04583300000000179,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:04:57.742Z","event":"action_executed","round":91,"turnNumber":182,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:05:05.992Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.05962499999999693,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:05:05.993Z","event":"action_executed","round":92,"turnNumber":183,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:05:20.550Z","event":"hook_invoked","player":"player-2","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.048791999999998836,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:05:20.551Z","event":"action_executed","round":92,"turnNumber":184,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:05:26.756Z","event":"hook_invoked","player":"player-1","data":{"hook":"preValidateAction","action_type":"draw","enabled_mechanics":[],"responding_mechanics":[],"duration_ms":0.056708000000000425,"result":"allowed"}}
+{"timestamp":"2026-02-03T11:05:26.757Z","event":"action_executed","round":93,"turnNumber":185,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T11:44:30.313Z","event":"game_end","round":93,"turnNumber":186,"data":{"winner":"player-1","reason":"Stalemate at turn 186: Blue 3 on discard, neither player has matching cards. Winner by card advantage: player-1 (6 cards) vs player-2 (10 cards)."}}
+{"timestamp":"2026-02-03T11:50:07.024Z","event":"analysis_submitted","round":93,"turnNumber":186,"data":{"file":"playtest-analysis-v1.0-1770113740135.md","version":"v1.0"}}

@@ -1,0 +1,100 @@
+/**
+ * Core Mechanics - Foundational services other mechanics depend on
+ *
+ * These are "trunk" mechanics that implement primitive operations
+ * for cards, hands, and piles. Leaf mechanics hook into these.
+ */
+
+// Card pile operations (deck, discard)
+export {
+  drawFromDeck,
+  addToDiscard,
+  peekDiscard,
+  hasCardsAvailable,
+  getDeckSize,
+  getDiscardSize,
+  type DrawContext,
+  type DrawResult
+} from './card-piles.js';
+
+// Hand operations
+export {
+  addToHand,
+  removeFromHandByIndex,
+  removeFromHandByName,
+  removeCardsFromHand,
+  findInHand,
+  getHandSize,
+  getHand,
+  type AddToHandResult
+} from './hand.js';
+
+// Resource operations
+export {
+  spendResource,
+  addResource,
+  setResource,
+  getResource,
+  hasResource,
+  getAllResources,
+  getResourceNames,
+  type ResourceChangeResult
+} from './resources.js';
+
+// Effect operations
+export {
+  addEffect,
+  removeEffect,
+  clearEffects,
+  decrementEffectDurations,
+  hasEffect,
+  getEffect,
+  getEffects,
+  getEffectsByType,
+  getEffectValue,
+  isBlocked,
+  extendEffectDuration,
+  type EffectOperationResult
+} from './effects.js';
+
+// Board operations
+export {
+  getBoardState,
+  setBoardState,
+  getBoardStates,
+  getStartingState,
+  isValidState,
+  getValidMoveTargets,
+  getValidMoveTargetsForPlayer,
+  isValidMove,
+  getEdge,
+  getMoveProbability,
+  getPlayersAtState,
+  hasBoard,
+  getEdges,
+  type MoveResult
+} from './board.js';
+
+// Turn operations
+export {
+  getCurrentPlayer,
+  getTurnOrder,
+  isPlayersTurn,
+  getCurrentRound,
+  getTurnNumber,
+  getCurrentPlayerIndex,
+  getNextPlayer,
+  getPreviousPlayer,
+  isLastTurnOfRound,
+  getPlayerCount,
+  getActivePlayers,
+  isPlayerActive,
+  getOpponents,
+  getActiveOpponents,
+  isOnlyOnePlayerRemaining,
+  getLastRemainingPlayer,
+  advanceTurn,
+  setCurrentPlayer,
+  skipTurn,
+  getTurnInfo
+} from './turns.js';

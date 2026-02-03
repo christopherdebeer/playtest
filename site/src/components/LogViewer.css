@@ -222,6 +222,16 @@
   color: #fbbf24;
 }
 
+.event-icon.event-hook {
+  background: rgba(236, 72, 153, 0.2);
+  color: #ec4899;
+}
+
+.event-icon.event-mechanic {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
 /* Event content helpers */
 .event-success {
   color: #4ade80;
@@ -352,6 +362,54 @@
 
 .raw-line:last-child {
   border-bottom: none;
+}
+
+/* Hook telemetry styles */
+.hook-name,
+.mechanic-name {
+  font-family: 'Monaco', 'Menlo', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 0.9em;
+}
+
+.hook-result-blocked,
+.mechanic-response-blocked {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.hook-result-allowed,
+.mechanic-response-allowed {
+  color: #10b981;
+}
+
+.hook-result-modified,
+.mechanic-response-modified {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.mechanic-response-state_changes {
+  color: #06b6d4;
+}
+
+.hook-result-no_response {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.event-meta {
+  color: #9ca3af;
+  font-size: 0.85em;
+  margin-left: 4px;
+}
+
+.has-details {
+  color: #8b5cf6;
+  font-size: 0.85em;
+  font-style: italic;
 }
 
 @media (max-width: 640px) {
