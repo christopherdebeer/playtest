@@ -24,12 +24,18 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function MechanicsSection() {
-  const { categories, count } = mechanicsData
+  const { categories, count, implementationStats } = mechanicsData
 
-  // Get count per category
-  const categoryCounts: Record<string, number> = {}
+  // Get total and implemented counts per category
+  const categoryCounts: Record<string, { total: number; implemented: number }> = {}
   for (const mech of mechanicsData.mechanics) {
-    categoryCounts[mech.category] = (categoryCounts[mech.category] || 0) + 1
+    if (!categoryCounts[mech.category]) {
+      categoryCounts[mech.category] = { total: 0, implemented: 0 }
+    }
+    categoryCounts[mech.category].total++
+    if (mech.implementationStatus === 'implemented') {
+      categoryCounts[mech.category].implemented++
+    }
   }
 
   return (
@@ -39,7 +45,7 @@ function MechanicsSection() {
           <div>
             <h2 className="section-title">Game Mechanics Database</h2>
             <p className="section-desc">
-              {count} board game mechanics from BoardGameGeek, organized into {categories.length} categories.
+              {implementationStats.implemented} of {count} board game mechanics implemented, organized into {categories.length} categories.
               Reference mechanics in your RULES.md to help AI agents understand game systems.
             </p>
           </div>
@@ -57,7 +63,9 @@ function MechanicsSection() {
               style={{ '--cat-color': CATEGORY_COLORS[cat] || '#6b7280' } as React.CSSProperties}
             >
               <span className="category-name">{cat.replace(/-/g, ' ')}</span>
-              <span className="category-count">{categoryCounts[cat] || 0}</span>
+              <span className="category-count">
+                {categoryCounts[cat]?.implemented || 0}/{categoryCounts[cat]?.total || 0}
+              </span>
             </Link>
           ))}
         </div>

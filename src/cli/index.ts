@@ -53,7 +53,8 @@ import {
   getMechanicsByCategory,
   getMechanicMarkdown,
   resolveMechanics,
-  listCategories
+  listCategories,
+  getMechanicImplementationStatus
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
@@ -1914,10 +1915,20 @@ program
       if (options.list) {
         const categories = listCategories();
         if (options.json) {
-          console.log(JSON.stringify({ success: true, categories }));
+          // Include implementation stats per category
+          const categoryStats = categories.map(cat => {
+            const mechs = getMechanicsByCategory(cat);
+            const implemented = mechs.filter(m => getMechanicImplementationStatus(m.slug).status === 'implemented').length;
+            return { category: cat, implemented, total: mechs.length };
+          });
+          console.log(JSON.stringify({ success: true, categories: categoryStats }));
         } else {
           console.log('Mechanic Categories:\n');
-          categories.forEach(c => console.log(`  - ${c}`));
+          categories.forEach(c => {
+            const mechs = getMechanicsByCategory(c);
+            const implemented = mechs.filter(m => getMechanicImplementationStatus(m.slug).status === 'implemented').length;
+            console.log(`  - ${c} (${implemented}/${mechs.length})`);
+          });
         }
         return;
       }
@@ -1934,10 +1945,21 @@ program
         }
 
         if (options.json) {
-          console.log(JSON.stringify({ success: true, category: options.category, mechanics }));
+          const mechanicsWithStatus = mechanics.map(m => ({
+            ...m,
+            implementation: getMechanicImplementationStatus(m.slug)
+          }));
+          console.log(JSON.stringify({ success: true, category: options.category, mechanics: mechanicsWithStatus }));
         } else {
-          console.log(`\n${options.category.toUpperCase()} Mechanics:\n`);
-          mechanics.forEach(m => console.log(`  - ${m.name} (${m.slug})`));
+          // Count implemented in this category
+          const implemented = mechanics.filter(m => getMechanicImplementationStatus(m.slug).status === 'implemented').length;
+          console.log(`\n${options.category.toUpperCase()} Mechanics (${implemented}/${mechanics.length} implemented):\n`);
+          mechanics.forEach(m => {
+            const status = getMechanicImplementationStatus(m.slug);
+            const marker = status.status === 'implemented' ? '✓' :
+                          status.status === 'partial' ? '◐' : ' ';
+            console.log(`  ${marker} ${m.name} (${m.slug})`);
+          });
         }
         return;
       }
@@ -1960,11 +1982,12 @@ program
       if (!mechanic) mechanic = getMechanicByName(query);
 
       if (mechanic) {
+        const implStatus = getMechanicImplementationStatus(mechanic.slug);
         if (options.markdown) {
           const md = getMechanicMarkdown(mechanic.slug);
           console.log(md || 'Markdown not found');
         } else if (options.json) {
-          console.log(JSON.stringify({ success: true, mechanic }));
+          console.log(JSON.stringify({ success: true, mechanic, implementation: implStatus }));
         } else {
           console.log(`\n${mechanic.name}`);
           console.log(`${'='.repeat(mechanic.name.length)}\n`);
@@ -1972,6 +1995,16 @@ program
           console.log(`Slug:     ${mechanic.slug}`);
           console.log(`Category: ${mechanic.category}`);
           console.log(`Path:     mechanics/${mechanic.path}`);
+          // Show implementation status
+          const statusDisplay = implStatus.status === 'implemented' ? '✓ Implemented' :
+                               implStatus.status === 'partial' ? '◐ Partial' : '✗ Not implemented';
+          console.log(`Status:   ${statusDisplay}`);
+          if (implStatus.configKey) {
+            console.log(`Config:   engine_mechanics.${implStatus.configKey}`);
+          }
+          if (implStatus.since) {
+            console.log(`Since:    v${implStatus.since}`);
+          }
           console.log(`\nUse --markdown for full description`);
         }
         return;
@@ -1988,11 +2021,18 @@ program
       }
 
       if (options.json) {
-        console.log(JSON.stringify({ success: true, query, results }));
+        const resultsWithStatus = results.map(m => ({
+          ...m,
+          implementation: getMechanicImplementationStatus(m.slug)
+        }));
+        console.log(JSON.stringify({ success: true, query, results: resultsWithStatus }));
       } else {
         console.log(`\nMechanics matching "${query}":\n`);
         results.slice(0, 20).forEach(m => {
-          console.log(`  - ${m.name} (${m.slug}) [${m.category}]`);
+          const status = getMechanicImplementationStatus(m.slug);
+          const marker = status.status === 'implemented' ? '✓' :
+                        status.status === 'partial' ? '◐' : ' ';
+          console.log(`  ${marker} ${m.name} (${m.slug}) [${m.category}]`);
         });
         if (results.length > 20) {
           console.log(`\n  ... and ${results.length - 20} more`);
