@@ -6,19 +6,22 @@
  *
  * Strangler fig pattern: Wraps existing game.ts logic, gradually
  * adding hooks for dependent mechanics to intercept.
+ *
+ * Hooks:
+ * - onBeforeDraw: Can modify draw count or block draw
+ * - onAfterDraw: Notified after draw completes
+ * - onDiscard: Notified when cards are discarded
  */
 
 import { GameState, Card } from '../../types/game.js';
 import { shuffleDeck } from '../../core/rules.js';
+import { mechanicRegistry } from '../registry.js';
+import { applyStateChanges } from '../registry.js';
 
 /**
- * Draw context for hooks
+ * Draw context for hooks (re-exported from types)
  */
-export interface DrawContext {
-  state: GameState;
-  playerId: string;
-  requestedCount: number;
-}
+export type { DrawContext } from '../types.js';
 
 /**
  * Result of a draw operation
@@ -26,13 +29,16 @@ export interface DrawContext {
 export interface DrawResult {
   cards: Card[];
   reshuffled: boolean;
+  /** True if draw was blocked by a hook */
+  blocked?: boolean;
+  blockReason?: string;
 }
 
 /**
- * Draw cards from deck, reshuffling discard if needed.
- * Does NOT add to hand - caller decides destination.
+ * Internal draw implementation without hooks.
+ * Used by drawFromDeck and for cases where hooks shouldn't fire.
  */
-export function drawFromDeck(state: GameState, count: number): DrawResult {
+function drawFromDeckInternal(state: GameState, count: number): { cards: Card[]; reshuffled: boolean } {
   const drawn: Card[] = [];
   let reshuffled = false;
 
@@ -73,9 +79,48 @@ export function drawFromDeck(state: GameState, count: number): DrawResult {
 }
 
 /**
- * Add cards to discard pile, updating top card tracking.
+ * Draw cards from deck, reshuffling discard if needed.
+ * Does NOT add to hand - caller decides destination.
+ * Calls onBeforeDraw and onAfterDraw hooks.
+ *
+ * @param state - Game state
+ * @param count - Number of cards to draw
+ * @param playerId - Player drawing (for hook context). If not provided, hooks are skipped.
  */
-export function addToDiscard(state: GameState, cards: Card[]): void {
+export function drawFromDeck(state: GameState, count: number, playerId?: string): DrawResult {
+  // Run onBeforeDraw hooks if we have a player context
+  let actualCount = count;
+  if (playerId) {
+    const beforeResult = mechanicRegistry.onBeforeDraw(state, playerId, count);
+    if (beforeResult.blocked) {
+      return { cards: [], reshuffled: false, blocked: true, blockReason: beforeResult.blockReason };
+    }
+    if (beforeResult.count !== undefined) {
+      actualCount = beforeResult.count;
+    }
+  }
+
+  // Perform the draw
+  const { cards: drawn, reshuffled } = drawFromDeckInternal(state, actualCount);
+
+  // Run onAfterDraw hooks
+  if (playerId && drawn.length > 0) {
+    const afterChanges = mechanicRegistry.onAfterDraw(state, playerId, count, drawn, reshuffled);
+    applyStateChanges(state, afterChanges);
+  }
+
+  return { cards: drawn, reshuffled };
+}
+
+/**
+ * Add cards to discard pile, updating top card tracking.
+ * Calls onDiscard hook after cards are added.
+ *
+ * @param state - Game state
+ * @param cards - Cards to discard
+ * @param playerId - Optional player discarding (for hook context)
+ */
+export function addToDiscard(state: GameState, cards: Card[], playerId?: string): void {
   for (const card of cards) {
     state.discardPile.push(card);
 
@@ -84,6 +129,12 @@ export function addToDiscard(state: GameState, cards: Card[]): void {
     if (card.effect?.color) {
       state.shared.currentColor = card.effect.color;
     }
+  }
+
+  // Run onDiscard hooks
+  if (cards.length > 0) {
+    const changes = mechanicRegistry.onDiscard(state, cards, playerId);
+    applyStateChanges(state, changes);
   }
 }
 

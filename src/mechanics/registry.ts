@@ -14,9 +14,16 @@ import {
   StateChanges,
   PlayerInitResult,
   PlayerInitContext,
+  DrawContext,
+  DrawHookResult,
+  AfterDrawContext,
+  DiscardContext,
+  HandAddContext,
+  HandAddHookResult,
+  HandRemoveContext,
   isMechanicEnabled
 } from './types.js';
-import { GameState, GameConfig, GameAction, PlayerState } from '../types/game.js';
+import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
 
 class MechanicRegistry {
   private mechanics: Map<string, MechanicHooks> = new Map();
@@ -196,6 +203,198 @@ class MechanicRegistry {
     }
 
     return mergedChanges;
+  }
+
+  // ============ Core Operation Hook Routing ============
+
+  /**
+   * Run onBeforeDraw hooks. Returns merged result with possibly modified count.
+   * If any mechanic blocks, returns blocked: true.
+   */
+  onBeforeDraw(state: GameState, playerId: string, requestedCount: number): DrawHookResult {
+    const ctx: DrawContext = {
+      state,
+      playerId,
+      requestedCount,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    let finalCount = requestedCount;
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onBeforeDraw) {
+        const result = mechanic.onBeforeDraw(ctx);
+        if (result) {
+          if (result.blocked) {
+            return { blocked: true, blockReason: result.blockReason };
+          }
+          if (result.count !== undefined) {
+            finalCount = result.count;
+          }
+        }
+      }
+    }
+
+    return { count: finalCount };
+  }
+
+  /**
+   * Run onAfterDraw hooks. Returns merged state changes.
+   */
+  onAfterDraw(
+    state: GameState,
+    playerId: string,
+    requestedCount: number,
+    drawnCards: Card[],
+    reshuffled: boolean
+  ): StateChanges {
+    const ctx: AfterDrawContext = {
+      state,
+      playerId,
+      requestedCount,
+      drawnCards,
+      reshuffled,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onAfterDraw) {
+        const changes = mechanic.onAfterDraw(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Run onDiscard hooks. Returns merged state changes.
+   */
+  onDiscard(state: GameState, cards: Card[], playerId?: string): StateChanges {
+    const ctx: DiscardContext = {
+      state,
+      playerId,
+      cards,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onDiscard) {
+        const changes = mechanic.onDiscard(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Run onBeforeAddToHand hooks. Returns possibly filtered cards or blocked.
+   */
+  onBeforeAddToHand(state: GameState, playerId: string, cards: Card[]): HandAddHookResult {
+    const ctx: HandAddContext = {
+      state,
+      playerId,
+      cards,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    let filteredCards = cards;
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onBeforeAddToHand) {
+        const result = mechanic.onBeforeAddToHand(ctx);
+        if (result) {
+          if (result.blocked) {
+            return { blocked: true, blockReason: result.blockReason };
+          }
+          if (result.cards !== undefined) {
+            filteredCards = result.cards;
+          }
+        }
+      }
+    }
+
+    return { cards: filteredCards };
+  }
+
+  /**
+   * Run onAfterAddToHand hooks. Returns merged state changes.
+   */
+  onAfterAddToHand(state: GameState, playerId: string, cards: Card[]): StateChanges {
+    const ctx: HandAddContext = {
+      state,
+      playerId,
+      cards,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onAfterAddToHand) {
+        const changes = mechanic.onAfterAddToHand(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Run onAfterRemoveFromHand hooks. Returns merged state changes.
+   */
+  onAfterRemoveFromHand(state: GameState, playerId: string, cards: Card[]): StateChanges {
+    const ctx: HandRemoveContext = {
+      state,
+      playerId,
+      cards,
+      config: state.config
+    };
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+    const mergedChanges: StateChanges = {};
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.onAfterRemoveFromHand) {
+        const changes = mechanic.onAfterRemoveFromHand(ctx);
+        if (changes) {
+          this.mergeStateChanges(mergedChanges, changes);
+        }
+      }
+    }
+
+    return mergedChanges;
+  }
+
+  /**
+   * Helper to merge state changes
+   */
+  private mergeStateChanges(target: StateChanges, source: StateChanges): void {
+    if (source.playerStateChanges) {
+      target.playerStateChanges = target.playerStateChanges || {};
+      for (const [pid, pchanges] of Object.entries(source.playerStateChanges)) {
+        target.playerStateChanges[pid] = {
+          ...target.playerStateChanges[pid],
+          ...pchanges
+        };
+      }
+    }
+    if (source.sharedStateChanges) {
+      target.sharedStateChanges = {
+        ...target.sharedStateChanges,
+        ...source.sharedStateChanges
+      };
+    }
   }
 }
 

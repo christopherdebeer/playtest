@@ -25,5 +25,6 @@ export {
   removeCardsFromHand,
   findInHand,
   getHandSize,
-  getHand
+  getHand,
+  type AddToHandResult
 } from './hand.js';

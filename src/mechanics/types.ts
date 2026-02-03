@@ -6,7 +6,7 @@
  * returning values; returning null means "not my concern".
  */
 
-import { GameState, GameConfig, PlayerState, GameAction } from '../types/game.js';
+import { GameState, GameConfig, PlayerState, GameAction, Card } from '../types/game.js';
 
 /**
  * Context passed to hooks - read-only view of game state
@@ -60,6 +60,77 @@ export interface PlayerInitContext {
 }
 
 /**
+ * Context for card draw operations
+ */
+export interface DrawContext {
+  state: GameState;
+  playerId: string;
+  requestedCount: number;
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeDraw - can modify count or block draw
+ */
+export interface DrawHookResult {
+  /** Modified count to draw (defaults to requestedCount) */
+  count?: number;
+  /** Block the draw entirely */
+  blocked?: boolean;
+  /** Reason for blocking */
+  blockReason?: string;
+}
+
+/**
+ * Context for after-draw hook
+ */
+export interface AfterDrawContext extends DrawContext {
+  drawnCards: Card[];
+  reshuffled: boolean;
+}
+
+/**
+ * Context for discard operations
+ */
+export interface DiscardContext {
+  state: GameState;
+  playerId?: string;
+  cards: Card[];
+  config: GameConfig;
+}
+
+/**
+ * Context for hand add operations
+ */
+export interface HandAddContext {
+  state: GameState;
+  playerId: string;
+  cards: Card[];
+  config: GameConfig;
+}
+
+/**
+ * Result from onBeforeAddToHand - can filter or block
+ */
+export interface HandAddHookResult {
+  /** Cards to actually add (can filter) */
+  cards?: Card[];
+  /** Block the add entirely */
+  blocked?: boolean;
+  blockReason?: string;
+}
+
+/**
+ * Context for hand remove operations
+ */
+export interface HandRemoveContext {
+  state: GameState;
+  playerId: string;
+  cards: Card[];
+  config: GameConfig;
+}
+
+/**
  * Mechanic hooks interface - all methods optional, return null to skip
  */
 export interface MechanicHooks {
@@ -100,6 +171,46 @@ export interface MechanicHooks {
    * Return state changes to apply.
    */
   onTurnStart?(ctx: TurnStartContext): StateChanges | null;
+
+  // ============ Core Operation Hooks ============
+  // These hooks are called by core services (card-piles, hand)
+  // to allow mechanics to intercept fundamental operations.
+
+  /**
+   * Called before drawing cards.
+   * Can modify count or block draw entirely.
+   */
+  onBeforeDraw?(ctx: DrawContext): DrawHookResult | null;
+
+  /**
+   * Called after cards are drawn.
+   * Can trigger effects based on what was drawn.
+   */
+  onAfterDraw?(ctx: AfterDrawContext): StateChanges | null;
+
+  /**
+   * Called when cards are added to discard.
+   * Can trigger effects or modify behavior.
+   */
+  onDiscard?(ctx: DiscardContext): StateChanges | null;
+
+  /**
+   * Called before adding cards to hand.
+   * Can filter cards or block entirely.
+   */
+  onBeforeAddToHand?(ctx: HandAddContext): HandAddHookResult | null;
+
+  /**
+   * Called after cards are added to hand.
+   * Can trigger effects.
+   */
+  onAfterAddToHand?(ctx: HandAddContext): StateChanges | null;
+
+  /**
+   * Called after cards are removed from hand.
+   * Can trigger effects.
+   */
+  onAfterRemoveFromHand?(ctx: HandRemoveContext): StateChanges | null;
 }
 
 /**

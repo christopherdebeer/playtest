@@ -1266,22 +1266,24 @@ export function drawCards(state: GameState, playerId: string, count: number): Ca
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Use core services for deck and hand operations
-  const { cards: drawn } = drawFromDeck(state, count);
-  addToHand(state, playerId, drawn);
+  // Use core services for deck and hand operations (with playerId for hooks)
+  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
+  if (!blocked && drawn.length > 0) {
+    addToHand(state, playerId, drawn);
+  }
 
   saveState(state);
   return drawn;
 }
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  // Use core services for hand and discard operations
+  // Use core services for hand and discard operations (with playerId for hooks)
   const card = removeFromHandByIndex(state, playerId, cardIndex);
   if (!card) {
     return null;
   }
 
-  addToDiscard(state, [card]);
+  addToDiscard(state, [card], playerId);
   saveState(state);
 
   return card;
@@ -1293,13 +1295,13 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Use core services for hand/discard operations
+  // Use core services for hand/discard operations (with playerId for hooks)
   const card = removeFromHandByName(state, playerId, cardName);
   if (!card) {
     return null;
   }
 
-  addToDiscard(state, [card]);
+  addToDiscard(state, [card], playerId);
 
   // Handle wild cards - override color set by addToDiscard
   if (card.type === 'wild' && declaredColor) {
@@ -2467,7 +2469,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
               const card = removeFromHandByIndex(state, playerId, 0);
               if (card) discardedCards.push(card);
             }
-            addToDiscard(state, discardedCards);
+            addToDiscard(state, discardedCards, playerId);
           } else if (handPolicy === 'discard_choice') {
             // Note: Full implementation would require a pending_discard state
             // For now, log a warning - the player should discard manually

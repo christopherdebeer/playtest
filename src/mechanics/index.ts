@@ -50,5 +50,13 @@ export type {
   PlayerInitContext,
   ValidationResult,
   StateChanges,
-  PlayerInitResult
+  PlayerInitResult,
+  // Core operation hook types
+  DrawContext,
+  DrawHookResult,
+  AfterDrawContext,
+  DiscardContext,
+  HandAddContext,
+  HandAddHookResult,
+  HandRemoveContext
 } from './types.js';
