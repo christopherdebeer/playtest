@@ -100,7 +100,7 @@ These 18 mechanics can be implemented immediately using existing hooks:
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| ~~`closed-drafting`~~ | ~~`onExecuteAction`, `getAvailableActions`, turn hooks~~ | ✅ Implemented |
+| ~~`closed-drafting`~~ | ~~`onExecuteAction`, `getAvailableActions`, turn hooks~~ | ⚠️ **Needs Work** - Marked implemented but playtesting revealed core functionality missing (no simultaneous selection phase, no pool passing, no draft pools created). Requires significant implementation work to support proper closed drafting as designed. |
 | ~~`deck-bag-and-pool-building`~~ | ~~`onAfterDraw`, `postExecuteAction`, hand hooks~~ | ✅ Implemented as `deck-building` |
 | ~~`trick-taking`~~ | ~~`preValidateAction`, `onExecuteAction`, `onTurnEnd`~~ | ✅ Implemented |
 | ~~`ladder-climbing`~~ | ~~`preValidateAction`, `onExecuteAction`~~ | ✅ Implemented |

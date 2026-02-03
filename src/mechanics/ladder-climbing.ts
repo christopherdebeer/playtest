@@ -49,6 +49,8 @@ interface LadderClimbingConfig {
   wild_cards?: string[];
   /** Cards that clear the pile and give lead */
   bomb_cards?: string[];
+  /** Automatically advance winner to next node (for racing games) */
+  auto_advance_winner?: boolean;
 }
 
 interface CurrentPlay {
@@ -294,13 +296,36 @@ export const ladderClimbingMechanic: MechanicHooks = {
           };
         }
 
+        // Auto-advance winner if configured (for racing games)
+        if (ladderConfig.auto_advance_winner) {
+          const winner = currentPlay.playerId;
+          const winnerPlayer = state.players[winner];
+          const currentNode = winnerPlayer.state || 'Start';
+
+          // Find next node in point-to-point movement
+          const movementConfig = ctx.config.engine_mechanics?.point_to_point_movement as {
+            routes?: Array<{ from: string; to: string }>;
+          } | undefined;
+
+          if (movementConfig?.routes) {
+            const nextRoute = movementConfig.routes.find(r => r.from === currentNode);
+            if (nextRoute) {
+              // Automatically move winner to next node
+              stateChanges.playerStateChanges![winner] = {
+                ...stateChanges.playerStateChanges![winner],
+                state: nextRoute.to
+              };
+            }
+          }
+        }
+
         return {
           handled: true,
           stateChanges,
           advanceTurn: true,
-          checkWin: false,
+          checkWin: true,  // Check win after movement (might have reached goal)
           logMessage: 'ladder_round_won',
-          logData: { winner: currentPlay.playerId, passes: passCount }
+          logData: { winner: currentPlay.playerId, passes: passCount, autoAdvanced: ladderConfig.auto_advance_winner }
         };
       }
 

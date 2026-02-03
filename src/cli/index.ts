@@ -2312,8 +2312,50 @@ program
         if (agentType === 'gamemaster') {
           message = 'Game not finished. Continue managing the game until completion.';
         } else {
-          // For players, provide specific guidance based on whose turn it is
-          const playerId = (inputJson as { player_id?: string }).player_id;
+          // For players, extract player ID from transcript to check whose turn it is
+          let playerId: string | undefined;
+          const agentTranscriptPath = (inputJson as { agent_transcript_path?: string }).agent_transcript_path || targetTranscript;
+
+          if (agentTranscriptPath && existsSync(agentTranscriptPath)) {
+            try {
+              const transcriptContent = readFileSync(agentTranscriptPath, 'utf8');
+              const lines = transcriptContent.split('\n');
+
+              for (const line of lines.slice(0, 50)) {
+                if (!line.trim()) continue;
+                try {
+                  const entry = JSON.parse(line);
+                  const getText = (e: unknown): string => {
+                    const typedEntry = e as { role?: string; type?: string; content?: string | Array<{ type?: string; text?: string }>; message?: { role?: string; content?: string } };
+                    if (typedEntry.role === 'user' && typedEntry.type === 'message') {
+                      return typeof typedEntry.content === 'string'
+                        ? typedEntry.content
+                        : Array.isArray(typedEntry.content)
+                          ? typedEntry.content.find(c => c.type === 'text')?.text || ''
+                          : '';
+                    }
+                    if (typedEntry.message?.role === 'user') {
+                      return typeof typedEntry.message.content === 'string' ? typedEntry.message.content : '';
+                    }
+                    return '';
+                  };
+                  const text = getText(entry);
+
+                  // Extract PLAYER_ID from transcript
+                  const playerMatch = text.match(/^PLAYER_ID:\s*(player-?\d+)/m);
+                  if (playerMatch) {
+                    playerId = playerMatch[1];
+                    break;
+                  }
+                } catch {
+                  // Skip invalid JSON lines
+                }
+              }
+            } catch {
+              // Error reading transcript - continue without player ID
+            }
+          }
+
           const isMyTurn = playerId && state.currentPlayer === playerId;
 
           if (isMyTurn) {

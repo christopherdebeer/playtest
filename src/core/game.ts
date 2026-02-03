@@ -574,7 +574,14 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 
     // Initialize resources if configured
     let resources: Record<string, number> | undefined;
-    if (config.engine_mechanics?.resources) {
+
+    // Check starting_state.resources first (from RULES frontmatter)
+    const startingState = (config as { starting_state?: { resources?: Record<string, number>; score?: number } }).starting_state;
+    if (startingState?.resources) {
+      resources = { ...startingState.resources };
+    }
+    // Fall back to engine_mechanics.resources (legacy format)
+    else if (config.engine_mechanics?.resources) {
       resources = {};
       for (const res of config.engine_mechanics.resources) {
         resources[res.name] = res.starting_amount;
@@ -589,6 +596,11 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     const actionPoints = mechanicState.actionPoints as number | undefined;
     const actionPointsUsed = mechanicState.actionPointsUsed as number | undefined;
     const powerId = mechanicState.powerId as string | undefined;
+    const personalDeck = mechanicState.personalDeck as Card[] | undefined;
+    const personalDiscard = mechanicState.personalDiscard as Card[] | undefined;
+
+    // Initialize score from starting_state if configured
+    const startingScore = startingState?.score ?? 0;
 
     players[playerId] = {
       state: config.board?.start ?? 'start',
@@ -596,18 +608,36 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       effects: [],
       persona,
       resources,
+      score: startingScore,
       actionPoints,
       actionPointsUsed,
       collectedSets: [],
       rollAccumulator: 0,
       rollCount: 0,
-      powerId
+      powerId,
+      personalDeck,
+      personalDiscard
     };
   }
 
   // Deal starting cards
   const startingCards = config.starting_cards ?? 0;
-  if (startingCards > 0 && deck.length > 0) {
+  const deckBuildingConfig = config.engine_mechanics?.deck_building;
+
+  // For deck-building games, draw from personal deck instead of main deck
+  if (deckBuildingConfig?.draw_count) {
+    for (const playerId of turnOrder) {
+      const player = players[playerId];
+      const drawCount = deckBuildingConfig.draw_count;
+
+      if (player.personalDeck && player.personalDeck.length > 0) {
+        const drawn = player.personalDeck.splice(0, Math.min(drawCount, player.personalDeck.length));
+        player.hand = drawn;
+      }
+    }
+  }
+  // For non-deck-building games, draw from main deck
+  else if (startingCards > 0 && deck.length > 0) {
     for (const playerId of turnOrder) {
       const drawn = deck.splice(0, startingCards);
       players[playerId].hand = drawn;
@@ -632,6 +662,11 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     const displaySize = config.engine_mechanics.open_drafting.display_size;
     const draftDisplay = deck.splice(0, Math.min(displaySize, deck.length));
     shared.draftDisplay = draftDisplay;
+  }
+
+  // Initialize supply pile for deck-building games
+  if (config.engine_mechanics?.deck_building?.supply) {
+    shared.supply = config.engine_mechanics.deck_building.supply;
   }
 
   const logPath = getLogPath(gameName, gameId);

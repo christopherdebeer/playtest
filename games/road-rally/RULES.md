@@ -55,6 +55,7 @@ engine_mechanics:
     allow_combinations: true
     combination_types: ["single", "pair"]
     pass_eliminates: false
+    auto_advance_winner: true  # Automatically advance winner one space
 
   # Race win condition - first to finish wins
   win_race:
