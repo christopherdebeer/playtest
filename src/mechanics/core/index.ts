@@ -117,3 +117,20 @@ export {
   type PlayerKnowledge,
   type VisibilityOperationResult
 } from './visibility.js';
+
+// Dice operations (Phase 2)
+export {
+  rollDice,
+  rollSingleDie,
+  rollD6,
+  rollForMovement,
+  rollCheck,
+  rollWithAdvantage,
+  rollWithDisadvantage,
+  rollExploding,
+  countSuccesses,
+  parseDiceNotation,
+  rollFromNotation,
+  type DiceRollResult,
+  type DiceRollOptions
+} from './dice.js';

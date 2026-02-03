@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 38 of 192 mechanics (20%)**
+**Implemented: 39 of 192 mechanics (20%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -16,7 +16,7 @@
 | Cards | 10 | 15 | 67% |
 | Conflict | 0 | 8 | 0% |
 | Cooperative | 0 | 10 | 0% |
-| Dice | 1 | 6 | 17% |
+| Dice | 2 | 6 | 33% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
 | Information | 2 | 8 | 25% |
@@ -57,7 +57,7 @@
 
 ## Existing Hook Infrastructure
 
-27 hooks are currently available:
+29 hooks are currently available:
 
 ### Action & Validation
 - `preValidateAction(ctx, action)` - Block invalid actions
@@ -101,6 +101,10 @@
 - `getVisibleState(ctx)` - Filter state for viewer
 - `onReveal(ctx)` - Handle info reveals
 - `canSeeInfo(ctx, infoType, targetPlayerId)` - Check visibility permissions
+
+### Dice (Phase 2)
+- `onBeforeRoll(ctx)` - Modify dice count/sides or block
+- `onAfterRoll(ctx)` - React to roll results
 
 ---
 
@@ -163,11 +167,11 @@ These 18 mechanics can be implemented immediately using existing hooks:
 
 ---
 
-## Phase 2: Dice System (2 New Hooks)
+## Phase 2: Dice System (2 New Hooks) ✅ IMPLEMENTED
 
-**New Core Service**: `src/mechanics/core/dice.ts`
+**Core Service**: `src/mechanics/core/dice.ts`
 
-### New Hooks
+### Hooks (Implemented)
 
 ```typescript
 interface DiceRollContext {
@@ -193,19 +197,25 @@ interface AfterRollContext extends DiceRollContext {
   keptDice?: number[];
 }
 
-// Add to MechanicHooks:
+// Added to MechanicHooks:
 onBeforeRoll?(ctx: DiceRollContext): DiceRollHookResult | null;
 onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 ```
 
-### Unlocked Mechanics
+### Implemented Mechanics
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `dice-rolling` | Core dice rolling with modifiers | ✅ Implemented |
+
+### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
-| `dice-rolling` | Core dice rolling with modifiers |
 | `different-dice-movement` | Dice determine movement options |
 | `die-icon-resolution` | Symbol-based dice effects |
 | `roll-spin-and-move` | Classic board game movement |
+| `re-rolling-and-locking` | Yahtzee-style dice selection |
 
 ---
 
@@ -470,15 +480,16 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 | Phase | Complexity | New Hooks | Mechanics Unlocked | Cumulative Total | Status |
 |-------|------------|-----------|-------------------|------------------|--------|
 | 1 | Low | 0 | 18 | 36 (19%) | 83% |
-| 2 | Low | 2 | 5 | 41 (21%) | Pending |
-| 3 | Medium | 2 | 8 | 49 (26%) | Pending |
-| 4 | Medium | 3 | 2 (+6 unlocked) | 38 (20%) | ✅ **Done** |
-| 5 | Medium | 2 | 6 | 44 (23%) | Next |
-| 6 | High | 6 | 8 | 52 (27%) | Pending |
-| 7 | High | 5 | 3 | 55 (29%) | Pending |
-| 8 | High | 5 | 10 | 65 (34%) | Pending |
+| 2 | Low | 2 | 1 (+4 unlocked) | 39 (20%) | ✅ **Done** |
+| 3 | Medium | 2 | 8 | 47 (24%) | Next |
+| 4 | Medium | 3 | 2 (+6 unlocked) | 39 (20%) | ✅ **Done** |
+| 5 | Medium | 2 | 6 | 45 (23%) | Pending |
+| 6 | High | 6 | 8 | 53 (28%) | Pending |
+| 7 | High | 5 | 3 | 56 (29%) | Pending |
+| 8 | High | 5 | 10 | 66 (34%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
+**Phase 2 Progress**: 1 of 5 mechanics implemented (20%) - Dice infrastructure complete
 **Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
 
 ---
@@ -501,11 +512,12 @@ These mechanics require physical components or real-time elements unsuitable for
 ## Next Steps
 
 1. ~~**Create `core/visibility.ts`** - Enable hidden information games~~ ✅ Done
-2. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
-3. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
-4. **Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)
-5. **Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)
-6. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
+2. ~~**Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)~~ ✅ Done
+3. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
+4. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
+5. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
+6. **Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)
+7. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
 
 ---
 
