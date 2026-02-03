@@ -158,7 +158,7 @@ function isUseAvailable(ctx: HookContext, use: CardUse): boolean {
   // Check player state
   if (use.condition.player_state) {
     for (const [key, value] of Object.entries(use.condition.player_state)) {
-      if ((ctx.player as Record<string, unknown>)[key] !== value) return false;
+      if ((ctx.player as unknown as Record<string, unknown>)[key] !== value) return false;
     }
   }
 
