@@ -53,6 +53,26 @@ export const scoreThresholdWinMechanic: MechanicHooks = {
   slug: 'win-score-threshold',
   name: 'Score Threshold Win Condition',
 
+  // Config schema for validation and documentation
+  configSchema: {
+    type: 'object',
+    description: 'Win by reaching a score threshold',
+    properties: {
+      threshold: {
+        type: 'number',
+        description: 'Score threshold to reach',
+        required: true
+      },
+      operator: {
+        type: 'string',
+        description: 'Comparison operator',
+        enum: ['>=', '>', '==', '='],
+        default: '>='
+      }
+    },
+    required: ['threshold']
+  },
+
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
     const winConfig = ctx.config.engine_mechanics?.win_score_threshold;
 

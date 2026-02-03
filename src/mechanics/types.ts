@@ -486,6 +486,45 @@ export interface MechanicHooks {
    * Can trigger effects or update state.
    */
   onAfterMove?(ctx: AfterMoveContext): StateChanges | null;
+
+  // ============ Mechanic Composition ============
+
+  /**
+   * Mechanics this one depends on.
+   * Registry validates all dependencies are enabled at startup.
+   */
+  dependencies?: string[];
+
+  /**
+   * Mechanics this one conflicts with.
+   * Registry validates no conflicts are enabled at startup.
+   */
+  conflicts?: string[];
+
+  /**
+   * JSON Schema for this mechanic's config.
+   * Used for validation and documentation.
+   */
+  configSchema?: MechanicConfigSchema;
+}
+
+/**
+ * JSON Schema for mechanic configuration validation
+ */
+export interface MechanicConfigSchema {
+  type: 'object' | 'boolean';
+  properties?: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+    description?: string;
+    enum?: (string | number | boolean)[];
+    default?: unknown;
+    minimum?: number;
+    maximum?: number;
+    items?: { type: string };
+    required?: boolean;
+  }>;
+  required?: string[];
+  description?: string;
 }
 
 /**

@@ -20,6 +20,22 @@ export const incomeMechanic: MechanicHooks = {
   slug: 'income',
   name: 'Income',
 
+  // Config schema for validation and documentation
+  configSchema: {
+    type: 'object',
+    description: 'Automatic resource generation each turn or round',
+    properties: {
+      per_turn: {
+        type: 'object',
+        description: 'Resources to add at the start of each turn'
+      },
+      per_round: {
+        type: 'object',
+        description: 'Resources to add at the start of each round'
+      }
+    }
+  },
+
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     const incomeConfig = ctx.config.engine_mechanics?.income as {
       per_turn?: Record<string, number>;

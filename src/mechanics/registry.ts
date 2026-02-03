@@ -42,6 +42,15 @@ import {
 import { Effect } from '../types/game.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
 
+/**
+ * Error returned when validating mechanic dependencies/conflicts
+ */
+export interface MechanicValidationError {
+  mechanic: string;
+  type: 'missing_dependency' | 'conflict';
+  message: string;
+}
+
 class MechanicRegistry {
   private mechanics: Map<string, MechanicHooks> = new Map();
 
@@ -68,6 +77,53 @@ class MechanicRegistry {
   getEnabledMechanics(config: GameConfig): MechanicHooks[] {
     return Array.from(this.mechanics.values())
       .filter(m => isMechanicEnabled(config, m.slug));
+  }
+
+  /**
+   * Get a specific mechanic by slug
+   */
+  getMechanic(slug: string): MechanicHooks | undefined {
+    return this.mechanics.get(slug);
+  }
+
+  /**
+   * Validate mechanic dependencies and conflicts for a game config.
+   * Returns array of validation errors, empty if valid.
+   */
+  validateDependencies(config: GameConfig): MechanicValidationError[] {
+    const enabled = this.getEnabledMechanics(config);
+    const enabledSlugs = new Set(enabled.map(m => m.slug));
+    const errors: MechanicValidationError[] = [];
+
+    for (const mechanic of enabled) {
+      // Check dependencies
+      if (mechanic.dependencies) {
+        for (const dep of mechanic.dependencies) {
+          if (!enabledSlugs.has(dep)) {
+            errors.push({
+              mechanic: mechanic.slug,
+              type: 'missing_dependency',
+              message: `Mechanic '${mechanic.slug}' requires '${dep}' but it is not enabled`
+            });
+          }
+        }
+      }
+
+      // Check conflicts
+      if (mechanic.conflicts) {
+        for (const conflict of mechanic.conflicts) {
+          if (enabledSlugs.has(conflict)) {
+            errors.push({
+              mechanic: mechanic.slug,
+              type: 'conflict',
+              message: `Mechanic '${mechanic.slug}' conflicts with '${conflict}' which is also enabled`
+            });
+          }
+        }
+      }
+    }
+
+    return errors;
   }
 
   /**

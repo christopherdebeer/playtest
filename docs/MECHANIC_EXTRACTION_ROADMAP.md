@@ -249,10 +249,11 @@ Each mechanic:
 2. Evaluates the win condition for the player
 3. Returns `{ won: true, reason }` or `null`
 
-### Phase 9: Mechanic Composition
+### Phase 9: Mechanic Composition (Complete)
 
-Enable mechanic composition through dependencies:
+Added mechanic composition through dependencies, conflicts, and config schemas:
 
+**MechanicHooks interface extended:**
 ```typescript
 interface MechanicHooks {
   slug: string;
@@ -265,42 +266,56 @@ interface MechanicHooks {
   conflicts?: string[];
 
   /** Config schema for this mechanic */
-  configSchema?: JSONSchema;
+  configSchema?: MechanicConfigSchema;
 }
 ```
 
-Registry validates at startup:
+**MechanicConfigSchema for validation:**
 ```typescript
-class MechanicRegistry {
-  validateDependencies(config: GameConfig): ValidationError[] {
-    const enabled = this.getEnabledMechanics(config);
-    const errors: ValidationError[] = [];
-
-    for (const mechanic of enabled) {
-      // Check dependencies
-      for (const dep of mechanic.dependencies || []) {
-        if (!enabled.some(m => m.slug === dep)) {
-          errors.push({
-            mechanic: mechanic.slug,
-            error: `Missing dependency: ${dep}`
-          });
-        }
-      }
-
-      // Check conflicts
-      for (const conflict of mechanic.conflicts || []) {
-        if (enabled.some(m => m.slug === conflict)) {
-          errors.push({
-            mechanic: mechanic.slug,
-            error: `Conflicts with: ${conflict}`
-          });
-        }
-      }
-    }
-
-    return errors;
-  }
+interface MechanicConfigSchema {
+  type: 'object' | 'boolean';
+  properties?: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+    description?: string;
+    enum?: (string | number | boolean)[];
+    default?: unknown;
+    required?: boolean;
+  }>;
+  required?: string[];
+  description?: string;
 }
+```
+
+**Registry validation:**
+```typescript
+// Returns array of validation errors
+validateDependencies(config: GameConfig): MechanicValidationError[]
+
+interface MechanicValidationError {
+  mechanic: string;
+  type: 'missing_dependency' | 'conflict';
+  message: string;
+}
+```
+
+**Example usage:**
+```typescript
+export const scoreThresholdWinMechanic: MechanicHooks = {
+  slug: 'win-score-threshold',
+  name: 'Score Threshold Win Condition',
+
+  configSchema: {
+    type: 'object',
+    description: 'Win by reaching a score threshold',
+    properties: {
+      threshold: { type: 'number', required: true },
+      operator: { type: 'string', enum: ['>=', '>', '==', '='], default: '>=' }
+    },
+    required: ['threshold']
+  },
+
+  onCheckWin(ctx) { /* ... */ }
+};
 ```
 
 ## Target Architecture
@@ -387,7 +402,11 @@ class MechanicRegistry {
 | `src/mechanics/win-conditions/elimination.ts` | NEW: Win by being last standing |
 | `src/mechanics/win-conditions/timeout-winner.ts` | NEW: Timeout winner determination |
 | `src/mechanics/win-conditions/index.ts` | NEW: Win condition exports |
-| `src/mechanics/index.ts` | Register win condition mechanics |
+| `src/mechanics/index.ts` | Register win condition mechanics, export MechanicValidationError |
+| `src/mechanics/types.ts` | Added dependencies, conflicts, configSchema to MechanicHooks |
+| `src/mechanics/registry.ts` | Added validateDependencies, getMechanic methods |
+| `src/mechanics/income.ts` | Added example configSchema |
+| `src/mechanics/win-conditions/score-threshold.ts` | Added example configSchema |
 
 ## Commits This Session
 
@@ -398,4 +417,5 @@ class MechanicRegistry {
 5. `b387a35` - Migrate set-collection, trading, open-drafting
 6. `c24bddd` - Migrate board-state, place-card, place-location
 7. `9d3c5f1` - Complete Phase 7 core service extraction
-8. (pending) - Phase 8: Win condition mechanics with YAML config
+8. `6fdc2f4` - Phase 8: Win condition mechanics with YAML config
+9. (pending) - Phase 9: Mechanic composition (dependencies, conflicts, configSchema)
