@@ -124,6 +124,41 @@ program
         } else {
           console.error(`  ✓ Valid`);
         }
+
+        // Validate player count against declared range
+        if (validationResult.config?.players) {
+          let minPlayers: number, maxPlayers: number;
+          const playersConfig = validationResult.config.players as unknown;
+
+          if (typeof playersConfig === 'number') {
+            minPlayers = maxPlayers = playersConfig;
+          } else if (typeof playersConfig === 'string') {
+            const match = playersConfig.match(/^(\d+)-(\d+)$/);
+            if (match) {
+              minPlayers = parseInt(match[1], 10);
+              maxPlayers = parseInt(match[2], 10);
+            } else {
+              minPlayers = maxPlayers = parseInt(playersConfig, 10);
+            }
+          } else if (typeof playersConfig === 'object' && playersConfig !== null) {
+            const pc = playersConfig as { min: number; max: number };
+            minPlayers = pc.min;
+            maxPlayers = pc.max;
+          } else {
+            minPlayers = 1;
+            maxPlayers = 20;
+          }
+
+          if (playerCount < minPlayers || playerCount > maxPlayers) {
+            console.error(`  ✗ Requested ${playerCount} players, but game requires ${minPlayers}-${maxPlayers}`);
+            console.log(JSON.stringify({
+              success: false,
+              error: `Player count ${playerCount} is outside valid range (${minPlayers}-${maxPlayers})`,
+              validation: { valid: false, errors: [{ code: 'INVALID_PLAYER_COUNT', message: `Requested ${playerCount} players, but game requires ${minPlayers}-${maxPlayers}` }], warnings: [] }
+            }));
+            process.exit(1);
+          }
+        }
         console.error('');
       }
 
