@@ -599,6 +599,29 @@ export function isMechanicEnabled(config: GameConfig, slug: string): boolean {
 
   // Map slug to config key (e.g., 'action-points' -> 'action_points')
   const configKey = slug.replace(/-/g, '_');
-  return configKey in config.engine_mechanics &&
-         config.engine_mechanics[configKey as keyof typeof config.engine_mechanics] !== undefined;
+
+  // Check if the standard config key exists
+  if (configKey in config.engine_mechanics &&
+      config.engine_mechanics[configKey as keyof typeof config.engine_mechanics] !== undefined) {
+    return true;
+  }
+
+  // Handle special cases where legacy config keys enable mechanics
+  // hand-management is enabled by hand_limit or hand_limit_policy
+  if (slug === 'hand-management') {
+    return config.engine_mechanics.hand_limit !== undefined ||
+           config.engine_mechanics.hand_limit_policy !== undefined;
+  }
+
+  // grid-movement is enabled by grid config
+  if (slug === 'grid-movement') {
+    return config.engine_mechanics.grid !== undefined;
+  }
+
+  // trading is enabled by trade config
+  if (slug === 'trading') {
+    return config.engine_mechanics.trade !== undefined;
+  }
+
+  return false;
 }
