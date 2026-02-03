@@ -1,0 +1,50 @@
+{"timestamp":"2026-02-03T14:38:34.246Z","event":"game_init","data":{"gameId":"uno-1770129514244","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-02-03T14:39:17.927Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:39:24.893Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Green 1","effect":{"type":"none","color":"Green","value":1}}}
+{"timestamp":"2026-02-03T14:39:29.490Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Green 1","effect":{"type":"none","color":"Green","value":1}}}
+{"timestamp":"2026-02-03T14:39:34.550Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Green 5","effect":{"type":"none","color":"Green","value":5}}}
+{"timestamp":"2026-02-03T14:39:38.853Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Green 9","effect":{"type":"none","color":"Green","value":9}}}
+{"timestamp":"2026-02-03T14:39:43.867Z","event":"effect_applied","round":3,"turnNumber":5,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Green Skip","duration":1}}
+{"timestamp":"2026-02-03T14:39:43.870Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"play_card","card":"Green Skip","effect":{"type":"skip","color":"Green"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T14:39:48.588Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:39:53.441Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Wild","effect":{"type":"wild"},"declaredColor":"Blue"}}
+{"timestamp":"2026-02-03T14:39:58.473Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"play_card","card":"Blue 8","effect":{"type":"none","color":"Blue","value":8}}}
+{"timestamp":"2026-02-03T14:40:02.286Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"play_card","card":"Blue 0","effect":{"type":"none","color":"Blue","value":0}}}
+{"timestamp":"2026-02-03T14:40:07.273Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Blue Draw Two","effect":{"type":"draw","color":"Blue","value":2}}}
+{"timestamp":"2026-02-03T14:40:11.868Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T14:40:16.609Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:20.892Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:26.814Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:31.667Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:36.549Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:40.761Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"play_card","card":"Blue 1","effect":{"type":"none","color":"Blue","value":1}}}
+{"timestamp":"2026-02-03T14:40:46.252Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:50.385Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:56.504Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:01.388Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:06.151Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:26.024Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:31.609Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:36.319Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"play_card","card":"Blue 6","effect":{"type":"none","color":"Blue","value":6}}}
+{"timestamp":"2026-02-03T14:41:38.572Z","event":"resignation_submitted","round":13,"turnNumber":26,"player":"player-2","data":{"reason":"After my Blue Draw Two defensive play, an unbreakable stalemate was created with Blue 1 on the discard pile. Both players have drawn endlessly with no Blue or Wild cards available to play. This game state is unwinnable for both players - the Blue 1 card created a deadlock that cannot be resolved through normal play. I am resigning to end this impasse."}}
+{"timestamp":"2026-02-03T14:42:09.683Z","event":"resignation_adjudicated","round":13,"turnNumber":26,"data":{"player":"player-2","accepted":false,"rulingReason":"Resignation rejected. Your claim of an 'unbreakable stalemate with Blue 1 on the discard pile' is outdated. Player-1 broke the deadlock on turn 25 by playing Blue 6. The current top card is Blue 6, and you have multiple playable cards in your hand (Yellow 6 and Red 6 both match the number). The game is not in a stalemate - you have valid plays available. Continue playing."}}
+{"timestamp":"2026-02-03T14:43:56.352Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:07.853Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:44:14.093Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"play_card","card":"Red 6","effect":{"type":"none","color":"Red","value":6}}}
+{"timestamp":"2026-02-03T14:44:18.416Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:44:28.187Z","event":"action_executed","round":15,"turnNumber":30,"player":"player-2","data":{"type":"play_card","card":"Red 5","effect":{"type":"none","color":"Red","value":5}}}
+{"timestamp":"2026-02-03T14:44:33.210Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"play_card","card":"Red Draw Two","effect":{"type":"draw","color":"Red","value":2}}}
+{"timestamp":"2026-02-03T14:44:58.025Z","event":"action_executed","round":16,"turnNumber":32,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T14:45:07.248Z","event":"effect_applied","round":17,"turnNumber":33,"player":"player-2","data":{"effectType":"skip","appliedBy":"player-1","card":"Red Skip","duration":1}}
+{"timestamp":"2026-02-03T14:45:07.248Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"play_card","card":"Red Skip","effect":{"type":"skip","color":"Red"},"effectTarget":"player-2"}}
+{"timestamp":"2026-02-03T14:45:22.954Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:45:42.959Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"play_card","card":"Red 7","effect":{"type":"none","color":"Red","value":7}}}
+{"timestamp":"2026-02-03T14:46:11.312Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:46:20.420Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:46:39.592Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"play_card","card":"Red 1","effect":{"type":"none","color":"Red","value":1}}}
+{"timestamp":"2026-02-03T14:46:50.490Z","event":"action_executed","round":20,"turnNumber":39,"player":"player-1","data":{"type":"play_card","card":"Red 1","effect":{"type":"none","color":"Red","value":1}}}
+{"timestamp":"2026-02-03T14:47:09.013Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:47:17.575Z","event":"action_executed","round":21,"turnNumber":41,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:47:40.264Z","event":"action_executed","round":21,"turnNumber":42,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:57:40.556Z","event":"game_end","round":22,"turnNumber":43,"data":{"winner":"player-1","reason":"Manual end: agent deadlock due to stop hook bug (player_id undefined). player-1 has 7 cards, winning position."}}
+{"timestamp":"2026-02-03T14:59:03.090Z","event":"analysis_submitted","round":22,"turnNumber":43,"data":{"file":"playtest-analysis-v1.0-1770129514244.md","version":"v1.0"}}

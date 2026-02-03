@@ -1,0 +1,12 @@
+{"timestamp":"2026-02-03T14:38:33.463Z","event":"game_init","data":{"gameId":"markovs-chains-1770129513461","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-03T14:39:18.832Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:39:24.150Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T14:39:30.094Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"A","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T14:39:37.486Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Momentum","effect":{"type":"probability_boost","value":0.3}}}
+{"timestamp":"2026-02-03T14:39:43.674Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Catalyst","effect":{"type":"probability_boost","value":0.2}}}
+{"timestamp":"2026-02-03T14:39:48.297Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T14:39:52.328Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T14:39:56.597Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"}}}
+{"timestamp":"2026-02-03T14:40:03.713Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"move","target":"Victory","placedCardEffects":[]}}
+{"timestamp":"2026-02-03T14:40:03.717Z","event":"game_end","round":4,"turnNumber":8,"data":{"winner":"player-2","reason":"player-2 reached Victory state","autoDetected":true}}
+{"timestamp":"2026-02-03T14:41:15.128Z","event":"analysis_submitted","round":4,"turnNumber":8,"data":{"file":"playtest-analysis-v2.3-1770129513461.md","version":"v2.3"}}

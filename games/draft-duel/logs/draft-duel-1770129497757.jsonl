@@ -1,0 +1,34 @@
+{"timestamp":"2026-02-03T14:38:17.760Z","event":"game_init","data":{"gameId":"draft-duel-1770129497757","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-03T14:38:36.042Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:38:42.298Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:38:47.307Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:38:51.588Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:38:55.423Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:38:58.929Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:04.113Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:08.018Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:17.062Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:21.616Z","event":"set_collected","round":5,"turnNumber":9,"player":"player-1","data":{"setType":"Element Set","cards":["Water","Earth","Fire"],"points":5,"totalSets":1}}
+{"timestamp":"2026-02-03T14:39:25.128Z","event":"set_collected","round":5,"turnNumber":10,"player":"player-2","data":{"setType":"Element Set","cards":["Earth","Air","Fire"],"points":5,"totalSets":1}}
+{"timestamp":"2026-02-03T14:39:28.855Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:35.983Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:40.055Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-03T14:39:43.998Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:51.070Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:39:54.920Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:00.110Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:08.165Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:12.280Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:18.488Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:22.450Z","event":"set_collected","round":11,"turnNumber":21,"player":"player-1","data":{"setType":"Element Set","cards":["Air","Air","Fire"],"points":5,"totalSets":2}}
+{"timestamp":"2026-02-03T14:40:26.677Z","event":"set_collected","round":11,"turnNumber":22,"player":"player-2","data":{"setType":"Element Set","cards":["Swift","Swift","Swift"],"points":5,"totalSets":2}}
+{"timestamp":"2026-02-03T14:40:33.302Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"draw","count":3}}
+{"timestamp":"2026-02-03T14:40:39.321Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:45.173Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:49.396Z","event":"set_collected","round":13,"turnNumber":26,"player":"player-2","data":{"setType":"Element Set","cards":["Insight","Insight","Block"],"points":5,"totalSets":3}}
+{"timestamp":"2026-02-03T14:40:55.419Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:59.703Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:08.520Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:41:13.145Z","event":"set_collected","round":15,"turnNumber":30,"player":"player-2","data":{"setType":"Element Set","cards":["Trade","Power","Water"],"points":5,"totalSets":4}}
+{"timestamp":"2026-02-03T14:41:13.146Z","event":"game_end","round":16,"turnNumber":31,"data":{"winner":"player-2","reason":"Max rounds (15) reached. player-2 wins with 21 points.","endType":"timeout","revealedRole":false}}
+{"timestamp":"2026-02-03T14:42:03.798Z","event":"analysis_submitted","round":16,"turnNumber":31,"data":{"file":"playtest-analysis-v1.0-1770129497757.md","version":"v1.0"}}

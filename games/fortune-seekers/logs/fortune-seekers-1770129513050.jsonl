@@ -1,0 +1,61 @@
+{"timestamp":"2026-02-03T14:38:33.052Z","event":"game_init","data":{"gameId":"fortune-seekers-1770129513050","playerCount":2,"config":"Fortune Seekers"}}
+{"timestamp":"2026-02-03T14:39:16.014Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:39:24.805Z","event":"card_drafted","round":1,"turnNumber":1,"player":"player-1","data":{"card":"Silver Bar","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:39:29.008Z","event":"card_drafted","round":1,"turnNumber":2,"player":"player-2","data":{"card":"Lucky Dice","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:39:33.653Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Silver Bar","effect":{"type":"points","value":10}}}
+{"timestamp":"2026-02-03T14:39:37.656Z","event":"card_drafted","round":2,"turnNumber":4,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:39:41.704Z","event":"card_drafted","round":3,"turnNumber":5,"player":"player-1","data":{"card":"Silver Bar","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:39:45.288Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-02-03T14:39:49.049Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Silver Bar","effect":{"type":"points","value":10}}}
+{"timestamp":"2026-02-03T14:39:53.268Z","event":"push_your_luck_roll","round":4,"turnNumber":8,"player":"player-2","data":{"roll":2,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:40:32.746Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:36.966Z","event":"push_your_luck_roll","round":5,"turnNumber":9,"player":"player-1","data":{"roll":3,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:40:43.352Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:49.769Z","event":"push_your_luck_bank","round":5,"turnNumber":10,"player":"player-2","data":{"bankedPoints":10,"totalScore":10}}
+{"timestamp":"2026-02-03T14:40:53.474Z","event":"push_your_luck_bank","round":6,"turnNumber":11,"player":"player-1","data":{"bankedPoints":10,"totalScore":10}}
+{"timestamp":"2026-02-03T14:40:59.631Z","event":"card_drafted","round":6,"turnNumber":12,"player":"player-2","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:41:04.710Z","event":"card_drafted","round":7,"turnNumber":13,"player":"player-1","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:41:10.484Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-02-03T14:41:14.416Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-02-03T14:41:26.892Z","event":"push_your_luck_bust","round":8,"turnNumber":16,"player":"player-2","data":{"roll":1,"lostPoints":0}}
+{"timestamp":"2026-02-03T14:41:26.984Z","event":"push_your_luck_roll","round":9,"turnNumber":17,"player":"player-1","data":{"roll":2,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:41:53.033Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:41:53.141Z","event":"push_your_luck_roll","round":9,"turnNumber":18,"player":"player-2","data":{"roll":5,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:42:27.768Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:42:27.968Z","event":"card_drafted","round":10,"turnNumber":19,"player":"player-1","data":{"card":"Gold Coin","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:42:38.993Z","event":"push_your_luck_bank","round":10,"turnNumber":20,"player":"player-2","data":{"bankedPoints":10,"totalScore":20}}
+{"timestamp":"2026-02-03T14:42:39.185Z","event":"push_your_luck_roll","round":11,"turnNumber":21,"player":"player-1","data":{"roll":5,"points":10,"accumulated":20}}
+{"timestamp":"2026-02-03T14:43:04.366Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:43:09.020Z","event":"card_drafted","round":11,"turnNumber":22,"player":"player-2","data":{"card":"Silver Bar","displayRemaining":5}}
+{"timestamp":"2026-02-03T14:43:09.137Z","event":"push_your_luck_bust","round":12,"turnNumber":23,"player":"player-1","data":{"roll":1,"lostPoints":20}}
+{"timestamp":"2026-02-03T14:43:16.593Z","event":"push_your_luck_roll","round":12,"turnNumber":24,"player":"player-2","data":{"roll":3,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:44:00.762Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:00.898Z","event":"push_your_luck_bust","round":13,"turnNumber":25,"player":"player-1","data":{"roll":1,"lostPoints":0}}
+{"timestamp":"2026-02-03T14:44:14.418Z","event":"push_your_luck_roll","round":13,"turnNumber":26,"player":"player-2","data":{"roll":2,"points":10,"accumulated":20}}
+{"timestamp":"2026-02-03T14:44:14.750Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:14.877Z","event":"push_your_luck_roll","round":14,"turnNumber":27,"player":"player-1","data":{"roll":6,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:44:15.156Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:15.264Z","event":"push_your_luck_roll","round":14,"turnNumber":28,"player":"player-2","data":{"roll":2,"points":10,"accumulated":30}}
+{"timestamp":"2026-02-03T14:44:15.578Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:15.687Z","event":"push_your_luck_roll","round":15,"turnNumber":29,"player":"player-1","data":{"roll":4,"points":10,"accumulated":20}}
+{"timestamp":"2026-02-03T14:44:15.964Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:16.071Z","event":"push_your_luck_bust","round":15,"turnNumber":30,"player":"player-2","data":{"roll":1,"lostPoints":30}}
+{"timestamp":"2026-02-03T14:44:16.170Z","event":"push_your_luck_roll","round":16,"turnNumber":31,"player":"player-1","data":{"roll":3,"points":10,"accumulated":30}}
+{"timestamp":"2026-02-03T14:44:16.449Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:16.550Z","event":"push_your_luck_bust","round":16,"turnNumber":32,"player":"player-2","data":{"roll":1,"lostPoints":0}}
+{"timestamp":"2026-02-03T14:44:16.656Z","event":"push_your_luck_roll","round":17,"turnNumber":33,"player":"player-1","data":{"roll":6,"points":10,"accumulated":40}}
+{"timestamp":"2026-02-03T14:44:16.942Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:17.049Z","event":"push_your_luck_roll","round":17,"turnNumber":34,"player":"player-2","data":{"roll":5,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-03T14:44:17.360Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:17.463Z","event":"push_your_luck_roll","round":18,"turnNumber":35,"player":"player-1","data":{"roll":2,"points":10,"accumulated":50}}
+{"timestamp":"2026-02-03T14:44:17.740Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:17.853Z","event":"push_your_luck_roll","round":18,"turnNumber":36,"player":"player-2","data":{"roll":2,"points":10,"accumulated":20}}
+{"timestamp":"2026-02-03T14:44:18.144Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:22.099Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"play_card","card":"Gold Coin","effect":{"type":"points","value":5}}}
+{"timestamp":"2026-02-03T14:44:22.209Z","event":"push_your_luck_roll","round":19,"turnNumber":38,"player":"player-2","data":{"roll":2,"points":10,"accumulated":30}}
+{"timestamp":"2026-02-03T14:44:22.537Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:32.372Z","event":"push_your_luck_bank","round":20,"turnNumber":39,"player":"player-1","data":{"bankedPoints":50,"totalScore":60}}
+{"timestamp":"2026-02-03T14:44:32.478Z","event":"push_your_luck_roll","round":20,"turnNumber":40,"player":"player-2","data":{"roll":2,"points":10,"accumulated":40}}
+{"timestamp":"2026-02-03T14:44:32.774Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:44:32.774Z","event":"game_end","round":21,"turnNumber":41,"data":{"winner":"player-1","reason":"Max rounds (20) reached. player-1 wins with 60 points.","endType":"timeout","revealedRole":false}}
+{"timestamp":"2026-02-03T14:45:45.959Z","event":"analysis_submitted","round":21,"turnNumber":41,"data":{"file":"playtest-analysis-v1.0-1770129513050.md","version":"v1.0"}}

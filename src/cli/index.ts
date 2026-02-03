@@ -265,6 +265,7 @@ program
   .option('--threshold <time>', 'Stall threshold (default: "5m")', '5m')
   .option('--sort-by <field>', 'Sort by: turns, updated, created (default: updated)', 'updated')
   .option('--format <format>', 'Output format: json, table, compact (default: json)', 'json')
+  .option('--show-available', 'Show available games (games with RULES.md) in addition to active instances')
   .action(async (game?: string, options?: {
     status?: string;
     since?: string;
@@ -273,6 +274,7 @@ program
     threshold?: string;
     sortBy?: string;
     format?: string;
+    showAvailable?: boolean;
   }) => {
     try {
       const fs = await import('fs');
@@ -353,6 +355,27 @@ program
 
       const results: GameInstance[] = [];
 
+      // Get list of available games (games with RULES.md)
+      let availableGames: string[] = [];
+      if (options?.showAvailable) {
+        try {
+          const allDirs = fs.readdirSync(GAMES_DIR).filter((f: string) => {
+            try {
+              return fs.statSync(path.join(GAMES_DIR, f)).isDirectory();
+            } catch {
+              return false;
+            }
+          });
+
+          availableGames = allDirs.filter((gameName: string) => {
+            const rulesPath = path.join(GAMES_DIR, gameName, 'RULES.md');
+            return fs.existsSync(rulesPath);
+          });
+        } catch {
+          // Ignore errors
+        }
+      }
+
       // If game specified, list instances for that game only
       const gamesToCheck = game ? [game] : fs.readdirSync(GAMES_DIR).filter((f: string) => {
         try {
@@ -430,11 +453,16 @@ program
       const format = options?.format || 'json';
 
       if (format === 'json') {
-        console.log(JSON.stringify({
+        const output: any = {
           success: true,
           instances: filtered,
           count: filtered.length
-        }, null, 2));
+        };
+        if (options?.showAvailable) {
+          output.availableGames = availableGames;
+          output.availableCount = availableGames.length;
+        }
+        console.log(JSON.stringify(output, null, 2));
       } else if (format === 'table') {
         // Table format
         console.log('\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐');
@@ -453,6 +481,17 @@ program
 
         console.log('└──────────────────┴──────────────────────────────────┴─────────────┴────────┴────────┴────────┘');
         console.log(`\nTotal: ${filtered.length} instance(s)\n`);
+
+        if (options?.showAvailable && availableGames.length > 0) {
+          console.log('\n┌─────────────────────────────────────────────────────┐');
+          console.log('│ Available Games                                     │');
+          console.log('├─────────────────────────────────────────────────────┤');
+          for (const gameName of availableGames) {
+            console.log(`│ ${gameName.padEnd(51)} │`);
+          }
+          console.log('└─────────────────────────────────────────────────────┘');
+          console.log(`\nTotal: ${availableGames.length} available game(s)\n`);
+        }
       } else if (format === 'compact') {
         // Compact format
         for (const inst of filtered) {
@@ -461,6 +500,13 @@ program
             : '?';
           const stallFlag = inst.stalled ? ' [STALLED]' : '';
           console.log(`${inst.instanceId} | ${inst.status} | T${inst.turnNumber} | ${elapsedDisplay}${stallFlag}`);
+        }
+
+        if (options?.showAvailable && availableGames.length > 0) {
+          console.log('\nAvailable Games:');
+          for (const gameName of availableGames) {
+            console.log(`  ${gameName}`);
+          }
         }
       }
 

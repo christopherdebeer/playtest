@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-03T14:38:31.834Z","event":"game_init","data":{"gameId":"engine-masters-1770129511831","playerCount":2,"config":"Engine Masters"}}
+{"timestamp":"2026-02-03T14:38:56.968Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:39:06.057Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:39:18.839Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:39:23.633Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:39:29.902Z","event":"resignation_submitted","round":2,"turnNumber":4,"player":"player-2","data":{"reason":"Game not initialized properly"}}
+{"timestamp":"2026-02-03T14:39:43.734Z","event":"game_end","round":2,"turnNumber":4,"data":{"winner":"player-1","reason":"Resignation accepted: Game not initialized properly","resignedPlayer":"player-2"}}
+{"timestamp":"2026-02-03T14:39:43.740Z","event":"resignation_adjudicated","round":2,"turnNumber":4,"data":{"player":"player-2","accepted":true,"rulingReason":"Resignation accepted. Game state shows players have no cards in hand, no personal decks, and no starting resources. The deck-building mechanics were not properly initialized - players should have started with 5-card decks and 3 power. Game is unplayable in current state."}}
+{"timestamp":"2026-02-03T14:40:31.116Z","event":"analysis_submitted","round":2,"turnNumber":4,"data":{"file":"playtest-analysis-v1.0-1770129511831.md","version":"v1.0"}}

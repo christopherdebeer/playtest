@@ -1,0 +1,46 @@
+{"timestamp":"2026-02-03T14:38:32.242Z","event":"game_init","data":{"gameId":"road-rally-1770129512239","playerCount":2,"config":"Road Rally"}}
+{"timestamp":"2026-02-03T14:38:57.166Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-03T14:39:06.155Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Speed 5","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:13.242Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Speed 6","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:22.779Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Speed 10","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:28.582Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Turbo Boost","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:36.079Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:39:40.937Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"play_card","card":"Speed 2","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:47.606Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Speed 3","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:52.770Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"play_card","card":"Speed 5","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:39:59.820Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:05.376Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Speed 4","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:40:12.912Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"play_card","card":"Turbo Boost","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:40:18.905Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:26.396Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"play_card","card":"Speed 2","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:40:31.987Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"play_card","card":"Speed 5","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:40:38.224Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:40:47.062Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"play_card","card":"Speed 10","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:40:53.218Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:40:58.404Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"draw","count":7}}
+{"timestamp":"2026-02-03T14:41:07.409Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:13.459Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"play_card","card":"Speed 1","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:20.315Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"play_card","card":"Speed 4","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:24.937Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"play_card","card":"Speed 6","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:33.890Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:41:34.018Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"play_card","card":"Speed 8","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:44.397Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:41:44.531Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"play_card","card":"Speed 2","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:54.210Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"play_card","card":"Speed 6","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:41:54.331Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"play_card","card":"Speed 4","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:42:08.097Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:42:08.247Z","event":"action_executed","round":15,"turnNumber":30,"player":"player-2","data":{"type":"play_card","card":"Speed 6","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:42:19.069Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:42:19.205Z","event":"action_executed","round":16,"turnNumber":32,"player":"player-2","data":{"type":"play_card","card":"Speed 8","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:42:29.312Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:42:29.445Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:42:42.404Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:42:42.555Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"play_card","card":"Speed 9","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:42:57.873Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:42:58.009Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:43:25.545Z","event":"action_executed","round":20,"turnNumber":39,"player":"player-1","data":{"type":"play_card","card":"Nitro Burst","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:43:25.715Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"play_card","card":"Speed 7","effect":{"type":"none"}}}
+{"timestamp":"2026-02-03T14:43:40.742Z","event":"action_executed","round":21,"turnNumber":41,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-03T14:43:40.957Z","event":"action_executed","round":21,"turnNumber":42,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-03T14:57:57.139Z","event":"game_end","round":22,"turnNumber":43,"data":{"winner":"none","reason":"Manual end: agent deadlock due to stop hook bug (player_id undefined). Both agents unable to proceed."}}
+{"timestamp":"2026-02-03T14:58:58.301Z","event":"analysis_submitted","round":22,"turnNumber":43,"data":{"file":"playtest-analysis-v1.0-1770129512239.md","version":"v1.0"}}
