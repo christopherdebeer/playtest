@@ -19,6 +19,28 @@ export const actionPointsMechanic: MechanicHooks = {
   slug: 'action-points',
   name: 'Action Points',
 
+  configSchema: {
+    type: 'object',
+    description: 'Action economy: points per turn, costs per action type',
+    properties: {
+      points_per_turn: {
+        type: 'number',
+        description: 'Action points granted at start of each turn',
+        required: true
+      },
+      action_costs: {
+        type: 'object',
+        description: 'Cost per action type (e.g., { draw: 1, play_card: 1 })'
+      },
+      rollover: {
+        type: 'boolean',
+        description: 'Whether unused AP carries over to next turn',
+        default: false
+      }
+    },
+    required: ['points_per_turn']
+  },
+
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return null;

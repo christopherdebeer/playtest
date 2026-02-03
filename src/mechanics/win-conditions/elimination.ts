@@ -35,6 +35,11 @@ export const eliminationWinMechanic: MechanicHooks = {
   slug: 'win-elimination',
   name: 'Elimination Win Condition',
 
+  configSchema: {
+    type: 'boolean',
+    description: 'Win by being the last player standing'
+  },
+
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
     const winConfig = ctx.config.engine_mechanics?.win_elimination;
 

@@ -36,6 +36,19 @@ export const reachStateWinMechanic: MechanicHooks = {
   slug: 'win-reach-state',
   name: 'Reach State Win Condition',
 
+  configSchema: {
+    type: 'object',
+    description: 'Win by reaching a specific board state',
+    properties: {
+      target_state: {
+        type: 'string',
+        description: 'The board state to reach to win',
+        required: true
+      }
+    },
+    required: ['target_state']
+  },
+
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
     const winConfig = ctx.config.engine_mechanics?.win_reach_state;
 

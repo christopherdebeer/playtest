@@ -17,6 +17,23 @@ export const handManagementMechanic: MechanicHooks = {
   slug: 'hand-management',
   name: 'Hand Management',
 
+  configSchema: {
+    type: 'object',
+    description: 'Hand size limits and discard policies',
+    properties: {
+      hand_limit: {
+        type: 'number',
+        description: 'Maximum cards allowed in hand'
+      },
+      hand_limit_policy: {
+        type: 'string',
+        description: 'Policy when hand limit exceeded',
+        enum: ['cannot_draw', 'discard_choice', 'discard_oldest'],
+        default: 'cannot_draw'
+      }
+    }
+  },
+
   onBeforeDraw(ctx: DrawContext): DrawHookResult | null {
     const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
     if (handLimit === undefined) return null;

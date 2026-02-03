@@ -298,25 +298,23 @@ interface MechanicValidationError {
 }
 ```
 
-**Example usage:**
-```typescript
-export const scoreThresholdWinMechanic: MechanicHooks = {
-  slug: 'win-score-threshold',
-  name: 'Score Threshold Win Condition',
+**Mechanics with configSchema:**
 
-  configSchema: {
-    type: 'object',
-    description: 'Win by reaching a score threshold',
-    properties: {
-      threshold: { type: 'number', required: true },
-      operator: { type: 'string', enum: ['>=', '>', '==', '='], default: '>=' }
-    },
-    required: ['threshold']
-  },
-
-  onCheckWin(ctx) { /* ... */ }
-};
-```
+| Mechanic | Type | Key Properties |
+|----------|------|----------------|
+| `action-points` | object | `points_per_turn`, `action_costs`, `rollover` |
+| `income` | object | `per_turn`, `per_round` |
+| `hand-management` | object | `hand_limit`, `hand_limit_policy` |
+| `push-your-luck` | object | `dice_sides`, `bust_threshold`, `points_per_success` |
+| `set-collection` | object | `sets`, `points_per_set` |
+| `trading` | object | `require_same_location`, `item_types_only`, `allow_gifts` |
+| `open-drafting` | object | `display_size`, `refill` |
+| `variable-player-powers` | object | `assignment`, `powers` |
+| `win-reach-state` | object | `target_state` |
+| `win-score-threshold` | object | `threshold`, `operator` |
+| `win-empty-hand` | boolean | - |
+| `win-elimination` | boolean | - |
+| `win-timeout` | object | `type`, `role`, `role_name`, `reveal_role` |
 
 ## Target Architecture
 
@@ -405,8 +403,19 @@ export const scoreThresholdWinMechanic: MechanicHooks = {
 | `src/mechanics/index.ts` | Register win condition mechanics, export MechanicValidationError |
 | `src/mechanics/types.ts` | Added dependencies, conflicts, configSchema to MechanicHooks |
 | `src/mechanics/registry.ts` | Added validateDependencies, getMechanic methods |
-| `src/mechanics/income.ts` | Added example configSchema |
-| `src/mechanics/win-conditions/score-threshold.ts` | Added example configSchema |
+| `src/mechanics/action-points.ts` | Added configSchema |
+| `src/mechanics/income.ts` | Added configSchema |
+| `src/mechanics/hand-management.ts` | Added configSchema |
+| `src/mechanics/push-your-luck.ts` | Added configSchema |
+| `src/mechanics/set-collection.ts` | Added configSchema |
+| `src/mechanics/trading.ts` | Added configSchema |
+| `src/mechanics/open-drafting.ts` | Added configSchema |
+| `src/mechanics/variable-player-powers.ts` | Added configSchema |
+| `src/mechanics/win-conditions/reach-state.ts` | Added configSchema |
+| `src/mechanics/win-conditions/score-threshold.ts` | Added configSchema |
+| `src/mechanics/win-conditions/empty-hand.ts` | Added configSchema |
+| `src/mechanics/win-conditions/elimination.ts` | Added configSchema |
+| `src/mechanics/win-conditions/timeout-winner.ts` | Added configSchema |
 
 ## Commits This Session
 
@@ -418,4 +427,5 @@ export const scoreThresholdWinMechanic: MechanicHooks = {
 6. `c24bddd` - Migrate board-state, place-card, place-location
 7. `9d3c5f1` - Complete Phase 7 core service extraction
 8. `6fdc2f4` - Phase 8: Win condition mechanics with YAML config
-9. (pending) - Phase 9: Mechanic composition (dependencies, conflicts, configSchema)
+9. `cb26c10` - Phase 9: Mechanic composition infrastructure
+10. (pending) - Phase 9: Add configSchema to all mechanics

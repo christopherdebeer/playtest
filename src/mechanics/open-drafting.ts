@@ -32,6 +32,25 @@ export const openDraftingMechanic: MechanicHooks = {
   slug: 'open-drafting',
   name: 'Open Drafting',
 
+  configSchema: {
+    type: 'object',
+    description: 'Draft cards from a visible display',
+    properties: {
+      display_size: {
+        type: 'number',
+        description: 'Number of cards visible in the draft display',
+        required: true
+      },
+      refill: {
+        type: 'string',
+        description: 'When to refill the display',
+        enum: ['immediate', 'round_end', 'none'],
+        default: 'immediate'
+      }
+    },
+    required: ['display_size']
+  },
+
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'draft') return null;
 

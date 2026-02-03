@@ -45,6 +45,34 @@ export const tradingMechanic: MechanicHooks = {
   slug: 'trading',
   name: 'Trading',
 
+  configSchema: {
+    type: 'object',
+    description: 'Player-to-player trading with configurable constraints',
+    properties: {
+      enabled: {
+        type: 'boolean',
+        description: 'Whether trading is enabled',
+        default: true
+      },
+      require_same_location: {
+        type: 'boolean',
+        description: 'Players must be at same location to trade'
+      },
+      require_adjacent_location: {
+        type: 'boolean',
+        description: 'Players must be at adjacent locations to trade'
+      },
+      item_types_only: {
+        type: 'boolean',
+        description: 'Only cards with type "item" can be traded'
+      },
+      allow_gifts: {
+        type: 'boolean',
+        description: 'Allow one-sided trades (giving without receiving)'
+      }
+    }
+  },
+
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type === 'trade_offer') {
       return validateTradeOffer(ctx, action as TradeOfferAction);

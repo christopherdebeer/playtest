@@ -135,6 +135,39 @@ export const timeoutWinnerMechanic: MechanicHooks = {
   slug: 'win-timeout',
   name: 'Timeout Winner Mechanic',
 
+  configSchema: {
+    type: 'object',
+    description: 'Determine winner when max_rounds is reached',
+    properties: {
+      type: {
+        type: 'string',
+        description: 'How to determine winner',
+        enum: ['highest_score', 'role', 'specific_player', 'no_winner'],
+        default: 'highest_score'
+      },
+      role: {
+        type: 'string',
+        description: 'For "role" type: objective type that wins'
+      },
+      role_name: {
+        type: 'string',
+        description: 'For "role" type: objective name that wins'
+      },
+      reveal_role: {
+        type: 'boolean',
+        description: 'Whether to reveal winner\'s hidden role'
+      },
+      player_condition: {
+        type: 'string',
+        description: 'For "specific_player" type: condition to evaluate'
+      },
+      reason: {
+        type: 'string',
+        description: 'For "no_winner" type: custom reason message'
+      }
+    }
+  },
+
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
     // Only respond to timeout trigger
     if (ctx.trigger !== 'timeout') return null;

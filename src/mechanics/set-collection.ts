@@ -68,6 +68,23 @@ export const setCollectionMechanic: MechanicHooks = {
   slug: 'set-collection',
   name: 'Set Collection',
 
+  configSchema: {
+    type: 'object',
+    description: 'Collect matching sets of cards for points/effects',
+    properties: {
+      sets: {
+        type: 'array',
+        description: 'Set definitions with size, match_field, and point values',
+        required: true
+      },
+      points_per_set: {
+        type: 'number',
+        description: 'Default points awarded per completed set'
+      }
+    },
+    required: ['sets']
+  },
+
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'collect_set') return null;
 

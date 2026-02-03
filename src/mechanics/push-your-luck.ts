@@ -32,6 +32,33 @@ export const pushYourLuckMechanic: MechanicHooks = {
   slug: 'push-your-luck',
   name: 'Push Your Luck',
 
+  configSchema: {
+    type: 'object',
+    description: 'Risk/reward dice rolling with banking',
+    properties: {
+      dice_sides: {
+        type: 'number',
+        description: 'Number of sides on the dice',
+        required: true
+      },
+      bust_threshold: {
+        type: 'number',
+        description: 'Roll at or below this value to bust',
+        required: true
+      },
+      points_per_success: {
+        type: 'number',
+        description: 'Points awarded per successful roll',
+        required: true
+      },
+      max_rolls: {
+        type: 'number',
+        description: 'Maximum rolls per turn (optional)'
+      }
+    },
+    required: ['dice_sides', 'bust_threshold', 'points_per_success']
+  },
+
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'roll' && action.type !== 'bank') return null;
 

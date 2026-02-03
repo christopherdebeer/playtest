@@ -24,6 +24,25 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
   slug: 'variable-player-powers',
   name: 'Variable Player Powers',
 
+  configSchema: {
+    type: 'object',
+    description: 'Assign unique powers/abilities to each player',
+    properties: {
+      assignment: {
+        type: 'string',
+        description: 'How powers are assigned',
+        enum: ['random', 'fixed'],
+        required: true
+      },
+      powers: {
+        type: 'array',
+        description: 'Available powers with id, name, and description',
+        required: true
+      }
+    },
+    required: ['assignment', 'powers']
+  },
+
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const powersConfig = ctx.config.engine_mechanics?.variable_powers as VariablePowersConfig | undefined;
     if (!powersConfig) return null;

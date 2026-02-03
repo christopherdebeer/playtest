@@ -25,6 +25,11 @@ export const emptyHandWinMechanic: MechanicHooks = {
   slug: 'win-empty-hand',
   name: 'Empty Hand Win Condition',
 
+  configSchema: {
+    type: 'boolean',
+    description: 'Win by emptying your hand'
+  },
+
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {
     const winConfig = ctx.config.engine_mechanics?.win_empty_hand;
 
