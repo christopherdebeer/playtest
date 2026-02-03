@@ -207,6 +207,14 @@ export interface EngineMechanics {
 
   // Phase 3: Dynamic Turn Order
   turn_order_random?: TurnOrderRandomConfig;  // Randomize turn order at trigger points
+  turn_order_stat_based?: TurnOrderStatBasedConfig;  // Order by player stat
+  turn_order_progressive?: TurnOrderProgressiveConfig;  // Snake draft order
+
+  // Phase 4: Visibility (extended)
+  hidden_victory_points?: HiddenVictoryPointsConfig;  // Hidden scores until end
+
+  // Phase 2: Dice (extended)
+  rerolling?: RerollingConfig;                // Yahtzee-style re-roll and lock
 
   // Phase 5: Voting & Social
   voting?: VotingMechanicConfig;              // Democratic decision-making
@@ -769,6 +777,35 @@ export interface VotingEffectConfig {
   state?: string;                                   // State to set
 }
 
+// Re-Rolling and Locking mechanic (Phase 2)
+export interface RerollingConfig {
+  dice_count?: number;                              // Number of dice to roll
+  dice_sides?: number;                              // Sides per die (default: 6)
+  max_rerolls?: number;                             // Max re-rolls per turn (default: 2)
+  auto_lock_on_max?: boolean;                       // Auto-lock when max reached
+}
+
+// Turn Order: Stat-Based mechanic (Phase 3)
+export interface TurnOrderStatBasedConfig {
+  stat?: string;                                    // Stat to sort by (score, resources.gold, etc.)
+  descending?: boolean;                             // Higher values first (default: true)
+  trigger?: 'game_start' | 'round_start' | 'both'; // When to reorder
+}
+
+// Turn Order: Progressive mechanic (Phase 3)
+export interface TurnOrderProgressiveConfig {
+  reverse_each_round?: boolean;                     // Reverse order each round (default: true)
+  reverse_on_tie?: boolean;                         // Reverse when scores are tied
+}
+
+// Hidden Victory Points mechanic (Phase 4)
+export interface HiddenVictoryPointsConfig {
+  reveal_at_end?: boolean;                          // Reveal all scores at game end (default: true)
+  reveal_threshold?: number;                        // Reveal when any player reaches this score
+  show_relative?: boolean;                          // Show relative position instead of exact
+  reveal_own?: boolean;                             // Players can see own score (default: true)
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -931,7 +968,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice';
 
 export interface BaseAction {
   type: ActionType;
@@ -1065,6 +1102,19 @@ export interface VoteAction extends BaseAction {
   voteId?: string;                   // Optional: specific vote session ID
 }
 
+// Re-rolling and Locking actions (Phase 2)
+export interface LockDiceAction extends BaseAction {
+  type: 'lock_dice';
+  diceIndex: number;                 // Index of die to lock
+  value?: number;                    // Current value (for display)
+}
+
+export interface UnlockDiceAction extends BaseAction {
+  type: 'unlock_dice';
+  diceIndex: number;                 // Index of die to unlock
+  value?: number;                    // Current value (for display)
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -1113,7 +1163,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction;
 
 // Action validation result
 export interface ActionValidationResult {

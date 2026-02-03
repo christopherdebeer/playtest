@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 41 of 192 mechanics (21%)**
+**Implemented: 45 of 192 mechanics (23%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -16,15 +16,15 @@
 | Cards | 10 | 15 | 67% |
 | Conflict | 0 | 8 | 0% |
 | Cooperative | 0 | 10 | 0% |
-| Dice | 2 | 6 | 33% |
+| Dice | 3 | 6 | 50% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
-| Information | 2 | 8 | 25% |
+| Information | 3 | 8 | 38% |
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
 | Social | 1 | 11 | 9% |
-| Turn Order | 1 | 8 | 13% |
+| Turn Order | 3 | 8 | 38% |
 | Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
 
@@ -60,6 +60,20 @@
 | Mechanic | Category | Description |
 |----------|----------|-------------|
 | `turn-order-random` | Turn Order | Randomize turn order at round/game start |
+| `turn-order-stat-based` | Turn Order | Order by player stat (score, resources) |
+| `turn-order-progressive` | Turn Order | Snake draft order (reverse each round) |
+
+### Recently Implemented (Phase 4 - Continued)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `hidden-victory-points` | Information | Hidden scores until game end |
+
+### Recently Implemented (Phase 2 - Continued)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `re-rolling-and-locking` | Dice | Yahtzee-style keep/re-roll mechanics |
 
 ### Recently Implemented (Phase 5)
 
@@ -228,6 +242,12 @@ onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 |----------|-------------|--------|
 | `dice-rolling` | Core dice rolling with modifiers | ✅ Implemented |
 
+### Implemented Mechanics (from Unlocked)
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `re-rolling-and-locking` | Yahtzee-style dice selection | ✅ Implemented |
+
 ### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
@@ -235,7 +255,6 @@ onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 | `different-dice-movement` | Dice determine movement options |
 | `die-icon-resolution` | Symbol-based dice effects |
 | `roll-spin-and-move` | Classic board game movement |
-| `re-rolling-and-locking` | Yahtzee-style dice selection |
 
 ---
 
@@ -286,6 +305,13 @@ onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 |----------|-------------|--------|
 | `turn-order-random` | Randomize turn order at round/game start | ✅ Implemented |
 
+### Implemented Mechanics (from Unlocked)
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `turn-order-stat-based` | Order by player stat | ✅ Implemented |
+| `turn-order-progressive` | Snake draft order | ✅ Implemented |
+
 ### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
@@ -293,8 +319,6 @@ onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 | `turn-order-auction` | Bid for turn position |
 | `turn-order-claim-action` | Take action to claim position |
 | `turn-order-pass-order` | Pass order from previous round |
-| `turn-order-progressive` | Snake draft order |
-| `turn-order-stat-based` | Order by player stat |
 | `turn-order-time-track` | Time-based order |
 | `turn-order-role-order` | Role determines order |
 
@@ -334,12 +358,17 @@ canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): 
 | `hidden-roles` | Secret role assignment | ✅ Implemented |
 | `traitor-game` | Hidden traitor role | ✅ Implemented |
 
+### Implemented Mechanics (from Unlocked)
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `hidden-victory-points` | Secret scoring | ✅ Implemented |
+
 ### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
 | `hidden-movement` | Hidden player positions |
-| `hidden-victory-points` | Secret scoring |
 | `deduction` | Deduce hidden information |
 | `memory` | Remember revealed info |
 | `targeted-clues` | Give clues about hidden info |
@@ -563,17 +592,19 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 | Phase | Complexity | New Hooks | Mechanics Unlocked | Cumulative Total | Status |
 |-------|------------|-----------|-------------------|------------------|--------|
 | 1 | Low | 0 | 18 | 36 (19%) | 83% |
-| 2 | Low | 2 | 1 (+4 unlocked) | 39 (20%) | ✅ **Done** |
-| 3 | Medium | 2 | 1 (+7 unlocked) | 40 (21%) | ✅ **Done** |
-| 4 | Medium | 3 | 2 (+6 unlocked) | 40 (21%) | ✅ **Done** |
-| 5 | Medium | 2 | 1 (+5 unlocked) | 41 (21%) | ✅ **Done** |
-| 6 | High | 6 | 8 | 49 (26%) | Next |
-| 7 | High | 5 | 3 | 52 (27%) | Pending |
-| 8 | High | 5 | 10 | 62 (32%) | Pending |
+| 2 | Low | 2 | 2 (+3 unlocked) | 40 (21%) | ✅ **Done** |
+| 3 | Medium | 2 | 3 (+5 unlocked) | 43 (22%) | ✅ **Done** |
+| 4 | Medium | 3 | 3 (+5 unlocked) | 43 (22%) | ✅ **Done** |
+| 5 | Medium | 2 | 1 (+5 unlocked) | 45 (23%) | ✅ **Done** |
+| 6 | High | 6 | 8 | 53 (28%) | Next |
+| 7 | High | 5 | 3 | 56 (29%) | Pending |
+| 8 | High | 5 | 10 | 66 (34%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
-**Phase 2 Progress**: 1 of 5 mechanics implemented (20%) - Dice infrastructure complete
-**Phase 3 Progress**: 1 of 8 mechanics implemented (13%) - Turn order infrastructure complete
+**Phase 2 Progress**: 2 of 5 mechanics implemented (40%) - Dice infrastructure complete
+**Phase 3 Progress**: 3 of 8 mechanics implemented (38%) - Turn order infrastructure complete
+**Phase 4 Progress**: 3 of 8 mechanics implemented (38%) - Visibility infrastructure complete
+**Phase 5 Progress**: 1 of 6 mechanics implemented (17%) - Voting infrastructure complete
 **Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
 **Phase 5 Progress**: 1 of 6 mechanics implemented (17%) - Voting infrastructure complete
 **Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
