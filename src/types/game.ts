@@ -207,6 +207,9 @@ export interface EngineMechanics {
 
   // Phase 3: Dynamic Turn Order
   turn_order_random?: TurnOrderRandomConfig;  // Randomize turn order at trigger points
+
+  // Phase 5: Voting & Social
+  voting?: VotingMechanicConfig;              // Democratic decision-making
 }
 
 // Proposal 007: Grid configuration
@@ -740,6 +743,32 @@ export interface TurnOrderRandomConfig {
   keep_current?: boolean;                           // Keep current player in position
 }
 
+// Voting mechanic (Phase 5: Voting & Social)
+export interface VotingMechanicConfig {
+  type?: 'majority' | 'plurality' | 'unanimous';    // Voting type
+  allowAbstain?: boolean;                           // Allow abstaining
+  secret?: boolean;                                 // Secret ballot
+  tiebreaker?: 'random' | 'current_player' | 'none' | 'revote';  // Tie resolution
+  topics?: VotingTopicConfig[];                     // Predefined voting topics
+}
+
+export interface VotingTopicConfig {
+  id: string;                                       // Topic identifier
+  name: string;                                     // Display name
+  description?: string;                             // Topic description
+  validChoices?: (string | number)[];               // Valid choices (or 'players' for player elimination)
+  choiceType?: 'players' | 'custom';                // Type of choices
+  effect?: VotingEffectConfig;                      // Effect of winning choice
+}
+
+export interface VotingEffectConfig {
+  type: 'eliminate' | 'resource' | 'state' | 'custom';  // Effect type
+  target?: 'winner' | 'loser' | 'all';              // Who is affected
+  resource?: string;                                // Resource to modify
+  amount?: number;                                  // Amount to modify
+  state?: string;                                   // State to set
+}
+
 export interface GameConfig {
   name: string;
   version: string;
@@ -902,7 +931,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote';
 
 export interface BaseAction {
   type: ActionType;
@@ -1029,6 +1058,13 @@ export interface TravelAction extends BaseAction {
   route?: string;                    // Optional: specific route to use
 }
 
+// Voting action (Phase 5)
+export interface VoteAction extends BaseAction {
+  type: 'vote';
+  choice: string | number | null;    // Vote choice (null = abstain)
+  voteId?: string;                   // Optional: specific vote session ID
+}
+
 // ============ State Cards (Game-Agnostic Board Placement) ============
 
 /**
@@ -1077,7 +1113,7 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction;
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction;
 
 // Action validation result
 export interface ActionValidationResult {

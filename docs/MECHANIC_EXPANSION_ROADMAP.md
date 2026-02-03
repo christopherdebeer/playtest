@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 40 of 192 mechanics (21%)**
+**Implemented: 41 of 192 mechanics (21%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -23,7 +23,7 @@
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
-| Social | 0 | 11 | 0% |
+| Social | 1 | 11 | 9% |
 | Turn Order | 1 | 8 | 13% |
 | Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
@@ -61,9 +61,15 @@
 |----------|----------|-------------|
 | `turn-order-random` | Turn Order | Randomize turn order at round/game start |
 
+### Recently Implemented (Phase 5)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `voting` | Social | Democratic decision-making (majority/plurality/unanimous) |
+
 ## Existing Hook Infrastructure
 
-31 hooks are currently available:
+33 hooks are currently available:
 
 ### Action & Validation
 - `preValidateAction(ctx, action)` - Block invalid actions
@@ -115,6 +121,10 @@
 ### Turn Order (Phase 3)
 - `onDetermineTurnOrder(ctx)` - Provide custom turn order
 - `onPassPriority(ctx)` - Handle pass/claim priority
+
+### Voting & Social (Phase 5)
+- `onVoteCast(ctx)` - Intercept/modify vote casting
+- `onVoteTally(ctx)` - Custom tally logic/tiebreakers
 
 ---
 
@@ -337,38 +347,74 @@ canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): 
 
 ---
 
-## Phase 5: Voting & Social (2 New Hooks)
+## Phase 5: Voting & Social (2 New Hooks) ✅ IMPLEMENTED
 
-**New Core Service**: `src/mechanics/core/social.ts`
+**Core Service**: `src/mechanics/core/social.ts`
 
-### New Hooks
+### Hooks (Implemented)
 
 ```typescript
 interface VoteContext {
   state: GameState;
   playerId: string;
   topic: string;
-  choice: string | number;
+  voteId: string;
+  choice: string | number | null;
   config: GameConfig;
+}
+
+interface VoteCastResult {
+  choice?: string | number | null;
+  blocked?: boolean;
+  blockReason?: string;
+  stateChanges?: StateChanges;
 }
 
 interface VoteTallyContext {
   state: GameState;
   topic: string;
-  votes: Record<string, string | number>;
+  voteId: string;
+  votes: Record<string, string | number | null>;
   config: GameConfig;
 }
 
-// Add to MechanicHooks:
-onVoteCast?(ctx: VoteContext): StateChanges | null;
-onVoteTally?(ctx: VoteTallyContext): { winner: string; tiebreaker?: string } | null;
+interface VoteTallyResult {
+  winner: string | number | null;
+  tied?: boolean;
+  tiedChoices?: (string | number)[];
+  tiebreakerUsed?: string;
+  stateChanges?: StateChanges;
+}
+
+// Added to MechanicHooks:
+onVoteCast?(ctx: VoteContext): VoteCastResult | null;
+onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
 ```
 
-### Unlocked Mechanics
+### Core Functions Added
+
+- `startVoting(state, topic, eligibleVoters, config)` - Start voting session
+- `castVote(state, voteId, playerId, choice)` - Cast a vote
+- `getActiveVotingSession(state)` - Get current voting session
+- `getVotingSession(state, voteId)` - Get session by ID
+- `hasVoted(state, playerId, voteId)` - Check if player voted
+- `getPendingVoters(state, voteId)` - Get players who haven't voted
+- `isVotingComplete(state, voteId)` - Check if voting is done
+- `getVotingResult(state, voteId)` - Get voting result
+- `completeVoting(state, voteId)` - Force-complete voting
+- `getVoteCounts(state, voteId)` - Get current vote counts
+- `validateVoteAction(state, playerId, choice, voteId)` - Validate vote
+
+### Implemented Mechanics
+
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `voting` | Democratic decision-making (majority/plurality/unanimous) | ✅ Implemented |
+
+### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
-| `voting` | Majority voting system |
 | `negotiation` | Binding/non-binding agreements |
 | `player-judge` | Player judges submissions |
 | `i-cut-you-choose` | Division mechanic |
@@ -520,14 +566,16 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 | 2 | Low | 2 | 1 (+4 unlocked) | 39 (20%) | ✅ **Done** |
 | 3 | Medium | 2 | 1 (+7 unlocked) | 40 (21%) | ✅ **Done** |
 | 4 | Medium | 3 | 2 (+6 unlocked) | 40 (21%) | ✅ **Done** |
-| 5 | Medium | 2 | 6 | 46 (24%) | Next |
-| 6 | High | 6 | 8 | 54 (28%) | Pending |
-| 7 | High | 5 | 3 | 57 (30%) | Pending |
-| 8 | High | 5 | 10 | 67 (35%) | Pending |
+| 5 | Medium | 2 | 1 (+5 unlocked) | 41 (21%) | ✅ **Done** |
+| 6 | High | 6 | 8 | 49 (26%) | Next |
+| 7 | High | 5 | 3 | 52 (27%) | Pending |
+| 8 | High | 5 | 10 | 62 (32%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
 **Phase 2 Progress**: 1 of 5 mechanics implemented (20%) - Dice infrastructure complete
 **Phase 3 Progress**: 1 of 8 mechanics implemented (13%) - Turn order infrastructure complete
+**Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
+**Phase 5 Progress**: 1 of 6 mechanics implemented (17%) - Voting infrastructure complete
 **Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
 
 ---
@@ -552,11 +600,13 @@ These mechanics require physical components or real-time elements unsuitable for
 1. ~~**Create `core/visibility.ts`** - Enable hidden information games~~ ✅ Done
 2. ~~**Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)~~ ✅ Done
 3. ~~**Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)~~ ✅ Done
-4. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
-5. **Implement remaining Phase 3 mechanics** - turn-order-auction, turn-order-stat-based, etc.
-6. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
-7. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
-8. **Create `core/social.ts`** - Enable voting & negotiation (Phase 5)
+4. ~~**Create `core/social.ts`** - Enable voting & negotiation (Phase 5)~~ ✅ Done
+5. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
+6. **Implement remaining Phase 3 mechanics** - turn-order-auction, turn-order-stat-based, etc.
+7. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
+8. **Implement remaining Phase 5 mechanics** - negotiation, player-judge, bribery, etc.
+9. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
+10. **Create `core/combat.ts`** - Enable combat mechanics (Phase 6)
 
 ---
 
