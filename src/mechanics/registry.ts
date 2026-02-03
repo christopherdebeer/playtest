@@ -41,6 +41,7 @@ import {
 } from './types.js';
 import { Effect } from '../types/game.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
+import { logEvent } from '../core/game.js';
 
 /**
  * Error returned when validating mechanic dependencies/conflicts
@@ -210,19 +211,60 @@ class MechanicRegistry {
    * Returns first validation failure, or { valid: true } if all pass.
    */
   preValidateAction(state: GameState, playerId: string, action: GameAction): ValidationResult {
+    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
+    const startTime = telemetryEnabled ? performance.now() : 0;
+
     const ctx = this.createContext(state, playerId);
     const enabledMechanics = this.getEnabledMechanics(state.config);
+    const respondingMechanics: string[] = [];
+    let finalResult: ValidationResult = { valid: true };
 
     for (const mechanic of enabledMechanics) {
       if (mechanic.preValidateAction) {
+        const mechanicStart = telemetryEnabled ? performance.now() : 0;
         const result = mechanic.preValidateAction(ctx, action);
-        if (result && !result.valid) {
-          return result;
+
+        if (result) {
+          respondingMechanics.push(mechanic.slug);
+
+          if (telemetryEnabled) {
+            logEvent(state, {
+              event: 'mechanic_response',
+              player: playerId,
+              data: {
+                mechanic: mechanic.slug,
+                hook: 'preValidateAction',
+                response_type: result.valid ? 'allowed' : 'blocked',
+                duration_ms: performance.now() - mechanicStart,
+                response_data: result
+              }
+            });
+          }
+
+          if (!result.valid) {
+            finalResult = result;
+            break;
+          }
         }
       }
     }
 
-    return { valid: true };
+    if (telemetryEnabled) {
+      logEvent(state, {
+        event: 'hook_invoked',
+        player: playerId,
+        data: {
+          hook: 'preValidateAction',
+          action_type: action.type,
+          enabled_mechanics: enabledMechanics.map(m => m.slug),
+          responding_mechanics: respondingMechanics,
+          duration_ms: performance.now() - startTime,
+          result: finalResult.valid ? 'allowed' : 'blocked'
+        }
+      });
+    }
+
+    return finalResult;
   }
 
   /**
@@ -408,20 +450,61 @@ class MechanicRegistry {
    * Returns the first mechanic's result that handles the action, or null.
    */
   executeAction(state: GameState, playerId: string, action: GameAction): ActionExecutionResult | null {
+    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
+    const startTime = telemetryEnabled ? performance.now() : 0;
+
     const baseCtx = this.createContext(state, playerId);
     const ctx: ActionExecutionContext = { ...baseCtx, action };
     const enabledMechanics = this.getEnabledMechanics(state.config);
+    const respondingMechanics: string[] = [];
+    let handlerResult: ActionExecutionResult | null = null;
 
     for (const mechanic of enabledMechanics) {
       if (mechanic.onExecuteAction) {
+        const mechanicStart = telemetryEnabled ? performance.now() : 0;
         const result = mechanic.onExecuteAction(ctx);
-        if (result?.handled) {
-          return result;
+
+        if (result) {
+          respondingMechanics.push(mechanic.slug);
+
+          if (telemetryEnabled && result.handled) {
+            logEvent(state, {
+              event: 'mechanic_response',
+              player: playerId,
+              data: {
+                mechanic: mechanic.slug,
+                hook: 'onExecuteAction',
+                response_type: 'state_changes',
+                duration_ms: performance.now() - mechanicStart,
+                response_data: { handled: true, advanceTurn: result.advanceTurn, checkWin: result.checkWin }
+              }
+            });
+          }
+
+          if (result.handled) {
+            handlerResult = result;
+            break;
+          }
         }
       }
     }
 
-    return null;
+    if (telemetryEnabled) {
+      logEvent(state, {
+        event: 'hook_invoked',
+        player: playerId,
+        data: {
+          hook: 'onExecuteAction',
+          action_type: action.type,
+          enabled_mechanics: enabledMechanics.map(m => m.slug),
+          responding_mechanics: respondingMechanics,
+          duration_ms: performance.now() - startTime,
+          result: handlerResult ? 'modified' : 'no_response'
+        }
+      });
+    }
+
+    return handlerResult;
   }
 
   /**

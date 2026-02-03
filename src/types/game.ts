@@ -269,6 +269,9 @@ export interface GameConfig {
   board?: BoardConfig;
   mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
   engine_mechanics?: EngineMechanics;  // Enable/disable engine capabilities
+  engine_debug?: {
+    hook_telemetry?: boolean;  // Enable hook telemetry logging
+  };
   [key: string]: unknown;  // game-specific config
 }
 
