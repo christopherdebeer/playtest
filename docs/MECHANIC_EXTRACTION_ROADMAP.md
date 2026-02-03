@@ -154,8 +154,8 @@ interface MechanicHooks {
 | **Trading** | 2795-2927 | Trade creation, card transfer | ✅ Migrated |
 | **Open Drafting** | 3283-3334 | Card draft from display | ✅ Migrated |
 | **Take-That Effects** | 2323-2360 | Effect application to targets | Pending - use `postExecuteAction` |
-| **Board Movement** | 2540-2670 | State transitions, placed card effects | Pending - use `onExecuteAction` |
-| **Place Card/Location** | 2675-2790 | Card/location placement | Pending - use `onExecuteAction` |
+| **Board Movement** | 2540-2670 | State transitions, placed card effects | ✅ Migrated |
+| **Place Card/Location** | 2675-2790 | Card/location placement | ✅ Migrated |
 
 ### Medium Priority (Partially Extracted)
 
@@ -168,7 +168,7 @@ interface MechanicHooks {
 
 ## Path Forward
 
-### Phase 6: Migrate Remaining Mechanics to onExecuteAction (In Progress)
+### Phase 6: Migrate Remaining Mechanics to onExecuteAction (Complete)
 
 Mechanics migrated to full `onExecuteAction` pattern:
 
@@ -178,9 +178,9 @@ Mechanics migrated to full `onExecuteAction` pattern:
 | `set-collection` | `collect_set` | ✅ Complete |
 | `trading` | `trade_offer`, `trade_respond` | ✅ Complete |
 | `open-drafting` | `draft` | ✅ Complete |
-| `board-state` | `move` | Pending |
-| `place-card` | `place_card` | Pending |
-| `place-location` | `place_location` | Pending |
+| `board-state` | `move` | ✅ Complete |
+| `place-card` | `place_card` | ✅ Complete |
+| `place-location` | `place_location` | ✅ Complete |
 
 Each migration follows the push-your-luck pattern:
 1. Add `onExecuteAction` to handle the action
@@ -359,6 +359,9 @@ class MechanicRegistry {
 | `src/mechanics/set-collection.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/trading.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/open-drafting.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/board-state.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/place-card.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
+| `src/mechanics/place-location.ts` | Full migration: onExecuteAction, getAvailableActions, describeAction |
 | `src/mechanics/core/card-piles.ts` | Added hooks (onBeforeDraw, onAfterDraw, onDiscard) |
 | `src/mechanics/core/hand.ts` | Added hooks (onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand) |
 | `src/core/game.ts` | Updated to use core services with playerId for hooks |
@@ -369,4 +372,5 @@ class MechanicRegistry {
 2. `6793899` - Core operation hooks
 3. `240afb7` - Turn lifecycle and win condition hooks
 4. `41cac14` - Action execution and registration hooks
-5. (pending) - Migrate set-collection, trading, open-drafting
+5. `b387a35` - Migrate set-collection, trading, open-drafting
+6. (pending) - Migrate board-state, place-card, place-location
