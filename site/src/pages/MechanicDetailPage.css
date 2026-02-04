@@ -4,7 +4,19 @@
 }
 
 .mechanic-article {
-  max-width: 800px;
+  max-width: 900px;
+}
+
+.loading-state,
+.error-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.error-state h1 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
 }
 
 .mechanic-header {
@@ -113,12 +125,17 @@
   line-height: 1.6;
 }
 
+/* Implementation Info Section */
 .implementation-info {
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: var(--bg-secondary);
   border-radius: 8px;
   border: 1px solid var(--border);
+}
+
+.implementation-info.partial {
+  border-left: 4px solid #f59e0b;
 }
 
 .implementation-info h2 {
@@ -159,6 +176,143 @@
   width: fit-content;
 }
 
+/* Config Schema */
+.config-schema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.config-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.config-option code {
+  background: none;
+  padding: 0;
+  color: var(--accent);
+}
+
+.config-type {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Hooks List */
+.hooks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hook-name {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+/* Dependencies */
+.dep-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.dep-link,
+.conflict-link {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.dep-link {
+  color: var(--accent);
+}
+
+.conflict-link {
+  color: #ef4444;
+}
+
+/* Source Code Section */
+.source-code-section {
+  margin-bottom: 2rem;
+}
+
+.source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.source-header h2 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.source-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.source-file {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.expand-toggle {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.expand-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.source-code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.source-code.expanded {
+  max-height: none;
+}
+
+.source-code code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--text-secondary);
+  white-space: pre;
+}
+
+/* Games Using Section */
 .games-using {
   margin-bottom: 2rem;
 }
@@ -190,6 +344,17 @@
 .games-list .game-link:hover {
   border-color: var(--accent);
   background: var(--bg-tertiary);
+}
+
+/* Description Section */
+.mechanic-description-section {
+  margin-bottom: 2rem;
+}
+
+.mechanic-description-section h2 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
 }
 
 /* Markdown content styling */
@@ -320,6 +485,12 @@
 @media (max-width: 640px) {
   .mechanic-header h1 {
     font-size: 1.5rem;
+  }
+
+  .source-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 
   .mechanic-content.markdown-body {
