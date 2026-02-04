@@ -626,7 +626,7 @@ engine_mechanics:
 | Phase 8 | Auctions (5 hooks) | Planned |
 
 **Agnosticism Hooks (Complete):**
-- `initSharedState` - Used by open-drafting
+- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading
 - `getPlayerView` - Used by push-your-luck
 - `isPlayerBlocked` - Used by lose-a-turn
 - `canPlayerActNow` - Used by freeplay (enables parallel play)
@@ -719,10 +719,10 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Migration | Mechanic(s) to Update | game.ts Lines to Remove | Status |
 |-----------|----------------------|------------------------|--------|
 | Effect type handling | location-effects, placed-card-effects | ~100 | **Done** |
-| Card type handling (wild) | card-matching (new) | ~80 | **In Progress** |
+| Card type handling (wild) | card-matching (new) | ~80 | **Done** |
 | Action schema validation | All action-owning mechanics | ~150 | Pending |
-| Deck-building supply init | deck-building | ~5 | Pending |
-| Trading shared state | trading | ~10 | Pending |
+| Deck-building supply init | deck-building | ~5 | **Done** |
+| Trading shared state | trading | ~10 | **Done** |
 | Auction shared state | auction-english | ~10 | Pending |
 
 #### Card Matching Mechanic Design
