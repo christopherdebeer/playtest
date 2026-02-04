@@ -72,11 +72,11 @@ function isDeckBuildingConfig(config: unknown): config is DeckBuildingConfig {
   );
 }
 
-function getCardCost(pile: SupplyPile): Record<string, number> {
+function getCardCost(pile: SupplyPile, currency: string = 'coins'): Record<string, number> {
   if (typeof pile.cost === 'number') {
-    return { coins: pile.cost };
+    return { [currency]: pile.cost };
   }
-  return pile.cost || { coins: 0 };
+  return pile.cost || { [currency]: 0 };
 }
 
 function canAfford(
@@ -229,7 +229,7 @@ export const deckBuildingMechanic: MechanicHooks = {
       }
 
       // Check cost
-      const cost = getCardCost(pile);
+      const cost = getCardCost(pile, dbConfig.currency);
       const affordCheck = canAfford(ctx, cost, dbConfig);
       if (!affordCheck.affordable) {
         return { valid: false, error: affordCheck.reason };
@@ -291,7 +291,7 @@ export const deckBuildingMechanic: MechanicHooks = {
       );
 
       const pile = supply[pileIndex];
-      const cost = getCardCost(pile);
+      const cost = getCardCost(pile, dbConfig.currency);
 
       // Create the acquired card
       const cardsAcquired = ((player.deckCardsAcquired as number) || 0) + 1;
@@ -445,7 +445,7 @@ export const deckBuildingMechanic: MechanicHooks = {
     for (const pile of supply) {
       if (pile.count <= 0) continue;
 
-      const cost = getCardCost(pile);
+      const cost = getCardCost(pile, dbConfig.currency);
       const affordCheck = canAfford(ctx, cost, dbConfig);
       if (!affordCheck.affordable) continue;
 
