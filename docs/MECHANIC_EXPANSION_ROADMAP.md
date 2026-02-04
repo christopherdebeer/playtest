@@ -10,25 +10,25 @@
 
 ## Current State
 
-**Implemented: 52 of 192 mechanics (27%)**
+**Implemented: 74 of 192 mechanics (38%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
 | Action | 1 | 7 | 14% |
-| Auction | 1 | 12 | 8% |
+| Auction | 3 | 12 | 25% |
 | Building | 1 | 11 | 9% |
 | Cards | 10 | 15 | 67% |
-| Conflict | 0 | 8 | 0% |
+| Conflict | 8 | 8 | 100% |
 | Cooperative | 0 | 10 | 0% |
-| Dice | 5 | 6 | 83% |
+| Dice | 6 | 6 | 100% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
-| Information | 5 | 8 | 63% |
+| Information | 9 | 8 | 113% |
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
-| Social | 3 | 11 | 27% |
-| Turn Order | 4 | 8 | 50% |
+| Social | 6 | 11 | 55% |
+| Turn Order | 8 | 8 | 100% |
 | Victory | 6 | 5 | 120% |
 | Worker Placement | 0 | 7 | 0% |
 
@@ -96,6 +96,38 @@
 | `turn-order-pass-order` | Turn Order | First to pass goes first next round (Agricola, Caylus) |
 | `hidden-movement` | Information | Hidden player positions (Scotland Yard, Fury of Dracula) |
 | `hidden-objectives` | Information | Secret objective distribution (AAOTE) - Proposal 012 |
+
+### Recently Implemented (Phase 1-5 Expansion - 14 mechanics)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `auction-sealed-bid` | Auction | Sealed simultaneous bidding (blind auctions) |
+| `auction-once-around` | Auction | Single bid opportunity per player |
+| `die-icon-resolution` | Dice | Symbol-based dice with effect resolution |
+| `turn-order-auction` | Turn Order | Bid for turn position |
+| `turn-order-claim-action` | Turn Order | Claim turn positions through actions |
+| `turn-order-time-track` | Turn Order | Time track based order (Thebes, Tokaido) |
+| `turn-order-role-order` | Turn Order | Role determines turn sequence |
+| `deduction` | Information | Clue gathering and logical deduction (Clue, Cryptid) |
+| `memory` | Information | Remember revealed information |
+| `targeted-clues` | Information | Give clues to specific players (Hanabi) |
+| `roles-with-asymmetric-information` | Information | Different info per role |
+| `player-judge` | Social | One player judges submissions (Apples to Apples) |
+| `i-cut-you-choose` | Social | Fair division mechanic |
+| `bribery` | Social | Pay to influence other players
+
+### Recently Implemented (Phase 6 - Combat System - 8 mechanics)
+
+| Mechanic | Category | Description |
+|----------|----------|-------------|
+| `critical-hits-and-failures` | Conflict | Special outcomes for extreme combat rolls |
+| `zone-of-control` | Conflict | Units project control blocking enemy movement |
+| `ratio-combat-results-table` | Conflict | Classic wargame CRT combat resolution |
+| `force-commitment` | Conflict | Commit forces before combat resolution |
+| `area-impulse` | Conflict | Impulse-based unit activation system |
+| `chit-pull-system` | Conflict | Random chit activation for turn order |
+| `secret-unit-deployment` | Conflict | Face-down hidden unit placement |
+| `kill-steal` | Conflict | Rewards for landing final blows |
 
 ### Proposal 012 Engine Fixes (AAOTE Playtest)
 
@@ -195,8 +227,8 @@ These 18 mechanics can be implemented immediately using existing hooks:
 
 | Mechanic | Hooks to Use | Implementation Notes |
 |----------|--------------|---------------------|
-| `auction-sealed-bid` | `preValidateAction`, `onTurnEnd` | Reveal bids at round end |
-| `auction-once-around` | `preValidateAction`, turn hooks | One bid per player per auction |
+| ~~`auction-sealed-bid`~~ | ~~`preValidateAction`, `onTurnEnd`~~ | ✅ Implemented - Sealed simultaneous bidding |
+| ~~`auction-once-around`~~ | ~~`preValidateAction`, turn hooks~~ | ✅ Implemented - Single bid opportunity per player |
 
 ### Dice Mechanics
 
@@ -275,13 +307,13 @@ onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
 |----------|-------------|--------|
 | `re-rolling-and-locking` | Yahtzee-style dice selection | ✅ Implemented |
 
-### Unlocked Mechanics (Ready to Implement)
+### Unlocked Mechanics (All Implemented)
 
-| Mechanic | Description |
-|----------|-------------|
-| `different-dice-movement` | Dice determine movement options |
-| `die-icon-resolution` | Symbol-based dice effects |
-| `roll-spin-and-move` | Classic board game movement |
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `different-dice-movement` | Dice determine movement options | ✅ Implemented |
+| `die-icon-resolution` | Symbol-based dice effects | ✅ Implemented |
+| `roll-spin-and-move` | Classic board game movement | ✅ Implemented |
 
 ---
 
@@ -339,15 +371,15 @@ onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 | `turn-order-stat-based` | Order by player stat | ✅ Implemented |
 | `turn-order-progressive` | Snake draft order | ✅ Implemented |
 
-### Unlocked Mechanics (Ready to Implement)
+### Unlocked Mechanics (All Implemented)
 
-| Mechanic | Description |
-|----------|-------------|
-| `turn-order-auction` | Bid for turn position |
-| `turn-order-claim-action` | Take action to claim position |
-| `turn-order-pass-order` | Pass order from previous round |
-| `turn-order-time-track` | Time-based order |
-| `turn-order-role-order` | Role determines order |
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `turn-order-auction` | Bid for turn position | ✅ Implemented |
+| `turn-order-claim-action` | Take action to claim position | ✅ Implemented |
+| `turn-order-pass-order` | Pass order from previous round | ✅ Implemented |
+| `turn-order-time-track` | Time-based order | ✅ Implemented |
+| `turn-order-role-order` | Role determines order | ✅ Implemented |
 
 ---
 
@@ -393,14 +425,14 @@ canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): 
 | `hidden-victory-points` | Secret scoring | ✅ Implemented |
 | `hidden-movement` | Hidden player positions | ✅ Implemented |
 
-### Unlocked Mechanics (Ready to Implement)
+### Unlocked Mechanics (All Implemented)
 
-| Mechanic | Description |
-|----------|-------------|
-| `deduction` | Deduce hidden information |
-| `memory` | Remember revealed info |
-| `targeted-clues` | Give clues about hidden info |
-| `roles-with-asymmetric-information` | Different info per role |
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `deduction` | Deduce hidden information | ✅ Implemented |
+| `memory` | Remember revealed info | ✅ Implemented |
+| `targeted-clues` | Give clues about hidden info | ✅ Implemented |
+| `roles-with-asymmetric-information` | Different info per role | ✅ Implemented |
 
 ---
 
@@ -468,62 +500,64 @@ onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
 |----------|-------------|--------|
 | `voting` | Democratic decision-making (majority/plurality/unanimous) | ✅ Implemented |
 
-### Unlocked Mechanics (Ready to Implement)
+### Unlocked Mechanics (All Implemented)
 
-| Mechanic | Description |
-|----------|-------------|
-| `negotiation` | Binding/non-binding agreements |
-| `player-judge` | Player judges submissions |
-| `i-cut-you-choose` | Division mechanic |
-| `bribery` | Pay for votes/actions |
-| `communication-limits` | Restricted communication |
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `negotiation` | Binding/non-binding agreements | ✅ Implemented |
+| `player-judge` | Player judges submissions | ✅ Implemented |
+| `i-cut-you-choose` | Division mechanic | ✅ Implemented |
+| `bribery` | Pay for votes/actions | ✅ Implemented |
+| `communication-limits` | Restricted communication | ✅ Implemented |
 
 ---
 
-## Phase 6: Combat System (6 New Hooks)
+## Phase 6: Combat System (6 New Hooks) ✅ IMPLEMENTED
 
-**New Core Service**: `src/mechanics/core/combat.ts`
+**Core Service**: `src/mechanics/core/combat.ts`
 
-### New Hooks
+### Hooks (Implemented)
 
 ```typescript
-interface CombatContext {
+interface CombatHookContext {
   state: GameState;
   attackerId: string;
   defenderId: string;
-  attackerUnits?: string[];
-  defenderUnits?: string[];
+  territory?: string;
   config: GameConfig;
 }
 
-interface CombatResult {
+interface CombatHookResult {
   winner: 'attacker' | 'defender' | 'draw';
-  attackerLosses?: number;
-  defenderLosses?: number;
+  attackerLosses: number;
+  defenderLosses: number;
   territoryChange?: boolean;
+  retreatRequired?: 'attacker' | 'defender' | 'both';
+  criticalHit?: boolean;
+  criticalFailure?: boolean;
 }
 
-// Add to MechanicHooks:
-onCombatStart?(ctx: CombatContext): StateChanges | null;
-getAttackModifiers?(ctx: CombatContext): { modifier: number; reason: string }[];
-getDefenseModifiers?(ctx: CombatContext): { modifier: number; reason: string }[];
-onResolveCombat?(ctx: CombatContext, attackValue: number, defenseValue: number): CombatResult | null;
-onCombatEnd?(ctx: CombatContext, result: CombatResult): StateChanges | null;
-onApplyCasualties?(ctx: CombatContext, casualties: { attacker: number; defender: number }): StateChanges | null;
+// Added to MechanicHooks:
+onCombatStart?(ctx: CombatHookContext): StateChanges | null;
+getAttackModifiers?(ctx: CombatHookContext): CombatModifierResult[];
+getDefenseModifiers?(ctx: CombatHookContext): CombatModifierResult[];
+onResolveCombat?(ctx: CombatHookContext, attackValue: number, defenseValue: number): CombatHookResult | null;
+onCombatEnd?(ctx: CombatHookContext, result: CombatHookResult): StateChanges | null;
+onApplyCasualties?(ctx: CombatHookContext, casualties: CombatCasualties): StateChanges | null;
 ```
 
-### Unlocked Mechanics
+### Implemented Mechanics (All 8 mechanics)
 
-| Mechanic | Description |
-|----------|-------------|
-| `area-impulse` | Area-based combat resolution |
-| `chit-pull-system` | Random unit activation |
-| `critical-hits-and-failures` | Combat criticals |
-| `force-commitment` | Commit forces before resolution |
-| `ratio-combat-results-table` | CRT-based resolution |
-| `secret-unit-deployment` | Hidden unit placement |
-| `kill-steal` | Steal kills from others |
-| `zone-of-control` | Movement blocking |
+| Mechanic | Description | Status |
+|----------|-------------|--------|
+| `area-impulse` | Impulse-based unit activation | ✅ Implemented |
+| `chit-pull-system` | Random chit activation | ✅ Implemented |
+| `critical-hits-and-failures` | Combat criticals | ✅ Implemented |
+| `force-commitment` | Commit forces before resolution | ✅ Implemented |
+| `ratio-combat-results-table` | CRT-based resolution | ✅ Implemented |
+| `secret-unit-deployment` | Hidden unit placement | ✅ Implemented |
+| `kill-steal` | Rewards for final blows | ✅ Implemented |
+| `zone-of-control` | Movement blocking | ✅ Implemented |
 
 ---
 
@@ -624,15 +658,16 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 | 3 | Medium | 2 | 3 (+5 unlocked) | 43 (22%) | ✅ **Done** |
 | 4 | Medium | 3 | 3 (+5 unlocked) | 43 (22%) | ✅ **Done** |
 | 5 | Medium | 2 | 1 (+5 unlocked) | 45 (23%) | ✅ **Done** |
-| 6 | High | 6 | 8 | 53 (28%) | Next |
-| 7 | High | 5 | 3 | 56 (29%) | Pending |
+| 6 | High | 6 | 8 | 53 (28%) | ✅ **Done** |
+| 7 | High | 5 | 3 | 56 (29%) | Next |
 | 8 | High | 5 | 10 | 66 (34%) | Pending |
 
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
-**Phase 2 Progress**: 2 of 5 mechanics implemented (40%) - Dice infrastructure complete
-**Phase 3 Progress**: 3 of 8 mechanics implemented (38%) - Turn order infrastructure complete
-**Phase 4 Progress**: 5 of 8 mechanics implemented (63%) - Visibility infrastructure complete (Proposal 012: +hidden-objectives)
-**Phase 5 Progress**: 3 of 6 mechanics implemented (50%) - Voting infrastructure complete
+**Phase 2 Progress**: 5 of 5 mechanics implemented (100%) - Dice infrastructure complete ✅
+**Phase 3 Progress**: 8 of 8 mechanics implemented (100%) - Turn order infrastructure complete ✅
+**Phase 4 Progress**: 8 of 8 mechanics implemented (100%) - Visibility infrastructure complete ✅
+**Phase 5 Progress**: 6 of 6 mechanics implemented (100%) - Voting infrastructure complete ✅
+**Phase 6 Progress**: 8 of 8 mechanics implemented (100%) - Combat infrastructure complete ✅
 
 ---
 
@@ -657,12 +692,14 @@ These mechanics require physical components or real-time elements unsuitable for
 2. ~~**Create `core/dice.ts`** - Unlock dice mechanics (Phase 2)~~ ✅ Done
 3. ~~**Extend `core/turns.ts`** - Support dynamic turn order (Phase 3)~~ ✅ Done
 4. ~~**Create `core/social.ts`** - Enable voting & negotiation (Phase 5)~~ ✅ Done
-5. **Implement remaining Phase 2 mechanics** - different-dice-movement, die-icon-resolution, etc.
-6. **Implement remaining Phase 3 mechanics** - turn-order-auction, turn-order-stat-based, etc.
-7. **Implement remaining Phase 4 mechanics** - hidden-movement, deduction, memory, etc.
-8. **Implement remaining Phase 5 mechanics** - negotiation, player-judge, bribery, etc.
-9. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
-10. **Create `core/combat.ts`** - Enable combat mechanics (Phase 6)
+5. ~~**Implement remaining Phase 2 mechanics**~~ ✅ Done (6 mechanics)
+6. ~~**Implement remaining Phase 3 mechanics**~~ ✅ Done (8 mechanics)
+7. ~~**Implement remaining Phase 4 mechanics**~~ ✅ Done (9 mechanics)
+8. ~~**Implement remaining Phase 5 mechanics**~~ ✅ Done (6 mechanics)
+9. ~~**Create `core/combat.ts`** - Enable combat mechanics (Phase 6)~~ ✅ Done (8 mechanics)
+10. **Create `core/workers.ts`** - Enable worker placement mechanics (Phase 7)
+11. **Extend `core/auction.ts`** - Enable advanced auction mechanics (Phase 8)
+12. **Implement Phase 1 mechanics** - No infrastructure changes needed (3 remaining)
 
 ---
 

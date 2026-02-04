@@ -69,6 +69,40 @@ import { turnOrderPassOrderMechanic } from './turn-order-pass-order.js';
 import { hiddenMovementMechanic } from './hidden-movement.js';
 import { hiddenObjectivesMechanic } from './hidden-objectives.js';
 
+// Phase 1: Additional Auction mechanics
+import { auctionSealedBidMechanic } from './auction-sealed-bid.js';
+import { auctionOnceAroundMechanic } from './auction-once-around.js';
+
+// Phase 2: Additional Dice mechanics (die-icon-resolution)
+import { dieIconResolutionMechanic } from './die-icon-resolution.js';
+
+// Phase 3: Additional Turn Order mechanics
+import { turnOrderAuctionMechanic } from './turn-order-auction.js';
+import { turnOrderClaimMechanic } from './turn-order-claim.js';
+import { turnOrderTimeTrackMechanic } from './turn-order-time-track.js';
+import { turnOrderRoleMechanic } from './turn-order-role.js';
+
+// Phase 4: Additional Visibility mechanics (deduction, memory, clues, asymmetric)
+import { deductionMechanic } from './deduction.js';
+import { memoryMechanic } from './memory.js';
+import { targetedCluesMechanic } from './targeted-clues.js';
+import { rolesAsymmetricInfoMechanic } from './roles-asymmetric-info.js';
+
+// Phase 5: Additional Social mechanics
+import { playerJudgeMechanic } from './player-judge.js';
+import { iCutYouChooseMechanic } from './i-cut-you-choose.js';
+import { briberyMechanic } from './bribery.js';
+
+// Phase 6: Combat System mechanics
+import { criticalHitsMechanic } from './critical-hits.js';
+import { zoneOfControlMechanic } from './zone-of-control.js';
+import { ratioCRTMechanic } from './ratio-crt.js';
+import { forceCommitmentMechanic } from './force-commitment.js';
+import { areaImpulseMechanic } from './area-impulse.js';
+import { chitPullSystemMechanic } from './chit-pull-system.js';
+import { secretUnitDeploymentMechanic } from './secret-unit-deployment.js';
+import { killStealMechanic } from './kill-steal.js';
+
 // Win condition mechanics
 import {
   reachStateWinMechanic,
@@ -154,6 +188,40 @@ mechanicRegistry.register(turnOrderPassOrderMechanic);
 mechanicRegistry.register(hiddenMovementMechanic);
 mechanicRegistry.register(hiddenObjectivesMechanic);
 
+// Register Phase 1: Additional Auction mechanics
+mechanicRegistry.register(auctionSealedBidMechanic);
+mechanicRegistry.register(auctionOnceAroundMechanic);
+
+// Register Phase 2: Additional Dice mechanics
+mechanicRegistry.register(dieIconResolutionMechanic);
+
+// Register Phase 3: Additional Turn Order mechanics
+mechanicRegistry.register(turnOrderAuctionMechanic);
+mechanicRegistry.register(turnOrderClaimMechanic);
+mechanicRegistry.register(turnOrderTimeTrackMechanic);
+mechanicRegistry.register(turnOrderRoleMechanic);
+
+// Register Phase 4: Additional Visibility mechanics
+mechanicRegistry.register(deductionMechanic);
+mechanicRegistry.register(memoryMechanic);
+mechanicRegistry.register(targetedCluesMechanic);
+mechanicRegistry.register(rolesAsymmetricInfoMechanic);
+
+// Register Phase 5: Additional Social mechanics
+mechanicRegistry.register(playerJudgeMechanic);
+mechanicRegistry.register(iCutYouChooseMechanic);
+mechanicRegistry.register(briberyMechanic);
+
+// Register Phase 6: Combat System mechanics
+mechanicRegistry.register(criticalHitsMechanic);
+mechanicRegistry.register(zoneOfControlMechanic);
+mechanicRegistry.register(ratioCRTMechanic);
+mechanicRegistry.register(forceCommitmentMechanic);
+mechanicRegistry.register(areaImpulseMechanic);
+mechanicRegistry.register(chitPullSystemMechanic);
+mechanicRegistry.register(secretUnitDeploymentMechanic);
+mechanicRegistry.register(killStealMechanic);
+
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);
 mechanicRegistry.register(scoreThresholdWinMechanic);
@@ -219,5 +287,10 @@ export type {
   SharedStateInitResult,
   EffectApplicationContext,
   EffectApplicationResult,
-  ActionSchema
+  ActionSchema,
+  // Combat system types (Phase 6)
+  CombatHookContext,
+  CombatModifierResult,
+  CombatHookResult,
+  CombatCasualties
 } from './types.js';

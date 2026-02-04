@@ -104,6 +104,53 @@ export interface PlayerState {
   lastRollResults?: number[];      // Last roll individual results
   lastRollTotal?: number;          // Last roll total
   rerollsUsed?: number;            // Re-rolls used this turn
+
+  // Phase 1-5 Expansion player state
+  deductionNotes?: DeductionNotes; // Deduction mechanic notes
+  memory?: PlayerMemory;           // Memory mechanic state
+  isJudge?: boolean;               // Player judge mechanic
+  timePosition?: number;           // Time track position
+
+  // Phase 6: Combat System player state
+  inEnemyZoC?: boolean;            // Player is in enemy zone of control
+  zocProjector?: string;           // Player ID projecting ZoC
+  impulseState?: ImpulseState;     // Area impulse activation state
+}
+
+/**
+ * Impulse state for area impulse mechanic.
+ */
+export interface ImpulseState {
+  currentImpulse: number;
+  impulsesUsed: number;
+  activatedUnits: string[];
+  phase: 'selecting' | 'resolving' | 'complete';
+}
+
+/**
+ * Deduction notes for the deduction mechanic.
+ */
+export interface DeductionNotes {
+  known: Record<string, string[]>;
+  eliminated: Record<string, string[]>;
+  suspicions: Record<string, string[]>;
+  wrongGuesses: number;
+}
+
+/**
+ * Player memory for the memory mechanic.
+ */
+export interface PlayerMemory {
+  entries: MemoryEntry[];
+  notes: Record<string, string>;
+}
+
+export interface MemoryEntry {
+  infoType: string;
+  value: unknown;
+  revealedTurn: number;
+  expiresOnTurn: number;
+  source: string;
 }
 
 /**
@@ -231,6 +278,32 @@ export interface EngineMechanics {
   // Phase 4: Additional Visibility mechanics
   hidden_movement?: HiddenMovementConfig;     // Hidden player positions
   hidden_objectives?: HiddenObjectivesConfig; // Secret objective distribution (Proposal 012)
+
+  // Phase 1-5 Expansion: Additional mechanics
+  auction_sealed_bid?: AuctionSealedBidConfig;    // Sealed bid auctions
+  auction_once_around?: AuctionOnceAroundConfig;  // Once around auctions
+  die_icon_resolution?: DieIconResolutionConfig;  // Symbol-based dice
+  turn_order_auction?: TurnOrderAuctionConfig;    // Bid for turn position
+  turn_order_claim?: TurnOrderClaimConfig;        // Claim turn position
+  turn_order_time_track?: TurnOrderTimeTrackConfig;  // Time track based order
+  turn_order_role?: TurnOrderRoleConfig;          // Role-based turn order
+  deduction?: DeductionConfig;                    // Deduction mechanics
+  memory?: MemoryMechanicConfig;                  // Memory mechanics
+  targeted_clues?: TargetedCluesConfig;           // Targeted clue giving
+  roles_asymmetric_info?: RolesAsymmetricInfoConfig;  // Asymmetric role info
+  player_judge?: PlayerJudgeConfig;               // Player judging
+  i_cut_you_choose?: ICutYouChooseConfig;         // Fair division
+  bribery?: BriberyConfig;                        // Bribery mechanics
+
+  // Phase 6: Combat System
+  critical_hits?: CriticalHitsConfig;             // Critical hit/failure outcomes
+  zone_of_control?: ZoneOfControlConfig;          // Unit ZoC projection
+  ratio_crt?: RatioCRTConfig;                     // Ratio-based combat resolution
+  force_commitment?: ForceCommitmentConfig;       // Commit forces before resolution
+  area_impulse?: AreaImpulseConfig;               // Impulse-based activation
+  chit_pull?: ChitPullConfig;                     // Random chit activation
+  secret_deployment?: SecretDeploymentConfig;     // Face-down unit deployment
+  kill_steal?: KillStealConfig;                   // Final blow rewards
 }
 
 // Proposal 007: Grid configuration
@@ -982,7 +1055,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit';
 
 export interface BaseAction {
   type: ActionType;
@@ -1177,7 +1250,119 @@ export interface TradeRespondAction extends BaseAction {
   accept: boolean;            // Whether to accept the trade
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction;
+// New Phase 1-5 Expansion Actions
+export interface SealedBidAction extends BaseAction {
+  type: 'sealed_bid';
+  amount: number;
+  auctionId?: string;
+}
+
+export interface OnceAroundBidAction extends BaseAction {
+  type: 'once_around_bid';
+  amount: number;
+  auctionId?: string;
+}
+
+export interface OnceAroundPassAction extends BaseAction {
+  type: 'once_around_pass';
+  auctionId?: string;
+}
+
+export interface IconRollAction extends BaseAction {
+  type: 'icon_roll';
+  purpose?: string;
+}
+
+export interface TurnOrderBidAction extends BaseAction {
+  type: 'turn_order_bid';
+  amount: number;
+}
+
+export interface ClaimTurnPositionAction extends BaseAction {
+  type: 'claim_turn_position';
+  position: number;
+}
+
+export interface InvestigateAction extends BaseAction {
+  type: 'investigate';
+  target: string;
+  infoType: string;
+  specificItem?: string;
+}
+
+export interface AccuseAction extends BaseAction {
+  type: 'accuse';
+  accusation: Record<string, string>;
+}
+
+export interface GiveClueAction extends BaseAction {
+  type: 'give_clue';
+  targetPlayer: string;
+  clueType: string;
+  clueValue: string | number;
+  affectedItems?: string[];
+}
+
+export interface SubmitForJudgingAction extends BaseAction {
+  type: 'submit_for_judging';
+  cardIds: string[];
+}
+
+export interface JudgeSelectAction extends BaseAction {
+  type: 'judge_select';
+  submissionIndex: number;
+}
+
+export interface DivideItemsAction extends BaseAction {
+  type: 'divide_items';
+  groups: string[][];
+}
+
+export interface ChooseGroupAction extends BaseAction {
+  type: 'choose_group';
+  groupIndex: number;
+}
+
+export interface OfferBribeAction extends BaseAction {
+  type: 'offer_bribe';
+  targetPlayer: string;
+  amount: number;
+  requestedAction: string;
+  requestedDetails?: Record<string, unknown>;
+}
+
+export interface RespondToBribeAction extends BaseAction {
+  type: 'respond_to_bribe';
+  bribeId: string;
+  accept: boolean;
+}
+
+// Phase 6: Combat System actions
+export interface CommitForcesAction extends BaseAction {
+  type: 'commit_forces';
+  unitIds: string[];
+  combatId: string;
+}
+
+export interface ActivateUnitsAction extends BaseAction {
+  type: 'activate_units';
+  unitIds: string[];
+  orders: Record<string, 'move' | 'attack' | 'defend' | 'hold'>;
+}
+
+export interface DeploySecretAction extends BaseAction {
+  type: 'deploy_secret';
+  unitId: string;
+  position: string;
+  isDecoy?: boolean;
+}
+
+export interface RevealUnitAction extends BaseAction {
+  type: 'reveal_unit';
+  targetUnitId: string;
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction;
 
 // Action validation result
 export interface ActionValidationResult {
@@ -1567,4 +1752,224 @@ export interface CommunicationLimitsConfig {
   team_only?: boolean;           // Team communication only
   one_word_clues?: boolean;      // One word per clue
   signal_vocabulary?: string[];  // Predefined signals
+}
+
+// ============ Phase 1-5 Expansion Config Types ============
+
+/**
+ * Sealed Bid Auction config.
+ */
+export interface AuctionSealedBidConfig {
+  currency: string;
+  allow_tie_winning?: boolean;
+  reveal_all_bids?: boolean;
+}
+
+/**
+ * Once Around Auction config.
+ */
+export interface AuctionOnceAroundConfig {
+  currency: string;
+  min_increment?: number;
+  starting_bid?: number;
+}
+
+/**
+ * Die Icon Resolution config.
+ */
+export interface DieIconResolutionConfig {
+  dice_count?: number;
+  icons: Record<string, {
+    weight: number;
+    effect: string;
+    value?: number;
+    description?: string;
+  }>;
+}
+
+/**
+ * Turn Order Auction config.
+ */
+export interface TurnOrderAuctionConfig {
+  currency: string;
+  when?: 'round_start' | 'game_start';
+  tie_breaker?: 'current_order' | 'random';
+}
+
+/**
+ * Turn Order Claim Action config.
+ */
+export interface TurnOrderClaimConfig {
+  cost?: Record<string, number>;
+  positions_available?: number;
+  reset_each_round?: boolean;
+}
+
+/**
+ * Turn Order Time Track config.
+ */
+export interface TurnOrderTimeTrackConfig {
+  starting_position?: number;
+  max_position?: number;
+  default_time_cost?: number;
+}
+
+/**
+ * Turn Order Role config.
+ */
+export interface TurnOrderRoleConfig {
+  role_priorities: Record<string, number>;
+  tie_breaker?: 'clockwise' | 'random';
+}
+
+/**
+ * Deduction mechanic config.
+ */
+export interface DeductionConfig {
+  hidden_info_types: string[];
+  clue_action_cost?: Record<string, number>;
+  max_guesses?: number;
+}
+
+/**
+ * Memory mechanic config.
+ */
+export interface MemoryMechanicConfig {
+  reveal_duration?: number;
+  memory_types?: string[];
+  can_take_notes?: boolean;
+}
+
+/**
+ * Targeted Clues config.
+ */
+export interface TargetedCluesConfig {
+  clue_types: string[];
+  clues_per_turn?: number;
+  clue_cost?: Record<string, number>;
+  must_be_truthful?: boolean;
+}
+
+/**
+ * Roles with Asymmetric Information config.
+ */
+export interface RolesAsymmetricInfoConfig {
+  roles: Record<string, {
+    can_see: string[];
+    knows_roles_of: string[];
+    special_knowledge?: string;
+  }>;
+}
+
+/**
+ * Player Judge config.
+ */
+export interface PlayerJudgeConfig {
+  judge_rotation: 'clockwise' | 'winner' | 'random';
+  submissions_per_player?: number;
+  anonymous_submissions?: boolean;
+  judge_can_participate?: boolean;
+}
+
+/**
+ * I Cut You Choose config.
+ */
+export interface ICutYouChooseConfig {
+  num_groups: number;
+  chooser_order?: 'reverse' | 'clockwise';
+  cutter_gets_last?: boolean;
+}
+
+/**
+ * Bribery config.
+ */
+export interface BriberyConfig {
+  currency: string;
+  binding?: boolean;
+  max_bribe_per_action?: number;
+  bribe_targets?: string[];
+}
+
+// ============ Phase 6: Combat System Config Types ============
+
+/**
+ * Critical Hits config.
+ */
+export interface CriticalHitsConfig {
+  critical_hit_roll?: number;
+  critical_fail_roll?: number;
+  critical_hit_multiplier?: number;
+  critical_fail_penalty?: number;
+}
+
+/**
+ * Zone of Control config.
+ */
+export interface ZoneOfControlConfig {
+  zoc_range?: number;
+  blocks_movement?: boolean;
+  must_stop?: boolean;
+  must_attack?: boolean;
+}
+
+/**
+ * Ratio Combat Results Table config.
+ */
+export interface RatioCRTConfig {
+  die_sides?: number;
+  crt?: Record<string, Record<string, {
+    winner: 'attacker' | 'defender' | 'draw';
+    attackerLosses: number;
+    defenderLosses: number;
+    retreat?: 'attacker' | 'defender' | 'both';
+    exchange?: boolean;
+  }>>;
+}
+
+/**
+ * Force Commitment config.
+ */
+export interface ForceCommitmentConfig {
+  simultaneous?: boolean;
+  revealed_after_commit?: boolean;
+  commitment_binding?: boolean;
+}
+
+/**
+ * Area Impulse config.
+ */
+export interface AreaImpulseConfig {
+  impulse_cost?: number;
+  max_impulses?: number;
+  activation_limit?: number;
+}
+
+/**
+ * Chit Pull System config.
+ */
+export interface ChitPullConfig {
+  chits_per_player?: number;
+  formation_chits?: boolean;
+  event_chits?: boolean;
+  return_after_pull?: boolean;
+}
+
+/**
+ * Secret Unit Deployment config.
+ */
+export interface SecretDeploymentConfig {
+  reveal_on_combat?: boolean;
+  reveal_on_adjacent?: boolean;
+  allow_bluffing?: boolean;
+  reveal_cost?: number;
+}
+
+/**
+ * Kill Steal config.
+ */
+export interface KillStealConfig {
+  bounty_type?: 'fixed' | 'percentage' | 'unit_value';
+  bounty_amount?: number;
+  credit_assists?: boolean;
+  assist_share?: number;
 }

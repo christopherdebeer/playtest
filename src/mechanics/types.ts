@@ -556,6 +556,52 @@ export interface MoveHookResult {
   blockReason?: string;
 }
 
+// ============ Combat System Types (Phase 6) ============
+
+/**
+ * Context for combat operations
+ */
+export interface CombatHookContext {
+  state: GameState;
+  attackerId: string;
+  defenderId: string;
+  attackerUnits?: string[];
+  defenderUnits?: string[];
+  territory?: string;
+  combatType?: string;
+  config: GameConfig;
+}
+
+/**
+ * Result from combat modifier hooks
+ */
+export interface CombatModifierResult {
+  modifier: number;
+  reason: string;
+  source?: string;
+}
+
+/**
+ * Result from combat resolution
+ */
+export interface CombatHookResult {
+  winner: 'attacker' | 'defender' | 'draw';
+  attackerLosses: number;
+  defenderLosses: number;
+  territoryChange: boolean;
+  retreatRequired?: 'attacker' | 'defender' | 'both';
+  criticalHit?: boolean;
+  criticalFailure?: boolean;
+}
+
+/**
+ * Casualties from combat
+ */
+export interface CombatCasualties {
+  attacker: number;
+  defender: number;
+}
+
 /**
  * Context for after-move hook
  */
@@ -847,6 +893,44 @@ export interface MechanicHooks {
    * Return null if action is not owned by this mechanic.
    */
   getActionSchema?(action: GameAction): ActionSchema | null;
+
+  // ============ Combat System Hooks (Phase 6) ============
+
+  /**
+   * Called when combat is initiated.
+   * Can modify setup or trigger pre-combat effects.
+   */
+  onCombatStart?(ctx: CombatHookContext): StateChanges | null;
+
+  /**
+   * Get attack modifiers for combat resolution.
+   * Called to gather all attack bonuses/penalties.
+   */
+  getAttackModifiers?(ctx: CombatHookContext): CombatModifierResult[];
+
+  /**
+   * Get defense modifiers for combat resolution.
+   * Called to gather all defense bonuses/penalties.
+   */
+  getDefenseModifiers?(ctx: CombatHookContext): CombatModifierResult[];
+
+  /**
+   * Called to resolve combat result.
+   * Return result to override default resolution.
+   */
+  onResolveCombat?(ctx: CombatHookContext, attackValue: number, defenseValue: number): CombatHookResult | null;
+
+  /**
+   * Called after combat is resolved.
+   * Can trigger post-combat effects.
+   */
+  onCombatEnd?(ctx: CombatHookContext, result: CombatHookResult): StateChanges | null;
+
+  /**
+   * Called when applying casualties from combat.
+   * Can modify casualty distribution.
+   */
+  onApplyCasualties?(ctx: CombatHookContext, casualties: CombatCasualties): StateChanges | null;
 
   // ============ Mechanic Composition ============
 
