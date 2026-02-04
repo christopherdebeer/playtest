@@ -719,11 +719,36 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Migration | Mechanic(s) to Update | game.ts Lines to Remove | Status |
 |-----------|----------------------|------------------------|--------|
 | Effect type handling | location-effects, placed-card-effects | ~100 | **Done** |
-| Card type handling (wild) | card-matching (new) | ~80 | Pending |
+| Card type handling (wild) | card-matching (new) | ~80 | **In Progress** |
 | Action schema validation | All action-owning mechanics | ~150 | Pending |
 | Deck-building supply init | deck-building | ~5 | Pending |
 | Trading shared state | trading | ~10 | Pending |
 | Auction shared state | auction-english | ~10 | Pending |
+
+#### Card Matching Mechanic Design
+
+**Purpose**: Extract UNO-style card matching logic from game.ts to a dedicated mechanic.
+
+**Why new mechanic (not extending card-type-rules)**:
+- `card-type-rules` handles "can this type be played at all" (items can't be played)
+- `card-matching` handles "does this card match current play state" (color/value matching)
+- Different games need different matching rules (UNO vs Hearts vs Bridge)
+
+**Hooks**:
+| Hook | Purpose |
+|------|---------|
+| `initSharedState` | Initialize `currentColor` from top card |
+| `preValidateAction` | Validate card matches color/value OR is wild with declaredColor |
+| `postExecuteAction` | Update `currentColor` after play |
+
+**Configuration**:
+```yaml
+engine_mechanics:
+  card_matching:
+    colors: [Red, Blue, Green, Yellow]
+    value_matching: true
+    action_matching: true
+```
 
 ### Short-Term: Remaining Phase 1-5 Mechanics
 
