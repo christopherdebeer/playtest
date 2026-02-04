@@ -3,3 +3,5 @@
 {"timestamp":"2026-02-04T08:36:18.715Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"Village Square","adjacentTo":"origin"}}
 {"timestamp":"2026-02-04T08:37:15.514Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"Village Square","previousState":"start","locationEffects":["Village Square: Trading costs 0 AP here"],"cardsDrawn":0,"visitedCount":1}}
 {"timestamp":"2026-02-04T08:38:14.438Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T08:50:04.409Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Hidden Cave","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T08:51:29.860Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Hidden Cave","previousState":"start","locationEffects":["Hidden Cave: Your position is hidden from others"],"cardsDrawn":0,"visitedCount":1}}
