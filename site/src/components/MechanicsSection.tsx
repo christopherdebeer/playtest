@@ -59,7 +59,7 @@ function MechanicsSection() {
         </div>
 
         <div className="categories-grid">
-          {categories.map((cat) => (
+          {categories.map((cat: string) => (
             <Link
               to={`/mechanics?category=${cat}`}
               key={cat}

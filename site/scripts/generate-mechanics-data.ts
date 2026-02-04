@@ -25,6 +25,8 @@ const MECHANICS_MD_DIR = join(__dirname, '..', '..', 'mechanics');
 const MECHANICS_SRC_DIR = join(__dirname, '..', '..', 'src', 'mechanics');
 const REGISTRY_FILE = join(__dirname, '..', '..', 'shared', 'registered-mechanics.json');
 const OUTPUT_DIR = join(__dirname, '..', 'public', 'data', 'mechanics');
+const STATIC_OUTPUT_DIR = join(__dirname, '..', 'src', 'data');
+const STATIC_OUTPUT_FILE = join(STATIC_OUTPUT_DIR, 'mechanics.json');
 
 // Configure marked
 marked.setOptions({ gfm: true, breaks: true });
@@ -350,6 +352,34 @@ async function main() {
 
   const indexPath = join(OUTPUT_DIR, 'index.json');
   await writeFile(indexPath, JSON.stringify(indexOutput, null, 2));
+
+  // Also generate static file for build-time imports (MechanicBadge, MechanicsSection)
+  if (!existsSync(STATIC_OUTPUT_DIR)) {
+    await mkdir(STATIC_OUTPUT_DIR, { recursive: true });
+  }
+
+  const staticOutput = {
+    categories: mechanicsIndex.categories,
+    count: indexEntries.length,
+    implementationStats: {
+      implemented: stats.implemented,
+      partial: stats.partial,
+      notImplemented: stats.notImplemented,
+    },
+    mechanics: indexEntries.map(m => ({
+      id: m.slug, // Use slug as id for compatibility
+      name: m.name,
+      slug: m.slug,
+      category: m.category,
+      bggUrl: `https://boardgamegeek.com/boardgamemechanic/${m.slug}`,
+      description: m.summary,
+      source: m.source,
+      implementationStatus: m.implementationStatus,
+    })),
+  };
+
+  await writeFile(STATIC_OUTPUT_FILE, JSON.stringify(staticOutput, null, 2));
+  console.log(`\nGenerated static mechanics file: ${STATIC_OUTPUT_FILE}`);
 
   console.log(`\nGenerated mechanics data:`);
   console.log(`  Index: ${indexPath} (${indexEntries.length} mechanics)`);

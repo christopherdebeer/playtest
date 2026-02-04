@@ -3,7 +3,7 @@ import mechanicsData from '../data/mechanics.json'
 import './MechanicBadge.css'
 
 interface MechanicDef {
-  id: number
+  id: string
   name: string
   slug: string
   category: string
