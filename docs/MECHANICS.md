@@ -204,13 +204,14 @@ The system provides **38 hooks** across 10 categories:
 | `onVoteCast` | `(ctx) → VoteCastResult \| null` | Intercept/modify vote |
 | `onVoteTally` | `(ctx) → VoteTallyResult \| null` | Custom tally logic |
 
-#### NEW: Agnosticism Hooks (5 hooks)
+#### NEW: Agnosticism Hooks (6 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `initSharedState` | `(ctx) → SharedStateChanges \| null` | Initialize shared state |
 | `getPlayerView` | `(ctx) → Record<string, unknown> \| null` | Contribute to player view |
 | `applyEffect` | `(ctx, effect) → EffectResult \| null` | Handle effect application |
 | `isPlayerBlocked` | `(ctx) → boolean \| null` | Determine if player is blocked |
+| `canPlayerActNow` | `(ctx) → boolean \| null` | Allow out-of-turn actions (freeplay) |
 | `getActionSchema` | `(action) → ActionSchema \| null` | Define action validation schema |
 
 ### Mechanic Composition
@@ -619,7 +620,7 @@ engine_mechanics:
 | Phase | Hooks | Status |
 |-------|-------|--------|
 | Phase 1-5 | 33 core hooks | Complete |
-| Agnosticism | 5 new hooks | **Complete** |
+| Agnosticism | 6 new hooks | **Complete** |
 | Phase 6 | Combat (6 hooks) | Planned |
 | Phase 7 | Workers (5 hooks) | Planned |
 | Phase 8 | Auctions (5 hooks) | Planned |
@@ -628,6 +629,7 @@ engine_mechanics:
 - `initSharedState` - Used by open-drafting
 - `getPlayerView` - Used by push-your-luck
 - `isPlayerBlocked` - Used by lose-a-turn
+- `canPlayerActNow` - Used by freeplay (enables parallel play)
 - `applyEffect` - Used by location-effects, placed-card-effects
 - `getActionSchema` - Defined, ready for mechanic implementations
 
@@ -794,6 +796,7 @@ engine_mechanics:
 
 - `initSharedState`: Initialize action tracking and pending interactions
 - `preValidateAction`: Override turn validation to allow any player
+- `canPlayerActNow`: **NEW** - Allows `waitForTurn` to return immediately for any player
 - `onTurnEnd`: Track action counts, manage round advancement
 - `getAvailableActions`: Always allow actions regardless of turn
 
@@ -819,14 +822,17 @@ See `games/parallel-race/RULES.md` - A race game designed for freeplay testing.
 3. **GM synchronization**: Gamemaster needs to handle multiple pending actions
 4. **State consistency**: Ensuring state remains consistent with parallel mutations
 
-#### Engine Changes Needed
+#### Engine Integration Status
 
-For full freeplay support, game.ts would need:
+| Change | Status | Implementation |
+|--------|--------|----------------|
+| Turn bypass in `waitForTurn` | **Done** | `canPlayerActNow` hook in `turns.ts` |
+| Action validation bypass | **Done** | `preValidateAction` returns valid for any player |
+| Action queue for overlaps | Pending | Need atomic operations |
+| Lock mechanism for shared resources | Pending | Race condition handling |
+| Parallel GM handling | Pending | Multiple pending actions |
 
-1. **Remove `currentPlayer` check** in `validateAction` when freeplay enabled
-2. **Action queue** for pending actions when interactions overlap
-3. **Lock mechanism** for shared resource access
-4. **Parallel GM handling** for simultaneous player actions
+**Completed**: The `canPlayerActNow` hook allows `waitForTurn()` to return `your_turn` for any player when freeplay is enabled, enabling parallel play without blocking.
 
 ---
 
