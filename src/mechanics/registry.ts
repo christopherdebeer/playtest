@@ -9,6 +9,7 @@
 import {
   MechanicHooks,
   HookContext,
+  HookDefinition,
   TurnStartContext,
   TurnEndContext,
   ValidationResult,
@@ -85,9 +86,17 @@ export interface MechanicMetadata {
     required?: string[];
     description?: string;
   };
-  dependencies?: string[];
+  requires?: string[];
   conflicts?: string[];
+  defines?: Record<string, HookDefinition>;
   hooks: string[];
+}
+
+/**
+ * Get the requirements for a mechanic, supporting both `requires` and legacy `dependencies`.
+ */
+export function getMechanicRequires(mechanic: MechanicHooks): string[] {
+  return mechanic.requires ?? mechanic.dependencies ?? [];
 }
 
 class MechanicRegistry {
@@ -126,7 +135,7 @@ class MechanicRegistry {
   }
 
   /**
-   * Validate mechanic dependencies and conflicts for a game config.
+   * Validate mechanic requirements and conflicts for a game config.
    * Returns array of validation errors, empty if valid.
    */
   validateDependencies(config: GameConfig): MechanicValidationError[] {
@@ -135,16 +144,15 @@ class MechanicRegistry {
     const errors: MechanicValidationError[] = [];
 
     for (const mechanic of enabled) {
-      // Check dependencies
-      if (mechanic.dependencies) {
-        for (const dep of mechanic.dependencies) {
-          if (!enabledSlugs.has(dep)) {
-            errors.push({
-              mechanic: mechanic.slug,
-              type: 'missing_dependency',
-              message: `Mechanic '${mechanic.slug}' requires '${dep}' but it is not enabled`
-            });
-          }
+      // Check requirements (supports both `requires` and legacy `dependencies`)
+      const requires = getMechanicRequires(mechanic);
+      for (const dep of requires) {
+        if (!enabledSlugs.has(dep)) {
+          errors.push({
+            mechanic: mechanic.slug,
+            type: 'missing_dependency',
+            message: `Mechanic '${mechanic.slug}' requires '${dep}' but it is not enabled`
+          });
         }
       }
 
@@ -200,14 +208,16 @@ class MechanicRegistry {
         }
       }
 
+      const requires = getMechanicRequires(mechanic);
       result.push({
         slug: mechanic.slug,
         name: mechanic.name,
         configKey,
         description: mechanic.configSchema?.description,
         configSchema: mechanic.configSchema,
-        dependencies: mechanic.dependencies,
+        requires: requires.length > 0 ? requires : undefined,
         conflicts: mechanic.conflicts,
+        defines: mechanic.defines,
         hooks
       });
     }
@@ -1454,6 +1464,96 @@ class MechanicRegistry {
     }
 
     return null;
+  }
+
+  // ============ Mechanic-Defined Hook Routing ============
+
+  /**
+   * Fire a hook defined by a mechanic via its `defines` property.
+   * Routes ONLY to enabled mechanics that declare `requires` on the definer.
+   *
+   * @param definerSlug - Slug of the mechanic that defines the hook
+   * @param hookName - Name of the hook method to call
+   * @param state - Current game state
+   * @param playerId - Player context for the hook
+   * @param payload - Hook-specific data passed as second argument
+   * @returns Merged state changes from all implementers, or null
+   */
+  fire(
+    definerSlug: string,
+    hookName: string,
+    state: GameState,
+    playerId: string,
+    payload?: unknown
+  ): StateChanges | null {
+    const definer = this.mechanics.get(definerSlug);
+    if (!definer?.defines?.[hookName]) {
+      return null;
+    }
+
+    const resolution = definer.defines[hookName].resolution ?? 'merge';
+    const ctx = this.createContext(state, playerId);
+
+    // Route only to enabled mechanics that require the definer
+    const dependents = this.getEnabledMechanics(state.config)
+      .filter(m => getMechanicRequires(m).includes(definerSlug));
+
+    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
+    const startTime = telemetryEnabled ? performance.now() : 0;
+    const respondingMechanics: string[] = [];
+    const mergedChanges: StateChanges = {};
+
+    for (const dep of dependents) {
+      const handler = (dep as Record<string, unknown>)[hookName];
+      if (typeof handler !== 'function') continue;
+
+      const mechanicStart = telemetryEnabled ? performance.now() : 0;
+      const result = handler.call(dep, ctx, payload);
+
+      if (result) {
+        respondingMechanics.push(dep.slug);
+
+        if (telemetryEnabled) {
+          logEvent(state, {
+            event: 'mechanic_response',
+            player: playerId,
+            data: {
+              mechanic: dep.slug,
+              hook: `${definerSlug}:${hookName}`,
+              response_type: result.blocked ? 'blocked' : 'state_changes',
+              duration_ms: performance.now() - mechanicStart,
+            }
+          });
+        }
+
+        // Handle resolution strategies
+        if (resolution === 'blocking' && result.blocked) {
+          return result; // Short-circuit
+        }
+        if (resolution === 'first') {
+          return result; // First responder wins
+        }
+        // 'merge' - accumulate
+        this.mergeStateChanges(mergedChanges, result);
+      }
+    }
+
+    if (telemetryEnabled && dependents.length > 0) {
+      logEvent(state, {
+        event: 'hook_invoked',
+        player: playerId,
+        data: {
+          hook: `${definerSlug}:${hookName}`,
+          enabled_dependents: dependents.map(m => m.slug),
+          responding_mechanics: respondingMechanics,
+          duration_ms: performance.now() - startTime,
+        }
+      });
+    }
+
+    // Return null if no mechanics responded, otherwise return merged changes
+    if (respondingMechanics.length === 0) return null;
+    return mergedChanges;
   }
 
   /**

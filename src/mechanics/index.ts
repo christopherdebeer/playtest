@@ -116,6 +116,7 @@ import {
 
 // Core mechanics (always available)
 import { passMechanic } from './core/pass.js';
+import { cardsMechanic } from './core/cards.js';
 
 // Effect handling mechanics
 import { locationEffectsMechanic } from './location-effects.js';
@@ -232,6 +233,7 @@ mechanicRegistry.register(raceWinMechanic);
 mechanicRegistry.register(suddenDeathMechanic);
 
 // Register core mechanics (always available)
+mechanicRegistry.register(cardsMechanic);
 mechanicRegistry.register(passMechanic);
 
 // Register effect handling mechanics
@@ -242,11 +244,12 @@ mechanicRegistry.register(placedCardEffectsMechanic);
 mechanicRegistry.register(freeplayMechanic);
 
 // Re-export for convenience
-export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';
+export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata, getMechanicRequires } from './registry.js';
 export type { MechanicValidationError, MechanicMetadata } from './registry.js';
 export type {
   MechanicHooks,
   MechanicConfigSchema,
+  HookDefinition,
   HookContext,
   TurnStartContext,
   TurnEndContext,

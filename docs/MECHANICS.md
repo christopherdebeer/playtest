@@ -15,11 +15,12 @@
 1. [Vision & Design Principles](#vision--design-principles)
 2. [Architecture Overview](#architecture-overview)
 3. [Hook Infrastructure](#hook-infrastructure)
-4. [Core Services](#core-services)
-5. [Game.ts Agnosticism](#gamets-agnosticism)
-6. [Mechanic Implementation Guide](#mechanic-implementation-guide)
-7. [Current Status](#current-status)
-8. [Roadmap](#roadmap)
+4. [Mechanic-Defined Hooks](#mechanic-defined-hooks)
+5. [Core Services](#core-services)
+6. [Game.ts Agnosticism](#gamets-agnosticism)
+7. [Mechanic Implementation Guide](#mechanic-implementation-guide)
+8. [Current Status](#current-status)
+9. [Roadmap](#roadmap)
 
 ---
 
@@ -41,6 +42,8 @@ A game engine where:
 3. **Config-Driven** - Mechanics enabled via `engine_mechanics` in RULES.md
 4. **Hook Composition** - Multiple mechanics can intercept the same event
 5. **First Responder Wins** - For exclusive hooks (validation, execution), first non-null result wins
+6. **Mechanic-Defined Hooks** - Any mechanic can define hook methods that its dependents implement
+7. **Explicit Requirements** - Mechanics declare `requires` to express dependencies on other mechanics
 
 ---
 
@@ -221,23 +224,344 @@ interface MechanicHooks {
   slug: string;
   name: string;
 
-  /** Mechanics this one depends on */
-  dependencies?: string[];
+  /** Mechanics this one requires */
+  requires?: string[];
 
   /** Mechanics this one conflicts with */
   conflicts?: string[];
 
+  /** Hook methods this mechanic defines for its dependents to implement */
+  defines?: Record<string, HookDefinition>;
+
   /** Config schema for YAML validation */
   configSchema?: MechanicConfigSchema;
 
-  // ... hooks
+  // ... global hooks, plus any methods from required mechanics' defines
 }
 ```
 
 Registry validates at game init:
-- Missing dependencies → error
+- Missing requirements → error
 - Conflicting mechanics both enabled → error
 - Invalid config → error
+
+---
+
+## Mechanic-Defined Hooks
+
+### Problem: Monolithic Hook Interface
+
+The original design puts every possible hook on a single `MechanicHooks` interface.
+Card hooks, dice hooks, combat hooks, voting hooks - all 38+ methods on one flat type.
+Every mechanic receives every hook, even when irrelevant. The interface grows
+with each domain and the registry needs hardcoded routing methods for each hook.
+
+Core services (`card-piles.ts`, `hand.ts`) are utility modules that fire hooks,
+but are not themselves mechanics. They can't be required as dependencies. Card-related
+leaf mechanics implicitly depend on card infrastructure without declaring it.
+
+### Solution: Mechanic-Defined Abstract Hooks
+
+Any mechanic can **define** hook methods that its dependents implement. The defining
+mechanic fires these hooks through the registry, which routes only to dependents.
+
+From the implementer's perspective, there is no syntactic difference between
+implementing a global hook (`onTurnStart`) and a mechanic-defined hook
+(`onCardDrawn`). Both are just methods that return `StateChanges | null`.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Global Hooks (engine-fired, all enabled mechanics)          │
+│  preValidateAction, onExecuteAction, onTurnStart, ...        │
+└─────────────────────────────────────────────────────────────┘
+         │
+         │  mechanics can also define hooks for their dependents
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  cards mechanic (defines: onCardDrawn, onCardPlayed, ...)    │
+│    → routes ONLY to mechanics with requires: ['cards']       │
+│                                                              │
+│  trick-taking mechanic (defines: onTrickWon, onTrickPlayed)  │
+│    → routes ONLY to mechanics with requires: ['trick-taking']│
+└─────────────────────────────────────────────────────────────┘
+```
+
+### How It Works
+
+#### 1. A mechanic defines hooks
+
+```typescript
+export const cardsMechanic: MechanicHooks = {
+  slug: 'cards',
+  name: 'Cards Core',
+
+  defines: {
+    onCardDrawn: {
+      description: 'After cards are drawn from deck',
+      resolution: 'merge'
+    },
+    onCardPlayed: {
+      description: 'After a card is played from hand',
+      resolution: 'merge'
+    },
+    onBeforeCardDraw: {
+      description: 'Before drawing. Return blocked:true to prevent.',
+      resolution: 'blocking'
+    },
+  },
+
+  onExecuteAction(ctx) {
+    if (ctx.action.type === 'draw') {
+      // Fire our defined hook → only our dependents receive it
+      mechanicRegistry.fire('cards', 'onBeforeCardDraw', state, playerId, payload);
+
+      // ... perform draw ...
+
+      mechanicRegistry.fire('cards', 'onCardDrawn', state, playerId, payload);
+      return { handled: true };
+    }
+  }
+};
+```
+
+#### 2. Dependent mechanics implement them as methods
+
+```typescript
+import type { CardsHooks } from './core/cards.js';
+
+export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
+  slug: 'card-matching',
+  name: 'Card Matching (UNO-style)',
+  requires: ['cards'],
+
+  // Global hook - still works for cross-cutting validation
+  preValidateAction(ctx, action) {
+    if (action.type !== 'play_card') return null;
+    // Validate color/value matching...
+  },
+
+  // Implements hook DEFINED by 'cards' mechanic.
+  // Just a method. Identical feel to implementing onTurnStart.
+  onCardPlayed(ctx, { card }) {
+    if (card.type === 'wild') return null;
+    const color = card.effect?.color;
+    return color ? { sharedStateChanges: { currentColor: color } } : null;
+  },
+
+  onCardDrawn(ctx, { cards }) {
+    // Track draws for forced-draw rule
+    return { sharedStateChanges: { drewThisTurn: true } };
+  }
+};
+```
+
+#### 3. Leaf mechanics can also define hooks
+
+This isn't limited to core mechanics. Any mechanic can define hooks:
+
+```typescript
+export const trickTakingMechanic: MechanicHooks & CardsHooks = {
+  slug: 'trick-taking',
+  requires: ['cards'],
+
+  defines: {
+    onTrickWon:    { description: 'After a trick is won', resolution: 'merge' },
+    onTrickPlayed: { description: 'After a card played to trick', resolution: 'merge' },
+  },
+
+  onCardPlayed(ctx, { card }) {
+    // Add card to current trick...
+    if (trickComplete) {
+      mechanicRegistry.fire('trick-taking', 'onTrickWon', ...);
+    }
+  },
+};
+
+// A mechanic building on trick-taking
+export const mustFollowSuitMechanic: MechanicHooks = {
+  slug: 'must-follow-suit',
+  requires: ['trick-taking'],
+
+  // Implements trick-taking's defined hook
+  onTrickPlayed(ctx, { card, leadSuit }) {
+    // Validate suit following...
+  },
+};
+```
+
+### Composition Tree
+
+This creates a natural hierarchy through `requires`:
+
+```
+engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
+  │
+  ├── cards (defines: onCardDrawn, onCardPlayed, onCardDiscarded, ...)
+  │     ├── card-matching (requires: cards)
+  │     ├── hand-management (requires: cards)
+  │     ├── deck-building (requires: cards)
+  │     └── trick-taking (requires: cards; defines: onTrickWon, onTrickPlayed)
+  │           ├── must-follow-suit (requires: trick-taking)
+  │           └── trump-cards (requires: trick-taking)
+  │
+  ├── resources (defines: onResourceGained, onResourceSpent, ...)
+  │     ├── action-points (requires: resources)
+  │     └── economy (requires: resources)
+  │
+  ├── board (defines: onMoved, onLocationEntered, ...)
+  │     ├── grid-movement (requires: board)
+  │     └── area-movement (requires: board)
+  │
+  └── dice (defines: onRolled, ...)
+        └── push-your-luck (requires: dice)
+```
+
+### HookDefinition
+
+```typescript
+interface HookDefinition {
+  /** Human-readable description */
+  description: string;
+  /** How results from multiple implementers are combined */
+  resolution?: 'merge' | 'first' | 'blocking';
+}
+```
+
+Resolution strategies:
+- **`merge`** (default) - Collect and merge StateChanges from all implementers
+- **`first`** - First non-null response wins (like onExecuteAction)
+- **`blocking`** - Short-circuit if any implementer returns `{ blocked: true }`
+
+### Registry fire() Method
+
+```typescript
+class MechanicRegistry {
+  fire(
+    definerSlug: string,
+    hookName: string,
+    state: GameState,
+    playerId: string,
+    payload?: unknown
+  ): StateChanges | null {
+    const definer = this.mechanics.get(definerSlug);
+    const resolution = definer?.defines?.[hookName]?.resolution ?? 'merge';
+
+    // Route ONLY to enabled mechanics that require the definer
+    const dependents = this.getEnabledMechanics(state.config)
+      .filter(m => m.requires?.includes(definerSlug));
+
+    // ... invoke hookName method on each dependent, merge per resolution
+  }
+}
+```
+
+### Type Safety
+
+Defining mechanics export typed interfaces for their hooks:
+
+```typescript
+// Exported by cards mechanic
+export interface CardsHooks {
+  onCardDrawn?(ctx: HookContext, payload: CardDrawnPayload): StateChanges | null;
+  onCardPlayed?(ctx: HookContext, payload: CardPlayedPayload): StateChanges | null;
+  onCardDiscarded?(ctx: HookContext, payload: CardDiscardedPayload): StateChanges | null;
+  onBeforeCardDraw?(ctx: HookContext, payload: BeforeDrawPayload): DrawHookResult | null;
+}
+```
+
+Dependents opt into type checking via intersection:
+
+```typescript
+const myMechanic: MechanicHooks & CardsHooks = { ... };
+// TypeScript verifies onCardDrawn signature matches CardsHooks
+```
+
+### Strangler Fig Migration
+
+Global hooks and mechanic-defined hooks coexist during migration:
+
+1. **Phase 1**: Add `defines`, `requires`, `fire()` infrastructure
+2. **Phase 2**: Core services fire BOTH global hooks AND mechanic-defined hooks
+3. **Phase 3**: Leaf mechanics migrate from global to mechanic-defined hooks (one at a time)
+4. **Phase 4**: Deprecate global domain hooks (onBeforeDraw, onAfterDraw, etc.)
+5. **Phase 5**: Global hooks shrink to ~15 truly engine-level hooks
+
+During transition, `card-piles.ts` fires both:
+```typescript
+// Existing: fire global hook (all mechanics)
+mechanicRegistry.onAfterDraw(state, playerId, ...);
+// New: fire cards-defined hook (only cards dependents)
+mechanicRegistry.fire('cards', 'onCardDrawn', state, playerId, { cards });
+```
+
+Both paths work. Mechanics can implement either. No breaking changes.
+
+### End State
+
+`MechanicHooks` shrinks to engine-level global hooks only:
+
+```typescript
+interface MechanicHooks {
+  slug: string;
+  name: string;
+  requires?: string[];
+  defines?: Record<string, HookDefinition>;
+
+  // ~15 global hooks (engine-fired)
+  preValidateAction?(...): ValidationResult | null;
+  onExecuteAction?(...): ActionExecutionResult | null;
+  postExecuteAction?(...): StateChanges | null;
+  onTurnStart?(...): StateChanges | null;
+  onTurnEnd?(...): StateChanges | null;
+  onCheckWin?(...): WinCheckResult | null;
+  initSharedState?(...): SharedStateInitResult | null;
+  initPlayerState?(...): PlayerInitResult | null;
+  getAvailableActions?(...): AvailableAction[];
+  getPlayerView?(...): Record<string, unknown> | null;
+  isPlayerBlocked?(...): boolean | null;
+  canPlayerActNow?(...): boolean | null;
+
+  // Domain hooks live on defining mechanics, implemented via [key: string]
+}
+```
+
+Each domain's routing becomes a `fire()` call in the defining mechanic,
+replacing hardcoded routing methods in the registry.
+
+### Progress
+
+- [x] Infrastructure: `defines` property on `MechanicHooks`, `fire()` on registry
+- [x] Infrastructure: `requires` replaces `dependencies` (legacy compat retained)
+- [x] Infrastructure: `HookDefinition` type with resolution strategies
+- [x] `cards` core mechanic: defines `onCardDrawn`, `onCardPlayed`, `onCardDiscarded`, `onBeforeCardDraw`, `onBeforeCardPlay`
+- [x] `card-piles.ts` dual-fires global hooks AND cards-defined hooks (strangler fig)
+- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn`
+- [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`
+
+### Outstanding
+
+- [ ] Migrate remaining card leaf mechanics to `requires: ['cards']`:
+  - [ ] `deck-building`
+  - [ ] `trick-taking`
+  - [ ] `card-type-rules`
+  - [ ] `multi-use-cards`
+  - [ ] `place-card`
+  - [ ] `set-collection`
+  - [ ] `open-drafting` / `closed-drafting`
+  - [ ] `ladder-climbing`
+- [ ] Wire `hand.ts` to fire `onCardPlayed` when cards are removed for play
+- [ ] `resources` core mechanic: define hooks from current resource service
+- [ ] `board` core mechanic: define hooks from current board service
+- [ ] `dice` core mechanic: define hooks from current dice service
+- [ ] `combat` core mechanic: define hooks from current combat service
+- [ ] `effects` core mechanic: define hooks from current effects service
+- [ ] `visibility` core mechanic: define hooks from current visibility service
+- [ ] `social` core mechanic: define hooks from current social service
+- [ ] Migrate all resource-related leaf mechanics to `requires: ['resources']`
+- [ ] Remove draw-tracking from `card-matching.postExecuteAction` (after verifying `onCardDrawn` path works)
+- [ ] Remove `onBeforeDraw` from `hand-management` (after verifying `onBeforeCardDraw` path works)
+- [ ] Deprecate global domain hooks once all leaf mechanics migrated
+- [ ] Slim `MechanicHooks` interface to global-only hooks
 
 ---
 
@@ -505,8 +829,8 @@ export const myMechanic: MechanicHooks = {
   name: 'My Mechanic',
 
   // Optional: declare relationships
-  dependencies: ['action-points'],  // Requires action-points
-  conflicts: ['other-mechanic'],    // Cannot use with other-mechanic
+  requires: ['action-points'],    // Requires action-points
+  conflicts: ['other-mechanic'],  // Cannot use with other-mechanic
 
   // Optional: config schema for validation
   configSchema: {
