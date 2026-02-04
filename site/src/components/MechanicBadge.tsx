@@ -69,7 +69,7 @@ function MechanicBadge({ slug, showCategory = false, linkToPage = true }: Props)
 
   if (linkToPage) {
     return (
-      <Link to={`/mechanics?highlight=${slug}`} className="mechanic-link">
+      <Link to={`/mechanics/${slug}`} className="mechanic-link">
         {badge}
       </Link>
     )
