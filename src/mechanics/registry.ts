@@ -1410,6 +1410,34 @@ class MechanicRegistry {
   }
 
   /**
+   * Check if a player can act now (even if not their turn).
+   * Used by mechanics like freeplay that allow parallel/out-of-turn actions.
+   * Returns true if any mechanic allows out-of-turn action.
+   * Returns false if no mechanics grant this ability.
+   */
+  canPlayerActNow(state: GameState, playerId: string): boolean {
+    const ctx: HookContext = {
+      state,
+      playerId,
+      player: state.players[playerId],
+      config: state.config
+    };
+
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.canPlayerActNow) {
+        const result = mechanic.canPlayerActNow(ctx);
+        if (result === true) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Get action schema from mechanics.
    * First mechanic to return a schema for the action wins.
    */

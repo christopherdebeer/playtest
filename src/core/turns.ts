@@ -3,6 +3,7 @@
 import { watch, existsSync, type FSWatcher } from 'fs';
 import { loadState, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
 import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from '../types/game.js';
+import { mechanicRegistry } from '../mechanics/index.js';
 
 // Extended wait result with contest info
 export interface ExtendedWaitResult extends WaitResult {
@@ -144,8 +145,11 @@ export async function waitForTurn(
         // Get contest state
         const contestState = ensureContestState(state);
 
-        // Check if it's this player's turn
-        if (state.currentPlayer === playerId) {
+        // Check if it's this player's turn (or mechanics allow out-of-turn action)
+        // Uses canPlayerActNow hook from mechanic registry
+        const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
+
+        if (canActNow || state.currentPlayer === playerId) {
           cleanup();
           const activeHints = getActiveHintsForPlayer(contestState, playerId, state.round || 1, state.turnNumber || 1);
           resolve({
@@ -188,4 +192,13 @@ export async function waitForTurn(
 
 export function isPlayerTurn(state: GameState, playerId: string): boolean {
   return state.status === 'in_progress' && state.currentPlayer === playerId;
+}
+
+/**
+ * Check if player can act now (synchronous version for simple checks).
+ * For full mechanic-aware check, use mechanicRegistry.canPlayerActNow().
+ */
+export function canPlayerActBasic(state: GameState, playerId: string): boolean {
+  if (state.status !== 'in_progress') return false;
+  return state.currentPlayer === playerId;
 }

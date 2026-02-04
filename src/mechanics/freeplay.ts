@@ -228,6 +228,26 @@ export const freeplayMechanic: MechanicHooks = {
     // Otherwise, freeplay doesn't add specific actions
     // It just removes the turn-based gating from other actions
     return [];
+  },
+
+  /**
+   * Allow any player to act in freeplay mode (bypass turn checking).
+   * This hook is used by waitForTurn to allow parallel play.
+   */
+  canPlayerActNow(ctx: HookContext): boolean | null {
+    if (!isMechanicEnabled(ctx.config, 'freeplay')) return null;
+
+    const freeplayState = ctx.state.shared.freeplayState as FreeplaySharedState | undefined;
+
+    // If player has pending interaction, they can still act (for interaction responses)
+    // but we return true since freeplay mode allows any player to participate
+    if (freeplayState?.playersAwaitingResponse.includes(ctx.playerId)) {
+      // Still allow them to act - validation will restrict to interaction actions only
+      return true;
+    }
+
+    // Freeplay mode: any player can act at any time
+    return true;
   }
 };
 

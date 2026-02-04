@@ -835,6 +835,13 @@ export interface MechanicHooks {
   isPlayerBlocked?(ctx: HookContext): boolean | null;
 
   /**
+   * Determine if a player can act now, even if it's not their turn.
+   * Used by mechanics like freeplay that allow parallel/out-of-turn actions.
+   * Return true if player can act, false if blocked, null to defer.
+   */
+  canPlayerActNow?(ctx: HookContext): boolean | null;
+
+  /**
    * Provide action schema for validation.
    * Return schema for actions this mechanic owns.
    * Return null if action is not owned by this mechanic.
