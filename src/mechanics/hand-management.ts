@@ -4,19 +4,24 @@
  * Hand size limits and discard policies.
  * Policies: cannot_draw (block), discard_choice, discard_oldest
  *
+ * Requires: cards (core mechanic)
+ *
  * Hooks used:
- * - onBeforeDraw: Block or limit draw based on hand limit policy
- * - onBeforeAddToHand: Block or limit ANY card acquisition (trades, effects, etc.)
+ * - onBeforeDraw: Block or limit draw based on hand limit policy (global, legacy)
+ * - onBeforeAddToHand: Block or limit ANY card acquisition (global, legacy)
+ * - onBeforeCardDraw: Block or limit draw (cards-defined hook, preferred)
  *
  * Note: discard_choice and discard_oldest policies require execution-time
  * handling which remains in game.ts for now (requires state mutation during action).
  */
 
-import { MechanicHooks, DrawContext, DrawHookResult, HandAddContext, HandAddHookResult } from './types.js';
+import { MechanicHooks, HookContext, DrawContext, DrawHookResult, HandAddContext, HandAddHookResult } from './types.js';
+import type { CardsHooks, BeforeCardDrawPayload } from './core/cards.js';
 
-export const handManagementMechanic: MechanicHooks = {
+export const handManagementMechanic: MechanicHooks & CardsHooks = {
   slug: 'hand-management',
   name: 'Hand Management',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',
@@ -106,6 +111,38 @@ export const handManagementMechanic: MechanicHooks = {
 
     // For discard_choice and discard_oldest, allow cards but they'll be discarded after
     // (handled in game.ts execution-time logic)
+    return null;
+  },
+
+  /**
+   * Cards-defined hook: Block or limit draw based on hand limit.
+   * Preferred path (mirrors onBeforeDraw logic above).
+   * Fired by card-piles.ts via mechanicRegistry.fire('cards', 'onBeforeCardDraw', ...).
+   */
+  onBeforeCardDraw(ctx: HookContext, { requestedCount }: BeforeCardDrawPayload): { blocked?: boolean; blockReason?: string; count?: number } | null {
+    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    if (handLimit === undefined) return null;
+
+    const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+    if (policy !== 'cannot_draw') return null;
+
+    const currentHandSize = ctx.player.hand.length;
+    const maxDrawable = Math.max(0, handLimit - currentHandSize);
+
+    if (maxDrawable === 0) {
+      return {
+        blocked: true,
+        blockReason: `Hand limit (${handLimit}) reached. You have ${currentHandSize} cards and cannot draw more.`
+      };
+    }
+
+    if (requestedCount > maxDrawable) {
+      return {
+        count: maxDrawable,
+        blockReason: `Draw limited to ${maxDrawable} cards due to hand limit (${handLimit}).`
+      };
+    }
+
     return null;
   }
 };

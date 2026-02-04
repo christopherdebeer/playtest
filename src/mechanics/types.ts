@@ -616,7 +616,28 @@ export interface AfterMoveContext {
 }
 
 /**
- * Mechanic hooks interface - all methods optional, return null to skip
+ * Definition of a hook that a mechanic exposes for its dependents to implement.
+ * Any mechanic can define hooks; dependents implement them as methods.
+ */
+export interface HookDefinition {
+  /** Human-readable description of when this hook fires */
+  description: string;
+  /**
+   * How results from multiple implementers are combined:
+   * - 'merge' (default): Collect and merge StateChanges from all implementers
+   * - 'first': First non-null response wins
+   * - 'blocking': Short-circuit if any implementer returns { blocked: true }
+   */
+  resolution?: 'merge' | 'first' | 'blocking';
+}
+
+/**
+ * Mechanic hooks interface - all methods optional, return null to skip.
+ *
+ * Global hooks (defined here) are fired by the engine and routed to all enabled mechanics.
+ * Mechanic-defined hooks (via `defines`) are fired by the defining mechanic and routed
+ * only to mechanics that declare `requires` on the definer. Dependents implement these
+ * as regular methods - identical in feel to implementing a global hook.
  */
 export interface MechanicHooks {
   /** Unique identifier for this mechanic */
@@ -935,8 +956,13 @@ export interface MechanicHooks {
   // ============ Mechanic Composition ============
 
   /**
-   * Mechanics this one depends on.
-   * Registry validates all dependencies are enabled at startup.
+   * Mechanics this one requires.
+   * Registry validates all requirements are enabled at startup.
+   */
+  requires?: string[];
+
+  /**
+   * @deprecated Use `requires` instead. Will be removed in a future version.
    */
   dependencies?: string[];
 
@@ -947,10 +973,26 @@ export interface MechanicHooks {
   conflicts?: string[];
 
   /**
+   * Hook methods this mechanic defines for its dependents to implement.
+   * Dependents declare `requires: ['this-mechanic']` and implement the
+   * hook methods as regular methods on their MechanicHooks object.
+   *
+   * The defining mechanic fires these via `mechanicRegistry.fire(slug, hookName, ...)`.
+   */
+  defines?: Record<string, HookDefinition>;
+
+  /**
    * JSON Schema for this mechanic's config.
    * Used for validation and documentation.
    */
   configSchema?: MechanicConfigSchema;
+
+  /**
+   * Allow arbitrary methods for mechanic-defined hook implementations.
+   * When a mechanic declares `requires: ['cards']`, it can implement
+   * methods like `onCardDrawn()` that the cards mechanic defines.
+   */
+  [hookName: string]: unknown;
 }
 
 /**
@@ -976,6 +1018,7 @@ export interface MechanicConfigSchema {
  * Core mechanics that are always enabled (no config required)
  */
 const ALWAYS_ENABLED_MECHANICS = [
+  'cards',
   'pass',
   'lose-a-turn',
   'location-effects',

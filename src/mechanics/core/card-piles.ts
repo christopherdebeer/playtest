@@ -91,12 +91,25 @@ export function drawFromDeck(state: GameState, count: number, playerId?: string)
   // Run onBeforeDraw hooks if we have a player context
   let actualCount = count;
   if (playerId) {
+    // Global hook (all mechanics)
     const beforeResult = mechanicRegistry.onBeforeDraw(state, playerId, count);
     if (beforeResult.blocked) {
       return { cards: [], reshuffled: false, blocked: true, blockReason: beforeResult.blockReason };
     }
     if (beforeResult.count !== undefined) {
       actualCount = beforeResult.count;
+    }
+
+    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
+    const cardsBeforeResult = mechanicRegistry.fire('cards', 'onBeforeCardDraw', state, playerId, {
+      requestedCount: actualCount
+    });
+    if (cardsBeforeResult && (cardsBeforeResult as Record<string, unknown>).blocked) {
+      const blockReason = (cardsBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+      return { cards: [], reshuffled: false, blocked: true, blockReason };
+    }
+    if (cardsBeforeResult && typeof (cardsBeforeResult as Record<string, unknown>).count === 'number') {
+      actualCount = (cardsBeforeResult as Record<string, unknown>).count as number;
     }
   }
 
@@ -105,8 +118,15 @@ export function drawFromDeck(state: GameState, count: number, playerId?: string)
 
   // Run onAfterDraw hooks
   if (playerId && drawn.length > 0) {
+    // Global hook (all mechanics)
     const afterChanges = mechanicRegistry.onAfterDraw(state, playerId, count, drawn, reshuffled);
     applyStateChanges(state, afterChanges);
+
+    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
+    const cardsChanges = mechanicRegistry.fire('cards', 'onCardDrawn', state, playerId, {
+      cards: drawn, requestedCount: count, reshuffled
+    });
+    if (cardsChanges) applyStateChanges(state, cardsChanges);
   }
 
   return { cards: drawn, reshuffled };
@@ -133,8 +153,15 @@ export function addToDiscard(state: GameState, cards: Card[], playerId?: string)
 
   // Run onDiscard hooks
   if (cards.length > 0) {
+    // Global hook (all mechanics)
     const changes = mechanicRegistry.onDiscard(state, cards, playerId);
     applyStateChanges(state, changes);
+
+    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
+    if (playerId) {
+      const cardsChanges = mechanicRegistry.fire('cards', 'onCardDiscarded', state, playerId, { cards });
+      if (cardsChanges) applyStateChanges(state, cardsChanges);
+    }
   }
 }
 

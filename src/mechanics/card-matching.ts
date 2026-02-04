@@ -4,13 +4,13 @@
  * Handles UNO-style card matching where players must play cards that match
  * by color, value, or use wild cards with declared colors.
  *
- * This extracts hardcoded card matching logic from game.ts to enable
- * game.ts agnosticism regarding card types and color mechanics.
+ * Requires: cards (core mechanic)
  *
  * Hooks used:
  * - initSharedState: Initialize currentColor from top card
  * - preValidateAction: Validate card matches current color/top card
- * - postExecuteAction: Update currentColor after wild card play
+ * - postExecuteAction: Update currentColor after wild card play (global, legacy)
+ * - onCardDrawn: Track draws for forced-draw rule (cards-defined hook)
  */
 
 import {
@@ -24,6 +24,7 @@ import {
   isMechanicEnabled
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
+import type { CardsHooks, CardDrawnPayload } from './core/cards.js';
 
 interface CardMatchingConfig {
   /** Colors available in the game */
@@ -95,9 +96,10 @@ function hasPlayableCard(
   return hand.some(card => isCardPlayable(card, currentColor, topCard, config));
 }
 
-export const cardMatchingMechanic: MechanicHooks = {
+export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
   slug: 'card-matching',
   name: 'Card Matching (UNO-style)',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',
@@ -306,6 +308,26 @@ export const cardMatchingMechanic: MechanicHooks = {
     }
 
     return null;
+  },
+
+  /**
+   * Cards-defined hook: Track draws for forced-draw rule.
+   * This is the preferred path (replaces draw tracking in postExecuteAction).
+   * Fired by card-piles.ts via mechanicRegistry.fire('cards', 'onCardDrawn', ...).
+   */
+  onCardDrawn(ctx: HookContext, { cards }: CardDrawnPayload): StateChanges | null {
+    if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
+    if (!cards || cards.length === 0) return null;
+
+    const currentDraws = (ctx.state.shared.cardMatchingDraws as Record<string, boolean>) || {};
+    return {
+      sharedStateChanges: {
+        cardMatchingDraws: {
+          ...currentDraws,
+          [ctx.playerId]: true
+        }
+      }
+    };
   },
 
   /**
