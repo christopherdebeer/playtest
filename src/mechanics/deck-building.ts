@@ -31,7 +31,10 @@ import {
   PlayerInitContext,
   PlayerInitResult,
   ActionDescription,
-  StateChanges
+  StateChanges,
+  SharedStateInitContext,
+  SharedStateInitResult,
+  isMechanicEnabled
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
 
@@ -171,6 +174,27 @@ export const deckBuildingMechanic: MechanicHooks = {
         default: 'trash'
       }
     }
+  },
+
+  /**
+   * Initialize shared state with supply piles from config
+   */
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    if (!isMechanicEnabled(ctx.config, 'deck-building')) return null;
+
+    const dbConfig = ctx.config.engine_mechanics?.deck_building;
+    if (!isDeckBuildingConfig(dbConfig)) return null;
+
+    // Initialize supply from config
+    const supply = dbConfig.supply ? [...dbConfig.supply] : [];
+
+    // Initialize trash pile
+    const trashPileName = dbConfig.trash_pile || 'trash';
+
+    return {
+      supply,
+      [trashPileName]: []
+    };
   },
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {

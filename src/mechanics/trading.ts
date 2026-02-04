@@ -18,7 +18,10 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  SharedStateInitContext,
+  SharedStateInitResult,
+  isMechanicEnabled
 } from './types.js';
 import { GameAction, TradeOfferAction, TradeRespondAction } from '../types/game.js';
 import { removeCardsFromHand, addToHand } from './core/hand.js';
@@ -71,6 +74,17 @@ export const tradingMechanic: MechanicHooks = {
         description: 'Allow one-sided trades (giving without receiving)'
       }
     }
+  },
+
+  /**
+   * Initialize shared state with empty pendingTrades array
+   */
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    if (!isMechanicEnabled(ctx.config, 'trading')) return null;
+
+    return {
+      pendingTrades: []
+    };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
