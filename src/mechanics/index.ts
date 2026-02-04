@@ -79,6 +79,9 @@ import {
   suddenDeathMechanic
 } from './win-conditions/index.js';
 
+// Core mechanics (always available)
+import { passMechanic } from './core/pass.js';
+
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
 mechanicRegistry.register(incomeMechanic);
@@ -151,6 +154,9 @@ mechanicRegistry.register(timeoutWinnerMechanic);
 mechanicRegistry.register(raceWinMechanic);
 mechanicRegistry.register(suddenDeathMechanic);
 
+// Register core mechanics (always available)
+mechanicRegistry.register(passMechanic);
+
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';
 export type { MechanicValidationError, MechanicMetadata } from './registry.js';
@@ -191,5 +197,11 @@ export type {
   // Turn order types (Phase 3)
   TurnOrderContext,
   TurnOrderResult,
-  PassPriorityResult
+  PassPriorityResult,
+  // Agnosticism types
+  SharedStateInitContext,
+  SharedStateInitResult,
+  EffectApplicationContext,
+  EffectApplicationResult,
+  ActionSchema
 } from './types.js';

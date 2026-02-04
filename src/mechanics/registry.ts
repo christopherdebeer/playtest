@@ -50,6 +50,12 @@ import {
   VoteCastResult,
   VoteTallyContext,
   VoteTallyResult,
+  // Agnosticism hooks
+  SharedStateInitContext,
+  SharedStateInitResult,
+  EffectApplicationContext,
+  EffectApplicationResult,
+  ActionSchema,
   isMechanicEnabled
 } from './types.js';
 import { Effect } from '../types/game.js';
@@ -1276,6 +1282,145 @@ class MechanicRegistry {
         const result = mechanic.onVoteTally(ctx);
         if (result) {
           return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // ============ Agnosticism Hooks (game.ts decoupling) ============
+
+  /**
+   * Initialize shared state from all mechanics.
+   * Each mechanic contributes its own shared state properties.
+   * Returns merged result from all mechanics.
+   */
+  initSharedState(
+    config: GameConfig,
+    deck: Card[],
+    playerIds: string[]
+  ): SharedStateInitResult {
+    const ctx: SharedStateInitContext = {
+      config,
+      deck,
+      playerIds
+    };
+
+    const result: SharedStateInitResult = {};
+
+    // Call all registered mechanics (not just enabled - some may need to initialize)
+    for (const mechanic of this.mechanics.values()) {
+      if (mechanic.initSharedState) {
+        const mechanicResult = mechanic.initSharedState(ctx);
+        if (mechanicResult) {
+          Object.assign(result, mechanicResult);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get mechanic-contributed properties for player view.
+   * Each mechanic adds its own view properties.
+   */
+  getPlayerView(state: GameState, playerId: string): Record<string, unknown> {
+    const ctx: HookContext = {
+      state,
+      playerId,
+      player: state.players[playerId],
+      config: state.config
+    };
+
+    const result: Record<string, unknown> = {};
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.getPlayerView) {
+        const mechanicResult = mechanic.getPlayerView(ctx);
+        if (mechanicResult) {
+          Object.assign(result, mechanicResult);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Apply an effect using mechanic handlers.
+   * First mechanic to return { handled: true } wins.
+   * Returns null if no mechanic handles the effect type.
+   */
+  applyEffect(
+    state: GameState,
+    playerId: string,
+    effect: Effect,
+    targetPlayerId?: string
+  ): EffectApplicationResult | null {
+    const ctx: EffectApplicationContext = {
+      state,
+      playerId,
+      effect,
+      targetPlayerId,
+      config: state.config
+    };
+
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.applyEffect) {
+        const result = mechanic.applyEffect(ctx);
+        if (result?.handled) {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if a player is blocked from taking actions.
+   * Any mechanic returning true blocks the player.
+   * Returns false if no mechanic indicates blocked.
+   */
+  isPlayerBlocked(state: GameState, playerId: string): boolean {
+    const ctx: HookContext = {
+      state,
+      playerId,
+      player: state.players[playerId],
+      config: state.config
+    };
+
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.isPlayerBlocked) {
+        const result = mechanic.isPlayerBlocked(ctx);
+        if (result === true) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get action schema from mechanics.
+   * First mechanic to return a schema for the action wins.
+   */
+  getActionSchema(state: GameState, action: GameAction): ActionSchema | null {
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.getActionSchema) {
+        const schema = mechanic.getActionSchema(action);
+        if (schema) {
+          return schema;
         }
       }
     }

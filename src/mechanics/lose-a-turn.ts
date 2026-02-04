@@ -6,16 +6,31 @@
  *
  * Hooks used:
  * - preValidateAction: Block all actions except pass when player has blocking effect
+ * - isPlayerBlocked: Report whether player is blocked (for game.ts agnosticism)
  */
 
 import { MechanicHooks, HookContext, ValidationResult } from './types.js';
 import { GameAction } from '../types/game.js';
 
-const BLOCKING_EFFECT_TYPES = ['block_turn', 'block', 'skip'];
+const BLOCKING_EFFECT_TYPES = ['block_turn', 'block', 'skip', 'lose_turn'];
 
 export const loseATurnMechanic: MechanicHooks = {
   slug: 'lose-a-turn',
   name: 'Lose a Turn',
+
+  /**
+   * Check if player is blocked from taking actions.
+   * Used by game.ts to determine if player can act.
+   */
+  isPlayerBlocked(ctx: HookContext): boolean | null {
+    const hasBlockingEffect = ctx.player.effects.some(e => {
+      const effectType = e.type.toLowerCase();
+      return BLOCKING_EFFECT_TYPES.includes(effectType);
+    });
+
+    // Return true if blocked, null to defer to other mechanics
+    return hasBlockingEffect ? true : null;
+  },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Pass is always allowed (it's how blocked players end their turn)

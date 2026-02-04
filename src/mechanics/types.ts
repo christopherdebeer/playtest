@@ -374,6 +374,78 @@ export interface AfterRollContext extends DiceRollContext {
   keptDice?: number[];
 }
 
+// ============ Agnosticism Types (game.ts decoupling) ============
+
+/**
+ * Context for shared state initialization
+ */
+export interface SharedStateInitContext {
+  config: GameConfig;
+  /** The deck being built (mechanics can modify) */
+  deck: Card[];
+  /** Players being initialized */
+  playerIds: string[];
+}
+
+/**
+ * Result from initSharedState - properties to add to shared state
+ */
+export interface SharedStateInitResult {
+  [key: string]: unknown;
+}
+
+/**
+ * Context for applying an effect
+ */
+export interface EffectApplicationContext {
+  state: GameState;
+  playerId: string;
+  effect: Effect;
+  /** Optional target player (for effects that target others) */
+  targetPlayerId?: string;
+  config: GameConfig;
+}
+
+/**
+ * Result from applyEffect hook
+ */
+export interface EffectApplicationResult {
+  /** True if this mechanic handled the effect */
+  handled: boolean;
+  /** State changes to apply */
+  stateChanges?: StateChanges;
+  /** Log message */
+  logMessage?: string;
+  /** Additional log data */
+  logData?: Record<string, unknown>;
+}
+
+/**
+ * Schema for action validation
+ */
+export interface ActionSchema {
+  /** Required fields */
+  required?: string[];
+  /** Optional fields */
+  optional?: string[];
+  /** Conditional requirements */
+  conditional?: Array<{
+    /** Condition to check */
+    if: Record<string, unknown>;
+    /** Fields required when condition is true */
+    require?: string[];
+    /** Fields forbidden when condition is true */
+    forbid?: string[];
+  }>;
+  /** Field type definitions */
+  fields?: Record<string, {
+    type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+    enum?: unknown[];
+    minimum?: number;
+    maximum?: number;
+  }>;
+}
+
 // ============ Dynamic Turn Order Types (Phase 3) ============
 
 /**
@@ -731,6 +803,43 @@ export interface MechanicHooks {
    * Can provide custom tally logic or tiebreakers.
    */
   onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
+
+  // ============ Agnosticism Hooks (game.ts decoupling) ============
+
+  /**
+   * Initialize shared state for this mechanic.
+   * Called during game initialization.
+   * Return state properties to add to shared state.
+   */
+  initSharedState?(ctx: SharedStateInitContext): SharedStateInitResult | null;
+
+  /**
+   * Contribute mechanic-specific properties to player view.
+   * Called when building visible state for a player.
+   * Return properties to include in player's view.
+   */
+  getPlayerView?(ctx: HookContext): Record<string, unknown> | null;
+
+  /**
+   * Apply a mechanic-owned effect type.
+   * Return { handled: true } if this mechanic handles the effect type.
+   * Return null if the effect type is not owned by this mechanic.
+   */
+  applyEffect?(ctx: EffectApplicationContext): EffectApplicationResult | null;
+
+  /**
+   * Determine if a player is blocked from taking actions.
+   * Return true if blocked, false if explicitly not blocked,
+   * null/undefined to defer to other mechanics.
+   */
+  isPlayerBlocked?(ctx: HookContext): boolean | null;
+
+  /**
+   * Provide action schema for validation.
+   * Return schema for actions this mechanic owns.
+   * Return null if action is not owned by this mechanic.
+   */
+  getActionSchema?(action: GameAction): ActionSchema | null;
 
   // ============ Mechanic Composition ============
 

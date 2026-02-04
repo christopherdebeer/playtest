@@ -1,5 +1,9 @@
 # Mechanic Extraction Roadmap
 
+> **Note**: This document has been superseded by [MECHANICS.md](./MECHANICS.md), which provides unified documentation for the mechanics system. This file is retained for historical reference and commit history.
+>
+> See: [MECHANICS.md](./MECHANICS.md)
+
 This document outlines the incremental migration from a monolithic game engine to a plugin-based, mechanic-agnostic core using the **strangler fig pattern**.
 
 ## Vision
