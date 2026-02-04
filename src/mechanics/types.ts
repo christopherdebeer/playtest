@@ -884,7 +884,12 @@ export interface MechanicConfigSchema {
 /**
  * Core mechanics that are always enabled (no config required)
  */
-const ALWAYS_ENABLED_MECHANICS = ['pass', 'lose-a-turn'];
+const ALWAYS_ENABLED_MECHANICS = [
+  'pass',
+  'lose-a-turn',
+  'location-effects',
+  'placed-card-effects'
+];
 
 /**
  * Check if a mechanic is enabled in the game config

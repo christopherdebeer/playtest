@@ -592,7 +592,7 @@ engine_mechanics:
 
 ## Current Status
 
-### Implemented Mechanics: 53 of 192 (28%)
+### Implemented Mechanics: 55 of 192 (29%)
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -628,8 +628,42 @@ engine_mechanics:
 - `initSharedState` - Used by open-drafting
 - `getPlayerView` - Used by push-your-luck
 - `isPlayerBlocked` - Used by lose-a-turn
-- `applyEffect` - Defined, ready for mechanic implementations
+- `applyEffect` - Used by location-effects, placed-card-effects
 - `getActionSchema` - Defined, ready for mechanic implementations
+
+### Outstanding Hook Implementations
+
+Mechanics that should implement each agnosticism hook to fully decouple game.ts:
+
+#### `initSharedState` - Mechanics with shared state
+| Mechanic | Shared Property | Status |
+|----------|-----------------|--------|
+| open-drafting | `draftDisplay` | **Done** |
+| deck-building | `supply` | Pending |
+| trading | `pendingTrades` | Pending |
+| auction-english | `currentBid`, `highBidder` | Pending |
+| trick-taking | `currentTrick`, `leadSuit` | Pending |
+
+#### `getPlayerView` - Mechanics with player-specific view data
+| Mechanic | Properties | Status |
+|----------|------------|--------|
+| push-your-luck | `rollAccumulator`, `rollCount` | **Done** |
+| action-points | `actionPoints` | Pending |
+| variable-player-powers | `power` | Pending |
+| resources (if mechanic) | resource amounts | Pending |
+
+#### `applyEffect` - Effect type handlers
+| Mechanic | Effect Types | Status |
+|----------|--------------|--------|
+| location-effects | `draw_on_enter`, `heal_on_enter`, `damage_on_enter` | **Done** |
+| placed-card-effects | `probability_boost`, `probability_penalty`, `force_discard` | **Done** |
+| lose-a-turn | `block_turn`, `block`, `skip` | Uses `isPlayerBlocked` |
+| take-that | `interference` effects | Pending |
+
+#### `getActionSchema` - Action validation schemas
+| Mechanic | Actions | Status |
+|----------|---------|--------|
+| All action-owning | Their respective actions | Pending |
 
 ### game.ts Agnosticism Status
 
@@ -639,7 +673,7 @@ engine_mechanics:
 | Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
 | Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (open-drafting) |
 | Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (push-your-luck) |
-| Effect types | Hardcoded switch | `applyEffect` hook | Pending |
+| Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
 | Card types | Hardcoded (wild, etc) | Mechanic-owned | Pending |
 
@@ -648,6 +682,7 @@ engine_mechanics:
 - **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
 - **Shared state init**: `open-drafting` implements `initSharedState` for draftDisplay
 - **Player view**: `push-your-luck` implements `getPlayerView` for rollAccumulator/rollCount
+- **Effect types**: `location-effects` and `placed-card-effects` implement `applyEffect` hook
 
 ---
 
@@ -679,11 +714,14 @@ engine_mechanics:
 
 ### Next: Remaining Agnosticism Migrations
 
-| Migration | Mechanic(s) to Update | game.ts Lines to Remove |
-|-----------|----------------------|------------------------|
-| Effect type handling | Create effect handlers | ~100 |
-| Card type handling (wild) | card-matching (new) | ~80 |
-| Action schema validation | All action-owning mechanics | ~150 |
+| Migration | Mechanic(s) to Update | game.ts Lines to Remove | Status |
+|-----------|----------------------|------------------------|--------|
+| Effect type handling | location-effects, placed-card-effects | ~100 | **Done** |
+| Card type handling (wild) | card-matching (new) | ~80 | Pending |
+| Action schema validation | All action-owning mechanics | ~150 | Pending |
+| Deck-building supply init | deck-building | ~5 | Pending |
+| Trading shared state | trading | ~10 | Pending |
+| Auction shared state | auction-english | ~10 | Pending |
 
 ### Short-Term: Remaining Phase 1-5 Mechanics
 
