@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-04T13:16:08.071Z",
+  "generated": "2026-02-04T13:26:38.788Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -202,6 +202,22 @@
       },
       "hooks": [
         "onTurnStart"
+      ]
+    },
+    "freeplay": {
+      "config_key": "freeplay",
+      "since": "3.0.0",
+      "description": "Experimental: Enable parallel play without turn-based alternation",
+      "config_schema": {
+        "actions_per_round": "number",
+        "interaction_timeout": "number",
+        "allow_concurrent_resource_access": "boolean",
+        "interaction_actions": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onTurnEnd",
+        "getAvailableActions"
       ]
     },
     "grid-movement": {
