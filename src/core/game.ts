@@ -1057,11 +1057,8 @@ export function cancelGame(gameName: string, reason: string): GameState {
  * @returns true if turn was advanced, false if player can continue
  */
 export function maybeAdvanceTurn(state: GameState, playerId: string, action: GameAction): boolean {
-  // 'pass' always ends the turn
-  if (action.type === 'pass') {
-    advanceTurn(state);
-    return true;
-  }
+  // Note: 'pass' is now handled by the pass mechanic via onExecuteAction
+  // which sets advanceTurn: true, so it's handled in executeAction's mechanic path
 
   // Check if any mechanic wants to auto-end the turn (e.g., action points depleted)
   const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
@@ -1677,11 +1674,9 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const placedLocations = (state.shared.placedLocations as string[]) || [];
   const startingTile = gridConfig?.starting_tile || 'origin';
 
-  // Check for blocking effects
-  const isBlocked = player.effects.some(e => {
-    const effectType = e.type.toLowerCase();
-    return effectType === 'block_turn' || effectType === 'block' || effectType === 'skip';
-  });
+  // Check for blocking effects using mechanic registry
+  // This allows mechanics to define what blocks a player (lose-a-turn implements this)
+  const isBlocked = mechanicRegistry.isPlayerBlocked(state, playerId);
 
   // Get valid move targets from current state
   const getValidMoveTargets = (): string[] => {

@@ -882,9 +882,19 @@ export interface MechanicConfigSchema {
 }
 
 /**
+ * Core mechanics that are always enabled (no config required)
+ */
+const ALWAYS_ENABLED_MECHANICS = ['pass', 'lose-a-turn'];
+
+/**
  * Check if a mechanic is enabled in the game config
  */
 export function isMechanicEnabled(config: GameConfig, slug: string): boolean {
+  // Core mechanics are always enabled
+  if (ALWAYS_ENABLED_MECHANICS.includes(slug)) {
+    return true;
+  }
+
   if (!config.engine_mechanics) return false;
 
   // Map slug to config key (e.g., 'action-points' -> 'action_points')
