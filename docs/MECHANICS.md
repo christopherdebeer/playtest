@@ -547,7 +547,7 @@ replacing hardcoded routing methods in the registry.
 ### Outstanding
 
 - [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
-- [ ] Migrate `trick-taking` and `ladder-climbing` play paths to use `playCard()` or fire `onCardPlayed` (they bypass with direct `removeFromHandByName`)
+- [x] `trick-taking` and `ladder-climbing` now fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
 - [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
 - [ ] `resources` core mechanic: define hooks from current resource service
 - [ ] `board` core mechanic: define hooks from current board service

@@ -30,6 +30,7 @@ import {
 } from './types.js';
 import { GameAction, Card, PlayCardAction } from '../types/game.js';
 import { removeFromHandByName, getHand } from './core/hand.js';
+import { mechanicRegistry, applyStateChanges } from './registry.js';
 
 interface TrickTakingConfig {
   /** Trump suit (optional - if not set, no trump) */
@@ -252,6 +253,13 @@ export const trickTakingMechanic: MechanicHooks = {
         logData: { card: playAction.card, error: 'Failed to remove from hand' }
       };
     }
+
+    // Fire cards-defined onCardPlayed hook (trick-taking bypasses playCard(),
+    // so we fire manually with target: 'trick')
+    const cardPlayedChanges = mechanicRegistry.fire('cards', 'onCardPlayed', state, playerId, {
+      card: playedCard, target: 'trick', playContext: {}
+    });
+    if (cardPlayedChanges) applyStateChanges(state, cardPlayedChanges);
 
     // Add to current trick
     const currentTrick = [...((state.shared.currentTrick || []) as TrickCard[])];

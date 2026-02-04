@@ -29,6 +29,7 @@ import {
 } from './types.js';
 import { GameAction, Card, PlayCardAction } from '../types/game.js';
 import { removeFromHandByName, getHand } from './core/hand.js';
+import { mechanicRegistry, applyStateChanges } from './registry.js';
 
 interface LadderClimbingConfig {
   /** How to compare cards: 'value' (numeric), 'rank' (use rank_order) */
@@ -350,6 +351,15 @@ export const ladderClimbingMechanic: MechanicHooks = {
     for (const cardName of cardNames) {
       const card = removeFromHandByName(state, playerId, cardName);
       if (card) cardsToPlay.push(card);
+    }
+
+    // Fire cards-defined onCardPlayed hook for each card (ladder-climbing bypasses
+    // playCard(), so we fire manually with target: 'ladder')
+    for (const card of cardsToPlay) {
+      const cardPlayedChanges = mechanicRegistry.fire('cards', 'onCardPlayed', state, playerId, {
+        card, target: 'ladder', playContext: {}
+      });
+      if (cardPlayedChanges) applyStateChanges(state, cardPlayedChanges);
     }
 
     const combType = getCombinationType(cardsToPlay, ladderConfig)!;
