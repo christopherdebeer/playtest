@@ -861,43 +861,6 @@ See `games/parallel-race/RULES.md` - A race game designed for freeplay testing.
 
 ---
 
-## Known Issues
-
-Issues discovered during playtesting that require fixes.
-
-| Mechanic | Issue | Discovered | Status |
-|----------|-------|------------|--------|
-| `ladder-climbing` | `auto_advance_winner` not functioning - property mismatch (used `state` instead of `currentNode`) | 2026-02-04 (road-rally playtest) | **Fixed** |
-| `closed-drafting` | Missing `initSharedState()` and `onTurnStart()` hooks - pools never populated from deck | 2026-02-04 (draft-duel playtest) | **Fixed** |
-| `freeplay` + `point-to-point-movement` | `play_card` only handles interference effects - `mechanicRegistry.applyEffect()` never called for movement card effects | 2026-02-04 (parallel-race playtest) | **Fixed** |
-| `push-your-luck` scoring | Card point effects (`effect.type: "points"`) not applied to score on draft/play - `onAfterAddToHand` hook unimplemented | 2026-02-04 (fortune-seekers playtest) | **Fixed** |
-| `card-matching` (UNO) | Missing draw-until-playable rule enforcement - players can pass indefinitely without forced draw | 2026-02-04 (uno playtest) | **Fixed** |
-
-### Playtest Log (2026-02-04)
-
-**Games Run**: 9 (markovs-chains, uno, fortune-seekers, treasure-hunters, draft-duel, road-rally, engine-masters, aaote, parallel-race)
-
-**Results Summary**:
-- `markovs-chains`: player-2 won (Victory state, R3/T6) - balance concerns noted (too fast)
-- `road-rally`: player-1 won (resignation, R11/T22) - **BUG**: ladder-climbing track advancement broken
-- `treasure-hunters`: player-1 won (set collection, R10/T19) - working correctly
-- `engine-masters`: player-1 won (timeout, R31/T61) - pass-spiral design observation
-- `fortune-seekers`: player-1 won (timeout, R21/T41) - working correctly
-- `aaote`: player-3 won (Explorer objective, R8/T22) - victory detection working correctly (3-player game)
-- `draft-duel`: player-1 won (resignation, R14/T28) - **BUG**: closed-drafting pools not implemented
-- `parallel-race`: player-2 won (resignation, R4/T7) - **BUG**: freeplay+movement integration broken
-- `uno`: player-2 won (manual end, R55/T110) - **BUG**: unwinnable pass-loop state (Grade: D)
-
-**Mechanics Validated**:
-- Turn management, action validation, win detection ✓
-- Location effects, set collection, resource management ✓
-- 3-player games, victory claim adjudication ✓
-- Hidden objectives (aaote) ✓
-
-**Bugs Found**: 5 critical issues identified (see Known Issues above)
-
----
-
 ## Related Documents
 
 - [MECHANIC_EXTRACTION_ROADMAP.md](./MECHANIC_EXTRACTION_ROADMAP.md) - Historical extraction progress (superseded)
