@@ -9,12 +9,14 @@
 export {
   drawFromDeck,
   addToDiscard,
+  playCard,
   peekDiscard,
   hasCardsAvailable,
   getDeckSize,
   getDiscardSize,
   type DrawContext,
-  type DrawResult
+  type DrawResult,
+  type PlayCardResult
 } from './card-piles.js';
 
 // Hand operations

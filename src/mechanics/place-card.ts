@@ -25,6 +25,7 @@ import { GameAction, PlaceCardAction, PlacedCard, Card } from '../types/game.js'
 export const placeCardMechanic: MechanicHooks = {
   slug: 'place-card',
   name: 'Place Card',
+  requires: ['cards'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate place_card actions

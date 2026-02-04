@@ -34,6 +34,7 @@ interface OpenDraftingConfig {
 export const openDraftingMechanic: MechanicHooks = {
   slug: 'open-drafting',
   name: 'Open Drafting',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

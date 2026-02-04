@@ -154,6 +154,7 @@ function canBeatPlay(
 export const ladderClimbingMechanic: MechanicHooks = {
   slug: 'ladder-climbing',
   name: 'Ladder Climbing',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-04T23:01:13.922Z",
+  "generated": "2026-02-04T23:20:56.976Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -158,7 +158,9 @@
     "cards": {
       "config_key": "cards",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [
+        "onExecuteAction"
+      ]
     },
     "catch-the-leader": {
       "config_key": "catch_the_leader",
@@ -397,7 +399,6 @@
         "hand_limit_policy": "cannot_draw | discard_choice | discard_oldest"
       },
       "hooks": [
-        "onBeforeDraw",
         "onBeforeAddToHand"
       ]
     },

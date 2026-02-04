@@ -26,6 +26,7 @@ const PLACED_CARD_EFFECT_TYPES = [
 export const placedCardEffectsMechanic: MechanicHooks = {
   slug: 'placed-card-effects',
   name: 'Placed Card Effects',
+  requires: ['cards'],
 
   /**
    * Apply placed card effects.

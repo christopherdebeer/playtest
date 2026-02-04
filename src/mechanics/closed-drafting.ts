@@ -64,6 +64,7 @@ interface DraftSelectAction {
 export const closedDraftingMechanic: MechanicHooks = {
   slug: 'closed-drafting',
   name: 'Closed Drafting',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',
