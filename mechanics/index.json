@@ -1,7 +1,11 @@
 {
-  "generated": "2026-01-29T14:24:15.141Z",
-  "source": "https://boardgamegeek.com/browse/boardgamemechanic",
-  "count": 192,
+  "generated": "2026-02-04T16:33:55.331Z",
+  "source": "Generated from mechanics/*/*.md frontmatter",
+  "count": 209,
+  "sourceBreakdown": {
+    "bgg": 192,
+    "engine": 17
+  },
   "categories": [
     "action",
     "auction",
@@ -22,13 +26,6 @@
     "worker-placement"
   ],
   "mechanics": [
-    {
-      "id": "2073",
-      "name": "Acting",
-      "slug": "acting",
-      "category": "social",
-      "path": "social/acting.md"
-    },
     {
       "id": "2840",
       "name": "Action / Event",
@@ -70,41 +67,6 @@
       "slug": "action-timer",
       "category": "action",
       "path": "action/action-timer.md"
-    },
-    {
-      "id": "2847",
-      "name": "Advantage Token",
-      "slug": "advantage-token",
-      "category": "other",
-      "path": "other/advantage-token.md"
-    },
-    {
-      "id": "2916",
-      "name": "Alliances",
-      "slug": "alliances",
-      "category": "cooperative",
-      "path": "cooperative/alliances.md"
-    },
-    {
-      "id": "2080",
-      "name": "Area Majority / Influence",
-      "slug": "area-majority-influence",
-      "category": "other",
-      "path": "other/area-majority-influence.md"
-    },
-    {
-      "id": "2046",
-      "name": "Area Movement",
-      "slug": "area-movement",
-      "category": "movement",
-      "path": "movement/area-movement.md"
-    },
-    {
-      "id": "2021",
-      "name": "Area-Impulse",
-      "slug": "area-impulse",
-      "category": "conflict",
-      "path": "conflict/area-impulse.md"
     },
     {
       "id": "2012",
@@ -184,144 +146,11 @@
       "path": "auction/auction-turn-order-until-pass.md"
     },
     {
-      "id": "2903",
-      "name": "Automatic Resource Growth",
-      "slug": "automatic-resource-growth",
-      "category": "other",
-      "path": "other/automatic-resource-growth.md"
-    },
-    {
-      "id": "2014",
-      "name": "Betting and Bluffing",
-      "slug": "betting-and-bluffing",
-      "category": "social",
-      "path": "social/betting-and-bluffing.md"
-    },
-    {
-      "id": "2957",
-      "name": "Bias",
-      "slug": "bias",
-      "category": "other",
-      "path": "other/bias.md"
-    },
-    {
-      "id": "3097",
-      "name": "Bids As Wagers",
-      "slug": "bids-as-wagers",
-      "category": "other",
-      "path": "other/bids-as-wagers.md"
-    },
-    {
-      "id": "2999",
-      "name": "Bingo",
-      "slug": "bingo",
-      "category": "other",
-      "path": "other/bingo.md"
-    },
-    {
-      "id": "2913",
-      "name": "Bribery",
-      "slug": "bribery",
-      "category": "economic",
-      "path": "economic/bribery.md"
-    },
-    {
-      "id": "2018",
-      "name": "Campaign / Battle Card Driven",
-      "slug": "campaign-battle-card-driven",
-      "category": "cards",
-      "path": "cards/campaign-battle-card-driven.md"
-    },
-    {
-      "id": "2857",
-      "name": "Card Play Conflict Resolution",
-      "slug": "card-play-conflict-resolution",
-      "category": "cards",
-      "path": "cards/card-play-conflict-resolution.md"
-    },
-    {
-      "id": "2887",
-      "name": "Catch the Leader",
-      "slug": "catch-the-leader",
-      "category": "victory",
-      "path": "victory/catch-the-leader.md"
-    },
-    {
-      "id": "2956",
-      "name": "Chaining",
-      "slug": "chaining",
-      "category": "other",
-      "path": "other/chaining.md"
-    },
-    {
-      "id": "2057",
-      "name": "Chit-Pull System",
-      "slug": "chit-pull-system",
-      "category": "conflict",
-      "path": "conflict/chit-pull-system.md"
-    },
-    {
-      "id": "2984",
-      "name": "Closed Drafting",
-      "slug": "closed-drafting",
-      "category": "cards",
-      "path": "cards/closed-drafting.md"
-    },
-    {
-      "id": "2928",
-      "name": "Closed Economy Auction",
-      "slug": "closed-economy-auction",
-      "category": "other",
-      "path": "other/closed-economy-auction.md"
-    },
-    {
-      "id": "2841",
-      "name": "Command Cards",
-      "slug": "command-cards",
-      "category": "cards",
-      "path": "cards/command-cards.md"
-    },
-    {
-      "id": "2013",
-      "name": "Commodity Speculation",
-      "slug": "commodity-speculation",
-      "category": "economic",
-      "path": "economic/commodity-speculation.md"
-    },
-    {
-      "id": "2893",
-      "name": "Communication Limits",
-      "slug": "communication-limits",
-      "category": "social",
-      "path": "social/communication-limits.md"
-    },
-    {
       "id": "2883",
       "name": "Connections",
       "slug": "connections",
       "category": "building",
       "path": "building/connections.md"
-    },
-    {
-      "id": "2922",
-      "name": "Constrained Bidding",
-      "slug": "constrained-bidding",
-      "category": "other",
-      "path": "other/constrained-bidding.md"
-    },
-    {
-      "id": "2912",
-      "name": "Contracts",
-      "slug": "contracts",
-      "category": "economic",
-      "path": "economic/contracts.md"
-    },
-    {
-      "id": "2023",
-      "name": "Cooperative Game",
-      "slug": "cooperative-game",
-      "category": "cooperative",
-      "path": "cooperative/cooperative-game.md"
     },
     {
       "id": "2010",
@@ -331,18 +160,107 @@
       "path": "building/crayon-rail-system.md"
     },
     {
-      "id": "2854",
-      "name": "Critical Hits and Failures",
-      "slug": "critical-hits-and-failures",
-      "category": "conflict",
-      "path": "conflict/critical-hits-and-failures.md"
+      "id": "2043",
+      "name": "Enclosure",
+      "slug": "enclosure",
+      "category": "building",
+      "path": "building/enclosure.md"
     },
     {
-      "id": "2990",
-      "name": "Cube Tower",
-      "slug": "cube-tower",
-      "category": "physical",
-      "path": "physical/cube-tower.md"
+      "id": "2959",
+      "name": "Map Addition",
+      "slug": "map-addition",
+      "category": "building",
+      "path": "building/map-addition.md"
+    },
+    {
+      "id": "2081",
+      "name": "Network and Route Building",
+      "slug": "network-and-route-building",
+      "category": "building",
+      "path": "building/network-and-route-building.md"
+    },
+    {
+      "id": "2048",
+      "name": "Pattern Building",
+      "slug": "pattern-building",
+      "category": "building",
+      "path": "building/pattern-building.md"
+    },
+    {
+      "id": "engine-017",
+      "name": "Place Location",
+      "slug": "place-location",
+      "category": "building",
+      "path": "building/place-location.md",
+      "source": "engine"
+    },
+    {
+      "id": "2849",
+      "name": "Tech Trees / Tech Tracks",
+      "slug": "tech-trees-tech-tracks",
+      "category": "building",
+      "path": "building/tech-trees-tech-tracks.md"
+    },
+    {
+      "id": "2002",
+      "name": "Tile Placement",
+      "slug": "tile-placement",
+      "category": "building",
+      "path": "building/tile-placement.md"
+    },
+    {
+      "id": "2018",
+      "name": "Campaign / Battle Card Driven",
+      "slug": "campaign-battle-card-driven",
+      "category": "cards",
+      "path": "cards/campaign-battle-card-driven.md"
+    },
+    {
+      "id": "engine-004",
+      "name": "Card Matching",
+      "slug": "card-matching",
+      "category": "cards",
+      "path": "cards/card-matching.md",
+      "source": "engine"
+    },
+    {
+      "id": "2857",
+      "name": "Card Play Conflict Resolution",
+      "slug": "card-play-conflict-resolution",
+      "category": "cards",
+      "path": "cards/card-play-conflict-resolution.md"
+    },
+    {
+      "id": "engine-005",
+      "name": "Card Type Rules",
+      "slug": "card-type-rules",
+      "category": "cards",
+      "path": "cards/card-type-rules.md",
+      "source": "engine"
+    },
+    {
+      "id": "2984",
+      "name": "Closed Drafting",
+      "slug": "closed-drafting",
+      "category": "cards",
+      "path": "cards/closed-drafting.md"
+    },
+    {
+      "id": "2841",
+      "name": "Command Cards",
+      "slug": "command-cards",
+      "category": "cards",
+      "path": "cards/command-cards.md"
+    },
+    {
+      "id": "engine-008",
+      "name": "Deck Building",
+      "slug": "deck-building",
+      "category": "cards",
+      "path": "cards/deck-building.md",
+      "source": "engine",
+      "bgg_equivalent": "deck-bag-and-pool-building"
     },
     {
       "id": "3004",
@@ -359,18 +277,153 @@
       "path": "cards/deck-bag-and-pool-building.md"
     },
     {
-      "id": "3002",
-      "name": "Deduction",
-      "slug": "deduction",
-      "category": "information",
-      "path": "information/deduction.md"
+      "id": "2040",
+      "name": "Hand Management",
+      "slug": "hand-management",
+      "category": "cards",
+      "path": "cards/hand-management.md"
     },
     {
-      "id": "2901",
-      "name": "Delayed Purchase",
-      "slug": "delayed-purchase",
-      "category": "other",
-      "path": "other/delayed-purchase.md"
+      "id": "2980",
+      "name": "Ladder Climbing",
+      "slug": "ladder-climbing",
+      "category": "cards",
+      "path": "cards/ladder-climbing.md"
+    },
+    {
+      "id": "2981",
+      "name": "Melding and Splaying",
+      "slug": "melding-and-splaying",
+      "category": "cards",
+      "path": "cards/melding-and-splaying.md"
+    },
+    {
+      "id": "3099",
+      "name": "Multi-Use Cards",
+      "slug": "multi-use-cards",
+      "category": "cards",
+      "path": "cards/multi-use-cards.md"
+    },
+    {
+      "id": "2041",
+      "name": "Open Drafting",
+      "slug": "open-drafting",
+      "category": "cards",
+      "path": "cards/open-drafting.md"
+    },
+    {
+      "id": "engine-006",
+      "name": "Place Card",
+      "slug": "place-card",
+      "category": "cards",
+      "path": "cards/place-card.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-007",
+      "name": "Placed Card Effects",
+      "slug": "placed-card-effects",
+      "category": "cards",
+      "path": "cards/placed-card-effects.md",
+      "source": "engine"
+    },
+    {
+      "id": "2004",
+      "name": "Set Collection",
+      "slug": "set-collection",
+      "category": "cards",
+      "path": "cards/set-collection.md"
+    },
+    {
+      "id": "2009",
+      "name": "Trick-taking",
+      "slug": "trick-taking",
+      "category": "cards",
+      "path": "cards/trick-taking.md"
+    },
+    {
+      "id": "2021",
+      "name": "Area-Impulse",
+      "slug": "area-impulse",
+      "category": "conflict",
+      "path": "conflict/area-impulse.md"
+    },
+    {
+      "id": "2057",
+      "name": "Chit-Pull System",
+      "slug": "chit-pull-system",
+      "category": "conflict",
+      "path": "conflict/chit-pull-system.md"
+    },
+    {
+      "id": "2854",
+      "name": "Critical Hits and Failures",
+      "slug": "critical-hits-and-failures",
+      "category": "conflict",
+      "path": "conflict/critical-hits-and-failures.md"
+    },
+    {
+      "id": "2864",
+      "name": "Force Commitment",
+      "slug": "force-commitment",
+      "category": "conflict",
+      "path": "conflict/force-commitment.md"
+    },
+    {
+      "id": "2871",
+      "name": "Kill Steal",
+      "slug": "kill-steal",
+      "category": "conflict",
+      "path": "conflict/kill-steal.md"
+    },
+    {
+      "id": "2855",
+      "name": "Ratio / Combat Results Table",
+      "slug": "ratio-combat-results-table",
+      "category": "conflict",
+      "path": "conflict/ratio-combat-results-table.md"
+    },
+    {
+      "id": "2016",
+      "name": "Secret Unit Deployment",
+      "slug": "secret-unit-deployment",
+      "category": "conflict",
+      "path": "conflict/secret-unit-deployment.md"
+    },
+    {
+      "id": "2916",
+      "name": "Alliances",
+      "slug": "alliances",
+      "category": "cooperative",
+      "path": "cooperative/alliances.md"
+    },
+    {
+      "id": "2023",
+      "name": "Cooperative Game",
+      "slug": "cooperative-game",
+      "category": "cooperative",
+      "path": "cooperative/cooperative-game.md"
+    },
+    {
+      "id": "2820",
+      "name": "Semi-Cooperative Game",
+      "slug": "semi-cooperative-game",
+      "category": "cooperative",
+      "path": "cooperative/semi-cooperative-game.md"
+    },
+    {
+      "id": "2019",
+      "name": "Team-Based Game",
+      "slug": "team-based-game",
+      "category": "cooperative",
+      "path": "cooperative/team-based-game.md"
+    },
+    {
+      "id": "2814",
+      "name": "Traitor Game",
+      "slug": "traitor-game",
+      "category": "cooperative",
+      "path": "cooperative/traitor-game.md"
     },
     {
       "id": "2072",
@@ -380,25 +433,88 @@
       "path": "dice/dice-rolling.md"
     },
     {
-      "id": "2856",
-      "name": "Die Icon Resolution",
-      "slug": "die-icon-resolution",
-      "category": "other",
-      "path": "other/die-icon-resolution.md"
+      "id": "2661",
+      "name": "Push Your Luck",
+      "slug": "push-your-luck",
+      "category": "dice",
+      "path": "dice/push-your-luck.md"
     },
     {
-      "id": "2950",
-      "name": "Different Dice Movement",
-      "slug": "different-dice-movement",
-      "category": "movement",
-      "path": "movement/different-dice-movement.md"
+      "id": "2870",
+      "name": "Re-rolling and Locking",
+      "slug": "re-rolling-and-locking",
+      "category": "dice",
+      "path": "dice/re-rolling-and-locking.md"
     },
     {
-      "id": "3096",
-      "name": "Drawing",
-      "slug": "drawing",
-      "category": "other",
-      "path": "other/drawing.md"
+      "id": "2913",
+      "name": "Bribery",
+      "slug": "bribery",
+      "category": "economic",
+      "path": "economic/bribery.md"
+    },
+    {
+      "id": "2013",
+      "name": "Commodity Speculation",
+      "slug": "commodity-speculation",
+      "category": "economic",
+      "path": "economic/commodity-speculation.md"
+    },
+    {
+      "id": "2912",
+      "name": "Contracts",
+      "slug": "contracts",
+      "category": "economic",
+      "path": "economic/contracts.md"
+    },
+    {
+      "id": "2902",
+      "name": "Income",
+      "slug": "income",
+      "category": "economic",
+      "path": "economic/income.md"
+    },
+    {
+      "id": "2910",
+      "name": "Investment",
+      "slug": "investment",
+      "category": "economic",
+      "path": "economic/investment.md"
+    },
+    {
+      "id": "2904",
+      "name": "Loans",
+      "slug": "loans",
+      "category": "economic",
+      "path": "economic/loans.md"
+    },
+    {
+      "id": "2900",
+      "name": "Market",
+      "slug": "market",
+      "category": "economic",
+      "path": "economic/market.md"
+    },
+    {
+      "id": "2911",
+      "name": "Ownership",
+      "slug": "ownership",
+      "category": "economic",
+      "path": "economic/ownership.md"
+    },
+    {
+      "id": "2005",
+      "name": "Stock Holding",
+      "slug": "stock-holding",
+      "category": "economic",
+      "path": "economic/stock-holding.md"
+    },
+    {
+      "id": "2008",
+      "name": "Trading",
+      "slug": "trading",
+      "category": "economic",
+      "path": "economic/trading.md"
     },
     {
       "id": "2882",
@@ -408,27 +524,6 @@
       "path": "ending/elapsed-real-time-ending.md"
     },
     {
-      "id": "2043",
-      "name": "Enclosure",
-      "slug": "enclosure",
-      "category": "building",
-      "path": "building/enclosure.md"
-    },
-    {
-      "id": "2875",
-      "name": "End Game Bonuses",
-      "slug": "end-game-bonuses",
-      "category": "victory",
-      "path": "victory/end-game-bonuses.md"
-    },
-    {
-      "id": "2850",
-      "name": "Events",
-      "slug": "events",
-      "category": "other",
-      "path": "other/events.md"
-    },
-    {
       "id": "2885",
       "name": "Finale Ending",
       "slug": "finale-ending",
@@ -436,25 +531,103 @@
       "path": "ending/finale-ending.md"
     },
     {
-      "id": "2860",
-      "name": "Flicking",
-      "slug": "flicking",
-      "category": "physical",
-      "path": "physical/flicking.md"
+      "id": "2685",
+      "name": "Player Elimination",
+      "slug": "player-elimination",
+      "category": "ending",
+      "path": "ending/player-elimination.md"
     },
     {
-      "id": "2843",
-      "name": "Follow",
-      "slug": "follow",
-      "category": "other",
-      "path": "other/follow.md"
+      "id": "2876",
+      "name": "Race",
+      "slug": "race",
+      "category": "ending",
+      "path": "ending/race.md"
     },
     {
-      "id": "2864",
-      "name": "Force Commitment",
-      "slug": "force-commitment",
-      "category": "conflict",
-      "path": "conflict/force-commitment.md"
+      "id": "2821",
+      "name": "Single Loser Game",
+      "slug": "single-loser-game",
+      "category": "ending",
+      "path": "ending/single-loser-game.md"
+    },
+    {
+      "id": "2884",
+      "name": "Sudden Death Ending",
+      "slug": "sudden-death-ending",
+      "category": "ending",
+      "path": "ending/sudden-death-ending.md"
+    },
+    {
+      "id": "3002",
+      "name": "Deduction",
+      "slug": "deduction",
+      "category": "information",
+      "path": "information/deduction.md"
+    },
+    {
+      "id": "engine-015",
+      "name": "Hidden Objectives",
+      "slug": "hidden-objectives",
+      "category": "information",
+      "path": "information/hidden-objectives.md",
+      "source": "engine"
+    },
+    {
+      "id": "2891",
+      "name": "Hidden Roles",
+      "slug": "hidden-roles",
+      "category": "information",
+      "path": "information/hidden-roles.md"
+    },
+    {
+      "id": "3003",
+      "name": "Induction",
+      "slug": "induction",
+      "category": "information",
+      "path": "information/induction.md"
+    },
+    {
+      "id": "2047",
+      "name": "Memory",
+      "slug": "memory",
+      "category": "information",
+      "path": "information/memory.md"
+    },
+    {
+      "id": "2060",
+      "name": "Pattern Recognition",
+      "slug": "pattern-recognition",
+      "category": "information",
+      "path": "information/pattern-recognition.md"
+    },
+    {
+      "id": "3102",
+      "name": "Questions and Answers",
+      "slug": "questions-and-answers",
+      "category": "information",
+      "path": "information/questions-and-answers.md"
+    },
+    {
+      "id": "2866",
+      "name": "Targeted Clues",
+      "slug": "targeted-clues",
+      "category": "information",
+      "path": "information/targeted-clues.md"
+    },
+    {
+      "id": "2046",
+      "name": "Area Movement",
+      "slug": "area-movement",
+      "category": "movement",
+      "path": "movement/area-movement.md"
+    },
+    {
+      "id": "2950",
+      "name": "Different Dice Movement",
+      "slug": "different-dice-movement",
+      "category": "movement",
+      "path": "movement/different-dice-movement.md"
     },
     {
       "id": "2978",
@@ -471,13 +644,6 @@
       "path": "movement/grid-movement.md"
     },
     {
-      "id": "2040",
-      "name": "Hand Management",
-      "slug": "hand-management",
-      "category": "cards",
-      "path": "cards/hand-management.md"
-    },
-    {
       "id": "2026",
       "name": "Hexagon Grid",
       "slug": "hexagon-grid",
@@ -492,123 +658,11 @@
       "path": "movement/hidden-movement.md"
     },
     {
-      "id": "2891",
-      "name": "Hidden Roles",
-      "slug": "hidden-roles",
-      "category": "information",
-      "path": "information/hidden-roles.md"
-    },
-    {
-      "id": "2987",
-      "name": "Hidden Victory Points",
-      "slug": "hidden-victory-points",
-      "category": "victory",
-      "path": "victory/hidden-victory-points.md"
-    },
-    {
-      "id": "2889",
-      "name": "Highest-Lowest Scoring",
-      "slug": "highest-lowest-scoring",
-      "category": "victory",
-      "path": "victory/highest-lowest-scoring.md"
-    },
-    {
-      "id": "3000",
-      "name": "Hot Potato",
-      "slug": "hot-potato",
-      "category": "other",
-      "path": "other/hot-potato.md"
-    },
-    {
-      "id": "2906",
-      "name": "I Cut, You Choose",
-      "slug": "i-cut-you-choose",
-      "category": "social",
-      "path": "social/i-cut-you-choose.md"
-    },
-    {
       "id": "2952",
       "name": "Impulse Movement",
       "slug": "impulse-movement",
       "category": "movement",
       "path": "movement/impulse-movement.md"
-    },
-    {
-      "id": "2902",
-      "name": "Income",
-      "slug": "income",
-      "category": "economic",
-      "path": "economic/income.md"
-    },
-    {
-      "id": "2914",
-      "name": "Increase Value of Unchosen Resources",
-      "slug": "increase-value-of-unchosen-resources",
-      "category": "other",
-      "path": "other/increase-value-of-unchosen-resources.md"
-    },
-    {
-      "id": "3003",
-      "name": "Induction",
-      "slug": "induction",
-      "category": "information",
-      "path": "information/induction.md"
-    },
-    {
-      "id": "2837",
-      "name": "Interrupts",
-      "slug": "interrupts",
-      "category": "other",
-      "path": "other/interrupts.md"
-    },
-    {
-      "id": "2910",
-      "name": "Investment",
-      "slug": "investment",
-      "category": "economic",
-      "path": "economic/investment.md"
-    },
-    {
-      "id": "2871",
-      "name": "Kill Steal",
-      "slug": "kill-steal",
-      "category": "conflict",
-      "path": "conflict/kill-steal.md"
-    },
-    {
-      "id": "2886",
-      "name": "King of the Hill",
-      "slug": "king-of-the-hill",
-      "category": "victory",
-      "path": "victory/king-of-the-hill.md"
-    },
-    {
-      "id": "2980",
-      "name": "Ladder Climbing",
-      "slug": "ladder-climbing",
-      "category": "cards",
-      "path": "cards/ladder-climbing.md"
-    },
-    {
-      "id": "3001",
-      "name": "Layering",
-      "slug": "layering",
-      "category": "other",
-      "path": "other/layering.md"
-    },
-    {
-      "id": "2824",
-      "name": "Legacy Game",
-      "slug": "legacy-game",
-      "category": "other",
-      "path": "other/legacy-game.md"
-    },
-    {
-      "id": "2039",
-      "name": "Line Drawing",
-      "slug": "line-drawing",
-      "category": "other",
-      "path": "other/line-drawing.md"
     },
     {
       "id": "2975",
@@ -618,95 +672,11 @@
       "path": "movement/line-of-sight.md"
     },
     {
-      "id": "2904",
-      "name": "Loans",
-      "slug": "loans",
-      "category": "economic",
-      "path": "economic/loans.md"
-    },
-    {
-      "id": "2836",
-      "name": "Lose a Turn",
-      "slug": "lose-a-turn",
-      "category": "other",
-      "path": "other/lose-a-turn.md"
-    },
-    {
-      "id": "2955",
-      "name": "Mancala",
-      "slug": "mancala",
-      "category": "other",
-      "path": "other/mancala.md"
-    },
-    {
-      "id": "2959",
-      "name": "Map Addition",
-      "slug": "map-addition",
-      "category": "building",
-      "path": "building/map-addition.md"
-    },
-    {
-      "id": "2961",
-      "name": "Map Deformation",
-      "slug": "map-deformation",
-      "category": "other",
-      "path": "other/map-deformation.md"
-    },
-    {
-      "id": "2960",
-      "name": "Map Reduction",
-      "slug": "map-reduction",
-      "category": "other",
-      "path": "other/map-reduction.md"
-    },
-    {
-      "id": "2900",
-      "name": "Market",
-      "slug": "market",
-      "category": "economic",
-      "path": "economic/market.md"
-    },
-    {
-      "id": "3007",
-      "name": "Matching",
-      "slug": "matching",
-      "category": "other",
-      "path": "other/matching.md"
-    },
-    {
       "id": "2949",
       "name": "Measurement Movement",
       "slug": "measurement-movement",
       "category": "movement",
       "path": "movement/measurement-movement.md"
-    },
-    {
-      "id": "2981",
-      "name": "Melding and Splaying",
-      "slug": "melding-and-splaying",
-      "category": "cards",
-      "path": "cards/melding-and-splaying.md"
-    },
-    {
-      "id": "2047",
-      "name": "Memory",
-      "slug": "memory",
-      "category": "information",
-      "path": "information/memory.md"
-    },
-    {
-      "id": "2863",
-      "name": "Minimap Resolution",
-      "slug": "minimap-resolution",
-      "category": "other",
-      "path": "other/minimap-resolution.md"
-    },
-    {
-      "id": "2011",
-      "name": "Modular Board",
-      "slug": "modular-board",
-      "category": "other",
-      "path": "other/modular-board.md"
     },
     {
       "id": "2962",
@@ -730,158 +700,11 @@
       "path": "movement/movement-template.md"
     },
     {
-      "id": "2958",
-      "name": "Moving Multiple Units",
-      "slug": "moving-multiple-units",
-      "category": "other",
-      "path": "other/moving-multiple-units.md"
-    },
-    {
-      "id": "3099",
-      "name": "Multi-Use Cards",
-      "slug": "multi-use-cards",
-      "category": "cards",
-      "path": "cards/multi-use-cards.md"
-    },
-    {
-      "id": "2965",
-      "name": "Multiple Maps",
-      "slug": "multiple-maps",
-      "category": "other",
-      "path": "other/multiple-maps.md"
-    },
-    {
-      "id": "2851",
-      "name": "Narrative Choice / Paragraph",
-      "slug": "narrative-choice-paragraph",
-      "category": "other",
-      "path": "other/narrative-choice-paragraph.md"
-    },
-    {
-      "id": "2915",
-      "name": "Negotiation",
-      "slug": "negotiation",
-      "category": "social",
-      "path": "social/negotiation.md"
-    },
-    {
-      "id": "3104",
-      "name": "Neighbor Scope",
-      "slug": "neighbor-scope",
-      "category": "other",
-      "path": "other/neighbor-scope.md"
-    },
-    {
-      "id": "2081",
-      "name": "Network and Route Building",
-      "slug": "network-and-route-building",
-      "category": "building",
-      "path": "building/network-and-route-building.md"
-    },
-    {
-      "id": "2846",
-      "name": "Once-Per-Game Abilities",
-      "slug": "once-per-game-abilities",
-      "category": "other",
-      "path": "other/once-per-game-abilities.md"
-    },
-    {
-      "id": "2041",
-      "name": "Open Drafting",
-      "slug": "open-drafting",
-      "category": "cards",
-      "path": "cards/open-drafting.md"
-    },
-    {
-      "id": "2844",
-      "name": "Order Counters",
-      "slug": "order-counters",
-      "category": "other",
-      "path": "other/order-counters.md"
-    },
-    {
-      "id": "3101",
-      "name": "Ordering",
-      "slug": "ordering",
-      "category": "other",
-      "path": "other/ordering.md"
-    },
-    {
-      "id": "2911",
-      "name": "Ownership",
-      "slug": "ownership",
-      "category": "economic",
-      "path": "economic/ownership.md"
-    },
-    {
-      "id": "2055",
-      "name": "Paper-and-Pencil",
-      "slug": "paper-and-pencil",
-      "category": "other",
-      "path": "other/paper-and-pencil.md"
-    },
-    {
-      "id": "2835",
-      "name": "Passed Action Token",
-      "slug": "passed-action-token",
-      "category": "other",
-      "path": "other/passed-action-token.md"
-    },
-    {
-      "id": "2048",
-      "name": "Pattern Building",
-      "slug": "pattern-building",
-      "category": "building",
-      "path": "building/pattern-building.md"
-    },
-    {
       "id": "2946",
       "name": "Pattern Movement",
       "slug": "pattern-movement",
       "category": "movement",
       "path": "movement/pattern-movement.md"
-    },
-    {
-      "id": "2060",
-      "name": "Pattern Recognition",
-      "slug": "pattern-recognition",
-      "category": "information",
-      "path": "information/pattern-recognition.md"
-    },
-    {
-      "id": "2989",
-      "name": "Physical Removal",
-      "slug": "physical-removal",
-      "category": "physical",
-      "path": "physical/physical-removal.md"
-    },
-    {
-      "id": "2007",
-      "name": "Pick-up and Deliver",
-      "slug": "pick-up-and-deliver",
-      "category": "other",
-      "path": "other/pick-up-and-deliver.md"
-    },
-    {
-      "id": "2964",
-      "name": "Pieces as Map",
-      "slug": "pieces-as-map",
-      "category": "other",
-      "path": "other/pieces-as-map.md"
-    },
-    {
-      "id": "2685",
-      "name": "Player Elimination",
-      "slug": "player-elimination",
-      "category": "ending",
-      "path": "ending/player-elimination.md"
-    },
-    {
-      "id": "2865",
-      "name": "Player Judge",
-      "slug": "player-judge",
-      "category": "social",
-      "path": "social/player-judge.md"
     },
     {
       "id": "2078",
@@ -891,74 +714,11 @@
       "path": "movement/point-to-point-movement.md"
     },
     {
-      "id": "3006",
-      "name": "Predictive Bid",
-      "slug": "predictive-bid",
-      "category": "other",
-      "path": "other/predictive-bid.md"
-    },
-    {
-      "id": "2858",
-      "name": "Prisoner's Dilemma",
-      "slug": "prisoner's-dilemma",
-      "category": "social",
-      "path": "social/prisoner's-dilemma.md"
-    },
-    {
       "id": "2953",
       "name": "Programmed Movement",
       "slug": "programmed-movement",
       "category": "movement",
       "path": "movement/programmed-movement.md"
-    },
-    {
-      "id": "2661",
-      "name": "Push Your Luck",
-      "slug": "push-your-luck",
-      "category": "dice",
-      "path": "dice/push-your-luck.md"
-    },
-    {
-      "id": "3102",
-      "name": "Questions and Answers",
-      "slug": "questions-and-answers",
-      "category": "information",
-      "path": "information/questions-and-answers.md"
-    },
-    {
-      "id": "2876",
-      "name": "Race",
-      "slug": "race",
-      "category": "ending",
-      "path": "ending/race.md"
-    },
-    {
-      "id": "2909",
-      "name": "Random Production",
-      "slug": "random-production",
-      "category": "other",
-      "path": "other/random-production.md"
-    },
-    {
-      "id": "2855",
-      "name": "Ratio / Combat Results Table",
-      "slug": "ratio-combat-results-table",
-      "category": "conflict",
-      "path": "conflict/ratio-combat-results-table.md"
-    },
-    {
-      "id": "2870",
-      "name": "Re-rolling and Locking",
-      "slug": "re-rolling-and-locking",
-      "category": "dice",
-      "path": "dice/re-rolling-and-locking.md"
-    },
-    {
-      "id": "2831",
-      "name": "Real-Time",
-      "slug": "real-time",
-      "category": "physical",
-      "path": "physical/real-time.md"
     },
     {
       "id": "2954",
@@ -968,39 +728,11 @@
       "path": "movement/relative-movement.md"
     },
     {
-      "id": "3103",
-      "name": "Resource Queue",
-      "slug": "resource-queue",
-      "category": "other",
-      "path": "other/resource-queue.md"
-    },
-    {
       "id": "2948",
       "name": "Resource to Move",
       "slug": "resource-to-move",
       "category": "movement",
       "path": "movement/resource-to-move.md"
-    },
-    {
-      "id": "2003",
-      "name": "Rock-Paper-Scissors",
-      "slug": "rock-paper-scissors",
-      "category": "other",
-      "path": "other/rock-paper-scissors.md"
-    },
-    {
-      "id": "2028",
-      "name": "Role Playing",
-      "slug": "role-playing",
-      "category": "social",
-      "path": "social/role-playing.md"
-    },
-    {
-      "id": "2892",
-      "name": "Roles with Asymmetric Information",
-      "slug": "roles-with-asymmetric-information",
-      "category": "other",
-      "path": "other/roles-with-asymmetric-information.md"
     },
     {
       "id": "2035",
@@ -1017,6 +749,367 @@
       "path": "movement/rondel.md"
     },
     {
+      "id": "2940",
+      "name": "Square Grid",
+      "slug": "square-grid",
+      "category": "movement",
+      "path": "movement/square-grid.md"
+    },
+    {
+      "id": "2944",
+      "name": "Three Dimensional Movement",
+      "slug": "three-dimensional-movement",
+      "category": "movement",
+      "path": "movement/three-dimensional-movement.md"
+    },
+    {
+      "id": "2939",
+      "name": "Track Movement",
+      "slug": "track-movement",
+      "category": "movement",
+      "path": "movement/track-movement.md"
+    },
+    {
+      "id": "2974",
+      "name": "Zone of Control",
+      "slug": "zone-of-control",
+      "category": "movement",
+      "path": "movement/zone-of-control.md"
+    },
+    {
+      "id": "2847",
+      "name": "Advantage Token",
+      "slug": "advantage-token",
+      "category": "other",
+      "path": "other/advantage-token.md"
+    },
+    {
+      "id": "2080",
+      "name": "Area Majority / Influence",
+      "slug": "area-majority-influence",
+      "category": "other",
+      "path": "other/area-majority-influence.md"
+    },
+    {
+      "id": "2903",
+      "name": "Automatic Resource Growth",
+      "slug": "automatic-resource-growth",
+      "category": "other",
+      "path": "other/automatic-resource-growth.md"
+    },
+    {
+      "id": "2957",
+      "name": "Bias",
+      "slug": "bias",
+      "category": "other",
+      "path": "other/bias.md"
+    },
+    {
+      "id": "3097",
+      "name": "Bids As Wagers",
+      "slug": "bids-as-wagers",
+      "category": "other",
+      "path": "other/bids-as-wagers.md"
+    },
+    {
+      "id": "2999",
+      "name": "Bingo",
+      "slug": "bingo",
+      "category": "other",
+      "path": "other/bingo.md"
+    },
+    {
+      "id": "engine-003",
+      "name": "Board State",
+      "slug": "board-state",
+      "category": "other",
+      "path": "other/board-state.md",
+      "source": "engine"
+    },
+    {
+      "id": "2956",
+      "name": "Chaining",
+      "slug": "chaining",
+      "category": "other",
+      "path": "other/chaining.md"
+    },
+    {
+      "id": "2928",
+      "name": "Closed Economy Auction",
+      "slug": "closed-economy-auction",
+      "category": "other",
+      "path": "other/closed-economy-auction.md"
+    },
+    {
+      "id": "2922",
+      "name": "Constrained Bidding",
+      "slug": "constrained-bidding",
+      "category": "other",
+      "path": "other/constrained-bidding.md"
+    },
+    {
+      "id": "2901",
+      "name": "Delayed Purchase",
+      "slug": "delayed-purchase",
+      "category": "other",
+      "path": "other/delayed-purchase.md"
+    },
+    {
+      "id": "2856",
+      "name": "Die Icon Resolution",
+      "slug": "die-icon-resolution",
+      "category": "other",
+      "path": "other/die-icon-resolution.md"
+    },
+    {
+      "id": "3096",
+      "name": "Drawing",
+      "slug": "drawing",
+      "category": "other",
+      "path": "other/drawing.md"
+    },
+    {
+      "id": "2850",
+      "name": "Events",
+      "slug": "events",
+      "category": "other",
+      "path": "other/events.md"
+    },
+    {
+      "id": "2843",
+      "name": "Follow",
+      "slug": "follow",
+      "category": "other",
+      "path": "other/follow.md"
+    },
+    {
+      "id": "engine-002",
+      "name": "Freeplay",
+      "slug": "freeplay",
+      "category": "other",
+      "path": "other/freeplay.md",
+      "source": "engine"
+    },
+    {
+      "id": "3000",
+      "name": "Hot Potato",
+      "slug": "hot-potato",
+      "category": "other",
+      "path": "other/hot-potato.md"
+    },
+    {
+      "id": "2914",
+      "name": "Increase Value of Unchosen Resources",
+      "slug": "increase-value-of-unchosen-resources",
+      "category": "other",
+      "path": "other/increase-value-of-unchosen-resources.md"
+    },
+    {
+      "id": "2837",
+      "name": "Interrupts",
+      "slug": "interrupts",
+      "category": "other",
+      "path": "other/interrupts.md"
+    },
+    {
+      "id": "3001",
+      "name": "Layering",
+      "slug": "layering",
+      "category": "other",
+      "path": "other/layering.md"
+    },
+    {
+      "id": "2824",
+      "name": "Legacy Game",
+      "slug": "legacy-game",
+      "category": "other",
+      "path": "other/legacy-game.md"
+    },
+    {
+      "id": "2039",
+      "name": "Line Drawing",
+      "slug": "line-drawing",
+      "category": "other",
+      "path": "other/line-drawing.md"
+    },
+    {
+      "id": "engine-016",
+      "name": "Location Effects",
+      "slug": "location-effects",
+      "category": "other",
+      "path": "other/location-effects.md",
+      "source": "engine"
+    },
+    {
+      "id": "2836",
+      "name": "Lose a Turn",
+      "slug": "lose-a-turn",
+      "category": "other",
+      "path": "other/lose-a-turn.md"
+    },
+    {
+      "id": "2955",
+      "name": "Mancala",
+      "slug": "mancala",
+      "category": "other",
+      "path": "other/mancala.md"
+    },
+    {
+      "id": "2961",
+      "name": "Map Deformation",
+      "slug": "map-deformation",
+      "category": "other",
+      "path": "other/map-deformation.md"
+    },
+    {
+      "id": "2960",
+      "name": "Map Reduction",
+      "slug": "map-reduction",
+      "category": "other",
+      "path": "other/map-reduction.md"
+    },
+    {
+      "id": "3007",
+      "name": "Matching",
+      "slug": "matching",
+      "category": "other",
+      "path": "other/matching.md"
+    },
+    {
+      "id": "2863",
+      "name": "Minimap Resolution",
+      "slug": "minimap-resolution",
+      "category": "other",
+      "path": "other/minimap-resolution.md"
+    },
+    {
+      "id": "2011",
+      "name": "Modular Board",
+      "slug": "modular-board",
+      "category": "other",
+      "path": "other/modular-board.md"
+    },
+    {
+      "id": "2958",
+      "name": "Moving Multiple Units",
+      "slug": "moving-multiple-units",
+      "category": "other",
+      "path": "other/moving-multiple-units.md"
+    },
+    {
+      "id": "2965",
+      "name": "Multiple Maps",
+      "slug": "multiple-maps",
+      "category": "other",
+      "path": "other/multiple-maps.md"
+    },
+    {
+      "id": "2851",
+      "name": "Narrative Choice / Paragraph",
+      "slug": "narrative-choice-paragraph",
+      "category": "other",
+      "path": "other/narrative-choice-paragraph.md"
+    },
+    {
+      "id": "3104",
+      "name": "Neighbor Scope",
+      "slug": "neighbor-scope",
+      "category": "other",
+      "path": "other/neighbor-scope.md"
+    },
+    {
+      "id": "2846",
+      "name": "Once-Per-Game Abilities",
+      "slug": "once-per-game-abilities",
+      "category": "other",
+      "path": "other/once-per-game-abilities.md"
+    },
+    {
+      "id": "2844",
+      "name": "Order Counters",
+      "slug": "order-counters",
+      "category": "other",
+      "path": "other/order-counters.md"
+    },
+    {
+      "id": "3101",
+      "name": "Ordering",
+      "slug": "ordering",
+      "category": "other",
+      "path": "other/ordering.md"
+    },
+    {
+      "id": "2055",
+      "name": "Paper-and-Pencil",
+      "slug": "paper-and-pencil",
+      "category": "other",
+      "path": "other/paper-and-pencil.md"
+    },
+    {
+      "id": "engine-001",
+      "name": "Pass",
+      "slug": "pass",
+      "category": "other",
+      "path": "other/pass.md",
+      "source": "engine"
+    },
+    {
+      "id": "2835",
+      "name": "Passed Action Token",
+      "slug": "passed-action-token",
+      "category": "other",
+      "path": "other/passed-action-token.md"
+    },
+    {
+      "id": "2007",
+      "name": "Pick-up and Deliver",
+      "slug": "pick-up-and-deliver",
+      "category": "other",
+      "path": "other/pick-up-and-deliver.md"
+    },
+    {
+      "id": "2964",
+      "name": "Pieces as Map",
+      "slug": "pieces-as-map",
+      "category": "other",
+      "path": "other/pieces-as-map.md"
+    },
+    {
+      "id": "3006",
+      "name": "Predictive Bid",
+      "slug": "predictive-bid",
+      "category": "other",
+      "path": "other/predictive-bid.md"
+    },
+    {
+      "id": "2909",
+      "name": "Random Production",
+      "slug": "random-production",
+      "category": "other",
+      "path": "other/random-production.md"
+    },
+    {
+      "id": "3103",
+      "name": "Resource Queue",
+      "slug": "resource-queue",
+      "category": "other",
+      "path": "other/resource-queue.md"
+    },
+    {
+      "id": "2003",
+      "name": "Rock-Paper-Scissors",
+      "slug": "rock-paper-scissors",
+      "category": "other",
+      "path": "other/rock-paper-scissors.md"
+    },
+    {
+      "id": "2892",
+      "name": "Roles with Asymmetric Information",
+      "slug": "roles-with-asymmetric-information",
+      "category": "other",
+      "path": "other/roles-with-asymmetric-information.md"
+    },
+    {
       "id": "2822",
       "name": "Scenario / Mission / Campaign Game",
       "slug": "scenario-mission-campaign-game",
@@ -1031,32 +1124,11 @@
       "path": "other/score-and-reset-game.md"
     },
     {
-      "id": "2016",
-      "name": "Secret Unit Deployment",
-      "slug": "secret-unit-deployment",
-      "category": "conflict",
-      "path": "conflict/secret-unit-deployment.md"
-    },
-    {
       "id": "2926",
       "name": "Selection Order Bid",
       "slug": "selection-order-bid",
       "category": "other",
       "path": "other/selection-order-bid.md"
-    },
-    {
-      "id": "2820",
-      "name": "Semi-Cooperative Game",
-      "slug": "semi-cooperative-game",
-      "category": "cooperative",
-      "path": "cooperative/semi-cooperative-game.md"
-    },
-    {
-      "id": "2004",
-      "name": "Set Collection",
-      "slug": "set-collection",
-      "category": "cards",
-      "path": "cards/set-collection.md"
     },
     {
       "id": "2070",
@@ -1073,20 +1145,6 @@
       "path": "other/simultaneous-action-selection.md"
     },
     {
-      "id": "2038",
-      "name": "Singing",
-      "slug": "singing",
-      "category": "physical",
-      "path": "physical/singing.md"
-    },
-    {
-      "id": "2821",
-      "name": "Single Loser Game",
-      "slug": "single-loser-game",
-      "category": "ending",
-      "path": "ending/single-loser-game.md"
-    },
-    {
       "id": "3005",
       "name": "Slide / Push",
       "slug": "slide-push",
@@ -1101,32 +1159,11 @@
       "path": "other/solo-solitaire-game.md"
     },
     {
-      "id": "2991",
-      "name": "Speed Matching",
-      "slug": "speed-matching",
-      "category": "physical",
-      "path": "physical/speed-matching.md"
-    },
-    {
       "id": "3113",
       "name": "Spelling",
       "slug": "spelling",
       "category": "other",
       "path": "other/spelling.md"
-    },
-    {
-      "id": "2940",
-      "name": "Square Grid",
-      "slug": "square-grid",
-      "category": "movement",
-      "path": "movement/square-grid.md"
-    },
-    {
-      "id": "2988",
-      "name": "Stacking and Balancing",
-      "slug": "stacking-and-balancing",
-      "category": "physical",
-      "path": "physical/stacking-and-balancing.md"
     },
     {
       "id": "2853",
@@ -1143,27 +1180,6 @@
       "path": "other/static-capture.md"
     },
     {
-      "id": "2005",
-      "name": "Stock Holding",
-      "slug": "stock-holding",
-      "category": "economic",
-      "path": "economic/stock-holding.md"
-    },
-    {
-      "id": "2027",
-      "name": "Storytelling",
-      "slug": "storytelling",
-      "category": "social",
-      "path": "social/storytelling.md"
-    },
-    {
-      "id": "2884",
-      "name": "Sudden Death Ending",
-      "slug": "sudden-death-ending",
-      "category": "ending",
-      "path": "ending/sudden-death-ending.md"
-    },
-    {
       "id": "3100",
       "name": "Tags",
       "slug": "tags",
@@ -1178,74 +1194,151 @@
       "path": "other/take-that.md"
     },
     {
-      "id": "2866",
-      "name": "Targeted Clues",
-      "slug": "targeted-clues",
-      "category": "information",
-      "path": "information/targeted-clues.md"
-    },
-    {
-      "id": "2019",
-      "name": "Team-Based Game",
-      "slug": "team-based-game",
-      "category": "cooperative",
-      "path": "cooperative/team-based-game.md"
-    },
-    {
-      "id": "2849",
-      "name": "Tech Trees / Tech Tracks",
-      "slug": "tech-trees-tech-tracks",
-      "category": "building",
-      "path": "building/tech-trees-tech-tracks.md"
-    },
-    {
-      "id": "2944",
-      "name": "Three Dimensional Movement",
-      "slug": "three-dimensional-movement",
-      "category": "movement",
-      "path": "movement/three-dimensional-movement.md"
-    },
-    {
-      "id": "2002",
-      "name": "Tile Placement",
-      "slug": "tile-placement",
-      "category": "building",
-      "path": "building/tile-placement.md"
-    },
-    {
-      "id": "2939",
-      "name": "Track Movement",
-      "slug": "track-movement",
-      "category": "movement",
-      "path": "movement/track-movement.md"
-    },
-    {
-      "id": "2008",
-      "name": "Trading",
-      "slug": "trading",
-      "category": "economic",
-      "path": "economic/trading.md"
-    },
-    {
-      "id": "2814",
-      "name": "Traitor Game",
-      "slug": "traitor-game",
-      "category": "cooperative",
-      "path": "cooperative/traitor-game.md"
-    },
-    {
-      "id": "2009",
-      "name": "Trick-taking",
-      "slug": "trick-taking",
-      "category": "cards",
-      "path": "cards/trick-taking.md"
-    },
-    {
       "id": "2888",
       "name": "Tug of War",
       "slug": "tug-of-war",
       "category": "other",
       "path": "other/tug-of-war.md"
+    },
+    {
+      "id": "2079",
+      "name": "Variable Phase Order",
+      "slug": "variable-phase-order",
+      "category": "other",
+      "path": "other/variable-phase-order.md"
+    },
+    {
+      "id": "2015",
+      "name": "Variable Player Powers",
+      "slug": "variable-player-powers",
+      "category": "other",
+      "path": "other/variable-player-powers.md"
+    },
+    {
+      "id": "2897",
+      "name": "Variable Set-up",
+      "slug": "variable-set-up",
+      "category": "other",
+      "path": "other/variable-set-up.md"
+    },
+    {
+      "id": "2990",
+      "name": "Cube Tower",
+      "slug": "cube-tower",
+      "category": "physical",
+      "path": "physical/cube-tower.md"
+    },
+    {
+      "id": "2860",
+      "name": "Flicking",
+      "slug": "flicking",
+      "category": "physical",
+      "path": "physical/flicking.md"
+    },
+    {
+      "id": "2989",
+      "name": "Physical Removal",
+      "slug": "physical-removal",
+      "category": "physical",
+      "path": "physical/physical-removal.md"
+    },
+    {
+      "id": "2831",
+      "name": "Real-Time",
+      "slug": "real-time",
+      "category": "physical",
+      "path": "physical/real-time.md"
+    },
+    {
+      "id": "2038",
+      "name": "Singing",
+      "slug": "singing",
+      "category": "physical",
+      "path": "physical/singing.md"
+    },
+    {
+      "id": "2991",
+      "name": "Speed Matching",
+      "slug": "speed-matching",
+      "category": "physical",
+      "path": "physical/speed-matching.md"
+    },
+    {
+      "id": "2988",
+      "name": "Stacking and Balancing",
+      "slug": "stacking-and-balancing",
+      "category": "physical",
+      "path": "physical/stacking-and-balancing.md"
+    },
+    {
+      "id": "2073",
+      "name": "Acting",
+      "slug": "acting",
+      "category": "social",
+      "path": "social/acting.md"
+    },
+    {
+      "id": "2014",
+      "name": "Betting and Bluffing",
+      "slug": "betting-and-bluffing",
+      "category": "social",
+      "path": "social/betting-and-bluffing.md"
+    },
+    {
+      "id": "2893",
+      "name": "Communication Limits",
+      "slug": "communication-limits",
+      "category": "social",
+      "path": "social/communication-limits.md"
+    },
+    {
+      "id": "2906",
+      "name": "I Cut, You Choose",
+      "slug": "i-cut-you-choose",
+      "category": "social",
+      "path": "social/i-cut-you-choose.md"
+    },
+    {
+      "id": "2915",
+      "name": "Negotiation",
+      "slug": "negotiation",
+      "category": "social",
+      "path": "social/negotiation.md"
+    },
+    {
+      "id": "2865",
+      "name": "Player Judge",
+      "slug": "player-judge",
+      "category": "social",
+      "path": "social/player-judge.md"
+    },
+    {
+      "id": "2858",
+      "name": "Prisoner's Dilemma",
+      "slug": "prisoner's-dilemma",
+      "category": "social",
+      "path": "social/prisoner's-dilemma.md"
+    },
+    {
+      "id": "2028",
+      "name": "Role Playing",
+      "slug": "role-playing",
+      "category": "social",
+      "path": "social/role-playing.md"
+    },
+    {
+      "id": "2027",
+      "name": "Storytelling",
+      "slug": "storytelling",
+      "category": "social",
+      "path": "social/storytelling.md"
+    },
+    {
+      "id": "2017",
+      "name": "Voting",
+      "slug": "voting",
+      "category": "social",
+      "path": "social/voting.md"
     },
     {
       "id": "2827",
@@ -1304,25 +1397,39 @@
       "path": "turn-order/turn-order-time-track.md"
     },
     {
-      "id": "2079",
-      "name": "Variable Phase Order",
-      "slug": "variable-phase-order",
-      "category": "other",
-      "path": "other/variable-phase-order.md"
+      "id": "2887",
+      "name": "Catch the Leader",
+      "slug": "catch-the-leader",
+      "category": "victory",
+      "path": "victory/catch-the-leader.md"
     },
     {
-      "id": "2015",
-      "name": "Variable Player Powers",
-      "slug": "variable-player-powers",
-      "category": "other",
-      "path": "other/variable-player-powers.md"
+      "id": "2875",
+      "name": "End Game Bonuses",
+      "slug": "end-game-bonuses",
+      "category": "victory",
+      "path": "victory/end-game-bonuses.md"
     },
     {
-      "id": "2897",
-      "name": "Variable Set-up",
-      "slug": "variable-set-up",
-      "category": "other",
-      "path": "other/variable-set-up.md"
+      "id": "2987",
+      "name": "Hidden Victory Points",
+      "slug": "hidden-victory-points",
+      "category": "victory",
+      "path": "victory/hidden-victory-points.md"
+    },
+    {
+      "id": "2889",
+      "name": "Highest-Lowest Scoring",
+      "slug": "highest-lowest-scoring",
+      "category": "victory",
+      "path": "victory/highest-lowest-scoring.md"
+    },
+    {
+      "id": "2886",
+      "name": "King of the Hill",
+      "slug": "king-of-the-hill",
+      "category": "victory",
+      "path": "victory/king-of-the-hill.md"
     },
     {
       "id": "2874",
@@ -1332,11 +1439,54 @@
       "path": "victory/victory-points-as-a-resource.md"
     },
     {
-      "id": "2017",
-      "name": "Voting",
-      "slug": "voting",
-      "category": "social",
-      "path": "social/voting.md"
+      "id": "engine-009",
+      "name": "Win by Elimination",
+      "slug": "win-elimination",
+      "category": "victory",
+      "path": "victory/win-elimination.md",
+      "source": "engine",
+      "bgg_related": "player-elimination"
+    },
+    {
+      "id": "engine-010",
+      "name": "Win by Empty Hand",
+      "slug": "win-empty-hand",
+      "category": "victory",
+      "path": "victory/win-empty-hand.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-011",
+      "name": "Win by Reaching State",
+      "slug": "win-reach-state",
+      "category": "victory",
+      "path": "victory/win-reach-state.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-012",
+      "name": "Win by Score Threshold",
+      "slug": "win-score-threshold",
+      "category": "victory",
+      "path": "victory/win-score-threshold.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-014",
+      "name": "Win on Timeout",
+      "slug": "win-timeout",
+      "category": "victory",
+      "path": "victory/win-timeout.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-013",
+      "name": "Win Race",
+      "slug": "win-race",
+      "category": "victory",
+      "path": "victory/win-race.md",
+      "source": "engine",
+      "bgg_related": "race"
     },
     {
       "id": "2082",
@@ -1358,13 +1508,6 @@
       "slug": "worker-placement-different-worker-types",
       "category": "worker-placement",
       "path": "worker-placement/worker-placement-different-worker-types.md"
-    },
-    {
-      "id": "2974",
-      "name": "Zone of Control",
-      "slug": "zone-of-control",
-      "category": "movement",
-      "path": "movement/zone-of-control.md"
     }
   ]
 }

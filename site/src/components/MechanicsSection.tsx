@@ -26,6 +26,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 function MechanicsSection() {
   const { categories, count, implementationStats } = mechanicsData
 
+  // Count source breakdown
+  const engineCount = mechanicsData.mechanics.filter((m: any) => m.source === 'engine').length
+  const bggCount = mechanicsData.mechanics.filter((m: any) => !m.source || m.source === 'bgg').length
+
   // Get total and implemented counts per category
   const categoryCounts: Record<string, { total: number; implemented: number }> = {}
   for (const mech of mechanicsData.mechanics) {
@@ -45,7 +49,7 @@ function MechanicsSection() {
           <div>
             <h2 className="section-title">Game Mechanics Database</h2>
             <p className="section-desc">
-              {implementationStats.implemented} of {count} board game mechanics implemented, organized into {categories.length} categories.
+              {implementationStats.implemented} of {count} board game mechanics implemented ({engineCount} engine-specific, {bggCount} from BGG), organized into {categories.length} categories.
               Reference mechanics in your RULES.md to help AI agents understand game systems.
             </p>
           </div>

@@ -6,12 +6,15 @@ import BackLink from '../components/BackLink'
 import './MechanicsPage.css'
 
 interface MechanicDef {
-  id: number
+  id: number | string
   name: string
   slug: string
   category: string
   summary: string
-  bggUrl: string
+  bggUrl?: string
+  source?: string
+  bggEquivalent?: string
+  bggRelated?: string
   description: string
   contentHtml: string
   // Implementation status from shared/mechanics-implementation.json
@@ -98,6 +101,16 @@ const implementationStatusLabels: Record<string, string> = {
   not_implemented: 'Not Implemented',
 }
 
+const sourceColors: Record<string, string> = {
+  bgg: '#ef8354',
+  engine: '#4a9eff',
+}
+
+const sourceLabels: Record<string, string> = {
+  bgg: 'BGG',
+  engine: 'Engine',
+}
+
 function MechanicsPage() {
   const [searchParams] = useSearchParams()
   const highlightSlug = searchParams.get('highlight')
@@ -171,7 +184,7 @@ function MechanicsPage() {
         <div className="mechanics-header">
           <h1>Game Mechanics</h1>
           <p className="mechanics-subtitle">
-            Browse {data.count} board game mechanics from BoardGameGeek, organized into {data.categories.length} categories.
+            Browse {data.count} board game mechanics ({data.mechanics.filter(m => m.source === 'engine').length} engine-specific, {data.mechanics.filter(m => !m.source || m.source === 'bgg').length} from BGG), organized into {data.categories.length} categories.
           </p>
         </div>
 
@@ -287,6 +300,21 @@ function MechanicsPage() {
                         <div className="mechanic-card-header">
                           <h3>{mechanic.name}</h3>
                           <div className="mechanic-badges">
+                            {mechanic.source && mechanic.source === 'engine' && (
+                              <span
+                                className="source-badge"
+                                style={{ '--source-color': sourceColors[mechanic.source] } as React.CSSProperties}
+                                title={
+                                  mechanic.bggEquivalent
+                                    ? `Engine implementation (BGG equivalent: ${mechanic.bggEquivalent})`
+                                    : mechanic.bggRelated
+                                    ? `Engine implementation (related to BGG: ${mechanic.bggRelated})`
+                                    : 'Engine-specific mechanic'
+                                }
+                              >
+                                {sourceLabels[mechanic.source]}
+                              </span>
+                            )}
                             {mechanic.implementationStatus !== 'not_implemented' && (
                               <span
                                 className={`implementation-badge ${mechanic.implementationStatus}`}
@@ -336,14 +364,16 @@ function MechanicsPage() {
 
                         <div className="mechanic-footer">
                           <code className="mechanic-slug">{mechanic.slug}</code>
-                          <a
-                            href={mechanic.bggUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bgg-link"
-                          >
-                            BGG
-                          </a>
+                          {mechanic.bggUrl && (
+                            <a
+                              href={mechanic.bggUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bgg-link"
+                            >
+                              BGG
+                            </a>
+                          )}
                         </div>
                       </div>
                     )
