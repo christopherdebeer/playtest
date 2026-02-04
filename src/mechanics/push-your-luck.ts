@@ -8,6 +8,7 @@
  * - onExecuteAction: Handle roll and bank execution
  * - getAvailableActions: Expose roll and bank actions
  * - describeAction: Describe roll and bank actions
+ * - getPlayerView: Contribute rollAccumulator and rollCount to player view
  */
 
 import {
@@ -17,7 +18,8 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
 
@@ -214,5 +216,18 @@ export const pushYourLuckMechanic: MechanicHooks = {
     }
 
     return null;
+  },
+
+  /**
+   * Contribute push-your-luck state to player view.
+   * This removes the need for game.ts to know about rollAccumulator/rollCount.
+   */
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    if (!isMechanicEnabled(ctx.config, 'push-your-luck')) return null;
+
+    return {
+      rollAccumulator: ctx.player.rollAccumulator ?? 0,
+      rollCount: ctx.player.rollCount ?? 0
+    };
   }
 };

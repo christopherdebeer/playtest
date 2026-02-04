@@ -657,17 +657,15 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     shared.currentColor = topCard.effect?.color ?? null;
   }
 
-  // Initialize draft display if open drafting enabled
-  if (config.engine_mechanics?.open_drafting && deck.length > 0) {
-    const displaySize = config.engine_mechanics.open_drafting.display_size;
-    const draftDisplay = deck.splice(0, Math.min(displaySize, deck.length));
-    shared.draftDisplay = draftDisplay;
-  }
-
   // Initialize supply pile for deck-building games
   if (config.engine_mechanics?.deck_building?.supply) {
     shared.supply = config.engine_mechanics.deck_building.supply;
   }
+
+  // Let mechanics initialize their own shared state (e.g., open-drafting's draftDisplay)
+  // This removes the need for game.ts to know about mechanic-specific shared state
+  const mechanicSharedState = mechanicRegistry.initSharedState(config, deck, turnOrder);
+  Object.assign(shared, mechanicSharedState);
 
   const logPath = getLogPath(gameName, gameId);
 
@@ -2109,13 +2107,12 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     (result as any).collectedSets = player.collectedSets;
   }
 
-  // Push your luck state
-  if (state.config.engine_mechanics?.push_your_luck) {
-    (result as any).rollAccumulator = player.rollAccumulator ?? 0;
-    (result as any).rollCount = player.rollCount ?? 0;
-  }
+  // Let mechanics contribute to player view (e.g., push-your-luck's rollAccumulator)
+  // This removes the need for game.ts to know about mechanic-specific player properties
+  const mechanicView = mechanicRegistry.getPlayerView(state, playerId);
+  Object.assign(result, mechanicView);
 
-  // Draft display
+  // Draft display (still included for backward compatibility, but could move to mechanic)
   if (state.config.engine_mechanics?.open_drafting) {
     const display = (state.shared.draftDisplay || []) as Card[];
     (result as any).draftDisplay = display.map(c => c.name);
