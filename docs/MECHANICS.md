@@ -867,11 +867,11 @@ Issues discovered during playtesting that require fixes.
 
 | Mechanic | Issue | Discovered | Status |
 |----------|-------|------------|--------|
-| `ladder-climbing` | `auto_advance_winner` not functioning - trick winners don't advance on track | 2026-02-04 (road-rally playtest) | **Open** |
-| `closed-drafting` | Pool-based drafting not implemented - players only draw individual cards, no draft pools created | 2026-02-04 (draft-duel playtest) | **Open** |
-| `freeplay` + `point-to-point-movement` | Integration failure - movement cards don't advance player positions on track in freeplay mode | 2026-02-04 (parallel-race playtest) | **Open** |
-| `push-your-luck` scoring | Score not persisting - player's played cards (60 pts worth) showed 0 in final score | 2026-02-04 (fortune-seekers playtest) | **Open** |
-| `card-matching` (UNO) | Unwinnable state - player can get stuck with no playable cards and no escape mechanism through drawing | 2026-02-04 (uno playtest) | **Open** |
+| `ladder-climbing` | `auto_advance_winner` not functioning - property mismatch (used `state` instead of `currentNode`) | 2026-02-04 (road-rally playtest) | **Fixed** |
+| `closed-drafting` | Missing `initSharedState()` and `onTurnStart()` hooks - pools never populated from deck | 2026-02-04 (draft-duel playtest) | **Fixed** |
+| `freeplay` + `point-to-point-movement` | `play_card` only handles interference effects - `mechanicRegistry.applyEffect()` never called for movement card effects | 2026-02-04 (parallel-race playtest) | **Fixed** |
+| `push-your-luck` scoring | Card point effects (`effect.type: "points"`) not applied to score on draft/play - `onAfterAddToHand` hook unimplemented | 2026-02-04 (fortune-seekers playtest) | **Fixed** |
+| `card-matching` (UNO) | Missing draw-until-playable rule enforcement - players can pass indefinitely without forced draw | 2026-02-04 (uno playtest) | **Fixed** |
 
 ### Playtest Log (2026-02-04)
 

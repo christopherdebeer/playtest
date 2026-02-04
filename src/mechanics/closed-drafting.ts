@@ -31,10 +31,19 @@ import {
   PlayerInitContext,
   PlayerInitResult,
   TurnEndContext,
-  StateChanges
+  TurnStartContext,
+  StateChanges,
+  SharedStateInitContext,
+  SharedStateInitResult
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
 import { addToHand } from './core/hand.js';
+
+/** Temporary storage for draft pools before distribution to players */
+interface ClosedDraftPoolsShared {
+  closedDraftPools?: Record<string, Card[]>;
+  closedDraftPoolsDistributed?: boolean;
+}
 
 interface ClosedDraftingConfig {
   /** Number of cards in initial draft pool per player */
@@ -85,14 +94,78 @@ export const closedDraftingMechanic: MechanicHooks = {
     required: ['pool_size']
   },
 
+  /**
+   * Initialize draft pools from the deck at game creation.
+   * Pools are stored in shared state temporarily until distributed to players.
+   */
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    const draftConfig = ctx.config.engine_mechanics?.closed_drafting as ClosedDraftingConfig | undefined;
+    if (!draftConfig) return null;
+
+    const poolSize = draftConfig.pool_size;
+    const playerCount = ctx.playerIds.length;
+    const totalCardsNeeded = poolSize * playerCount;
+
+    // Check if we have enough cards
+    if (ctx.deck.length < totalCardsNeeded) {
+      console.warn(`[closed-drafting] Not enough cards in deck for ${playerCount} players with pool_size=${poolSize}. ` +
+        `Need ${totalCardsNeeded}, have ${ctx.deck.length}. Adjusting pool sizes.`);
+    }
+
+    // Deal cards from deck to create pools for each player
+    const pools: Record<string, Card[]> = {};
+    for (const playerId of ctx.playerIds) {
+      const cardsForPlayer = Math.min(poolSize, Math.floor(ctx.deck.length / (ctx.playerIds.indexOf(playerId) === ctx.playerIds.length - 1 ? 1 : 2)));
+      pools[playerId] = ctx.deck.splice(0, Math.min(poolSize, ctx.deck.length));
+    }
+
+    return {
+      closedDraftPools: pools,
+      closedDraftPoolsDistributed: false,
+      draftRound: 1
+    };
+  },
+
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const draftConfig = ctx.config.engine_mechanics?.closed_drafting as ClosedDraftingConfig | undefined;
     if (!draftConfig) return null;
 
     return {
-      draftPool: [] as Card[],       // Cards available to draft from
+      draftPool: [] as Card[],       // Cards available to draft from (populated from shared state)
       draftSelection: null as Card | null,  // Currently selected card (hidden)
       hasDraftSelected: false        // Whether player has made selection this pick
+    };
+  },
+
+  /**
+   * Distribute draft pools to players on first turn.
+   * This moves pools from shared state to player state.
+   */
+  onTurnStart(ctx: TurnStartContext): StateChanges | null {
+    const draftConfig = ctx.config.engine_mechanics?.closed_drafting as ClosedDraftingConfig | undefined;
+    if (!draftConfig) return null;
+
+    const sharedState = ctx.state.shared as ClosedDraftPoolsShared;
+
+    // Only distribute pools if they haven't been distributed yet
+    if (sharedState.closedDraftPoolsDistributed || !sharedState.closedDraftPools) {
+      return null;
+    }
+
+    // Distribute pools to all players
+    const playerStateChanges: Record<string, Partial<{ draftPool: Card[] }>> = {};
+    for (const [playerId, pool] of Object.entries(sharedState.closedDraftPools)) {
+      playerStateChanges[playerId] = {
+        draftPool: pool
+      };
+    }
+
+    return {
+      playerStateChanges,
+      sharedStateChanges: {
+        closedDraftPoolsDistributed: true,
+        closedDraftPools: undefined // Clear temporary storage
+      }
     };
   },
 
@@ -105,7 +178,15 @@ export const closedDraftingMechanic: MechanicHooks = {
     }
 
     const selectAction = action as DraftSelectAction;
-    const draftPool = (ctx.player.draftPool || []) as Card[];
+
+    // Get draft pool - check player state first, then shared state
+    let draftPool = (ctx.player.draftPool || []) as Card[];
+    if (draftPool.length === 0) {
+      const sharedState = ctx.state.shared as ClosedDraftPoolsShared;
+      if (sharedState.closedDraftPools && sharedState.closedDraftPools[ctx.playerId]) {
+        draftPool = sharedState.closedDraftPools[ctx.playerId];
+      }
+    }
 
     // Check if player already selected this pick
     if (ctx.player.hasDraftSelected) {
@@ -132,7 +213,16 @@ export const closedDraftingMechanic: MechanicHooks = {
     if (!draftConfig) return null;
 
     const selectAction = action as DraftSelectAction;
-    const draftPool = (player.draftPool || []) as Card[];
+
+    // Get draft pool - check player state first, then shared state
+    let draftPool = (player.draftPool || []) as Card[];
+    if (draftPool.length === 0) {
+      const sharedState = state.shared as ClosedDraftPoolsShared;
+      if (sharedState.closedDraftPools && sharedState.closedDraftPools[playerId]) {
+        draftPool = sharedState.closedDraftPools[playerId];
+      }
+    }
+
     const cardIndex = draftPool.findIndex(c => c.name === selectAction.card);
 
     if (cardIndex === -1) {
@@ -266,7 +356,18 @@ export const closedDraftingMechanic: MechanicHooks = {
     // Don't show actions if already selected
     if (ctx.player.hasDraftSelected) return [];
 
-    const draftPool = (ctx.player.draftPool || []) as Card[];
+    // Get draft pool - check player state first, then fall back to shared state
+    // (shared state is used before pools are distributed on first turn)
+    let draftPool = (ctx.player.draftPool || []) as Card[];
+
+    // Fallback: check if pools are in shared state (not yet distributed)
+    if (draftPool.length === 0) {
+      const sharedState = ctx.state.shared as ClosedDraftPoolsShared;
+      if (sharedState.closedDraftPools && sharedState.closedDraftPools[ctx.playerId]) {
+        draftPool = sharedState.closedDraftPools[ctx.playerId];
+      }
+    }
+
     if (draftPool.length === 0) return [];
 
     // Return one action per card in draft pool
