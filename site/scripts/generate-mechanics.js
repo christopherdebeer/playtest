@@ -43,6 +43,9 @@ async function parseMechanicFile(content) {
     category: config.category,
     summary: config.summary || description.split('.')[0] + '.',
     bggUrl: config.bgg_url,
+    source: config.source || 'bgg',
+    bggEquivalent: config.bgg_equivalent,
+    bggRelated: config.bgg_related,
     description,
     contentHtml,
   }
@@ -91,6 +94,17 @@ async function main() {
       const parsed = await parseMechanicFile(content)
 
       if (parsed) {
+        // Add source from index if not in frontmatter
+        if (!parsed.source && mech.source) {
+          parsed.source = mech.source
+        }
+        if (!parsed.bggEquivalent && mech.bgg_equivalent) {
+          parsed.bggEquivalent = mech.bgg_equivalent
+        }
+        if (!parsed.bggRelated && mech.bgg_related) {
+          parsed.bggRelated = mech.bgg_related
+        }
+
         // Add implementation status from engine registry
         if (registry.mechanics[parsed.slug]) {
           const impl = registry.mechanics[parsed.slug]

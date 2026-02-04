@@ -247,6 +247,20 @@
   --impl-color: #6b7280;
 }
 
+.source-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--source-color, #4a9eff) 15%, transparent);
+  color: var(--source-color, #4a9eff);
+  border: 1px solid var(--source-color, #4a9eff);
+  cursor: help;
+}
+
 .mechanic-summary {
   color: var(--cat-color, var(--accent));
   font-size: 0.8rem;
