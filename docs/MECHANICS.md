@@ -592,7 +592,7 @@ engine_mechanics:
 
 ## Current Status
 
-### Implemented Mechanics: 52 of 192 (27%)
+### Implemented Mechanics: 53 of 192 (28%)
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -619,48 +619,71 @@ engine_mechanics:
 | Phase | Hooks | Status |
 |-------|-------|--------|
 | Phase 1-5 | 33 core hooks | Complete |
+| Agnosticism | 5 new hooks | **Complete** |
 | Phase 6 | Combat (6 hooks) | Planned |
 | Phase 7 | Workers (5 hooks) | Planned |
 | Phase 8 | Auctions (5 hooks) | Planned |
-| Agnosticism | 5 new hooks | **In Progress** |
+
+**Agnosticism Hooks (Complete):**
+- `initSharedState` - Used by open-drafting
+- `getPlayerView` - Used by push-your-luck
+- `isPlayerBlocked` - Used by lose-a-turn
+- `applyEffect` - Defined, ready for mechanic implementations
+- `getActionSchema` - Defined, ready for mechanic implementations
 
 ### game.ts Agnosticism Status
 
-| Area | Current State | Target |
-|------|---------------|--------|
-| Pass action | Hardcoded | Extract to `core/pass.ts` |
-| Effect types | Hardcoded switch | `applyEffect` hook |
-| Player view | Mechanic-aware | `getPlayerView` hook |
-| Shared init | Mechanic-aware | `initSharedState` hook |
-| Block check | Hardcoded types | `isPlayerBlocked` hook |
-| Action schema | Hardcoded cases | `getActionSchema` hook |
-| Card types | Hardcoded (wild, etc) | Mechanic-owned |
+| Area | Current State | Target | Status |
+|------|---------------|--------|--------|
+| Pass action | ~~Hardcoded~~ | `core/pass.ts` mechanic | **Done** |
+| Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
+| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (open-drafting) |
+| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (push-your-luck) |
+| Effect types | Hardcoded switch | `applyEffect` hook | Pending |
+| Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
+| Card types | Hardcoded (wild, etc) | Mechanic-owned | Pending |
+
+#### Completed Migrations:
+- **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
+- **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
+- **Shared state init**: `open-drafting` implements `initSharedState` for draftDisplay
+- **Player view**: `push-your-luck` implements `getPlayerView` for rollAccumulator/rollCount
 
 ---
 
 ## Roadmap
 
-### Immediate: Pass Mechanic & Agnosticism Hooks
+### Completed: Pass Mechanic & Core Agnosticism
 
-1. **Create `src/mechanics/core/pass.ts`**
-   - Handle pass action via `onExecuteAction`
-   - Call `onPassPriority` for turn order mechanics
-   - Handle victory declarations
-   - Expose pass via `getAvailableActions`
+1. **Created `src/mechanics/core/pass.ts`** ✅
+   - Handles pass action via `onExecuteAction`
+   - Calls `onPassPriority` for turn order mechanics
+   - Handles victory declarations via `pendingVictoryClaim`
+   - Exposes pass via `getAvailableActions`
 
-2. **Add Agnosticism Hooks to types.ts**
-   - `initSharedState`
-   - `getPlayerView`
-   - `applyEffect`
-   - `isPlayerBlocked`
-   - `getActionSchema`
+2. **Added Agnosticism Hooks to types.ts** ✅
+   - `initSharedState` - Mechanics initialize own shared state
+   - `getPlayerView` - Mechanics contribute to player view
+   - `applyEffect` - Mechanics handle own effect types
+   - `isPlayerBlocked` - Mechanics define blocking
+   - `getActionSchema` - Mechanics define action validation
 
-3. **Add Registry Methods**
-   - Route new hooks through `MechanicRegistry`
+3. **Added Registry Methods** ✅
+   - All new hooks routed through `MechanicRegistry`
 
-4. **Migrate game.ts**
-   - Remove hardcoded pass handling
-   - Use new hooks for effect/view/init
+4. **Migrated game.ts** ✅
+   - Removed hardcoded pass handling (uses mechanic)
+   - Uses `isPlayerBlocked` hook (lose-a-turn implements)
+   - Uses `initSharedState` hook (open-drafting implements)
+   - Uses `getPlayerView` hook (push-your-luck implements)
+
+### Next: Remaining Agnosticism Migrations
+
+| Migration | Mechanic(s) to Update | game.ts Lines to Remove |
+|-----------|----------------------|------------------------|
+| Effect type handling | Create effect handlers | ~100 |
+| Card type handling (wild) | card-matching (new) | ~80 |
+| Action schema validation | All action-owning mechanics | ~150 |
 
 ### Short-Term: Remaining Phase 1-5 Mechanics
 

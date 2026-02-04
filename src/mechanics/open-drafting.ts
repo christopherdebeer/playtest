@@ -4,6 +4,7 @@
  * Draft cards from a visible display.
  *
  * Hooks used:
+ * - initSharedState: Initialize the draft display from deck
  * - preValidateAction: Validate draft action (card in display)
  * - onExecuteAction: Handle draft execution
  * - getAvailableActions: Expose draft action
@@ -17,7 +18,9 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  SharedStateInitContext,
+  SharedStateInitResult
 } from './types.js';
 import { GameAction, Card, DraftAction } from '../types/game.js';
 import { addToHand } from './core/hand.js';
@@ -49,6 +52,27 @@ export const openDraftingMechanic: MechanicHooks = {
       }
     },
     required: ['display_size']
+  },
+
+  /**
+   * Initialize the draft display from the deck.
+   * This removes the need for game.ts to know about open_drafting config.
+   */
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    const draftConfig = ctx.config.engine_mechanics?.open_drafting as OpenDraftingConfig | undefined;
+    if (!draftConfig) return null;
+
+    const displaySize = draftConfig.display_size ?? 5;
+
+    // Only initialize if deck has cards
+    if (ctx.deck.length === 0) {
+      return { draftDisplay: [] };
+    }
+
+    // Take cards from the front of the deck for display
+    const display = ctx.deck.splice(0, Math.min(displaySize, ctx.deck.length));
+
+    return { draftDisplay: display };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
