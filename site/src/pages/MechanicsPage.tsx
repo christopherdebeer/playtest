@@ -1,53 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import mechanicsData from '../data/mechanics.json'
-import gamesData from '../data/games.json'
+import { fetchMechanicsIndex, MechanicsIndex, MechanicIndexEntry } from '../utils/mechanicData'
 import BackLink from '../components/BackLink'
 import './MechanicsPage.css'
-
-interface MechanicDef {
-  id: number | string
-  name: string
-  slug: string
-  category: string
-  summary: string
-  bggUrl?: string
-  source?: string
-  bggEquivalent?: string
-  bggRelated?: string
-  description: string
-  contentHtml: string
-  // Implementation status from shared/mechanics-implementation.json
-  implementationStatus: 'implemented' | 'partial' | 'not_implemented'
-  implementationConfig?: string
-  implementationSince?: string
-  implementationDescription?: string
-  implementationNotes?: string
-  implementationRelated?: string
-}
-
-interface ImplementationStats {
-  implemented: number
-  partial: number
-  notImplemented: number
-}
-
-interface MechanicsData {
-  categories: string[]
-  mechanics: MechanicDef[]
-  count: number
-  implementationStats?: ImplementationStats
-}
-
-interface GameConfig {
-  name: string
-  mechanics?: string[]
-}
-
-interface Game {
-  id: string
-  config: GameConfig
-}
 
 const categoryColors: Record<string, string> = {
   action: '#f59e0b',
@@ -116,21 +71,62 @@ function MechanicsPage() {
   const highlightSlug = searchParams.get('highlight')
   const categoryParam = searchParams.get('category')
 
+  const [data, setData] = useState<MechanicsIndex | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+
+  // Load mechanics index
+  useEffect(() => {
+    fetchMechanicsIndex()
+      .then(setData)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   // Sync category filter with URL param
   useEffect(() => {
     setSelectedCategory(categoryParam)
   }, [categoryParam])
 
-  const data = mechanicsData as MechanicsData
-  const games = gamesData as Game[]
+  // Scroll to highlighted mechanic on load
+  useEffect(() => {
+    if (highlightSlug && data) {
+      const element = document.getElementById(`mechanic-${highlightSlug}`)
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          element.classList.add('highlighted')
+        }, 100)
+      }
+    }
+  }, [highlightSlug, data])
 
-  // Find games using each mechanic
-  const gamesUsingMechanic = (slug: string): Game[] => {
-    return games.filter(g => g.config.mechanics?.includes(slug))
+  if (loading) {
+    return (
+      <div className="mechanics-page">
+        <div className="container">
+          <BackLink to="/">Back to home</BackLink>
+          <div className="loading-state">Loading mechanics...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="mechanics-page">
+        <div className="container">
+          <BackLink to="/">Back to home</BackLink>
+          <div className="error-state">
+            <h2>Error loading mechanics</h2>
+            <p>{error || 'Unknown error'}</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Filter mechanics
@@ -138,7 +134,7 @@ function MechanicsPage() {
     const matchesSearch = search === '' ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.slug.includes(search.toLowerCase()) ||
-      m.description.toLowerCase().includes(search.toLowerCase())
+      m.summary.toLowerCase().includes(search.toLowerCase())
     const matchesCategory = selectedCategory === null || m.category === selectedCategory
     const matchesStatus = selectedStatus === null || m.implementationStatus === selectedStatus
     return matchesSearch && matchesCategory && matchesStatus
@@ -148,20 +144,7 @@ function MechanicsPage() {
   const mechanicsByCategory = data.categories.reduce((acc, cat) => {
     acc[cat] = filteredMechanics.filter(m => m.category === cat)
     return acc
-  }, {} as Record<string, MechanicDef[]>)
-
-  // Scroll to highlighted mechanic on load
-  useEffect(() => {
-    if (highlightSlug) {
-      const element = document.getElementById(`mechanic-${highlightSlug}`)
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('highlighted')
-        }, 100)
-      }
-    }
-  }, [highlightSlug])
+  }, {} as Record<string, MechanicIndexEntry[]>)
 
   return (
     <div className="mechanics-page">
@@ -171,7 +154,7 @@ function MechanicsPage() {
         <div className="mechanics-header">
           <h1>Game Mechanics</h1>
           <p className="mechanics-subtitle">
-            Browse {data.count} board game mechanics ({data.mechanics.filter(m => m.source === 'engine').length} engine-specific, {data.mechanics.filter(m => !m.source || m.source === 'bgg').length} from BGG), organized into {data.categories.length} categories.
+            Browse {data.count} board game mechanics ({data.mechanics.filter(m => m.source === 'engine').length} engine-specific, {data.mechanics.filter(m => m.source === 'bgg').length} from BGG), organized into {data.categories.length} categories.
           </p>
         </div>
 
@@ -213,7 +196,7 @@ function MechanicsPage() {
             })}
           </div>
 
-          {data.implementationStats && (data.implementationStats.implemented > 0 || data.implementationStats.partial > 0) && (
+          {data.stats && (data.stats.implemented > 0 || data.stats.partial > 0) && (
             <div className="implementation-filters">
               <span className="filter-label">Engine Status:</span>
               <button
@@ -227,21 +210,21 @@ function MechanicsPage() {
                 style={{ '--status-color': implementationStatusColors.implemented } as React.CSSProperties}
                 onClick={() => setSelectedStatus(selectedStatus === 'implemented' ? null : 'implemented')}
               >
-                Implemented ({data.implementationStats.implemented})
+                Implemented ({data.stats.implemented})
               </button>
               <button
                 className={`status-filter ${selectedStatus === 'partial' ? 'active' : ''}`}
                 style={{ '--status-color': implementationStatusColors.partial } as React.CSSProperties}
                 onClick={() => setSelectedStatus(selectedStatus === 'partial' ? null : 'partial')}
               >
-                Partial ({data.implementationStats.partial})
+                Partial ({data.stats.partial})
               </button>
               <button
                 className={`status-filter ${selectedStatus === 'not_implemented' ? 'active' : ''}`}
                 style={{ '--status-color': implementationStatusColors.not_implemented } as React.CSSProperties}
                 onClick={() => setSelectedStatus(selectedStatus === 'not_implemented' ? null : 'not_implemented')}
               >
-                Not Implemented ({data.implementationStats.notImplemented})
+                Not Implemented ({data.stats.notImplemented})
               </button>
             </div>
           )}
@@ -274,73 +257,55 @@ function MechanicsPage() {
                 )}
 
                 <div className="mechanics-grid">
-                  {mechanics.map(mechanic => {
-                    const usedIn = gamesUsingMechanic(mechanic.slug)
-                    return (
-                      <Link
-                        key={mechanic.slug}
-                        to={`/mechanics/${mechanic.slug}`}
-                        id={`mechanic-${mechanic.slug}`}
-                        className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''}`}
-                        style={{ '--cat-color': color } as React.CSSProperties}
-                      >
-                        <div className="mechanic-card-header">
-                          <h3>{mechanic.name}</h3>
-                          <div className="mechanic-badges">
-                            {mechanic.source && mechanic.source === 'engine' && (
-                              <span
-                                className="source-badge"
-                                style={{ '--source-color': sourceColors[mechanic.source] } as React.CSSProperties}
-                                title={
-                                  mechanic.bggEquivalent
-                                    ? `Engine implementation (BGG equivalent: ${mechanic.bggEquivalent})`
-                                    : mechanic.bggRelated
-                                    ? `Engine implementation (related to BGG: ${mechanic.bggRelated})`
-                                    : 'Engine-specific mechanic'
-                                }
-                              >
-                                {sourceLabels[mechanic.source]}
-                              </span>
-                            )}
-                            {mechanic.implementationStatus !== 'not_implemented' && (
-                              <span
-                                className={`implementation-badge ${mechanic.implementationStatus}`}
-                                style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
-                                title={
-                                  mechanic.implementationStatus === 'implemented'
-                                    ? `Config: ${mechanic.implementationConfig} (v${mechanic.implementationSince})`
-                                    : mechanic.implementationNotes
-                                }
-                              >
-                                {implementationStatusLabels[mechanic.implementationStatus]}
-                              </span>
-                            )}
-                            <span className="mechanic-id">#{mechanic.id}</span>
-                          </div>
-                        </div>
-                        <p className="mechanic-summary">{mechanic.summary}</p>
-                        <p className="mechanic-description">{mechanic.description}</p>
-
-                        {usedIn.length > 0 && (
-                          <div className="mechanic-games">
-                            <span className="games-label">Used in:</span>
-                            {usedIn.map(game => (
-                              <span key={game.id} className="game-tag">
-                                {game.config.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="mechanic-footer">
-                          <code className="mechanic-slug">{mechanic.slug}</code>
-                          {mechanic.bggUrl && (
-                            <span className="bgg-indicator">BGG</span>
+                  {mechanics.map(mechanic => (
+                    <Link
+                      key={mechanic.slug}
+                      to={`/mechanics/${mechanic.slug}`}
+                      id={`mechanic-${mechanic.slug}`}
+                      className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''}`}
+                      style={{ '--cat-color': color } as React.CSSProperties}
+                    >
+                      <div className="mechanic-card-header">
+                        <h3>{mechanic.name}</h3>
+                        <div className="mechanic-badges">
+                          {mechanic.source === 'engine' && (
+                            <span
+                              className="source-badge"
+                              style={{ '--source-color': sourceColors.engine } as React.CSSProperties}
+                              title={
+                                mechanic.bggEquivalent
+                                  ? `Engine implementation (BGG equivalent: ${mechanic.bggEquivalent})`
+                                  : mechanic.bggRelated
+                                  ? `Engine implementation (related to BGG: ${mechanic.bggRelated})`
+                                  : 'Engine-specific mechanic'
+                              }
+                            >
+                              {sourceLabels.engine}
+                            </span>
+                          )}
+                          {mechanic.implementationStatus !== 'not_implemented' && (
+                            <span
+                              className={`implementation-badge ${mechanic.implementationStatus}`}
+                              style={{ '--impl-color': implementationStatusColors[mechanic.implementationStatus] } as React.CSSProperties}
+                            >
+                              {implementationStatusLabels[mechanic.implementationStatus]}
+                            </span>
                           )}
                         </div>
-                      </Link>
-                    )
-                  })}
+                      </div>
+                      <p className="mechanic-summary">{mechanic.summary}</p>
+
+                      {mechanic.gamesUsing.length > 0 && (
+                        <div className="mechanic-games">
+                          <span className="games-label">Used in {mechanic.gamesUsing.length} game{mechanic.gamesUsing.length !== 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+
+                      <div className="mechanic-footer">
+                        <code className="mechanic-slug">{mechanic.slug}</code>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               </section>
             )

@@ -3,6 +3,18 @@
   padding: 2rem 0 4rem;
 }
 
+.loading-state,
+.error-state {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.error-state h2 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
 .mechanics-header {
   margin-bottom: 2rem;
 }

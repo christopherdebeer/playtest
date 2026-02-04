@@ -28,7 +28,7 @@
     "generate:registry": "npx tsx scripts/generate-mechanics-registry.ts",
     "generate:games": "node site/scripts/generate-games.js",
     "generate:mechanics-index": "npx tsx scripts/generate-mechanics-index.ts",
-    "generate:mechanics": "node site/scripts/generate-mechanics.js",
+    "generate:mechanics": "npx tsx site/scripts/generate-mechanics-data.ts",
     "generate:logs": "node site/scripts/generate-logs.js",
     "generate:docs": "node site/scripts/generate-docs.js",
     "playtest": "node dist/cli/index.js",
