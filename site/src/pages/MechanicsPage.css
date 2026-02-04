@@ -173,20 +173,24 @@
   gap: 1rem;
 }
 
-.mechanic-card {
+a.mechanic-card {
+  display: block;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
   transition: border-color 0.2s, transform 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
-.mechanic-card:hover {
-  border-color: var(--cat-color, var(--border));
+a.mechanic-card:hover {
+  border-color: var(--cat-color, var(--accent));
+  transform: translateY(-2px);
 }
 
-.mechanic-card.highlight,
-.mechanic-card.highlighted {
+a.mechanic-card.highlight,
+a.mechanic-card.highlighted {
   border-color: var(--cat-color, var(--accent));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--cat-color, var(--accent)) 30%, transparent);
   animation: pulse 2s ease-out;
@@ -277,76 +281,6 @@
   margin-bottom: 0.75rem;
 }
 
-.mechanic-card.expanded {
-  grid-column: 1 / -1;
-}
-
-.mechanic-content.markdown-body {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.6;
-  margin-bottom: 0.75rem;
-}
-
-.mechanic-content.markdown-body h1,
-.mechanic-content.markdown-body h2,
-.mechanic-content.markdown-body h3 {
-  color: var(--text-primary);
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.mechanic-content.markdown-body h1 { font-size: 1.1rem; }
-.mechanic-content.markdown-body h2 { font-size: 1rem; }
-.mechanic-content.markdown-body h3 { font-size: 0.9rem; }
-
-.mechanic-content.markdown-body p {
-  margin-bottom: 0.5rem;
-}
-
-.mechanic-content.markdown-body ul,
-.mechanic-content.markdown-body ol {
-  margin-bottom: 0.5rem;
-  padding-left: 1.25rem;
-}
-
-.mechanic-content.markdown-body code {
-  background: var(--code-bg);
-  padding: 0.1rem 0.3rem;
-  border-radius: 3px;
-  font-size: 0.8em;
-}
-
-.mechanic-content.markdown-body pre {
-  background: var(--code-bg);
-  padding: 0.75rem;
-  border-radius: 6px;
-  overflow-x: auto;
-  margin-bottom: 0.5rem;
-}
-
-.mechanic-content.markdown-body pre code {
-  background: none;
-  padding: 0;
-}
-
-.expand-toggle {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--cat-color, var(--accent));
-  background: transparent;
-  border: 1px solid var(--cat-color, var(--accent));
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.expand-toggle:hover {
-  background: color-mix(in srgb, var(--cat-color, var(--accent)) 15%, transparent);
-}
-
 .mechanic-games {
   display: flex;
   flex-wrap: wrap;
@@ -367,6 +301,14 @@
   font-size: 0.75rem;
 }
 
+.game-tag {
+  padding: 0.15rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
 .mechanic-footer {
   display: flex;
   justify-content: space-between;
@@ -385,6 +327,14 @@
   padding: 0.2rem 0.5rem;
   background: var(--bg-tertiary);
   border-radius: 4px;
+}
+
+.bgg-indicator {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  color: var(--text-secondary);
 }
 
 /* Responsive */

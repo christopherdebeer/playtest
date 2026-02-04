@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import mechanicsData from '../data/mechanics.json'
 import gamesData from '../data/games.json'
@@ -119,7 +119,6 @@ function MechanicsPage() {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam)
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
-  const [expandedMechanics, setExpandedMechanics] = useState<Set<string>>(new Set())
 
   // Sync category filter with URL param
   useEffect(() => {
@@ -128,18 +127,6 @@ function MechanicsPage() {
 
   const data = mechanicsData as MechanicsData
   const games = gamesData as Game[]
-
-  const toggleExpanded = useCallback((slug: string) => {
-    setExpandedMechanics(prev => {
-      const next = new Set(prev)
-      if (next.has(slug)) {
-        next.delete(slug)
-      } else {
-        next.add(slug)
-      }
-      return next
-    })
-  }, [])
 
   // Find games using each mechanic
   const gamesUsingMechanic = (slug: string): Game[] => {
@@ -289,12 +276,12 @@ function MechanicsPage() {
                 <div className="mechanics-grid">
                   {mechanics.map(mechanic => {
                     const usedIn = gamesUsingMechanic(mechanic.slug)
-                    const isExpanded = expandedMechanics.has(mechanic.slug)
                     return (
-                      <div
+                      <Link
                         key={mechanic.slug}
+                        to={`/mechanics/${mechanic.slug}`}
                         id={`mechanic-${mechanic.slug}`}
-                        className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''} ${isExpanded ? 'expanded' : ''}`}
+                        className={`mechanic-card ${highlightSlug === mechanic.slug ? 'highlight' : ''}`}
                         style={{ '--cat-color': color } as React.CSSProperties}
                       >
                         <div className="mechanic-card-header">
@@ -332,32 +319,15 @@ function MechanicsPage() {
                           </div>
                         </div>
                         <p className="mechanic-summary">{mechanic.summary}</p>
-
-                        {!isExpanded && (
-                          <p className="mechanic-description">{mechanic.description}</p>
-                        )}
-
-                        {isExpanded && mechanic.contentHtml && (
-                          <div
-                            className="mechanic-content markdown-body"
-                            dangerouslySetInnerHTML={{ __html: mechanic.contentHtml }}
-                          />
-                        )}
-
-                        <button
-                          className="expand-toggle"
-                          onClick={() => toggleExpanded(mechanic.slug)}
-                        >
-                          {isExpanded ? 'Show less' : 'Show more'}
-                        </button>
+                        <p className="mechanic-description">{mechanic.description}</p>
 
                         {usedIn.length > 0 && (
                           <div className="mechanic-games">
                             <span className="games-label">Used in:</span>
                             {usedIn.map(game => (
-                              <Link key={game.id} to={`/games/${game.id}`} className="game-link">
+                              <span key={game.id} className="game-tag">
                                 {game.config.name}
-                              </Link>
+                              </span>
                             ))}
                           </div>
                         )}
@@ -365,17 +335,10 @@ function MechanicsPage() {
                         <div className="mechanic-footer">
                           <code className="mechanic-slug">{mechanic.slug}</code>
                           {mechanic.bggUrl && (
-                            <a
-                              href={mechanic.bggUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bgg-link"
-                            >
-                              BGG
-                            </a>
+                            <span className="bgg-indicator">BGG</span>
                           )}
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
                 </div>
