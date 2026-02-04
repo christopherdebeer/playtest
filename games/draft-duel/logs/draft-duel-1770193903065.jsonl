@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-04T08:31:43.069Z","event":"game_init","data":{"gameId":"draft-duel-1770193903065","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-04T08:33:36.562Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-04T08:35:14.416Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T08:39:05.852Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}

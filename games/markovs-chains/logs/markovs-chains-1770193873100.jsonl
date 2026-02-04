@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-04T08:31:13.104Z","event":"game_init","data":{"gameId":"markovs-chains-1770193873100","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-04T08:33:02.290Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-04T08:36:38.833Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"B","placedCardEffects":[]}}
+{"timestamp":"2026-02-04T08:42:07.533Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T08:49:00.180Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"A","placedCardEffects":[]}}
