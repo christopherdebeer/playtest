@@ -1,5 +1,9 @@
 # Mechanic Expansion Roadmap
 
+> **Note**: This document has been superseded by [MECHANICS.md](./MECHANICS.md), which provides unified documentation for the mechanics system. This file is retained for historical reference and detailed phase tracking.
+>
+> See: [MECHANICS.md](./MECHANICS.md)
+
 > **Follow-up to**: [MECHANIC_EXTRACTION_ROADMAP.md](./MECHANIC_EXTRACTION_ROADMAP.md)
 >
 > This document outlines the path from 21 implemented mechanics to comprehensive coverage of the 192 BoardGameGeek reference mechanics.
