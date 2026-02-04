@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Implemented: 51 of 192 mechanics (27%)**
+**Implemented: 52 of 192 mechanics (27%)**
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -19,7 +19,7 @@
 | Dice | 5 | 6 | 83% |
 | Economic | 2 | 9 | 22% |
 | Ending | 1 | 4 | 25% |
-| Information | 4 | 8 | 50% |
+| Information | 5 | 8 | 63% |
 | Movement | 4 | 22 | 18% |
 | Other | 10 | 40 | 25% |
 | Physical | 0 | 8 | 0% |
@@ -91,6 +91,18 @@
 | `different-dice-movement` | Dice | Dice determine movement options (Backgammon) |
 | `turn-order-pass-order` | Turn Order | First to pass goes first next round (Agricola, Caylus) |
 | `hidden-movement` | Information | Hidden player positions (Scotland Yard, Fury of Dracula) |
+| `hidden-objectives` | Information | Secret objective distribution (AAOTE) - Proposal 012 |
+
+### Proposal 012 Engine Fixes (AAOTE Playtest)
+
+The AAOTE playtest identified 4 critical engine issues that have been addressed:
+
+| Fix | Description | Files Changed |
+|-----|-------------|---------------|
+| **Victory Declarations** | Routed to GM via `pendingVictoryClaim` in pass action | `src/core/game.ts` |
+| **Turn Limit** | Added `max_turns` config (individual turns, not rounds) | `src/core/game.ts`, `src/types/game.ts` |
+| **Hidden Objectives** | New mechanic for secret objective distribution | `src/mechanics/hidden-objectives.ts` |
+| **Hand Limit Enforcement** | Added `onBeforeAddToHand` hook for all card acquisition | `src/mechanics/hand-management.ts` |
 
 ## Existing Hook Infrastructure
 
@@ -115,7 +127,7 @@
 ### Card Operations
 - `onBeforeDraw(ctx, count)` - Modify/block draw
 - `onAfterDraw(ctx, cards, reshuffled)` - React to draw
-- `onBeforeAddToHand(ctx, cards)` - Filter/block hand add
+- `onBeforeAddToHand(ctx, cards)` - Filter/block hand add (Proposal 012: enforces hand limit on ALL card acquisition)
 - `onAfterAddToHand(ctx, cards)` - React to hand add
 - `onAfterRemoveFromHand(ctx, cards)` - React to hand remove
 - `onDiscard(ctx, cards)` - React to discard
@@ -368,18 +380,19 @@ canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): 
 |----------|-------------|--------|
 | `hidden-roles` | Secret role assignment | ✅ Implemented |
 | `traitor-game` | Hidden traitor role | ✅ Implemented |
+| `hidden-objectives` | Secret objective distribution (Proposal 012) | ✅ Implemented |
 
 ### Implemented Mechanics (from Unlocked)
 
 | Mechanic | Description | Status |
 |----------|-------------|--------|
 | `hidden-victory-points` | Secret scoring | ✅ Implemented |
+| `hidden-movement` | Hidden player positions | ✅ Implemented |
 
 ### Unlocked Mechanics (Ready to Implement)
 
 | Mechanic | Description |
 |----------|-------------|
-| `hidden-movement` | Hidden player positions |
 | `deduction` | Deduce hidden information |
 | `memory` | Remember revealed info |
 | `targeted-clues` | Give clues about hidden info |
@@ -614,11 +627,8 @@ onAuctionEnd?(ctx: AuctionContext, winnerId: string | null, amount: number): Sta
 **Phase 1 Progress**: 15 of 18 mechanics implemented (83%)
 **Phase 2 Progress**: 2 of 5 mechanics implemented (40%) - Dice infrastructure complete
 **Phase 3 Progress**: 3 of 8 mechanics implemented (38%) - Turn order infrastructure complete
-**Phase 4 Progress**: 3 of 8 mechanics implemented (38%) - Visibility infrastructure complete
-**Phase 5 Progress**: 1 of 6 mechanics implemented (17%) - Voting infrastructure complete
-**Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
-**Phase 5 Progress**: 1 of 6 mechanics implemented (17%) - Voting infrastructure complete
-**Phase 4 Progress**: 2 of 8 mechanics implemented (25%) - Visibility infrastructure complete
+**Phase 4 Progress**: 5 of 8 mechanics implemented (63%) - Visibility infrastructure complete (Proposal 012: +hidden-objectives)
+**Phase 5 Progress**: 3 of 6 mechanics implemented (50%) - Voting infrastructure complete
 
 ---
 
