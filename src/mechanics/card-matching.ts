@@ -9,7 +9,7 @@
  * Hooks used:
  * - initSharedState: Initialize currentColor from top card
  * - preValidateAction: Validate card matches current color/top card
- * - postExecuteAction: Update currentColor after wild card play (global, still needed)
+ * - onCardPlayed: Update currentColor after card play (cards-defined hook)
  * - onCardDrawn: Track draws for forced-draw rule (cards-defined hook)
  */
 
@@ -24,7 +24,7 @@ import {
   isMechanicEnabled
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
-import type { CardsHooks, CardDrawnPayload } from './core/cards.js';
+import type { CardsHooks, CardDrawnPayload, CardPlayedPayload } from './core/cards.js';
 
 interface CardMatchingConfig {
   /** Colors available in the game */
@@ -262,30 +262,24 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
   },
 
   /**
-   * Update currentColor after card play.
-   * Note: Draw tracking moved to onCardDrawn (cards-defined hook).
+   * Cards-defined hook: Update currentColor after card play.
+   * Owns the currentColor semantics for UNO-style matching.
+   * Fired by card-piles.ts via mechanicRegistry.fire('cards', 'onCardPlayed', ...).
    */
-  postExecuteAction(ctx: HookContext, action: GameAction): StateChanges | null {
+  onCardPlayed(ctx: HookContext, { card, playContext }: CardPlayedPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
-    if (action.type !== 'play_card') return null;
 
-    const playAction = action as { type: 'play_card'; card: string; declaredColor?: string };
-
-    // Get the card that was just played (now top of discard/topCard)
-    const topCard = ctx.state.shared.topCard as Card | undefined;
-    if (!topCard) return null;
-
-    // If wild card with declared color, update currentColor
-    if (topCard.type === 'wild' && playAction.declaredColor) {
+    // Wild card with declared color takes priority
+    if (card.type === 'wild' && playContext?.declaredColor) {
       return {
         sharedStateChanges: {
-          currentColor: playAction.declaredColor
+          currentColor: playContext.declaredColor
         }
       };
     }
 
     // For non-wild cards, update currentColor from card's color
-    const cardColor = topCard.effect?.color;
+    const cardColor = card.effect?.color;
     if (cardColor) {
       return {
         sharedStateChanges: {

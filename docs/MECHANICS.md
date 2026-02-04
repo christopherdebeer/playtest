@@ -537,14 +537,16 @@ replacing hardcoded routing methods in the registry.
 - [x] `cards` core mechanic: owns `play_card` action via `onExecuteAction` (removed from game.ts fallback)
 - [x] `card-piles.ts` dual-fires global hooks AND cards-defined hooks (strangler fig)
 - [x] `card-piles.ts` `playCard()` function: removes from hand, discards, fires `onCardPlayed`
-- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn`; legacy draw-tracking removed from `postExecuteAction`
+- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn` and `onCardPlayed` (currentColor); legacy `postExecuteAction` removed
 - [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`; legacy `onBeforeDraw` removed
+- [x] `take-that`: migrated to `requires: ['cards']`, implements `onCardPlayed` (applies `block_turn`/`skip` effects to target)
+- [x] `currentColor` tracking removed from core services (`addToDiscard`, `playCard`); now owned by `card-matching.onCardPlayed`
 - [x] All card leaf mechanics declare `requires: ['cards']`:
-  - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`
+  - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`, `take-that`
 
 ### Outstanding
 
-- [ ] Extract card effect application from cards `onExecuteAction` to proper `onCardPlayed` responders (interference → take-that, non-interference → location-effects/etc.)
+- [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
 - [ ] Migrate `trick-taking` and `ladder-climbing` play paths to use `playCard()` or fire `onCardPlayed` (they bypass with direct `removeFromHandByName`)
 - [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
 - [ ] `resources` core mechanic: define hooks from current resource service
@@ -980,7 +982,7 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | location-effects | `draw_on_enter`, `heal_on_enter`, `damage_on_enter` | **Done** |
 | placed-card-effects | `probability_boost`, `probability_penalty`, `force_discard` | **Done** |
 | lose-a-turn | `block_turn`, `block`, `skip` | Uses `isPlayerBlocked` |
-| take-that | `interference` effects | Pending |
+| take-that | `block_turn`, `skip` | **Done** (via `onCardPlayed` + `addEffect`) |
 
 #### `getActionSchema` - Action validation schemas
 | Mechanic | Actions | Status |
@@ -1061,7 +1063,8 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 |------|---------|
 | `initSharedState` | Initialize `currentColor` from top card |
 | `preValidateAction` | Validate card matches color/value OR is wild with declaredColor |
-| `postExecuteAction` | Update `currentColor` after play |
+| `onCardPlayed` | Update `currentColor` after play (cards-defined hook) |
+| `onCardDrawn` | Track draws for forced-draw rule (cards-defined hook) |
 
 **Configuration**:
 ```yaml
