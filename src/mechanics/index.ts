@@ -86,6 +86,9 @@ import { passMechanic } from './core/pass.js';
 import { locationEffectsMechanic } from './location-effects.js';
 import { placedCardEffectsMechanic } from './placed-card-effects.js';
 
+// Experimental mechanics
+import { freeplayMechanic } from './freeplay.js';
+
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
 mechanicRegistry.register(incomeMechanic);
@@ -164,6 +167,9 @@ mechanicRegistry.register(passMechanic);
 // Register effect handling mechanics
 mechanicRegistry.register(locationEffectsMechanic);
 mechanicRegistry.register(placedCardEffectsMechanic);
+
+// Register experimental mechanics
+mechanicRegistry.register(freeplayMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata } from './registry.js';

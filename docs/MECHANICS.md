@@ -592,7 +592,7 @@ engine_mechanics:
 
 ## Current Status
 
-### Implemented Mechanics: 55 of 192 (29%)
+### Implemented Mechanics: 56 of 192 (29%)
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -750,6 +750,83 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Win Condition Consolidation | 7 mechanics doing similar checks |
 | Drafting Base Class | open + closed drafting |
 | State Property Standardization | Position in 3+ properties |
+
+---
+
+## Experimental Mechanics
+
+### Freeplay (`src/mechanics/freeplay.ts`)
+
+**Status**: Experimental - Use with caution
+
+The freeplay mechanic fundamentally changes the engine's turn model to enable **parallel/continuous play** where players can act simultaneously without waiting for turn-based alternation.
+
+#### Motivation
+
+Traditional turn-based games create artificial bottlenecks where players must wait. For certain game types (races, real-time strategy adaptations, speed games), parallel play is more natural and engaging.
+
+#### Key Behaviors
+
+| Aspect | Traditional Model | Freeplay Model |
+|--------|------------------|----------------|
+| Turn ownership | One player at a time | Any player can act |
+| Action gating | `currentPlayer` check | Player state check |
+| Round advancement | After all turns complete | After N total actions |
+| Interactions | Immediate resolution | Create pending state |
+
+#### Configuration
+
+```yaml
+engine_mechanics:
+  freeplay:
+    # Total actions across all players before round advances
+    actions_per_round: 8
+    # Seconds to wait for interaction responses
+    interaction_timeout: 30
+    # Actions requiring synchronization
+    interaction_actions:
+      - trade_offer
+      - trade_respond
+      - attack
+```
+
+#### Hooks Used
+
+- `initSharedState`: Initialize action tracking and pending interactions
+- `preValidateAction`: Override turn validation to allow any player
+- `onTurnEnd`: Track action counts, manage round advancement
+- `getAvailableActions`: Always allow actions regardless of turn
+
+#### Shared State
+
+```typescript
+interface FreeplaySharedState {
+  actionsThisRound: Record<string, number>;  // Per-player action counts
+  totalActionsThisRound: number;              // Total across all players
+  pendingInteractions: PendingInteraction[];  // Awaiting response
+  playersAwaitingResponse: string[];          // Blocked by pending
+}
+```
+
+#### Test Game
+
+See `games/parallel-race/RULES.md` - A race game designed for freeplay testing.
+
+#### Challenges & Future Work
+
+1. **Race conditions**: Multiple players accessing shared resources (deck) simultaneously
+2. **Action queuing**: Need atomic operations or locking for critical sections
+3. **GM synchronization**: Gamemaster needs to handle multiple pending actions
+4. **State consistency**: Ensuring state remains consistent with parallel mutations
+
+#### Engine Changes Needed
+
+For full freeplay support, game.ts would need:
+
+1. **Remove `currentPlayer` check** in `validateAction` when freeplay enabled
+2. **Action queue** for pending actions when interactions overlap
+3. **Lock mechanism** for shared resource access
+4. **Parallel GM handling** for simultaneous player actions
 
 ---
 
