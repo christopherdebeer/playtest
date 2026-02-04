@@ -1354,20 +1354,42 @@ export function determineTimeoutWinner(state: GameState): { winner: string | nul
   }
 }
 
-export function drawCards(state: GameState, playerId: string, count: number): Card[] {
+export function drawCards(
+  state: GameState,
+  playerId: string,
+  count: number
+): { cards: Card[]; blocked?: boolean; blockReason?: string } {
   const player = state.players[playerId];
   if (!player) {
     throw new Error(`Player ${playerId} not found`);
   }
 
   // Use core services for deck and hand operations (with playerId for hooks)
-  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
-  if (!blocked && drawn.length > 0) {
-    addToHand(state, playerId, drawn);
+  const { cards: drawn, blocked, blockReason } = drawFromDeck(state, count, playerId);
+  if (blocked) {
+    return { cards: [], blocked: true, blockReason };
+  }
+
+  let addedCards = drawn;
+  if (drawn.length > 0) {
+    const addResult = addToHand(state, playerId, drawn);
+    if (addResult.blocked) {
+      state.deck = [...drawn, ...state.deck];
+      saveState(state);
+      return { cards: [], blocked: true, blockReason: addResult.blockReason };
+    }
+    addedCards = addResult.addedCards;
+    if (addResult.addedCards.length !== drawn.length) {
+      const addedSet = new Set(addResult.addedCards);
+      const unadded = drawn.filter(card => !addedSet.has(card));
+      if (unadded.length > 0) {
+        state.deck = [...unadded, ...state.deck];
+      }
+    }
   }
 
   saveState(state);
-  return drawn;
+  return { cards: addedCards };
 }
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
@@ -2770,7 +2792,24 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       case 'draw': {
         const drawAction = action as DrawAction;
         const count = drawAction.count || 1;
-        const cards = drawCards(state, playerId, count);
+        const drawResult = drawCards(state, playerId, count);
+        if (drawResult.blocked) {
+          recordAction(contestState, {
+            player: playerId,
+            action,
+            timestamp: new Date().toISOString(),
+            round: state.round,
+            turnNumber: state.turnNumber,
+            result: {
+              success: false,
+              error: drawResult.blockReason || 'Draw blocked'
+            }
+          });
+
+          return { success: false, error: drawResult.blockReason || 'Draw blocked' };
+        }
+
+        const cards = drawResult.cards;
 
         // Proposal 008: Hand limit enforcement (for discard_choice and discard_oldest policies)
         const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
