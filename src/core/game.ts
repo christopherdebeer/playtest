@@ -2043,6 +2043,28 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
 
+  // === MECHANIC HOOKS: Collect actions from all enabled mechanics ===
+  const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
+  for (const mechanicAction of mechanicActions) {
+    const enabled = isYourTurn && !isBlocked;
+    // Extract required fields from action (everything except 'type')
+    const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
+    const required: Record<string, string> = {};
+    for (const [key, val] of Object.entries(actionParams)) {
+      required[key] = String(val);
+    }
+    actions.push({
+      type: mechanicAction.action.type,
+      description: `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
+      enabled,
+      reason: !isYourTurn ? 'Not your turn' :
+              isBlocked ? 'You are blocked this turn' :
+              undefined,
+      required,
+      examples: [mechanicAction.action]
+    });
+  }
+
   // Add resource and action point info to result
   const result: AvailableActionsResult = {
     playerId,
@@ -2140,7 +2162,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'place_location', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft', 'trade_offer', 'trade_respond'];
+  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'place_location', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft', 'trade_offer', 'trade_respond', 'acquire', 'buy', 'trash', 'draw_deck'];
   if (!validTypes.includes(act.type)) {
     return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
   }
