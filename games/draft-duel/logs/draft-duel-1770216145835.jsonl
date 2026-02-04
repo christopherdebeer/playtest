@@ -1,0 +1,57 @@
+{"timestamp":"2026-02-04T14:42:25.837Z","event":"game_init","data":{"gameId":"draft-duel-1770216145835","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-04T14:42:49.905Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-04T14:42:55.618Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:43:07.609Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:11.262Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:43:23.696Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:26.847Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:43:36.096Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:39.096Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:43:44.834Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:48.405Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:43:58.869Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:02.610Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:44:27.103Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:30.876Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"collect_set","setType":"Type Set","error":"Cards do not form a valid set"}}
+{"timestamp":"2026-02-04T14:44:39.764Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:43.798Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"collect_set","setType":"Element Set","cards":["Fire","Wild","Air"],"points":5,"totalSets":1}}
+{"timestamp":"2026-02-04T14:44:48.124Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:44:55.104Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:59.133Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:45:12.956Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:16.743Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:45:27.801Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:34.104Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:45:48.332Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:53.172Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"collect_set","setType":"Type Set","error":"Cards do not form a valid set"}}
+{"timestamp":"2026-02-04T14:46:00.909Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:04.957Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:46:26.588Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:31.297Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:46:40.352Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:45.011Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"collect_set","setType":"Element Set","cards":["Water","Water","Block"],"points":5,"totalSets":2}}
+{"timestamp":"2026-02-04T14:46:45.279Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:46:45.521Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:56.294Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:47:06.429Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:47:11.502Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"collect_set","setType":"Element Set","cards":["Air","Air","Air"],"points":5,"totalSets":1}}
+{"timestamp":"2026-02-04T14:47:17.462Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:47:22.022Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:47:27.003Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:47:36.941Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:47:44.152Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:47:49.315Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:47:55.877Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:48:06.119Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:48:15.685Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"collect_set","setType":"Type Set","error":"Cards do not form a valid set"}}
+{"timestamp":"2026-02-04T14:48:26.440Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:48:26.556Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:48:26.752Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:48:42.539Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:48:56.153Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:48:56.277Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T14:48:56.460Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:49:10.477Z","event":"resignation_submitted","round":14,"turnNumber":28,"player":"player-2","data":{"reason":"Game implementation is broken - cannot reach conclusion. After 28 turns (14 rounds), game should have ended after 3 drafting rounds. Resigning to end playtest."}}
+{"timestamp":"2026-02-04T14:49:24.411Z","event":"game_end","round":14,"turnNumber":28,"data":{"winner":"player-1","reason":"Resignation accepted: Game implementation is broken - cannot reach conclusion. After 28 turns (14 rounds), game should have ended after 3 drafting rounds. Resigning to end playtest.","resignedPlayer":"player-2"}}
+{"timestamp":"2026-02-04T14:49:24.412Z","event":"resignation_adjudicated","round":14,"turnNumber":28,"data":{"player":"player-2","accepted":true,"rulingReason":"Resignation accepted. The game has exceeded its designed 3-round structure (currently at round 14). The closed drafting mechanic appears non-functional - players are only drawing individual cards rather than drafting from pools. This represents a critical implementation bug preventing natural game completion. Player-2's resignation is valid."}}
+{"timestamp":"2026-02-04T14:50:14.380Z","event":"analysis_submitted","round":14,"turnNumber":28,"data":{"file":"playtest-analysis-v1.0-1770216145835.md","version":"v1.0"}}

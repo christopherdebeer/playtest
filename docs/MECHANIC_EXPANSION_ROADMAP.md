@@ -212,7 +212,7 @@ These 18 mechanics can be implemented immediately using existing hooks:
 | ~~`closed-drafting`~~ | ~~`onExecuteAction`, `getAvailableActions`, turn hooks~~ | ⚠️ **Needs Work** - Marked implemented but playtesting revealed core functionality missing (no simultaneous selection phase, no pool passing, no draft pools created). Requires significant implementation work to support proper closed drafting as designed. |
 | ~~`deck-bag-and-pool-building`~~ | ~~`onAfterDraw`, `postExecuteAction`, hand hooks~~ | ✅ Implemented as `deck-building` |
 | ~~`trick-taking`~~ | ~~`preValidateAction`, `onExecuteAction`, `onTurnEnd`~~ | ✅ Implemented |
-| ~~`ladder-climbing`~~ | ~~`preValidateAction`, `onExecuteAction`~~ | ✅ Implemented |
+| ~~`ladder-climbing`~~ | ~~`preValidateAction`, `onExecuteAction`~~ | ⚠️ **Bug Found** - Implemented but playtest (2026-02-04) revealed `auto_advance_winner` not functioning - trick winners don't advance on track. Core mechanic works but track advancement broken. |
 | ~~`multi-use-cards`~~ | ~~`preValidateAction`, `getAvailableActions`~~ | ✅ Implemented |
 
 ### Movement Mechanics

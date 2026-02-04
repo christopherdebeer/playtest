@@ -1,0 +1,75 @@
+{"timestamp":"2026-02-04T14:42:55.991Z","event":"game_init","data":{"gameId":"engine-masters-1770216175985","playerCount":2,"config":"Engine Masters"}}
+{"timestamp":"2026-02-04T14:43:14.182Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-04T14:43:20.054Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
+{"timestamp":"2026-02-04T14:43:33.557Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:37.190Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
+{"timestamp":"2026-02-04T14:43:49.043Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:43:52.958Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Basic Assembler","effect":{"type":"draw","value":1}}}
+{"timestamp":"2026-02-04T14:43:58.785Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:02.633Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"acquire","card":"Bronze Generator","cost":{"power":3},"destination":"discard"}}
+{"timestamp":"2026-02-04T14:44:06.521Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:10.456Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
+{"timestamp":"2026-02-04T14:44:17.272Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:21.088Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw_deck","count":1,"cards":["Bronze Generator"]}}
+{"timestamp":"2026-02-04T14:44:27.453Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:31.261Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"acquire","card":"Bronze Generator","cost":{"power":3},"destination":"discard"}}
+{"timestamp":"2026-02-04T14:44:35.405Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:39.031Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"play_card","card":"Bronze Generator","effect":{"type":"resource","resource":"power","value":2}}}
+{"timestamp":"2026-02-04T14:44:43.413Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:44:48.127Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"draw_deck","count":1,"cards":["Bronze Generator"]}}
+{"timestamp":"2026-02-04T14:45:07.421Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:11.558Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
+{"timestamp":"2026-02-04T14:45:18.275Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:18.418Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:19.011Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:19.036Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:19.735Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:19.941Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:20.508Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:20.590Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:21.250Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:21.533Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:21.986Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:22.142Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:22.736Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:38.622Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"play_card","card":"Bronze Generator","effect":{"type":"resource","resource":"power","value":2}}}
+{"timestamp":"2026-02-04T14:45:45.259Z","event":"action_executed","round":12,"turnNumber":23,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:45.402Z","event":"action_executed","round":12,"turnNumber":24,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:45.540Z","event":"action_executed","round":13,"turnNumber":25,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:46.202Z","event":"action_executed","round":13,"turnNumber":26,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:46.360Z","event":"action_executed","round":14,"turnNumber":27,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:46.947Z","event":"action_executed","round":14,"turnNumber":28,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:47.099Z","event":"action_executed","round":15,"turnNumber":29,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:47.713Z","event":"action_executed","round":15,"turnNumber":30,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:47.880Z","event":"action_executed","round":16,"turnNumber":31,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:48.452Z","event":"action_executed","round":16,"turnNumber":32,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:48.592Z","event":"action_executed","round":17,"turnNumber":33,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:49.183Z","event":"action_executed","round":17,"turnNumber":34,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:49.312Z","event":"action_executed","round":18,"turnNumber":35,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:49.923Z","event":"action_executed","round":18,"turnNumber":36,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:50.062Z","event":"action_executed","round":19,"turnNumber":37,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:50.654Z","event":"action_executed","round":19,"turnNumber":38,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:45:50.803Z","event":"action_executed","round":20,"turnNumber":39,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:24.475Z","event":"action_executed","round":20,"turnNumber":40,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:24.650Z","event":"action_executed","round":21,"turnNumber":41,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:25.111Z","event":"action_executed","round":21,"turnNumber":42,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:25.245Z","event":"action_executed","round":22,"turnNumber":43,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:25.644Z","event":"action_executed","round":22,"turnNumber":44,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:25.784Z","event":"action_executed","round":23,"turnNumber":45,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:26.188Z","event":"action_executed","round":23,"turnNumber":46,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:26.315Z","event":"action_executed","round":24,"turnNumber":47,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:26.773Z","event":"action_executed","round":24,"turnNumber":48,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:26.939Z","event":"action_executed","round":25,"turnNumber":49,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:27.329Z","event":"action_executed","round":25,"turnNumber":50,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:27.464Z","event":"action_executed","round":26,"turnNumber":51,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:27.863Z","event":"action_executed","round":26,"turnNumber":52,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:28.004Z","event":"action_executed","round":27,"turnNumber":53,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:28.430Z","event":"action_executed","round":27,"turnNumber":54,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:28.558Z","event":"action_executed","round":28,"turnNumber":55,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:28.983Z","event":"action_executed","round":28,"turnNumber":56,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:29.120Z","event":"action_executed","round":29,"turnNumber":57,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:29.525Z","event":"action_executed","round":29,"turnNumber":58,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:29.671Z","event":"action_executed","round":30,"turnNumber":59,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:30.081Z","event":"action_executed","round":30,"turnNumber":60,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T14:46:30.082Z","event":"game_end","round":31,"turnNumber":61,"data":{"winner":"player-1","reason":"Max rounds (30) reached. player-1 wins with 0 points.","endType":"timeout","revealedRole":false}}
+{"timestamp":"2026-02-04T14:47:30.617Z","event":"analysis_submitted","round":31,"turnNumber":61,"data":{"file":"playtest-analysis-v1.0-1770216175985.md","version":"v1.0"}}
