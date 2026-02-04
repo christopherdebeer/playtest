@@ -1,0 +1,96 @@
+{"timestamp":"2026-02-04T10:11:31.166Z","event":"game_init","data":{"gameId":"aaote-1770199891164","playerCount":5,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-04T10:11:49.385Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4","player-5"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-04T10:11:57.353Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"Crossroads","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T10:12:00.476Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"Crossroads","previousState":"start","locationEffects":[],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-04T10:12:03.684Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:12:10.997Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T10:12:14.195Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Ancient Ruins","previousState":"start","locationEffects":["Ancient Ruins: Drew 1 card"],"cardsDrawn":1,"visitedCount":1}}
+{"timestamp":"2026-02-04T10:12:18.647Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:12:24.687Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_location","card":"Watchtower","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T10:12:28.424Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","target":"Watchtower","previousState":"start","locationEffects":["Watchtower: You can see all player positions"],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-04T10:12:32.008Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"}}}
+{"timestamp":"2026-02-04T10:12:40.133Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"place_location","card":"River Crossing","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T10:12:43.731Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"move","target":"River Crossing","previousState":"start","locationEffects":[],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-04T10:12:47.884Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"play_card","card":"Interrogate","effect":{"type":"peek_objective","description":"Peek at target's objective"}}}
+{"timestamp":"2026-02-04T10:12:53.835Z","event":"action_executed","round":1,"turnNumber":5,"player":"player-5","data":{"type":"move","target":"Crossroads","previousState":"start","locationEffects":[],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-04T10:12:57.597Z","event":"action_executed","round":1,"turnNumber":5,"player":"player-5","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:13:00.488Z","event":"action_executed","round":1,"turnNumber":5,"player":"player-5","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:13:06.714Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-1","data":{"type":"move","target":"Watchtower","previousState":"Crossroads","locationEffects":["Watchtower: You can see all player positions"],"cardsDrawn":0,"visitedCount":2}}
+{"timestamp":"2026-02-04T10:13:10.812Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-1","data":{"type":"place_location","card":"Village Square","adjacentTo":"Watchtower"}}
+{"timestamp":"2026-02-04T10:13:14.207Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-1","data":{"type":"move","target":"Village Square","previousState":"Watchtower","locationEffects":["Village Square: Trading costs 0 AP here"],"cardsDrawn":0,"visitedCount":3}}
+{"timestamp":"2026-02-04T10:13:23.389Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-2","data":{"type":"trade_offer","tradeId":"trade-1770200003389-2ky0e14vk","target":"player-5","offer":["Cursed Amulet"],"request":[]}}
+{"timestamp":"2026-02-04T10:13:28.071Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-2","data":{"type":"move","target":"Crossroads","previousState":"Ancient Ruins","locationEffects":[],"cardsDrawn":0,"visitedCount":2}}
+{"timestamp":"2026-02-04T10:13:31.812Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-2","data":{"type":"play_card","card":"Theft","effect":{"type":"steal_item","description":"Steal random item from adjacent player"}}}
+{"timestamp":"2026-02-04T10:13:38.347Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-3","data":{"type":"move","target":"Village Square","previousState":"Watchtower","locationEffects":["Village Square: Trading costs 0 AP here"],"cardsDrawn":0,"visitedCount":2}}
+{"timestamp":"2026-02-04T10:13:42.460Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-3","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"Village Square"}}
+{"timestamp":"2026-02-04T10:13:46.077Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:13:52.934Z","event":"action_executed","round":2,"turnNumber":9,"player":"player-4","data":{"type":"move","target":"Village Square","previousState":"River Crossing","locationEffects":["Village Square: Trading costs 0 AP here"],"cardsDrawn":0,"visitedCount":2}}
+{"timestamp":"2026-02-04T10:13:57.494Z","event":"action_executed","round":2,"turnNumber":9,"player":"player-4","data":{"type":"place_location","card":"Village Square","adjacentTo":"River Crossing"}}
+{"timestamp":"2026-02-04T10:14:01.024Z","event":"action_executed","round":2,"turnNumber":9,"player":"player-4","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:14:05.679Z","event":"action_executed","round":2,"turnNumber":10,"player":"player-5","data":{"type":"trade_respond","tradeId":"trade-1770200003389-2ky0e14vk","from":"player-2","to":"player-5","offer":["Cursed Amulet"],"request":[]}}
+{"timestamp":"2026-02-04T10:14:13.215Z","event":"action_executed","round":2,"turnNumber":10,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:14:18.233Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-1","data":{"type":"move","target":"Ancient Ruins","previousState":"Village Square","locationEffects":["Ancient Ruins: Drew 1 card"],"cardsDrawn":1,"visitedCount":4}}
+{"timestamp":"2026-02-04T10:14:21.875Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-1","data":{"type":"move","target":"Forest Clearing","previousState":"Ancient Ruins","locationEffects":[],"cardsDrawn":0,"visitedCount":5}}
+{"timestamp":"2026-02-04T10:14:25.094Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:14:31.172Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-2","data":{"type":"move","target":"Forest Clearing","previousState":"Crossroads","locationEffects":[],"cardsDrawn":0,"visitedCount":3}}
+{"timestamp":"2026-02-04T10:14:36.581Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-2","data":{"type":"place_location","card":"Mountain Pass","adjacentTo":"Forest Clearing"}}
+{"timestamp":"2026-02-04T10:14:40.403Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-2","data":{"type":"move","target":"Mountain Pass","previousState":"Forest Clearing","locationEffects":[],"cardsDrawn":0,"visitedCount":4}}
+{"timestamp":"2026-02-04T10:14:47.088Z","event":"action_executed","round":3,"turnNumber":13,"player":"player-3","data":{"type":"move","target":"Ancient Ruins","previousState":"Village Square","locationEffects":["Ancient Ruins: Drew 1 card"],"cardsDrawn":1,"visitedCount":3}}
+{"timestamp":"2026-02-04T10:14:51.984Z","event":"action_executed","round":3,"turnNumber":13,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:14:55.996Z","event":"action_executed","round":3,"turnNumber":13,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:15:06.220Z","event":"action_executed","round":3,"turnNumber":14,"player":"player-4","data":{"type":"move","target":"Ancient Ruins","previousState":"Village Square","locationEffects":["Ancient Ruins: Drew 1 card"],"cardsDrawn":1,"visitedCount":3}}
+{"timestamp":"2026-02-04T10:15:10.576Z","event":"action_executed","round":3,"turnNumber":14,"player":"player-4","data":{"type":"move","target":"Forest Clearing","previousState":"Ancient Ruins","locationEffects":[],"cardsDrawn":0,"visitedCount":4}}
+{"timestamp":"2026-02-04T10:15:14.554Z","event":"action_executed","round":3,"turnNumber":14,"player":"player-4","data":{"type":"move","target":"Mountain Pass","previousState":"Forest Clearing","locationEffects":[],"cardsDrawn":0,"visitedCount":5}}
+{"timestamp":"2026-02-04T10:15:19.909Z","event":"action_executed","round":3,"turnNumber":15,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:15:25.183Z","event":"action_executed","round":4,"turnNumber":16,"player":"player-1","data":{"type":"move","target":"Mountain Pass","previousState":"Forest Clearing","locationEffects":[],"cardsDrawn":0,"visitedCount":6}}
+{"timestamp":"2026-02-04T10:15:29.835Z","event":"action_executed","round":4,"turnNumber":16,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:15:34.577Z","event":"action_executed","round":4,"turnNumber":17,"player":"player-2","data":{"type":"move","target":"River Crossing","previousState":"Mountain Pass","locationEffects":[],"cardsDrawn":0,"visitedCount":5}}
+{"timestamp":"2026-02-04T10:15:38.772Z","event":"action_executed","round":4,"turnNumber":17,"player":"player-2","data":{"type":"place_location","card":"River Crossing","adjacentTo":"River Crossing"}}
+{"timestamp":"2026-02-04T10:15:42.726Z","event":"action_executed","round":4,"turnNumber":17,"player":"player-2","data":{"type":"move","target":"River Crossing","previousState":"River Crossing","locationEffects":[],"cardsDrawn":0,"visitedCount":5}}
+{"timestamp":"2026-02-04T10:15:48.571Z","event":"action_executed","round":4,"turnNumber":18,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:15:54.241Z","event":"action_executed","round":4,"turnNumber":18,"player":"player-3","data":{"type":"place_location","card":"Mountain Pass","adjacentTo":"Ancient Ruins"}}
+{"timestamp":"2026-02-04T10:16:02.444Z","event":"action_executed","round":4,"turnNumber":18,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T10:16:08.199Z","event":"action_executed","round":4,"turnNumber":19,"player":"player-4","data":{"type":"move","target":"Watchtower","previousState":"Mountain Pass","locationEffects":["Watchtower: You can see all player positions"],"cardsDrawn":0,"visitedCount":6}}
+{"timestamp":"2026-02-04T10:16:12.452Z","event":"action_executed","round":4,"turnNumber":19,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:16:18.072Z","event":"action_executed","round":4,"turnNumber":20,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:16:27.187Z","event":"action_executed","round":5,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:16:32.691Z","event":"action_executed","round":5,"turnNumber":22,"player":"player-2","data":{"type":"move","target":"Watchtower","previousState":"River Crossing","locationEffects":["Watchtower: You can see all player positions"],"cardsDrawn":0,"visitedCount":6}}
+{"timestamp":"2026-02-04T10:16:37.703Z","event":"action_executed","round":5,"turnNumber":22,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:16:43.390Z","event":"action_executed","round":5,"turnNumber":23,"player":"player-3","data":{"type":"move","target":"Watchtower","previousState":"Ancient Ruins","locationEffects":["Watchtower: You can see all player positions"],"cardsDrawn":0,"visitedCount":3}}
+{"timestamp":"2026-02-04T10:16:48.764Z","event":"action_executed","round":5,"turnNumber":23,"player":"player-3","data":{"type":"trade_offer","tradeId":"trade-1770200208763-x9egucmvu","target":"player-2","offer":["Supplies"],"request":[]}}
+{"timestamp":"2026-02-04T10:16:53.741Z","event":"action_executed","round":5,"turnNumber":23,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:17:11.071Z","event":"action_executed","round":5,"turnNumber":24,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:17:54.324Z","event":"action_executed","round":5,"turnNumber":25,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:17:59.905Z","event":"action_executed","round":6,"turnNumber":26,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:18:26.145Z","event":"action_executed","round":6,"turnNumber":27,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:18:31.137Z","event":"action_executed","round":6,"turnNumber":28,"player":"player-3","data":{"type":"draw","count":0}}
+{"timestamp":"2026-02-04T10:18:42.830Z","event":"action_executed","round":6,"turnNumber":28,"player":"player-3","data":{"type":"trade_offer","tradeId":"trade-1770200322830-eqorq0jr2","target":"player-4","offer":["Supplies"],"request":[]}}
+{"timestamp":"2026-02-04T10:18:47.378Z","event":"action_executed","round":6,"turnNumber":28,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:18:52.998Z","event":"action_executed","round":6,"turnNumber":29,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:18:57.733Z","event":"action_executed","round":6,"turnNumber":30,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:19:02.093Z","event":"action_executed","round":7,"turnNumber":31,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:19:33.345Z","event":"action_executed","round":7,"turnNumber":32,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:19:40.148Z","event":"action_executed","round":7,"turnNumber":33,"player":"player-3","data":{"type":"place_location","card":"Hidden Cave","adjacentTo":"Watchtower"}}
+{"timestamp":"2026-02-04T10:19:49.701Z","event":"action_executed","round":7,"turnNumber":33,"player":"player-3","data":{"type":"trade_offer","tradeId":"trade-1770200389700-pwcn3azhi","target":"player-1","offer":["Supplies"],"request":[]}}
+{"timestamp":"2026-02-04T10:19:54.281Z","event":"action_executed","round":7,"turnNumber":33,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:19:58.107Z","event":"action_executed","round":7,"turnNumber":34,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:20:11.964Z","event":"action_executed","round":7,"turnNumber":35,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:20:17.734Z","event":"action_executed","round":8,"turnNumber":36,"player":"player-1","data":{"type":"trade_respond","tradeId":"trade-1770200389700-pwcn3azhi","from":"player-3","to":"player-1","offer":["Supplies"],"request":[]}}
+{"timestamp":"2026-02-04T10:20:22.427Z","event":"action_executed","round":8,"turnNumber":36,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:20:33.807Z","event":"action_executed","round":8,"turnNumber":37,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:20:45.286Z","event":"action_executed","round":8,"turnNumber":38,"player":"player-3","data":{"type":"trade_offer","tradeId":"trade-1770200445286-iasvsihyk","target":"player-2","offer":["Map Fragment"],"request":[]}}
+{"timestamp":"2026-02-04T10:20:50.301Z","event":"action_executed","round":8,"turnNumber":38,"player":"player-3","data":{"type":"trade_offer","tradeId":"trade-1770200450301-btf0fo8he","target":"player-5","offer":["Rope"],"request":[]}}
+{"timestamp":"2026-02-04T10:20:54.577Z","event":"action_executed","round":8,"turnNumber":38,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:20:58.606Z","event":"action_executed","round":8,"turnNumber":39,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:08.563Z","event":"action_executed","round":8,"turnNumber":40,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:14.728Z","event":"action_executed","round":9,"turnNumber":41,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:25.921Z","event":"action_executed","round":9,"turnNumber":42,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:37.991Z","event":"action_executed","round":9,"turnNumber":43,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:42.040Z","event":"action_executed","round":9,"turnNumber":44,"player":"player-4","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:51.718Z","event":"action_executed","round":9,"turnNumber":45,"player":"player-5","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:21:56.855Z","event":"action_executed","round":10,"turnNumber":46,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:22:02.964Z","event":"action_executed","round":10,"turnNumber":47,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:22:09.789Z","event":"action_executed","round":10,"turnNumber":48,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-04T10:22:16.250Z","event":"game_end","round":10,"turnNumber":49,"data":{"winner":"player-5","reason":"Turn limit reached (40). The Enemy (player-5) wins by default with all 3 Forbidden Items: Cursed Amulet, Dark Tome, Shadow Key."}}
+{"timestamp":"2026-02-04T10:22:52.171Z","event":"operator_hint","data":{"message":"GAME ENDED: player-5 (The Enemy) has won by timeout with all 3 Forbidden Items. The game is now in pending_analysis status. You may finish your agent loop.","reason":"Manual game end notification","targetPlayer":"all"}}
+{"timestamp":"2026-02-04T10:24:24.238Z","event":"analysis_submitted","round":10,"turnNumber":49,"data":{"file":"playtest-analysis-v0.2-1770199891164.md","version":"v0.2"}}
