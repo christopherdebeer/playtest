@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build:site",
+  "buildCommand": "npm run build",
   "outputDirectory": "site/dist",
   "framework": "vite",
   "installCommand": "npm install",
