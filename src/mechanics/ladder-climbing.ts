@@ -300,7 +300,7 @@ export const ladderClimbingMechanic: MechanicHooks = {
         if (ladderConfig.auto_advance_winner) {
           const winner = currentPlay.playerId;
           const winnerPlayer = state.players[winner];
-          const currentNode = winnerPlayer.state || 'Start';
+          const currentNode = winnerPlayer.currentNode || 'Start';
 
           // Find next node in point-to-point movement
           const movementConfig = ctx.config.engine_mechanics?.point_to_point_movement as {
@@ -313,7 +313,7 @@ export const ladderClimbingMechanic: MechanicHooks = {
               // Automatically move winner to next node
               stateChanges.playerStateChanges![winner] = {
                 ...stateChanges.playerStateChanges![winner],
-                state: nextRoute.to
+                currentNode: nextRoute.to
               };
             }
           }

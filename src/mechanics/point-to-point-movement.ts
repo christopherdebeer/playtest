@@ -30,7 +30,9 @@ import {
   AvailableAction,
   PlayerInitContext,
   PlayerInitResult,
-  ActionDescription
+  ActionDescription,
+  EffectContext,
+  EffectApplicationResult
 } from './types.js';
 import { GameAction } from '../types/game.js';
 
@@ -437,5 +439,67 @@ export const pointToPointMovementMechanic: MechanicHooks = {
       };
     }
     return null;
+  },
+
+  /**
+   * Apply movement effects from cards (move_forward, move_backward).
+   * Follows routes to advance the player N nodes along the track.
+   */
+  applyEffect(ctx: EffectContext): EffectApplicationResult | null {
+    const { effect, playerId, state } = ctx;
+
+    // Only handle movement effects
+    if (effect.type !== 'move_forward' && effect.type !== 'move_backward') {
+      return null;
+    }
+
+    const p2pConfig = state.config.engine_mechanics?.point_to_point_movement;
+    if (!isPointToPointConfig(p2pConfig)) return null;
+
+    const player = state.players[playerId];
+    if (!player) return null;
+
+    const startingNode = Array.isArray(p2pConfig.starting_node)
+      ? p2pConfig.starting_node[0]
+      : p2pConfig.starting_node;
+    let currentNode = (player.currentNode as string) || startingNode;
+    const steps = typeof effect.value === 'number' ? effect.value : 1;
+
+    // Move forward or backward along the route chain
+    const isForward = effect.type === 'move_forward';
+
+    for (let i = 0; i < steps; i++) {
+      const routes = p2pConfig.routes.filter(r => {
+        if (isForward) {
+          // Forward: follow from→to direction
+          return r.from === currentNode;
+        } else {
+          // Backward: follow to→from direction (reverse)
+          return r.to === currentNode;
+        }
+      });
+
+      if (routes.length === 0) {
+        // No further routes in this direction - stop at current node
+        break;
+      }
+
+      // Take the first available route (for linear tracks, there's typically one)
+      const route = routes[0];
+      currentNode = isForward ? route.to : route.from;
+    }
+
+    return {
+      handled: true,
+      stateChanges: {
+        playerStateChanges: {
+          [playerId]: {
+            currentNode,
+            previousNode: player.currentNode
+          }
+        }
+      },
+      logMessage: `Moved ${effect.type === 'move_forward' ? 'forward' : 'backward'} ${steps} to ${currentNode}`
+    };
   }
 };

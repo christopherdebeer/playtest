@@ -19,6 +19,8 @@ import {
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
+  HandAddContext,
+  StateChanges,
   isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
@@ -228,6 +230,34 @@ export const pushYourLuckMechanic: MechanicHooks = {
     return {
       rollAccumulator: ctx.player.rollAccumulator ?? 0,
       rollCount: ctx.player.rollCount ?? 0
+    };
+  },
+
+  /**
+   * Apply point effects when cards are added to hand (e.g., drafted cards).
+   * Cards with effect.type: "points" have their value added to player score.
+   */
+  onAfterAddToHand(ctx: HandAddContext): StateChanges | null {
+    if (!isMechanicEnabled(ctx.config, 'push-your-luck')) return null;
+
+    let totalPoints = 0;
+    for (const card of ctx.cards) {
+      if (card.effect?.type === 'points' && typeof card.effect.value === 'number') {
+        totalPoints += card.effect.value;
+      }
+    }
+
+    if (totalPoints === 0) return null;
+
+    const player = ctx.state.players[ctx.playerId];
+    const currentScore = (player?.score as number) ?? 0;
+
+    return {
+      playerStateChanges: {
+        [ctx.playerId]: {
+          score: currentScore + totalPoints
+        }
+      }
     };
   }
 };

@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-04T14:37:00.273Z",
+  "generated": "2026-02-04T16:36:23.817Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -144,7 +144,8 @@
       },
       "hooks": [
         "preValidateAction",
-        "postExecuteAction"
+        "postExecuteAction",
+        "onTurnEnd"
       ]
     },
     "card-type-rules": {
@@ -211,6 +212,7 @@
       "hooks": [
         "preValidateAction",
         "initPlayerState",
+        "onTurnStart",
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
@@ -709,7 +711,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "onAfterAddToHand"
       ]
     },
     "ratio-combat-results-table": {

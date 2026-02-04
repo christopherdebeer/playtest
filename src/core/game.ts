@@ -2640,6 +2640,42 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           }
         }
 
+        // Apply non-interference effects (movement, points, etc.) via mechanic registry
+        const nonInterferenceEffects = ['move_forward', 'move_backward', 'points', 'move', 'teleport'];
+        const hasNonInterferenceEffect = card.effect?.type && nonInterferenceEffects.includes(card.effect.type);
+
+        if (hasNonInterferenceEffect && card.effect) {
+          // Apply effect to the player who played the card (self-effects)
+          const targetPlayer = playAction.target || playerId;
+          // Create properly typed effect with default duration
+          const effectToApply = {
+            type: card.effect.type,
+            value: card.effect.value,
+            duration: card.effect.duration ?? 1,
+            source: playerId
+          };
+          const effectResult = mechanicRegistry.applyEffect(state, targetPlayer, effectToApply, playerId);
+
+          if (effectResult?.handled) {
+            // Apply any state changes from the effect
+            applyStateChanges(state, effectResult.stateChanges || {});
+
+            logEvent(state, {
+              event: 'effect_applied',
+              round: state.round,
+              turnNumber: state.turnNumber,
+              player: targetPlayer,
+              data: {
+                effectType: card.effect.type,
+                value: card.effect.value,
+                appliedBy: playerId,
+                card: card.name,
+                handled: true
+              }
+            });
+          }
+        }
+
         // Proposal 007: Track placed locations for grid-based games
         const gridConfig = state.config.grid as { type?: string } | undefined;
         if (gridConfig && card.type === 'location') {
