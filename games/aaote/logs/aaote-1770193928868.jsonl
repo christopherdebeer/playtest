@@ -6,3 +6,5 @@
 {"timestamp":"2026-02-04T08:50:04.409Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Hidden Cave","adjacentTo":"origin"}}
 {"timestamp":"2026-02-04T08:51:29.860Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Hidden Cave","previousState":"start","locationEffects":["Hidden Cave: Your position is hidden from others"],"cardsDrawn":0,"visitedCount":1}}
 {"timestamp":"2026-02-04T08:52:54.176Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-04T08:57:15.309Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"origin"}}
+{"timestamp":"2026-02-04T08:58:18.548Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","target":"Ancient Ruins","previousState":"start","locationEffects":["Ancient Ruins: Drew 1 card"],"cardsDrawn":1,"visitedCount":1}}

@@ -2,3 +2,4 @@
 {"timestamp":"2026-02-04T08:34:14.445Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
 {"timestamp":"2026-02-04T08:36:30.365Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","player":"player-1","card":"Speed 6","suit":"speed","trickPosition":1,"leadSuit":"speed"}}
 {"timestamp":"2026-02-04T08:44:09.391Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","winner":"player-1","winningCard":"Speed 6","trick":[{"player":"player-1","card":"Speed 6"},{"player":"player-2","card":"Speed 8"}],"points":0}}
+{"timestamp":"2026-02-04T08:54:40.168Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","player":"player-1","card":"Speed 9","suit":"speed","trickPosition":1,"leadSuit":"speed"}}
