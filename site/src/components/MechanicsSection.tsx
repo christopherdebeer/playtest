@@ -69,17 +69,6 @@ function MechanicsSection() {
             </Link>
           ))}
         </div>
-
-        <div className="mechanics-usage">
-          <h3>Usage in RULES.md</h3>
-          <pre><code>{`---
-name: "My Game"
-mechanics:
-  - hand-management
-  - set-collection
-  - push-your-luck
----`}</code></pre>
-        </div>
       </div>
     </section>
   )

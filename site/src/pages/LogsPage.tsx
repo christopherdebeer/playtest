@@ -2,16 +2,9 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { LogsData, GameLogSummary } from '../types/logs'
 import { fetchLogsIndex } from '../utils/logData'
+import { formatDuration } from '../utils/timeUtils'
 import BackLink from '../components/BackLink'
 import './LogsPage.css'
-
-function formatDuration(seconds: number | null): string {
-  if (seconds === null) return 'N/A'
-  if (seconds < 60) return `${seconds}s`
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}m ${secs}s`
-}
 
 function formatDate(ts: string): string {
   const date = new Date(ts)
@@ -166,6 +159,7 @@ function LogsPage() {
   const totalLogs = logsData.logs.length
   const totalEvents = logsData.logs.reduce((sum, log) => sum + log.totalEvents, 0)
   const completedGames = logsData.logs.filter(l => l.outcome === 'completed' || l.outcome === 'ended').length
+  const totalTime = logsData.logs.reduce((sum, log: GameLogSummary) => sum + (log.duration || 0), 0)
 
   return (
     <div className="logs-page">
@@ -189,12 +183,16 @@ function LogsPage() {
             <span className="overview-label">Completed</span>
           </div>
           <div className="overview-stat">
-            <span className="overview-value">{totalEvents}</span>
+            <span className="overview-value">{totalEvents.toLocaleString()}</span>
             <span className="overview-label">Total Events</span>
           </div>
           <div className="overview-stat">
             <span className="overview-value">{games.length}</span>
             <span className="overview-label">Games</span>
+          </div>
+          <div className="overview-stat">
+            <span className="overview-value">{formatDuration(totalTime)}</span>
+            <span className="overview-label">Elapsed time</span>
           </div>
         </div>
 

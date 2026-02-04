@@ -66,6 +66,7 @@ import { turnOrderPassOrderMechanic } from './turn-order-pass-order.js';
 
 // Phase 4: Additional Visibility mechanics
 import { hiddenMovementMechanic } from './hidden-movement.js';
+import { hiddenObjectivesMechanic } from './hidden-objectives.js';
 
 // Win condition mechanics
 import {
@@ -139,6 +140,7 @@ mechanicRegistry.register(turnOrderPassOrderMechanic);
 
 // Register Phase 4: Additional Visibility mechanics
 mechanicRegistry.register(hiddenMovementMechanic);
+mechanicRegistry.register(hiddenObjectivesMechanic);
 
 // Register win condition mechanics
 mechanicRegistry.register(reachStateWinMechanic);

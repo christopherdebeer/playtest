@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-04T08:30:51.220Z",
+  "generated": "2026-02-04T12:18:17.518Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -223,7 +223,8 @@
         "hand_limit_policy": "cannot_draw | discard_choice | discard_oldest"
       },
       "hooks": [
-        "onBeforeDraw"
+        "onBeforeDraw",
+        "onBeforeAddToHand"
       ]
     },
     "hidden-movement": {
@@ -236,6 +237,19 @@
         "getVisibleState",
         "onReveal",
         "canSeeInfo"
+      ]
+    },
+    "hidden-objectives": {
+      "config_key": "hidden_objectives",
+      "since": "3.0.0",
+      "description": "Hidden objectives system for secret win conditions",
+      "config_schema": {
+        "deal_at_start": "boolean",
+        "reveal_on_completion": "boolean"
+      },
+      "hooks": [
+        "initPlayerState",
+        "getVisibleState"
       ]
     },
     "hidden-roles": {

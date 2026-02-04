@@ -934,11 +934,37 @@ export function advanceTurn(state: GameState): void {
   // Always increment turnNumber (absolute action counter)
   state.turnNumber++;
 
+  // Proposal 012: Check max_turns limit (takes precedence over max_rounds)
+  const maxTurns = state.config.max_turns as number | undefined;
+  if (maxTurns && state.turnNumber > maxTurns) {
+    // Use configurable timeout winner
+    const result = determineTimeoutWinner(state);
+
+    state.status = 'pending_analysis';
+    state.shared.winner = result.winner;
+    state.shared.endReason = result.reason;
+
+    logEvent(state, {
+      event: 'game_end',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      data: {
+        winner: result.winner,
+        reason: result.reason,
+        endType: 'turn_limit',
+        revealedRole: result.revealRole
+      }
+    });
+
+    saveState(state);
+    return;
+  }
+
   // If we wrapped around, increment round number
   if (isNewRound) {
     state.round++;
 
-    // Check max_rounds limit
+    // Check max_rounds limit (legacy - use max_turns for turn-based limits)
     if (state.config.max_rounds && state.round > state.config.max_rounds) {
       // Proposal 010: Use configurable timeout winner
       const result = determineTimeoutWinner(state);
@@ -2787,12 +2813,39 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
 
       case 'pass': {
+        // Check for victory declaration (Proposal 012: Victory in direct execution)
+        const passAction = action as GameAction & { declareVictory?: boolean; victoryReason?: string };
+        if (passAction.declareVictory) {
+          // Create pending victory claim for GM verification
+          contestState.pendingVictoryClaim = {
+            player: playerId,
+            reason: passAction.victoryReason || 'Victory declared with pass action',
+            fromState: player?.state || 'unknown',
+            toState: player?.state || 'unknown',
+            action: action,
+            timestamp: new Date().toISOString()
+          };
+
+          logEvent(state, {
+            event: 'victory_claim_pending',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: {
+              reason: passAction.victoryReason || 'Victory declared with pass action',
+              note: 'Victory claim requires GM verification via gm:pending'
+            }
+          });
+
+          debug(`[VICTORY CLAIM] Created pending victory claim for ${playerId} via pass action`);
+        }
+
         recordAction(contestState, {
           player: playerId,
           action,
           timestamp: new Date().toISOString(),
           round: state.round,
-        turnNumber: state.turnNumber,
+          turnNumber: state.turnNumber,
           result: { success: true }
         });
 
@@ -2800,9 +2853,9 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         logEvent(state, {
           event: 'action_executed',
           round: state.round,
-        turnNumber: state.turnNumber,
+          turnNumber: state.turnNumber,
           player: playerId,
-          data: { type: 'pass' }
+          data: { type: 'pass', declareVictory: passAction.declareVictory, victoryReason: passAction.victoryReason }
         });
 
         // Pass always advances turn
@@ -2810,7 +2863,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
         return {
           success: true,
-          effect: { type: 'pass' }
+          effect: { type: 'pass', details: { victoryClaimPending: passAction.declareVictory } }
         };
       }
 

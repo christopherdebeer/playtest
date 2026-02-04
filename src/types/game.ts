@@ -230,6 +230,7 @@ export interface EngineMechanics {
 
   // Phase 4: Additional Visibility mechanics
   hidden_movement?: HiddenMovementConfig;     // Hidden player positions
+  hidden_objectives?: HiddenObjectivesConfig; // Secret objective distribution (Proposal 012)
 }
 
 // Proposal 007: Grid configuration
@@ -824,6 +825,7 @@ export interface GameConfig {
   players: number | { min: number; max: number };
   win_condition: string;
   max_rounds: number;
+  max_turns?: number;  // Proposal 012: Turn-based limit (takes precedence over max_rounds)
   starting_cards?: number;
   deck?: DeckConfig[];
   board?: BoardConfig;
@@ -1503,6 +1505,15 @@ export interface HiddenMovementConfig {
   };
   fog_of_war?: boolean;          // Only see within range
   visibility_range?: number;     // Range for fog of war
+}
+
+/**
+ * Hidden objectives config (Proposal 012).
+ * Assigns secret objectives to players from the game's `objectives` array.
+ */
+export interface HiddenObjectivesConfig {
+  deal_at_start?: boolean;        // Deal objectives at game start
+  reveal_on_completion?: boolean; // Reveal objective when completed
 }
 
 // ============ Phase 5 Additional Social Config Types ============

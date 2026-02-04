@@ -21,3 +21,8 @@ section:last-child {
   margin-bottom: 2rem;
   color: var(--text-primary);
 }
+
+
+.logo-text {
+  font-family: monospace;
+}

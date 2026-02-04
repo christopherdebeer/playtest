@@ -1,15 +1,16 @@
 ---
 name: "AAOTE: An Agent of the Enemy"
-version: "0.2"
+version: "0.3"
 players: 3-5
 starting_cards: 5
 win_condition: "objective_completed"
-max_rounds: 40
+max_turns: 40  # Proposal 012: Turn-based limit (40 turns, not rounds)
 
 # Reference mechanics from library
 mechanics:
   - traitor-game
   - hidden-roles
+  - hidden-objectives  # Proposal 012: Secret objective distribution
   - grid-movement
   - tile-placement
   - trading

@@ -12,7 +12,7 @@ function Header() {
       <div className="container header-content">
         <Link to="/" className="logo">
           <span className="logo-icon">&#9654;</span>
-          <span className="logo-text">playtest</span>
+          <span className="logo-text">/playtest</span>
         </Link>
 
         <button

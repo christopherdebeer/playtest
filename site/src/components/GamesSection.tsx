@@ -45,7 +45,7 @@ function GamesSection() {
               {game.config.mechanics && game.config.mechanics.length > 0 && (
                 <div className="game-mechanics" onClick={(e) => e.preventDefault()}>
                   {game.config.mechanics.slice(0, 4).map((slug) => (
-                    <MechanicBadge key={slug} slug={slug} linkToPage={false} />
+                    <MechanicBadge key={slug} slug={slug} showCategory linkToPage />
                   ))}
                   {game.config.mechanics.length > 4 && (
                     <span className="more-mechanics">+{game.config.mechanics.length - 4}</span>
@@ -81,7 +81,7 @@ function GamesSection() {
               </div>
 
               <div className="game-preview">
-                <code className="preview-cmd">/playtest {game.id} 3</code>
+                <code className="preview-cmd">/playtest {game.id} {game.config.players.split('-')[0]}</code>
               </div>
             </Link>
           ))}
