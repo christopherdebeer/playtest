@@ -146,11 +146,8 @@ export function addToDiscard(state: GameState, cards: Card[], playerId?: string)
   for (const card of cards) {
     state.discardPile.push(card);
 
-    // Update top card tracking
+    // Update top card tracking (currentColor is set by card-matching's onCardPlayed)
     state.shared.topCard = card;
-    if (card.effect?.color) {
-      state.shared.currentColor = card.effect.color;
-    }
   }
 
   // Run onDiscard hooks
@@ -197,12 +194,7 @@ export function playCard(
 
   addToDiscard(state, [card], playerId);
 
-  // Handle wild cards - override color set by addToDiscard
-  if (card.type === 'wild' && playContext?.declaredColor) {
-    state.shared.currentColor = playContext.declaredColor;
-  }
-
-  // Fire cards-defined onCardPlayed hook
+  // Fire cards-defined onCardPlayed hook (card-matching sets currentColor here)
   const cardPlayedChanges = mechanicRegistry.fire('cards', 'onCardPlayed', state, playerId, {
     card, target: 'discard', playContext: playContext ?? {}
   });
