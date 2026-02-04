@@ -3,3 +3,4 @@
 {"timestamp":"2026-02-04T08:35:40.248Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
 {"timestamp":"2026-02-04T08:45:18.188Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
 {"timestamp":"2026-02-04T08:53:04.390Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1}}}
+{"timestamp":"2026-02-04T08:56:04.010Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
