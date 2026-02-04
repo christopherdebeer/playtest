@@ -62,6 +62,7 @@ import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
 import {
   drawFromDeck,
   addToDiscard,
+  playCard,
   addToHand,
   removeFromHandByIndex,
   removeFromHandByName,
@@ -1389,22 +1390,18 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Use core services for hand/discard operations (with playerId for hooks)
-  const card = removeFromHandByName(state, playerId, cardName);
-  if (!card) {
+  // Use core service for card play (handles hand removal, discard, and onCardPlayed hook)
+  const playContext: Record<string, unknown> = {};
+  if (declaredColor) playContext.declaredColor = declaredColor;
+  const result = playCard(state, playerId, cardName, playContext);
+
+  if (!result.card) {
     return null;
-  }
-
-  addToDiscard(state, [card], playerId);
-
-  // Handle wild cards - override color set by addToDiscard
-  if (card.type === 'wild' && declaredColor) {
-    state.shared.currentColor = declaredColor;
   }
 
   saveState(state);
 
-  return card;
+  return result.card;
 }
 
 // ============ State Cards (Placed Card Effects) ============
@@ -2593,179 +2590,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
   try {
     switch (action.type) {
-      case 'play_card': {
-        const playAction = action as PlayCardAction;
-        const card = playCardByName(state, playerId, playAction.card, playAction.declaredColor);
-        if (!card) {
-          return { success: false, error: `Failed to play card "${playAction.card}"` };
-        }
-
-        // ============ NEW: Apply card effects to target player ============
-        // For interference cards, apply the effect to the target player
-        const interferenceEffects = ['block_turn', 'probability_penalty', 'force_discard', 'skip'];
-        const isInterferenceCard = card.type === 'interference' ||
-                                   (card.effect?.type && interferenceEffects.includes(card.effect.type));
-
-        let effectTarget: string | undefined;
-        if (isInterferenceCard && card.effect) {
-          const opponents = state.turnOrder.filter(pid => pid !== playerId);
-          // Use explicit target or default to single opponent
-          effectTarget = playAction.target || (opponents.length === 1 ? opponents[0] : undefined);
-
-          if (effectTarget && state.players[effectTarget]) {
-            const targetPlayer = state.players[effectTarget];
-            const effectDuration = card.effect.duration ?? 1;
-
-            // Add effect to target player
-            targetPlayer.effects.push({
-              type: card.effect.type,
-              value: card.effect.value,
-              duration: effectDuration,
-              source: playerId
-            });
-
-            // Log effect application
-            logEvent(state, {
-              event: 'effect_applied',
-              round: state.round,
-        turnNumber: state.turnNumber,
-              player: effectTarget,
-              data: {
-                effectType: card.effect.type,
-                appliedBy: playerId,
-                card: card.name,
-                duration: effectDuration
-              }
-            });
-          }
-        }
-
-        // Apply non-interference effects (movement, points, etc.) via mechanic registry
-        const nonInterferenceEffects = ['move_forward', 'move_backward', 'points', 'move', 'teleport'];
-        const hasNonInterferenceEffect = card.effect?.type && nonInterferenceEffects.includes(card.effect.type);
-
-        if (hasNonInterferenceEffect && card.effect) {
-          // Apply effect to the player who played the card (self-effects)
-          const targetPlayer = playAction.target || playerId;
-          // Create properly typed effect with default duration
-          const effectToApply = {
-            type: card.effect.type,
-            value: card.effect.value,
-            duration: card.effect.duration ?? 1,
-            source: playerId
-          };
-          const effectResult = mechanicRegistry.applyEffect(state, targetPlayer, effectToApply, playerId);
-
-          if (effectResult?.handled) {
-            // Apply any state changes from the effect
-            applyStateChanges(state, effectResult.stateChanges || {});
-
-            logEvent(state, {
-              event: 'effect_applied',
-              round: state.round,
-              turnNumber: state.turnNumber,
-              player: targetPlayer,
-              data: {
-                effectType: card.effect.type,
-                value: card.effect.value,
-                appliedBy: playerId,
-                card: card.name,
-                handled: true
-              }
-            });
-          }
-        }
-
-        // Proposal 007: Track placed locations for grid-based games
-        const gridConfig = state.config.grid as { type?: string } | undefined;
-        if (gridConfig && card.type === 'location') {
-          if (!state.shared.placedLocations) {
-            state.shared.placedLocations = [];
-          }
-          (state.shared.placedLocations as string[]).push(card.name);
-        }
-
-        // Record last action
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              card: card.name,
-              effect: card.effect,
-              declaredColor: playAction.declaredColor,
-              effectTarget,
-              newTopCard: state.shared.topCard,
-              currentColor: state.shared.currentColor
-            }
-          }
-        });
-
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            type: 'play_card',
-            card: card.name,
-            effect: card.effect,
-            effectTarget,
-            declaredColor: playAction.declaredColor
-          }
-        });
-
-        // Check win condition BEFORE advancing turn
-        const winCheck = checkAllWinConditions(state);
-        if (winCheck) {
-          // Auto-end the game
-          state.status = 'pending_analysis';
-          state.shared.winner = winCheck.winner;
-          state.shared.endReason = winCheck.reason;
-          saveState(state);
-          logEvent(state, {
-            event: 'game_end',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            data: { winner: winCheck.winner, reason: winCheck.reason, autoDetected: true }
-          });
-          return {
-            success: true,
-            gameOver: true,
-            winner: winCheck.winner,
-            effect: {
-              type: card.effect?.type || 'none',
-              details: {
-                card: card.name,
-                handSize: player.hand.length,
-                currentColor: state.shared.currentColor,
-                gameEnded: true,
-                winner: winCheck.winner
-              }
-            }
-          };
-        }
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: card.effect?.type || 'none',
-            details: {
-              card: card.name,
-              handSize: player.hand.length,
-              currentColor: state.shared.currentColor,
-              turnAdvanced
-            }
-          }
-        };
-      }
+      // play_card is handled by the cards core mechanic via onExecuteAction
 
       case 'draw': {
         const drawAction = action as DrawAction;

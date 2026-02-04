@@ -18,6 +18,7 @@ interface CardTypeRule {
 export const cardTypeRulesMechanic: MechanicHooks = {
   slug: 'card-type-rules',
   name: 'Card Type Rules',
+  requires: ['cards'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate play_card actions

@@ -18,8 +18,19 @@
  * - onBeforeCardPlay: Before playing a card, can block (blocking)
  */
 
-import { MechanicHooks, HookContext, StateChanges } from '../types.js';
-import { Card } from '../../types/game.js';
+import {
+  MechanicHooks,
+  HookContext,
+  StateChanges,
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription
+} from '../types.js';
+import { Card, PlayCardAction, GameAction } from '../../types/game.js';
+import { playCard } from './card-piles.js';
+import { mechanicRegistry } from '../registry.js';
+import { applyStateChanges } from '../registry.js';
 
 // ============ Payload types for cards-defined hooks ============
 
@@ -104,5 +115,106 @@ export const cardsMechanic: MechanicHooks = {
       description: 'After cards are discarded.',
       resolution: 'merge',
     },
+  },
+
+  /**
+   * Handle play_card action.
+   * Core operation: remove from hand, discard, fire onCardPlayed.
+   * Also applies card effects (strangler fig lift from game.ts - to be
+   * extracted to proper mechanics responding to onCardPlayed).
+   */
+  onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
+    if (ctx.action.type !== 'play_card') return null;
+
+    const { state, playerId } = ctx;
+    const playAction = ctx.action as PlayCardAction;
+
+    // Build play context
+    const playContext: Record<string, unknown> = {};
+    if (playAction.declaredColor) playContext.declaredColor = playAction.declaredColor;
+
+    // Core play: remove from hand, add to discard, fire onCardPlayed
+    const result = playCard(state, playerId, playAction.card, playContext);
+    if (!result.card) {
+      return {
+        handled: true,
+        advanceTurn: false,
+        checkWin: false,
+        logMessage: 'play_card_failed',
+        logData: { card: playAction.card, error: 'Card not in hand or failed to play' }
+      };
+    }
+
+    const card = result.card;
+    let effectTarget: string | undefined;
+
+    // --- Strangler fig: card effect application (to be extracted to onCardPlayed responders) ---
+
+    // Interference effects: apply to target player
+    const interferenceEffects = ['block_turn', 'probability_penalty', 'force_discard', 'skip'];
+    const isInterferenceCard = card.type === 'interference' ||
+                               (card.effect?.type && interferenceEffects.includes(card.effect.type));
+
+    if (isInterferenceCard && card.effect) {
+      const opponents = state.turnOrder.filter(pid => pid !== playerId);
+      effectTarget = playAction.target || (opponents.length === 1 ? opponents[0] : undefined);
+
+      if (effectTarget && state.players[effectTarget]) {
+        const targetPlayer = state.players[effectTarget];
+        const effectDuration = card.effect.duration ?? 1;
+
+        targetPlayer.effects.push({
+          type: card.effect.type,
+          value: card.effect.value,
+          duration: effectDuration,
+          source: playerId
+        });
+      }
+    }
+
+    // Non-interference effects: apply via mechanic registry
+    const nonInterferenceEffects = ['move_forward', 'move_backward', 'points', 'move', 'teleport'];
+    const hasNonInterferenceEffect = card.effect?.type && nonInterferenceEffects.includes(card.effect.type);
+
+    if (hasNonInterferenceEffect && card.effect) {
+      const targetPlayer = playAction.target || playerId;
+      const effectToApply = {
+        type: card.effect.type,
+        value: card.effect.value,
+        duration: card.effect.duration ?? 1,
+        source: playerId
+      };
+      const effectResult = mechanicRegistry.applyEffect(state, targetPlayer, effectToApply, playerId);
+      if (effectResult?.handled) {
+        applyStateChanges(state, effectResult.stateChanges || {});
+      }
+    }
+
+    // Track placed locations for grid-based games
+    const gridConfig = state.config.grid as { type?: string } | undefined;
+    if (gridConfig && card.type === 'location') {
+      if (!state.shared.placedLocations) {
+        state.shared.placedLocations = [];
+      }
+      (state.shared.placedLocations as string[]).push(card.name);
+    }
+
+    // --- End strangler fig lift ---
+
+    return {
+      handled: true,
+      advanceTurn: false,  // Let shouldAutoEndTurn / AP mechanic decide
+      checkWin: true,
+      logMessage: 'play_card',
+      logData: {
+        card: card.name,
+        effect: card.effect,
+        effectTarget,
+        declaredColor: playAction.declaredColor,
+        handSize: state.players[playerId]?.hand.length,
+        currentColor: state.shared.currentColor,
+        newTopCard: (state.shared.topCard as Card)?.name
+      }
+    };
   },
 };

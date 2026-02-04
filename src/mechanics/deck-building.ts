@@ -129,6 +129,7 @@ function shuffleArray<T>(array: T[]): T[] {
 export const deckBuildingMechanic: MechanicHooks = {
   slug: 'deck-building',
   name: 'Deck/Bag/Pool Building',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

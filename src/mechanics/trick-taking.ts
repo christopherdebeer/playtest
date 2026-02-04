@@ -150,6 +150,7 @@ function determineTrickWinner(trick: TrickCard[], leadSuit: string, config: Tric
 export const trickTakingMechanic: MechanicHooks = {
   slug: 'trick-taking',
   name: 'Trick-Taking',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

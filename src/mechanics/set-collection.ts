@@ -67,6 +67,7 @@ function validateSet(cards: Card[], setDef: SetDefinition): boolean {
 export const setCollectionMechanic: MechanicHooks = {
   slug: 'set-collection',
   name: 'Set Collection',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

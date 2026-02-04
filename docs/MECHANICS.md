@@ -534,22 +534,19 @@ replacing hardcoded routing methods in the registry.
 - [x] Infrastructure: `requires` replaces `dependencies` (legacy compat retained)
 - [x] Infrastructure: `HookDefinition` type with resolution strategies
 - [x] `cards` core mechanic: defines `onCardDrawn`, `onCardPlayed`, `onCardDiscarded`, `onBeforeCardDraw`, `onBeforeCardPlay`
+- [x] `cards` core mechanic: owns `play_card` action via `onExecuteAction` (removed from game.ts fallback)
 - [x] `card-piles.ts` dual-fires global hooks AND cards-defined hooks (strangler fig)
-- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn`
-- [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`
+- [x] `card-piles.ts` `playCard()` function: removes from hand, discards, fires `onCardPlayed`
+- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn`; legacy draw-tracking removed from `postExecuteAction`
+- [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`; legacy `onBeforeDraw` removed
+- [x] All card leaf mechanics declare `requires: ['cards']`:
+  - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`
 
 ### Outstanding
 
-- [ ] Migrate remaining card leaf mechanics to `requires: ['cards']`:
-  - [ ] `deck-building`
-  - [ ] `trick-taking`
-  - [ ] `card-type-rules`
-  - [ ] `multi-use-cards`
-  - [ ] `place-card`
-  - [ ] `set-collection`
-  - [ ] `open-drafting` / `closed-drafting`
-  - [ ] `ladder-climbing`
-- [ ] Wire `hand.ts` to fire `onCardPlayed` when cards are removed for play
+- [ ] Extract card effect application from cards `onExecuteAction` to proper `onCardPlayed` responders (interference → take-that, non-interference → location-effects/etc.)
+- [ ] Migrate `trick-taking` and `ladder-climbing` play paths to use `playCard()` or fire `onCardPlayed` (they bypass with direct `removeFromHandByName`)
+- [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
 - [ ] `resources` core mechanic: define hooks from current resource service
 - [ ] `board` core mechanic: define hooks from current board service
 - [ ] `dice` core mechanic: define hooks from current dice service
@@ -558,8 +555,6 @@ replacing hardcoded routing methods in the registry.
 - [ ] `visibility` core mechanic: define hooks from current visibility service
 - [ ] `social` core mechanic: define hooks from current social service
 - [ ] Migrate all resource-related leaf mechanics to `requires: ['resources']`
-- [ ] Remove draw-tracking from `card-matching.postExecuteAction` (after verifying `onCardDrawn` path works)
-- [ ] Remove `onBeforeDraw` from `hand-management` (after verifying `onBeforeCardDraw` path works)
 - [ ] Deprecate global domain hooks once all leaf mechanics migrated
 - [ ] Slim `MechanicHooks` interface to global-only hooks
 
@@ -568,8 +563,9 @@ replacing hardcoded routing methods in the registry.
 ## Core Services
 
 ### Card Piles (`core/card-piles.ts`)
-- `drawFromDeck(state, count, playerId?)` - Fires `onBeforeDraw`/`onAfterDraw`
-- `addToDiscard(state, cards, playerId?)` - Fires `onDiscard`
+- `drawFromDeck(state, count, playerId?)` - Fires `onBeforeDraw`/`onAfterDraw` + `onBeforeCardDraw`/`onCardDrawn`
+- `addToDiscard(state, cards, playerId?)` - Fires `onDiscard` + `onCardDiscarded`
+- `playCard(state, playerId, cardName, playContext?)` - Removes from hand, discards, fires `onCardPlayed`
 - `peekDiscard`, `hasCardsAvailable`, `getDeckSize`, `getDiscardSize`
 
 ### Hand (`core/hand.ts`)
@@ -1001,10 +997,12 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (push-your-luck) |
 | Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
-| Card types | Hardcoded (wild, etc) | Mechanic-owned | Pending |
+| Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
+| Play card action | ~~Fallback switch~~ | Cards mechanic `onExecuteAction` | **Done** |
 
 #### Completed Migrations:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
+- **Play card action**: `src/mechanics/core/cards.ts` handles play_card via `onExecuteAction`
 - **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
 - **Shared state init**: `open-drafting` implements `initSharedState` for draftDisplay
 - **Player view**: `push-your-luck` implements `getPlayerView` for rollAccumulator/rollCount

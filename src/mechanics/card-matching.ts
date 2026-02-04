@@ -9,7 +9,7 @@
  * Hooks used:
  * - initSharedState: Initialize currentColor from top card
  * - preValidateAction: Validate card matches current color/top card
- * - postExecuteAction: Update currentColor after wild card play (global, legacy)
+ * - postExecuteAction: Update currentColor after wild card play (global, still needed)
  * - onCardDrawn: Track draws for forced-draw rule (cards-defined hook)
  */
 
@@ -262,24 +262,11 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
   },
 
   /**
-   * Update currentColor after card play, and track draws for forced draw rule
+   * Update currentColor after card play.
+   * Note: Draw tracking moved to onCardDrawn (cards-defined hook).
    */
   postExecuteAction(ctx: HookContext, action: GameAction): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
-
-    // Track that player drew this turn (for forced draw rule)
-    if (action.type === 'draw') {
-      const currentDraws = (ctx.state.shared.cardMatchingDraws as Record<string, boolean>) || {};
-      return {
-        sharedStateChanges: {
-          cardMatchingDraws: {
-            ...currentDraws,
-            [ctx.playerId]: true
-          }
-        }
-      };
-    }
-
     if (action.type !== 'play_card') return null;
 
     const playAction = action as { type: 'play_card'; card: string; declaredColor?: string };

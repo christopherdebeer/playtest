@@ -1,22 +1,24 @@
 /**
  * Card Piles Core Service
  *
- * Manages deck and discard pile operations.
+ * Manages deck, discard pile, and card play operations.
  * This is a "trunk" mechanic that other mechanics depend on.
  *
  * Strangler fig pattern: Wraps existing game.ts logic, gradually
  * adding hooks for dependent mechanics to intercept.
  *
- * Hooks:
- * - onBeforeDraw: Can modify draw count or block draw
- * - onAfterDraw: Notified after draw completes
- * - onDiscard: Notified when cards are discarded
+ * Hooks fired:
+ * - onBeforeDraw / onBeforeCardDraw: Can modify draw count or block draw
+ * - onAfterDraw / onCardDrawn: Notified after draw completes
+ * - onDiscard / onCardDiscarded: Notified when cards are discarded
+ * - onCardPlayed: Notified when a card is played from hand
  */
 
 import { GameState, Card } from '../../types/game.js';
 import { shuffleDeck } from '../../core/rules.js';
 import { mechanicRegistry } from '../registry.js';
 import { applyStateChanges } from '../registry.js';
+import { removeFromHandByName } from './hand.js';
 
 /**
  * Draw context for hooks (re-exported from types)
@@ -163,6 +165,50 @@ export function addToDiscard(state: GameState, cards: Card[], playerId?: string)
       if (cardsChanges) applyStateChanges(state, cardsChanges);
     }
   }
+}
+
+/**
+ * Result of a play card operation
+ */
+export interface PlayCardResult {
+  /** The card that was played, or null if not found */
+  card: Card | null;
+}
+
+/**
+ * Play a card from hand to discard pile.
+ * Removes from hand, adds to discard, fires onCardPlayed hook.
+ *
+ * @param state - Game state
+ * @param playerId - Player playing the card
+ * @param cardName - Name of the card to play
+ * @param playContext - Additional context (e.g., declaredColor for wild cards)
+ */
+export function playCard(
+  state: GameState,
+  playerId: string,
+  cardName: string,
+  playContext?: Record<string, unknown>
+): PlayCardResult {
+  const card = removeFromHandByName(state, playerId, cardName);
+  if (!card) {
+    return { card: null };
+  }
+
+  addToDiscard(state, [card], playerId);
+
+  // Handle wild cards - override color set by addToDiscard
+  if (card.type === 'wild' && playContext?.declaredColor) {
+    state.shared.currentColor = playContext.declaredColor;
+  }
+
+  // Fire cards-defined onCardPlayed hook
+  const cardPlayedChanges = mechanicRegistry.fire('cards', 'onCardPlayed', state, playerId, {
+    card, target: 'discard', playContext: playContext ?? {}
+  });
+  if (cardPlayedChanges) applyStateChanges(state, cardPlayedChanges);
+
+  return { card };
 }
 
 /**
