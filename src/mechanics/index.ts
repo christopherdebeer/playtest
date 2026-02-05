@@ -135,6 +135,15 @@ import { workerPlacementMechanic } from './worker-placement.js';
 // Phase 6: Combat Core mechanic
 import { combatMechanic } from './core/combat-mechanic.js';
 
+// Multi-category expansion mechanics
+import { differentWorkerTypesMechanic } from './worker-placement-different-worker-types.js';
+import { auctionDutchMechanic } from './auction-dutch.js';
+import { simultaneousActionSelectionMechanic } from './simultaneous-action-selection.js';
+import { marketMechanic } from './market.js';
+import { tableauBuildingMechanic } from './tableau-building.js';
+import { actionProgrammingMechanic } from './action-programming.js';
+import { cooperativeActionsMechanic } from './cooperative-actions.js';
+
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
 
@@ -265,6 +274,15 @@ mechanicRegistry.register(workerPlacementMechanic);
 
 // Register Phase 6: Combat Core mechanic
 mechanicRegistry.register(combatMechanic);
+
+// Register multi-category expansion mechanics
+mechanicRegistry.register(differentWorkerTypesMechanic);
+mechanicRegistry.register(auctionDutchMechanic);
+mechanicRegistry.register(simultaneousActionSelectionMechanic);
+mechanicRegistry.register(marketMechanic);
+mechanicRegistry.register(tableauBuildingMechanic);
+mechanicRegistry.register(actionProgrammingMechanic);
+mechanicRegistry.register(cooperativeActionsMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);

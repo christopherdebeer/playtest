@@ -118,6 +118,10 @@ export interface PlayerState {
 
   // Phase 7: Worker Placement state
   workers?: WorkerState[];         // Player's workers with placement status
+
+  // Multi-category expansion state
+  tableau?: Card[];                  // Tableau building: cards in personal tableau
+  programmedActions?: unknown[];     // Action programming: programmed action sequence
 }
 
 /**
@@ -319,6 +323,15 @@ export interface EngineMechanics {
 
   // Phase 7: Worker Placement System
   worker_placement?: WorkerPlacementConfig;       // Worker placement mechanics
+  different_worker_types?: DifferentWorkerTypesConfig;  // Multiple worker types
+
+  // New mechanics (multi-category expansion)
+  auction_dutch?: AuctionDutchConfig;             // Descending price auction
+  simultaneous_action_selection?: SimultaneousActionSelectionConfig;  // Simultaneous play
+  market?: MarketMechanicConfig;                  // Supply/demand commodity trading
+  tableau_building?: TableauBuildingConfig;        // Personal tableau of cards
+  action_programming?: ActionProgrammingConfig;   // Program action sequences
+  cooperative?: CooperativeConfig;                // Cooperative play mechanics
 }
 
 // Proposal 007: Grid configuration
@@ -1070,7 +1083,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass' | 'dutch_bid' | 'dutch_pass' | 'select_action' | 'buy_market' | 'sell_market' | 'add_to_tableau' | 'program_action' | 'execute_program' | 'contribute' | 'use_shared';
 
 export interface BaseAction {
   type: ActionType;
@@ -1394,7 +1407,64 @@ export interface AuctionPassAction extends BaseAction {
   type: 'auction_pass';
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction;
+// Dutch Auction actions
+export interface DutchBidAction extends BaseAction {
+  type: 'dutch_bid';
+}
+
+export interface DutchPassAction extends BaseAction {
+  type: 'dutch_pass';
+}
+
+// Simultaneous Action Selection action
+export interface SelectActionAction extends BaseAction {
+  type: 'select_action';
+  selectedAction: Record<string, unknown>;
+}
+
+// Market actions
+export interface BuyMarketAction extends BaseAction {
+  type: 'buy_market';
+  commodity: string;
+  quantity?: number;
+}
+
+export interface SellMarketAction extends BaseAction {
+  type: 'sell_market';
+  commodity: string;
+  quantity?: number;
+}
+
+// Tableau Building action
+export interface AddToTableauAction extends BaseAction {
+  type: 'add_to_tableau';
+  card: string;
+}
+
+// Action Programming actions
+export interface ProgramActionAction extends BaseAction {
+  type: 'program_action';
+  actions: Record<string, unknown>[];
+}
+
+export interface ExecuteProgramAction extends BaseAction {
+  type: 'execute_program';
+}
+
+// Cooperative actions
+export interface ContributeAction extends BaseAction {
+  type: 'contribute';
+  resource: string;
+  amount: number;
+}
+
+export interface UseSharedAction extends BaseAction {
+  type: 'use_shared';
+  resource: string;
+  amount: number;
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction | DutchBidAction | DutchPassAction | SelectActionAction | BuyMarketAction | SellMarketAction | AddToTableauAction | ProgramActionAction | ExecuteProgramAction | ContributeAction | UseSharedAction;
 
 // Action validation result
 export interface ActionValidationResult {
@@ -2032,4 +2102,78 @@ export interface WorkerSpaceConfig {
   cost?: Record<string, number>;
   reward?: Record<string, number>;
   available?: boolean;
+}
+
+// ============ Multi-Category Expansion Config Types ============
+
+/**
+ * Different Worker Types config.
+ */
+export interface DifferentWorkerTypesConfig {
+  types?: { type: string; name: string; count_per_player?: number; strength?: number; abilities?: string[] }[];
+  type_restrictions?: Record<string, string[]>;
+  type_bonuses?: Record<string, Record<string, { resource?: string; amount?: number }>>;
+}
+
+/**
+ * Dutch Auction config.
+ */
+export interface AuctionDutchConfig {
+  starting_price?: number;
+  decrement?: number;
+  min_price?: number;
+  currency?: string;
+}
+
+/**
+ * Simultaneous Action Selection config.
+ */
+export interface SimultaneousActionSelectionConfig {
+  resolution_order?: 'random' | 'clockwise' | 'priority';
+  actions_per_round?: number;
+  reveal_before_resolve?: boolean;
+}
+
+/**
+ * Market (Supply & Demand) config.
+ */
+export interface MarketMechanicConfig {
+  commodities?: { id: string; name: string; base_price: number; supply?: number; demand_decay?: number }[];
+  price_volatility?: number;
+  price_floor?: number;
+  price_ceiling?: number;
+  currency?: string;
+}
+
+/**
+ * Tableau Building config.
+ */
+export interface TableauBuildingConfig {
+  max_size?: number;
+  placement_cost?: Record<string, number>;
+  score_per_card?: number;
+  synergy_bonuses?: { card_types: string[]; bonus_type: 'score' | 'resource' | 'draw'; amount: number; resource?: string }[];
+  income_per_card_type?: Record<string, Record<string, number>>;
+}
+
+/**
+ * Action Programming config.
+ */
+export interface ActionProgrammingConfig {
+  program_size?: number;
+  simultaneous?: boolean;
+  reveal_order?: 'simultaneous' | 'sequential';
+  allowed_actions?: string[];
+}
+
+/**
+ * Cooperative Actions config.
+ */
+export interface CooperativeConfig {
+  shared_pool?: Record<string, number>;
+  threat_level?: number;
+  threat_per_round?: number;
+  max_threat?: number;
+  cooperative_actions?: string[];
+  loss_message?: string;
 }
