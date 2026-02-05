@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-04T23:39:14.023Z",
+  "generated": "2026-02-05T00:03:50.914Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -174,8 +174,7 @@
         "targetable_leader": "boolean"
       },
       "hooks": [
-        "onTurnStart",
-        "onBeforeResourceChange"
+        "onTurnStart"
       ]
     },
     "chaining": {
@@ -745,6 +744,11 @@
         "onExecuteAction",
         "getAvailableActions"
       ]
+    },
+    "resources": {
+      "config_key": "resources",
+      "since": "3.0.0",
+      "hooks": []
     },
     "roles-with-asymmetric-information": {
       "config_key": "roles_with_asymmetric_information",

@@ -404,9 +404,10 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │           ├── must-follow-suit (requires: trick-taking)
   │           └── trump-cards (requires: trick-taking)
   │
-  ├── resources (defines: onResourceGained, onResourceSpent, ...)
-  │     ├── action-points (requires: resources)
-  │     └── economy (requires: resources)
+  ├── resources (defines: onResourceGained, onResourceSpent, onBeforeResourceGain, onBeforeResourceSpend)
+  │     ├── catch-the-leader (requires: resources) ← MIGRATED
+  │     ├── action-points (requires: resources) ← planned
+  │     └── income (requires: resources) ← planned
   │
   ├── board (defines: onMoved, onLocationEntered, ...)
   │     ├── grid-movement (requires: board)
@@ -543,20 +544,23 @@ replacing hardcoded routing methods in the registry.
 - [x] `currentColor` tracking removed from core services (`addToDiscard`, `playCard`); now owned by `card-matching.onCardPlayed`
 - [x] All card leaf mechanics declare `requires: ['cards']`:
   - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`, `take-that`
+- [x] `resources` core mechanic: defines `onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`
+- [x] `resources.ts` dual-fires global hooks AND resources-defined hooks (strangler fig)
+- [x] `catch-the-leader`: migrated to `requires: ['resources']`, implements `onBeforeResourceGain` (leader income reduction); legacy `onBeforeResourceChange` removed
 
 ### Outstanding
 
 - [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
 - [x] `trick-taking` and `ladder-climbing` now fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
 - [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
-- [ ] `resources` core mechanic: define hooks from current resource service
+- [ ] Migrate resource leaf mechanics to `requires: ['resources']` with resources-defined hooks:
+  - `income`, `automatic-resource-growth`, `auction-english`, `auction-sealed-bid`, `auction-once-around`, `chaining`, `once-per-game-abilities`, `action-points`
 - [ ] `board` core mechanic: define hooks from current board service
 - [ ] `dice` core mechanic: define hooks from current dice service
 - [ ] `combat` core mechanic: define hooks from current combat service
 - [ ] `effects` core mechanic: define hooks from current effects service
 - [ ] `visibility` core mechanic: define hooks from current visibility service
 - [ ] `social` core mechanic: define hooks from current social service
-- [ ] Migrate all resource-related leaf mechanics to `requires: ['resources']`
 - [ ] Deprecate global domain hooks once all leaf mechanics migrated
 - [ ] Slim `MechanicHooks` interface to global-only hooks
 
@@ -577,9 +581,10 @@ replacing hardcoded routing methods in the registry.
 - `findInHand`, `getHandSize`, `getHand`
 
 ### Resources (`core/resources.ts`)
-- `addResource(state, playerId, resource, amount)` - Fires resource hooks
-- `spendResource(state, playerId, resource, amount)` - With validation
-- `getResource`, `hasResource`, `setResource`
+- `addResource(state, playerId, resource, amount)` - Fires `onBeforeResourceChange`/`onAfterResourceChange` + `onBeforeResourceGain`/`onResourceGained`
+- `spendResource(state, playerId, resource, amount)` - Fires `onBeforeResourceChange`/`onAfterResourceChange` + `onBeforeResourceSpend`/`onResourceSpent`
+- `setResource(state, playerId, resource, amount)` - Fires appropriate gain/spend hooks based on delta direction
+- `getResource`, `hasResource`, `getAllResources`, `getResourceNames`
 
 ### Effects (`core/effects.ts`)
 - `addEffect(state, playerId, effect)` - Fires effect hooks

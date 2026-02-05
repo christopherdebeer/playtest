@@ -4,6 +4,8 @@
  * Balancing mechanic that penalizes the leader or benefits trailing players.
  * Keeps games competitive by preventing runaway victories.
  *
+ * Requires: resources (core mechanic)
+ *
  * Supports:
  * - Leader penalties (reduced income, increased costs)
  * - Trailing bonuses (extra resources, cards)
@@ -11,8 +13,7 @@
  *
  * Hooks used:
  * - onTurnStart: Apply leader penalties/trailing bonuses
- * - onBeforeResourceChange: Modify resource gains for leader
- * - postExecuteAction: Apply catch-up bonuses after actions
+ * - onBeforeResourceGain: Modify resource gains for leader (resources-defined hook)
  */
 
 import {
@@ -20,10 +21,8 @@ import {
   TurnStartContext,
   StateChanges,
   HookContext,
-  ResourceChangeContext,
-  ResourceChangeHookResult
 } from './types.js';
-import { GameAction } from '../types/game.js';
+import type { ResourcesHooks, BeforeResourceGainPayload } from './core/resources-mechanic.js';
 import { addToHand } from './core/hand.js';
 import { drawFromDeck } from './core/card-piles.js';
 
@@ -104,9 +103,10 @@ function findLeader(
   return { leaderId, leaderValue, secondValue };
 }
 
-export const catchTheLeaderMechanic: MechanicHooks = {
+export const catchTheLeaderMechanic: MechanicHooks & ResourcesHooks = {
   slug: 'catch-the-leader',
   name: 'Catch The Leader',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',
@@ -227,7 +227,11 @@ export const catchTheLeaderMechanic: MechanicHooks = {
     return stateChanges;
   },
 
-  onBeforeResourceChange(ctx: ResourceChangeContext): ResourceChangeHookResult | null {
+  /**
+   * Resources-defined hook: Reduce resource gains for the leading player.
+   * Fired by resources.ts via mechanicRegistry.fire('resources', 'onBeforeResourceGain', ...).
+   */
+  onBeforeResourceGain(ctx: HookContext, payload: BeforeResourceGainPayload): { blocked?: boolean; blockReason?: string; amount?: number } | null {
     const ctlConfig = ctx.config.engine_mechanics?.catch_the_leader as CatchTheLeaderConfig | undefined;
     if (!ctlConfig?.leader_penalties?.income_reduction) return null;
 
@@ -238,14 +242,14 @@ export const catchTheLeaderMechanic: MechanicHooks = {
     const lead = leaderValue - secondValue;
     const threshold = ctlConfig.lead_threshold ?? 0;
 
-    // Only apply to leader when gaining resources
-    if (ctx.playerId !== leaderId || ctx.amount <= 0 || lead <= threshold) {
+    // Only apply to leader
+    if (ctx.playerId !== leaderId || lead <= threshold) {
       return null;
     }
 
     // Reduce the gain
     const reduction = ctlConfig.leader_penalties.income_reduction;
-    const reducedAmount = Math.floor(ctx.amount * (1 - reduction));
+    const reducedAmount = Math.floor(payload.amount * (1 - reduction));
 
     return { amount: reducedAmount };
   }

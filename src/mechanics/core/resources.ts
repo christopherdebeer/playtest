@@ -67,7 +67,7 @@ export function spendResource(
     };
   }
 
-  // Run onBeforeResourceChange hooks
+  // Run onBeforeResourceChange hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeResourceChange(
     state,
     playerId,
@@ -84,12 +84,30 @@ export function spendResource(
     };
   }
 
-  const actualAmount = beforeResult.amount ?? amount;
+  let actualAmount = beforeResult.amount ?? amount;
+
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('resources', 'onBeforeResourceSpend', state, playerId, {
+    resource, amount: actualAmount, currentAmount
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return {
+      success: false,
+      newAmount: currentAmount,
+      actualChange: 0,
+      blocked: true,
+      blockReason
+    };
+  }
+  if (definedBeforeResult && typeof (definedBeforeResult as Record<string, unknown>).amount === 'number') {
+    actualAmount = (definedBeforeResult as Record<string, unknown>).amount as number;
+  }
 
   // Apply the change
   player.resources[resource] = currentAmount - actualAmount;
 
-  // Run onAfterResourceChange hooks
+  // Run onAfterResourceChange hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterResourceChange(
     state,
     playerId,
@@ -98,6 +116,12 @@ export function spendResource(
     player.resources[resource]
   );
   applyStateChanges(state, afterChanges);
+
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  const definedAfterChanges = mechanicRegistry.fire('resources', 'onResourceSpent', state, playerId, {
+    resource, amount: actualAmount, previousAmount: currentAmount, newAmount: player.resources[resource]
+  });
+  if (definedAfterChanges) applyStateChanges(state, definedAfterChanges);
 
   return {
     success: true,
@@ -130,7 +154,7 @@ export function addResource(
 
   const currentAmount = player.resources[resource] ?? 0;
 
-  // Run onBeforeResourceChange hooks
+  // Run onBeforeResourceChange hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeResourceChange(
     state,
     playerId,
@@ -147,12 +171,30 @@ export function addResource(
     };
   }
 
-  const actualAmount = beforeResult.amount ?? amount;
+  let actualAmount = beforeResult.amount ?? amount;
+
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('resources', 'onBeforeResourceGain', state, playerId, {
+    resource, amount: actualAmount, currentAmount
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return {
+      success: false,
+      newAmount: currentAmount,
+      actualChange: 0,
+      blocked: true,
+      blockReason
+    };
+  }
+  if (definedBeforeResult && typeof (definedBeforeResult as Record<string, unknown>).amount === 'number') {
+    actualAmount = (definedBeforeResult as Record<string, unknown>).amount as number;
+  }
 
   // Apply the change
   player.resources[resource] = currentAmount + actualAmount;
 
-  // Run onAfterResourceChange hooks
+  // Run onAfterResourceChange hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterResourceChange(
     state,
     playerId,
@@ -161,6 +203,12 @@ export function addResource(
     player.resources[resource]
   );
   applyStateChanges(state, afterChanges);
+
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  const definedAfterChanges = mechanicRegistry.fire('resources', 'onResourceGained', state, playerId, {
+    resource, amount: actualAmount, previousAmount: currentAmount, newAmount: player.resources[resource]
+  });
+  if (definedAfterChanges) applyStateChanges(state, definedAfterChanges);
 
   return {
     success: true,
@@ -192,7 +240,7 @@ export function setResource(
   const currentAmount = player.resources[resource] ?? 0;
   const delta = amount - currentAmount;
 
-  // Run onBeforeResourceChange hooks
+  // Run onBeforeResourceChange hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeResourceChange(
     state,
     playerId,
@@ -209,10 +257,29 @@ export function setResource(
     };
   }
 
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  if (delta !== 0) {
+    const hookName = delta > 0 ? 'onBeforeResourceGain' : 'onBeforeResourceSpend';
+    const definedBeforeResult = mechanicRegistry.fire('resources', hookName, state, playerId, {
+      resource, amount: Math.abs(delta), currentAmount
+    });
+    if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+      const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+      return {
+        success: false,
+        newAmount: currentAmount,
+        actualChange: 0,
+        blocked: true,
+        blockReason
+      };
+    }
+    // Note: setResource uses absolute target amount, so modified amounts from hooks are not applied
+  }
+
   // Apply the change (use full amount, not modified delta)
   player.resources[resource] = amount;
 
-  // Run onAfterResourceChange hooks
+  // Run onAfterResourceChange hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterResourceChange(
     state,
     playerId,
@@ -221,6 +288,15 @@ export function setResource(
     amount
   );
   applyStateChanges(state, afterChanges);
+
+  // Resources-defined hook (only resources dependents) - strangler fig dual-fire
+  if (delta !== 0) {
+    const afterHookName = delta > 0 ? 'onResourceGained' : 'onResourceSpent';
+    const definedAfterChanges = mechanicRegistry.fire('resources', afterHookName, state, playerId, {
+      resource, amount: Math.abs(delta), previousAmount: currentAmount, newAmount: amount
+    });
+    if (definedAfterChanges) applyStateChanges(state, definedAfterChanges);
+  }
 
   return {
     success: true,
