@@ -128,6 +128,13 @@ import { socialMechanic } from './core/social-mechanic.js';
 import { locationEffectsMechanic } from './location-effects.js';
 import { placedCardEffectsMechanic } from './placed-card-effects.js';
 
+// Phase 7: Worker Placement mechanics
+import { workersMechanic } from './core/workers-mechanic.js';
+import { workerPlacementMechanic } from './worker-placement.js';
+
+// Phase 6: Combat Core mechanic
+import { combatMechanic } from './core/combat-mechanic.js';
+
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
 
@@ -251,6 +258,13 @@ mechanicRegistry.register(passMechanic);
 // Register effect handling mechanics
 mechanicRegistry.register(locationEffectsMechanic);
 mechanicRegistry.register(placedCardEffectsMechanic);
+
+// Register Phase 7: Worker Placement mechanics
+mechanicRegistry.register(workersMechanic);
+mechanicRegistry.register(workerPlacementMechanic);
+
+// Register Phase 6: Combat Core mechanic
+mechanicRegistry.register(combatMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);

@@ -115,6 +115,18 @@ export interface PlayerState {
   inEnemyZoC?: boolean;            // Player is in enemy zone of control
   zocProjector?: string;           // Player ID projecting ZoC
   impulseState?: ImpulseState;     // Area impulse activation state
+
+  // Phase 7: Worker Placement state
+  workers?: WorkerState[];         // Player's workers with placement status
+}
+
+/**
+ * Worker state for worker placement mechanic.
+ */
+export interface WorkerState {
+  id: string;
+  type: string;
+  placedAt: string | null;
 }
 
 /**
@@ -304,6 +316,9 @@ export interface EngineMechanics {
   chit_pull?: ChitPullConfig;                     // Random chit activation
   secret_deployment?: SecretDeploymentConfig;     // Face-down unit deployment
   kill_steal?: KillStealConfig;                   // Final blow rewards
+
+  // Phase 7: Worker Placement System
+  worker_placement?: WorkerPlacementConfig;       // Worker placement mechanics
 }
 
 // Proposal 007: Grid configuration
@@ -1055,7 +1070,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass';
 
 export interface BaseAction {
   type: ActionType;
@@ -1362,7 +1377,24 @@ export interface RevealUnitAction extends BaseAction {
   targetUnitId: string;
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction;
+// Phase 7: Worker Placement actions
+export interface PlaceWorkerAction extends BaseAction {
+  type: 'place_worker';
+  spaceId: string;
+  workerId?: string;
+}
+
+export interface RetrieveWorkersAction extends BaseAction {
+  type: 'retrieve_workers';
+  fromSpaces?: string[];
+}
+
+// Auction pass action
+export interface AuctionPassAction extends BaseAction {
+  type: 'auction_pass';
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction;
 
 // Action validation result
 export interface ActionValidationResult {
@@ -1972,4 +2004,32 @@ export interface KillStealConfig {
   bounty_amount?: number;
   credit_assists?: boolean;
   assist_share?: number;
+}
+
+// ============ Phase 7: Worker Placement Config Types ============
+
+/**
+ * Worker Placement mechanic config.
+ */
+export interface WorkerPlacementConfig {
+  workers_per_player: number;
+  worker_types?: WorkerTypeConfig[];
+  spaces: WorkerSpaceConfig[];
+  retrieval: 'round_start' | 'manual' | 'action';
+  costs_action_point?: boolean;
+}
+
+export interface WorkerTypeConfig {
+  type: string;
+  count: number;
+}
+
+export interface WorkerSpaceConfig {
+  id: string;
+  name: string;
+  capacity?: number;
+  action?: string;
+  cost?: Record<string, number>;
+  reward?: Record<string, number>;
+  available?: boolean;
 }

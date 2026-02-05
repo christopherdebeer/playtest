@@ -94,6 +94,7 @@ function calculateRatio(attack: number, defense: number): string {
 export const ratioCRTMechanic: MechanicHooks = {
   slug: 'ratio-combat-results-table',
   name: 'Ratio Combat Results Table',
+  requires: ['combat'],
 
   configSchema: {
     type: 'object',

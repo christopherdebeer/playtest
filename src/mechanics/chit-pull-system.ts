@@ -37,6 +37,7 @@ interface ChitPullState {
 export const chitPullSystemMechanic: MechanicHooks = {
   slug: 'chit-pull-system',
   name: 'Chit Pull System',
+  requires: ['combat'],
 
   configSchema: {
     type: 'object',
