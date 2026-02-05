@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-05T00:03:50.914Z",
+  "generated": "2026-02-05T21:00:41.936Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -18,7 +18,8 @@
         "postExecuteAction",
         "shouldAutoEndTurn",
         "initPlayerState",
-        "onTurnStart"
+        "onTurnStart",
+        "getPlayerView"
       ]
     },
     "area-impulse": {
@@ -61,8 +62,19 @@
     "auction-english": {
       "config_key": "auction_english",
       "since": "3.0.0",
+      "description": "English-style ascending bid auctions",
+      "config_schema": {
+        "type": "string",
+        "currency": "string",
+        "min_increment": "number",
+        "items": "array"
+      },
       "hooks": [
-        "preValidateAction"
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState"
       ]
     },
     "auction-once-around": {
@@ -106,6 +118,11 @@
         "onTurnStart"
       ]
     },
+    "board": {
+      "config_key": "board",
+      "since": "3.0.0",
+      "hooks": []
+    },
     "board-state": {
       "config_key": "board_state",
       "since": "3.0.0",
@@ -144,7 +161,8 @@
       },
       "hooks": [
         "preValidateAction",
-        "onTurnEnd"
+        "onTurnEnd",
+        "initSharedState"
       ]
     },
     "card-type-rules": {
@@ -220,8 +238,14 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "initSharedState"
       ]
+    },
+    "combat": {
+      "config_key": "combat",
+      "since": "3.0.0",
+      "hooks": []
     },
     "communication-limits": {
       "config_key": "communication_limits",
@@ -266,7 +290,8 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "initSharedState"
       ]
     },
     "deduction": {
@@ -286,6 +311,11 @@
         "canSeeInfo"
       ]
     },
+    "dice": {
+      "config_key": "dice",
+      "since": "3.0.0",
+      "hooks": []
+    },
     "dice-rolling": {
       "config_key": "dice_rolling",
       "since": "3.0.0",
@@ -301,9 +331,7 @@
       "hooks": [
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction",
-        "onBeforeRoll",
-        "onAfterRoll"
+        "describeAction"
       ]
     },
     "die-icon-resolution": {
@@ -316,8 +344,7 @@
       },
       "hooks": [
         "onExecuteAction",
-        "getAvailableActions",
-        "onAfterRoll"
+        "getAvailableActions"
       ]
     },
     "different-dice-movement": {
@@ -328,9 +355,13 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction",
-        "onAfterRoll"
+        "describeAction"
       ]
+    },
+    "effects": {
+      "config_key": "effects",
+      "since": "3.0.0",
+      "hooks": []
     },
     "events": {
       "config_key": "events",
@@ -375,7 +406,9 @@
       "hooks": [
         "preValidateAction",
         "onTurnEnd",
-        "getAvailableActions"
+        "getAvailableActions",
+        "initSharedState",
+        "canPlayerActNow"
       ]
     },
     "grid-movement": {
@@ -396,9 +429,7 @@
         "hand_limit": "number",
         "hand_limit_policy": "cannot_draw | discard_choice | discard_oldest"
       },
-      "hooks": [
-        "onBeforeAddToHand"
-      ]
+      "hooks": []
     },
     "hidden-movement": {
       "config_key": "hidden_movement",
@@ -406,9 +437,7 @@
       "description": "Player positions hidden from other players.",
       "hooks": [
         "describeAction",
-        "onAfterMove",
         "getVisibleState",
-        "onReveal",
         "canSeeInfo"
       ]
     },
@@ -439,7 +468,6 @@
       "hooks": [
         "initPlayerState",
         "getVisibleState",
-        "onReveal",
         "canSeeInfo"
       ]
     },
@@ -522,13 +550,16 @@
     "location-effects": {
       "config_key": "location_effects",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [
+        "applyEffect"
+      ]
     },
     "lose-a-turn": {
       "config_key": "lose_a_turn",
       "since": "3.0.0",
       "hooks": [
-        "preValidateAction"
+        "preValidateAction",
+        "isPlayerBlocked"
       ]
     },
     "memory": {
@@ -543,7 +574,6 @@
       "hooks": [
         "initPlayerState",
         "onTurnStart",
-        "onReveal",
         "canSeeInfo"
       ]
     },
@@ -624,7 +654,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "initSharedState"
       ]
     },
     "pass": {
@@ -659,7 +690,9 @@
     "placed-card-effects": {
       "config_key": "placed_card_effects",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [
+        "applyEffect"
+      ]
     },
     "player-judge": {
       "config_key": "player_judge",
@@ -698,7 +731,8 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "applyEffect"
       ]
     },
     "push-your-luck": {
@@ -716,7 +750,7 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "onAfterAddToHand"
+        "getPlayerView"
       ]
     },
     "ratio-combat-results-table": {
@@ -770,8 +804,7 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction",
-        "onAfterRoll"
+        "describeAction"
       ]
     },
     "secret-unit-deployment": {
@@ -804,6 +837,11 @@
         "getAvailableActions",
         "describeAction"
       ]
+    },
+    "social": {
+      "config_key": "social",
+      "since": "3.0.0",
+      "hooks": []
     },
     "sudden-death-ending": {
       "config_key": "sudden_death_ending",
@@ -857,7 +895,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "initSharedState"
       ]
     },
     "traitor-game": {
@@ -897,7 +936,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "initSharedState"
       ]
     },
     "turn-order-auction": {
@@ -1012,8 +1052,14 @@
         "powers": "array"
       },
       "hooks": [
-        "initPlayerState"
+        "initPlayerState",
+        "getPlayerView"
       ]
+    },
+    "visibility": {
+      "config_key": "visibility",
+      "since": "3.0.0",
+      "hooks": []
     },
     "voting": {
       "config_key": "voting",
@@ -1056,8 +1102,7 @@
         "checkpoints": "array"
       },
       "hooks": [
-        "onCheckWin",
-        "onAfterMove"
+        "onCheckWin"
       ]
     },
     "win-reach-state": {
@@ -1099,6 +1144,32 @@
         "onCheckWin"
       ]
     },
+    "worker-placement": {
+      "config_key": "worker_placement",
+      "since": "3.0.0",
+      "description": "Place workers on action spaces to claim actions, blocking other players",
+      "config_schema": {
+        "workers_per_player": "number",
+        "spaces": "array",
+        "retrieval": "round_start | manual | action",
+        "worker_types": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "workers": {
+      "config_key": "workers",
+      "since": "3.0.0",
+      "hooks": []
+    },
     "zone-of-control": {
       "config_key": "zone_of_control",
       "since": "3.0.0",
@@ -1109,10 +1180,7 @@
         "must_stop": "boolean",
         "must_attack": "boolean"
       },
-      "hooks": [
-        "onBeforeMove",
-        "onAfterMove"
-      ]
+      "hooks": []
     }
   },
   "partial": {

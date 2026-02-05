@@ -869,6 +869,8 @@ const ALWAYS_ENABLED_MECHANICS = [
   'effects',
   'visibility',
   'social',
+  'combat',
+  'workers',
   'pass',
   'lose-a-turn',
   'location-effects',

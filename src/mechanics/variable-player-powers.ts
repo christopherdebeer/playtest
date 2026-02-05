@@ -6,9 +6,10 @@
  *
  * Hooks used:
  * - initPlayerState: Assign power based on config and existing assignments
+ * - getPlayerView: Expose power info to player view
  */
 
-import { MechanicHooks, PlayerInitResult, PlayerInitContext } from './types.js';
+import { MechanicHooks, PlayerInitResult, PlayerInitContext, HookContext, isMechanicEnabled } from './types.js';
 
 interface Power {
   id: string;
@@ -72,5 +73,22 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
     if (!powerId) return null;
 
     return { powerId };
+  },
+
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    if (!isMechanicEnabled(ctx.config, 'variable-player-powers')) return null;
+
+    const powersConfig = ctx.config.engine_mechanics?.variable_powers as VariablePowersConfig | undefined;
+    if (!powersConfig) return null;
+
+    const powerId = ctx.player.powerId as string | undefined;
+    if (!powerId) return null;
+
+    const power = powersConfig.powers.find(p => p.id === powerId);
+
+    return {
+      powerId,
+      powerName: power?.name ?? powerId
+    };
   }
 };

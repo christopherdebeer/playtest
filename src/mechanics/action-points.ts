@@ -10,9 +10,10 @@
  * - postExecuteAction: Deduct AP cost
  * - onTurnStart: Reset AP for new turn
  * - shouldAutoEndTurn: Force end when AP depleted
+ * - getPlayerView: Expose actionPoints and actionPointsUsed to player view
  */
 
-import { MechanicHooks, HookContext, TurnStartContext, ValidationResult, StateChanges, PlayerInitResult, PlayerInitContext } from './types.js';
+import { MechanicHooks, HookContext, TurnStartContext, ValidationResult, StateChanges, PlayerInitResult, PlayerInitContext, isMechanicEnabled } from './types.js';
 import { GameAction, DrawAction } from '../types/game.js';
 
 export const actionPointsMechanic: MechanicHooks = {
@@ -143,5 +144,18 @@ export const actionPointsMechanic: MechanicHooks = {
     }
 
     return false;
+  },
+
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    if (!isMechanicEnabled(ctx.config, 'action-points')) return null;
+
+    const apConfig = ctx.config.engine_mechanics?.action_points;
+    const pointsPerTurn = apConfig?.points_per_turn ?? 0;
+
+    return {
+      actionPoints: ctx.player.actionPoints ?? 0,
+      actionPointsUsed: ctx.player.actionPointsUsed ?? 0,
+      actionPointsPerTurn: pointsPerTurn
+    };
   }
 };

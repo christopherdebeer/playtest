@@ -22,6 +22,7 @@ interface AreaImpulseConfig {
 export const areaImpulseMechanic: MechanicHooks = {
   slug: 'area-impulse',
   name: 'Area Impulse',
+  requires: ['combat'],
 
   configSchema: {
     type: 'object',

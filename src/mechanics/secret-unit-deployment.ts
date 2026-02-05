@@ -44,6 +44,7 @@ interface SecretUnit {
 
 export const secretUnitDeploymentMechanic: MechanicHooks = {
   slug: 'secret-unit-deployment',
+  requires: ['combat', 'visibility'],
   name: 'Secret Unit Deployment',
 
   configSchema: {

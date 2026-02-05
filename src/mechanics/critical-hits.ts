@@ -24,6 +24,7 @@ interface CriticalHitsConfig {
 export const criticalHitsMechanic: MechanicHooks = {
   slug: 'critical-hits-and-failures',
   name: 'Critical Hits and Failures',
+  requires: ['combat'],
 
   configSchema: {
     type: 'object',

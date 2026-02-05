@@ -78,7 +78,9 @@ A game engine where:
 │  - dice         │ │                 │ │ - sudden-death  │
 │  - visibility   │ │                 │ │                 │
 │  - social       │ │                 │ │                 │
-│  - pass (NEW)   │ │                 │ │                 │
+│  - combat (NEW) │ │                 │ │                 │
+│  - workers (NEW)│ │                 │ │                 │
+│  - pass         │ │                 │ │                 │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
@@ -1150,7 +1152,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ## Current Status
 
-### Implemented Mechanics: 56 of 192 (29%)
+### Implemented Mechanics: 59 of 192 (31%)
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
@@ -1158,7 +1160,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Auction | 1 | 12 | 8% |
 | Building | 1 | 11 | 9% |
 | Cards | 10 | 15 | 67% |
-| Conflict | 0 | 8 | 0% |
+| Conflict | 8 | 8 | 100% |
 | Cooperative | 0 | 10 | 0% |
 | Dice | 5 | 6 | 83% |
 | Economic | 2 | 9 | 22% |
@@ -1170,7 +1172,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Social | 3 | 11 | 27% |
 | Turn Order | 4 | 8 | 50% |
 | Victory | 7 | 5 | 140% |
-| Worker Placement | 0 | 7 | 0% |
+| Worker Placement | 1 | 7 | 14% |
 
 ### Hook Infrastructure Status
 
@@ -1178,13 +1180,13 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 |-------|-------|--------|
 | Phase 1-5 | 33 core hooks | Complete |
 | Agnosticism | 6 new hooks | **Complete** |
-| Phase 6 | Combat (6 hooks) | Planned |
-| Phase 7 | Workers (5 hooks) | Planned |
+| Phase 6 | Combat (6 hooks) | **Complete** |
+| Phase 7 | Workers (5 hooks) | **Complete** |
 | Phase 8 | Auctions (5 hooks) | Planned |
 
 **Agnosticism Hooks (Complete):**
-- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading
-- `getPlayerView` - Used by push-your-luck
+- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading, auction-english, trick-taking, worker-placement
+- `getPlayerView` - Used by push-your-luck, action-points, variable-player-powers, worker-placement
 - `isPlayerBlocked` - Used by lose-a-turn
 - `canPlayerActNow` - Used by freeplay (enables parallel play)
 - `applyEffect` - Used by location-effects, placed-card-effects
@@ -1198,17 +1200,19 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Mechanic | Shared Property | Status |
 |----------|-----------------|--------|
 | open-drafting | `draftDisplay` | **Done** |
-| deck-building | `supply` | Pending |
-| trading | `pendingTrades` | Pending |
-| auction-english | `currentBid`, `highBidder` | Pending |
-| trick-taking | `currentTrick`, `leadSuit` | Pending |
+| deck-building | `supply` | **Done** |
+| trading | `pendingTrades` | **Done** |
+| auction-english | `currentBid`, `highBidder`, `auctionActive` | **Done** |
+| trick-taking | `currentTrick`, `leadSuit`, `trickLeader` | **Done** |
+| worker-placement | `workerSpaces` | **Done** |
 
 #### `getPlayerView` - Mechanics with player-specific view data
 | Mechanic | Properties | Status |
 |----------|------------|--------|
 | push-your-luck | `rollAccumulator`, `rollCount` | **Done** |
-| action-points | `actionPoints` | Pending |
-| variable-player-powers | `power` | Pending |
+| action-points | `actionPoints`, `actionPointsUsed`, `actionPointsPerTurn` | **Done** |
+| variable-player-powers | `powerId`, `powerName` | **Done** |
+| worker-placement | `workersAvailable`, `workersPlaced`, `workerPlacements` | **Done** |
 | resources (if mechanic) | resource amounts | Pending |
 
 #### `applyEffect` - Effect type handlers
@@ -1230,8 +1234,8 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 |------|---------------|--------|--------|
 | Pass action | ~~Hardcoded~~ | `core/pass.ts` mechanic | **Done** |
 | Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
-| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (open-drafting) |
-| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (push-your-luck) |
+| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (8 mechanics) |
+| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (4 mechanics) |
 | Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
 | Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
@@ -1241,9 +1245,11 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
 - **Play card action**: `src/mechanics/core/cards.ts` handles play_card via `onExecuteAction`
 - **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
-- **Shared state init**: `open-drafting` implements `initSharedState` for draftDisplay
-- **Player view**: `push-your-luck` implements `getPlayerView` for rollAccumulator/rollCount
+- **Shared state init**: 8 mechanics implement `initSharedState` (open-drafting, deck-building, trading, auction-english, trick-taking, card-matching, freeplay, worker-placement)
+- **Player view**: 4 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement)
 - **Effect types**: `location-effects` and `placed-card-effects` implement `applyEffect` hook
+- **Combat hooks**: `src/mechanics/core/combat-mechanic.ts` defines 6 combat hooks (onBeforeCombat, onCombatStarted, onAttackModifier, onDefenseModifier, onCombatResolved, onCasualtiesApplied)
+- **Worker hooks**: `src/mechanics/core/workers-mechanic.ts` defines 5 worker hooks (onBeforeWorkerPlace, onWorkerPlaced, onBeforeWorkerRetrieve, onWorkersRetrieved, onSpaceActivated)
 
 ---
 
@@ -1282,7 +1288,7 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Action schema validation | All action-owning mechanics | ~150 | Pending |
 | Deck-building supply init | deck-building | ~5 | **Done** |
 | Trading shared state | trading | ~10 | **Done** |
-| Auction shared state | auction-english | ~10 | Pending |
+| Auction shared state | auction-english | ~10 | **Done** |
 
 #### Card Matching Mechanic Design
 
@@ -1312,21 +1318,23 @@ engine_mechanics:
 
 ### Short-Term: Remaining Phase 1-5 Mechanics
 
-| Phase | Remaining | Priority |
-|-------|-----------|----------|
-| Phase 1 | `closed-drafting` (fix), `auction-sealed-bid`, `auction-once-around` | High |
-| Phase 2 | `different-dice-movement`, `die-icon-resolution` | Medium |
-| Phase 3 | `turn-order-auction`, `turn-order-claim-action`, `turn-order-time-track` | Medium |
-| Phase 4 | `deduction`, `memory`, `targeted-clues` | Low |
-| Phase 5 | `player-judge`, `i-cut-you-choose`, `bribery` | Low |
+All Phase 1-5 mechanics have been implemented. Remaining work is hook completeness:
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1 | **Complete** | `closed-drafting`, `auction-sealed-bid`, `auction-once-around` all registered |
+| Phase 2 | **Complete** | `different-dice-movement`, `die-icon-resolution` registered |
+| Phase 3 | **Complete** | `turn-order-auction`, `turn-order-claim`, `turn-order-time-track`, `turn-order-role` registered |
+| Phase 4 | **Complete** | `deduction`, `memory`, `targeted-clues`, `roles-asymmetric-info` registered |
+| Phase 5 | **Complete** | `player-judge`, `i-cut-you-choose`, `bribery` registered |
 
 ### Medium-Term: Phase 6-8
 
-| Phase | Focus | New Hooks |
-|-------|-------|-----------|
-| Phase 6 | Combat System | 6 combat hooks |
-| Phase 7 | Worker Placement | 5 worker hooks |
-| Phase 8 | Advanced Auctions | 5 auction hooks |
+| Phase | Focus | New Hooks | Status |
+|-------|-------|-----------|--------|
+| Phase 6 | Combat System | 6 combat hooks | **Done** - Core mechanic + 8 leaf mechanics |
+| Phase 7 | Worker Placement | 5 worker hooks | **Done** - Core mechanic + worker-placement leaf |
+| Phase 8 | Advanced Auctions | 5 auction hooks | Planned |
 
 ### Long-Term: Refactoring
 

@@ -37,6 +37,7 @@ interface CommitmentState {
 export const forceCommitmentMechanic: MechanicHooks = {
   slug: 'force-commitment',
   name: 'Force Commitment',
+  requires: ['combat'],
 
   configSchema: {
     type: 'object',

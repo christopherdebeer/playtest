@@ -11,6 +11,7 @@
  * 4. Winner collects trick and leads next
  *
  * Hooks used:
+ * - initSharedState: Initialize trick tracking state (currentTrick, leadSuit, trickLeader)
  * - preValidateAction: Validate play_card follows trick rules
  * - onExecuteAction: Handle card play and trick resolution
  * - onTurnEnd: Check if trick is complete
@@ -26,7 +27,9 @@ import {
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
-  StateChanges
+  StateChanges,
+  SharedStateInitContext,
+  SharedStateInitResult
 } from './types.js';
 import { GameAction, Card, PlayCardAction } from '../types/game.js';
 import { removeFromHandByName, getHand } from './core/hand.js';
@@ -184,6 +187,20 @@ export const trickTakingMechanic: MechanicHooks = {
         description: 'Explicit card values (e.g., { "Ace": 14, "King": 13 })'
       }
     }
+  },
+
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    const trickConfig = ctx.config.engine_mechanics?.trick_taking as TrickTakingConfig | undefined;
+    if (!trickConfig) return null;
+
+    return {
+      currentTrick: [],
+      trickLeader: null,
+      leadSuit: null,
+      lastTrickWinner: null,
+      lastTrick: null,
+      tricksPlayed: 0
+    };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
