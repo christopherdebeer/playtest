@@ -636,61 +636,117 @@ replacing the hardcoded routing methods that were removed from the registry.
 
 ---
 
-## Core Services
+## Core Mechanics
 
-### Card Piles (`core/card-piles.ts`)
-- `drawFromDeck(state, count, playerId?)` - Fires cards-defined `onBeforeCardDraw`/`onCardDrawn`
-- `addToDiscard(state, cards, playerId?)` - Fires cards-defined `onCardDiscarded`
-- `playCard(state, playerId, cardName, playContext?)` - Removes from hand, discards, fires `onCardPlayed`
+Each domain has a **mechanic** (registered, defines hooks) and an **API** (exported functions that fire those hooks). Together they form the core mechanic for that domain.
+
+```
+core/
+├── cards.ts              # Cards mechanic (defines hooks, handles play_card)
+├── card-piles.ts         # Cards API: drawFromDeck, addToDiscard, playCard
+├── hand.ts               # Cards API: addToHand, removeFromHand, findInHand
+├── resources-mechanic.ts # Resources mechanic (defines hooks)
+├── resources.ts          # Resources API: addResource, spendResource, setResource
+├── dice-mechanic.ts      # Dice mechanic (defines hooks)
+├── dice.ts               # Dice API: rollDice, rollD6, rollWithAdvantage
+├── board-mechanic.ts     # Board mechanic (defines hooks)
+├── board.ts              # Board API: setBoardState, getValidMoveTargets
+├── effects-mechanic.ts   # Effects mechanic (defines hooks)
+├── effects.ts            # Effects API: addEffect, removeEffect, isBlocked
+├── visibility-mechanic.ts# Visibility mechanic (defines hooks)
+├── visibility.ts         # Visibility API: revealInfo, canPlayerSeeInfo
+├── social-mechanic.ts    # Social mechanic (defines hooks)
+├── social.ts             # Social API: startVoting, castVote, completeVoting
+├── turns.ts              # Turns API: setTurnOrder, shuffleTurnOrder (no mechanic)
+├── pass.ts               # Pass mechanic (handles pass action via onExecuteAction)
+└── index.ts              # Re-exports
+```
+
+### Cards (`cards.ts` + `card-piles.ts` + `hand.ts`)
+
+**Mechanic** (`cards.ts`): Defines 8 hooks, handles `play_card` action via `onExecuteAction`
+
+**API** (`card-piles.ts`):
+- `drawFromDeck(state, count, playerId?)` — Fires `onBeforeCardDraw`/`onCardDrawn`
+- `addToDiscard(state, cards, playerId?)` — Fires `onCardDiscarded`
+- `playCard(state, playerId, cardName, playContext?)` — Removes from hand, discards, fires `onCardPlayed`
 - `peekDiscard`, `hasCardsAvailable`, `getDeckSize`, `getDiscardSize`
 
-### Hand (`core/hand.ts`)
-- `addToHand(state, playerId, cards)` - Fires cards-defined `onBeforeAddToHand`/`onAfterAddToHand`
-- `removeFromHandByIndex/ByName` - Fires cards-defined `onAfterRemoveFromHand`
-- `removeCardsFromHand` - Batched operations
+**API** (`hand.ts`):
+- `addToHand(state, playerId, cards)` — Fires `onBeforeAddToHand`/`onAfterAddToHand`
+- `removeFromHandByIndex/ByName` — Fires `onAfterRemoveFromHand`
+- `removeCardsFromHand` — Batched operations
 - `findInHand`, `getHandSize`, `getHand`
 
-### Resources (`core/resources.ts`)
-- `addResource(state, playerId, resource, amount)` - Fires resources-defined `onBeforeResourceGain`/`onResourceGained`
-- `spendResource(state, playerId, resource, amount)` - Fires resources-defined `onBeforeResourceSpend`/`onResourceSpent`
-- `setResource(state, playerId, resource, amount)` - Fires appropriate gain/spend hooks based on delta direction
+### Resources (`resources-mechanic.ts` + `resources.ts`)
+
+**Mechanic**: Defines 4 hooks (`onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`)
+
+**API**:
+- `addResource(state, playerId, resource, amount)` — Fires `onBeforeResourceGain`/`onResourceGained`
+- `spendResource(state, playerId, resource, amount)` — Fires `onBeforeResourceSpend`/`onResourceSpent`
+- `setResource(state, playerId, resource, amount)` — Fires appropriate hooks based on delta direction
 - `getResource`, `hasResource`, `getAllResources`, `getResourceNames`
 
-### Effects (`core/effects.ts`)
-- `addEffect(state, playerId, effect)` - Fires effects-defined `onBeforeEffectAdd`/`onEffectAdded`
-- `removeEffect(state, playerId, effectType)` - Fires effects-defined `onBeforeEffectRemove`/`onEffectRemoved`
-- `decrementEffectDurations(state, playerId)` - Fires effects-defined `onEffectRemoved` for expired effects
+### Effects (`effects-mechanic.ts` + `effects.ts`)
+
+**Mechanic**: Defines 4 hooks (`onBeforeEffectAdd`, `onBeforeEffectRemove`, `onEffectAdded`, `onEffectRemoved`)
+
+**API**:
+- `addEffect(state, playerId, effect)` — Fires `onBeforeEffectAdd`/`onEffectAdded`
+- `removeEffect(state, playerId, effectType)` — Fires `onBeforeEffectRemove`/`onEffectRemoved`
+- `decrementEffectDurations(state, playerId)` — Fires `onEffectRemoved` for expired effects
 - `hasEffect`, `getEffect`, `getEffects`, `getEffectsByType`, `getEffectValue`, `isBlocked`, `clearEffects`
 
-### Board (`core/board.ts`)
-- `setBoardState(state, playerId, newState)` - Fires board-defined `onBeforePlayerMove`/`onPlayerMoved`
+### Board (`board-mechanic.ts` + `board.ts`)
+
+**Mechanic**: Defines 2 hooks (`onBeforePlayerMove`, `onPlayerMoved`)
+
+**API**:
+- `setBoardState(state, playerId, newState)` — Fires `onBeforePlayerMove`/`onPlayerMoved`
 - `getBoardState`, `getValidMoveTargets`, `getValidMoveTargetsForPlayer`, `isValidMove`
 - `getEdge`, `getMoveProbability`, `getPlayersAtState`, `hasBoard`
 
-### Turns (`core/turns.ts`)
+### Dice (`dice-mechanic.ts` + `dice.ts`)
+
+**Mechanic**: Defines 2 hooks (`onBeforeDiceRoll`, `onDiceRolled`)
+
+**API**:
+- `rollDice(state, playerId, options)` — Fires `onBeforeDiceRoll`/`onDiceRolled`
+- `rollSingleDie`, `rollD6`, `rollForMovement`, `rollCheck`
+- `rollWithAdvantage`, `rollWithDisadvantage`, `rollExploding`, `countSuccesses`
+- `parseDiceNotation`, `rollFromNotation`
+
+### Visibility (`visibility-mechanic.ts` + `visibility.ts`)
+
+**Mechanic**: Defines 2 hooks (`onBeforeReveal`, `onInfoRevealed`)
+
+**API**:
+- `getVisibleStateForPlayer(state, viewerId)` — Applies `getVisibleState` filters from all mechanics
+- `revealInfo(state, revealingPlayerId, targetInfo, toPlayerIds)` — Fires `onBeforeReveal`/`onInfoRevealed`
+- `canPlayerSeeInfo(state, viewerId, infoType, targetId)` — Polls `canSeeInfo` from all mechanics
+
+### Social (`social-mechanic.ts` + `social.ts`)
+
+**Mechanic**: Defines 4 hooks (`onBeforeVote`, `onPlayerVoted`, `onVoteTally`, `onVoteCompleted`)
+
+**API**:
+- `startVoting(state, topic, voters, config)` — Initialize voting session
+- `castVote(state, voteId, playerId, choice)` — Fires `onBeforeVote`/`onPlayerVoted`/`onVoteTally`/`onVoteCompleted`
+- `getVotingResult`, `isVotingComplete`, `completeVoting`
+
+### Turns (`turns.ts`)
+
+Pure utility — no mechanic registration, no hooks fired.
+
 - `setTurnOrder`, `shuffleTurnOrder`, `reverseTurnOrder`
 - `movePlayerInOrder`, `removeFromTurnOrder`, `addToTurnOrder`
 - `applyDynamicTurnOrder`, `sortTurnOrderByProperty`
 - `createSnakeDraftOrder`
 
-### Dice (`core/dice.ts`)
-- `rollDice(state, playerId, options)` - Fires dice-defined `onBeforeDiceRoll`/`onDiceRolled`
-- `rollSingleDie`, `rollD6`, `rollForMovement`, `rollCheck`
-- `rollWithAdvantage`, `rollWithDisadvantage`, `rollExploding`, `countSuccesses`
-- `parseDiceNotation`, `rollFromNotation`
+### Pass (`pass.ts`)
 
-### Visibility (`core/visibility.ts`)
-- `getVisibleStateForPlayer(state, viewerId)` - Applies `getVisibleState` filters from all mechanics
-- `revealInfo(state, revealingPlayerId, targetInfo, toPlayerIds)` - Fires visibility-defined `onBeforeReveal`/`onInfoRevealed`
-- `canPlayerSeeInfo(state, viewerId, infoType, targetId)` - Polls `canSeeInfo` from all mechanics
-
-### Social (`core/social.ts`)
-- `startVoting(state, topic, voters, config)` - Initialize voting session
-- `castVote(state, voteId, playerId, choice)` - Fires social-defined `onBeforeVote`/`onPlayerVoted`/`onVoteTally`/`onVoteCompleted`
-- `getVotingResult`, `isVotingComplete`, `completeVoting`
-
-### Pass (`core/pass.ts`) - NEW
-- `handlePass(state, playerId, action)` - Executes pass with hooks
+Mechanic only — handles the pass action via `onExecuteAction`:
 - Calls `onPassPriority` for turn order mechanics
 - Handles victory declarations via `pendingVictoryClaim`
 - Returns `advanceTurn: true` by default
@@ -987,6 +1043,108 @@ engine_mechanics:
     another_option: true
 ---
 ```
+
+---
+
+## Testing Infrastructure
+
+### Overview
+
+The mechanics system is validated through a multi-layer test strategy using [Vitest](https://vitest.dev/).
+Tests run against the **real engine** (no mocks) with optional seeded randomness for deterministic replay.
+
+```
+tests/
+├── harness.ts                  # GameTestHarness — integration test utilities
+├── markovs-chains.test.ts      # Game integration tests (lifecycle, movement, win)
+├── core-services.test.ts       # Layer 1: Core service unit tests
+├── registry.test.ts            # Layer 2: Registry hook routing tests
+└── cross-game.test.ts          # Layer 3: Cross-game integration tests
+```
+
+### Test Harness (`tests/harness.ts`)
+
+The `GameTestHarness` wraps the real engine with a validate-then-execute pipeline:
+
+```typescript
+const h = GameTestHarness.create('markovs-chains', 2, { seed: 42 });
+h.start();
+h.step('player-1', { type: 'draw', count: 1 });
+h.step('player-1', { type: 'pass' });
+expect(h.state.round).toBe(1);
+h.cleanup();  // restores Math.random, removes state files
+```
+
+Key features:
+- **Seedable PRNG**: Mulberry32 replaces `Math.random` before `initGame()` for deterministic deck shuffles, dice rolls, etc.
+- **Validate-then-execute**: `step()` calls `validateActionSchema()` → `validateAction()` → `executeAction()`, matching the CLI pipeline
+- **Log replay**: `fromLog()` parses JSONL game logs into replayable test steps
+- **State snapshots**: Each step records `{ round, turnNumber, currentPlayer, status }` for assertions
+- **File cleanup**: Removes state directories and log files created during tests
+
+### Test Strategy: 3 Layers
+
+#### Layer 1: Core Service Unit Tests
+
+Game-agnostic tests that exercise core service functions directly with hand-crafted state objects.
+No game config needed — just minimal `GameState` with the fields each service requires.
+
+| Service | Key Functions Under Test |
+|---------|------------------------|
+| Resources | `addResource`, `spendResource`, `setResource`, `hasResource` |
+| Effects | `addEffect`, `removeEffect`, `decrementEffectDurations`, `isBlocked` |
+| Hand | `addToHand`, `removeFromHandByName`, `findInHand`, `getHandSize` |
+| Dice | `rollDice`, `rollD6`, `rollWithAdvantage`, `rollFromNotation` |
+| Social | `startVoting`, `castVote`, `getVotingResult`, `completeVoting` |
+| Card Piles | `drawFromDeck`, `addToDiscard`, `playCard` |
+
+These tests verify:
+- Basic CRUD operations on player/shared state
+- Blocking hooks (`onBeforeResourceGain` returning `blocked: true`)
+- Edge cases (spend more than available, empty deck, expired effects)
+- Hook firing (mechanic-defined hooks are called during operations)
+
+#### Layer 2: Registry Hook Routing Tests
+
+Tests that verify `fire()` resolution strategies and dependency-based routing:
+
+- **`merge`**: Multiple dependents' StateChanges are accumulated
+- **`first`**: First non-null response wins, others skipped
+- **`blocking`**: Short-circuit when any dependent returns `{ blocked: true }`
+- **Dependency filtering**: Only mechanics with `requires: [definer]` receive hooks
+- **Disabled mechanic filtering**: Mechanics not in game config are skipped
+
+#### Layer 3: Cross-Game Integration Tests
+
+Uses real game configs to exercise different mechanic combinations:
+
+| Game | Mechanics Exercised |
+|------|-------------------|
+| markovs-chains | board-state, cards, probability-movement, victory-declaration |
+| treasure-hunters | resources, action-points, income, set-collection |
+| engine-masters | auto-resource-growth, chaining, deck-building |
+| fortune-seekers | dice, push-your-luck, re-rolling-and-locking |
+
+### Bug Fixes Uncovered by Tests
+
+The testing infrastructure uncovered several engine bugs that were fixed:
+
+1. **`executeAction` missing pre-validation** (`src/core/game.ts`):
+   The engine's `executeAction` accepted any action without running mechanic validation hooks.
+   Fixed by calling `mechanicRegistry.preValidateAction()` before execution.
+
+2. **Board-state edge connectivity** (`src/mechanics/board-state.ts`):
+   The board-state mechanic validated that move targets were valid state names but didn't check
+   edge connectivity — players could teleport to any named state. Fixed by adding
+   `getValidMoveTargets()` check in `preValidateAction`.
+
+3. **Board-state `advanceTurn` conflict** (`src/mechanics/board-state.ts`):
+   The mechanic returned `advanceTurn: true`, conflicting with games using the "action + pass"
+   model where the pass mechanic handles turn advancement. Fixed to `advanceTurn: false`.
+
+4. **Board-state mechanic not enabled** (`games/markovs-chains/RULES.md`):
+   The mechanic existed but wasn't in the game's `engine_mechanics` config. Added
+   `board_state: true`. Mechanics are enabled via game config, not globally.
 
 ---
 
