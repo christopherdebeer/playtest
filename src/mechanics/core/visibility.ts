@@ -177,7 +177,16 @@ export function revealInfo(
 
   const enabledMechanics = mechanicRegistry.getEnabledMechanics(state.config);
 
-  // Collect state changes from onReveal hooks
+  // Visibility-defined hook: onBeforeReveal (only visibility dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('visibility', 'onBeforeReveal', state, revealingPlayerId, {
+    infoType: targetInfo, targetPlayerId: revealingPlayerId, revealTo: toPlayerIds === 'all' ? Object.keys(state.players) : toPlayerIds
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, error: blockReason ?? 'Reveal blocked' };
+  }
+
+  // Collect state changes from onReveal hooks (global - all mechanics)
   for (const mechanic of enabledMechanics) {
     if (mechanic.onReveal) {
       const changes = mechanic.onReveal(ctx);
@@ -211,6 +220,12 @@ export function revealInfo(
     const revealKey = `${revealingPlayerId}:${targetInfo}`;
     receiver.knowledge.revealed[revealKey] = true;
   }
+
+  // Visibility-defined hook: onInfoRevealed (only visibility dependents) - strangler fig dual-fire
+  const visibilityChanges = mechanicRegistry.fire('visibility', 'onInfoRevealed', state, revealingPlayerId, {
+    infoType: targetInfo, targetPlayerId: revealingPlayerId, revealedTo: targetPlayers, info: targetInfo
+  });
+  if (visibilityChanges) applyStateChanges(state, visibilityChanges);
 
   return { success: true };
 }

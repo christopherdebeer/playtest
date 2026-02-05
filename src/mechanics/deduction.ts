@@ -16,6 +16,7 @@ import { GameAction, InvestigateAction, AccuseAction, DeductionConfig, Deduction
 export const deductionMechanic: MechanicHooks = {
   slug: 'deduction',
   name: 'Deduction',
+  requires: ['visibility'],
 
   configSchema: {
     type: 'object',

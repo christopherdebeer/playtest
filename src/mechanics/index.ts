@@ -119,6 +119,10 @@ import { passMechanic } from './core/pass.js';
 import { cardsMechanic } from './core/cards.js';
 import { resourcesMechanic } from './core/resources-mechanic.js';
 import { diceMechanic } from './core/dice-mechanic.js';
+import { boardMechanic } from './core/board-mechanic.js';
+import { effectsMechanic } from './core/effects-mechanic.js';
+import { visibilityMechanic } from './core/visibility-mechanic.js';
+import { socialMechanic } from './core/social-mechanic.js';
 
 // Effect handling mechanics
 import { locationEffectsMechanic } from './location-effects.js';
@@ -238,6 +242,10 @@ mechanicRegistry.register(suddenDeathMechanic);
 mechanicRegistry.register(cardsMechanic);
 mechanicRegistry.register(resourcesMechanic);
 mechanicRegistry.register(diceMechanic);
+mechanicRegistry.register(boardMechanic);
+mechanicRegistry.register(effectsMechanic);
+mechanicRegistry.register(visibilityMechanic);
+mechanicRegistry.register(socialMechanic);
 mechanicRegistry.register(passMechanic);
 
 // Register effect handling mechanics

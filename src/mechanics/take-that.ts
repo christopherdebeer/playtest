@@ -21,7 +21,7 @@ const INTERFERENCE_EFFECTS = ['block_turn', 'probability_penalty', 'force_discar
 export const takeThatMechanic: MechanicHooks & CardsHooks = {
   slug: 'take-that',
   name: 'Take That',
-  requires: ['cards'],
+  requires: ['cards', 'effects'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate play_card actions

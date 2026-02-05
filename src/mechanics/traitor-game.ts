@@ -108,7 +108,7 @@ export const traitorGameMechanic: MechanicHooks = {
   slug: 'traitor-game',
   name: 'Traitor Game',
 
-  requires: ['hidden-roles'],
+  requires: ['hidden-roles', 'visibility'],
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const traitorConfig = ctx.config.engine_mechanics?.traitor_game as TraitorGameConfig | undefined;

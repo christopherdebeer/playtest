@@ -51,6 +51,7 @@ function getValidMoveTargets(config: BoardConfig, currentState: string): string[
 export const boardStateMechanic: MechanicHooks = {
   slug: 'board-state',
   name: 'Board State',
+  requires: ['board'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate move actions

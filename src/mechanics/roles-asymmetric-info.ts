@@ -34,7 +34,7 @@ export const rolesAsymmetricInfoMechanic: MechanicHooks = {
   slug: 'roles-with-asymmetric-information',
   name: 'Roles with Asymmetric Information',
 
-  requires: ['hidden-roles'],
+  requires: ['hidden-roles', 'visibility'],
 
   configSchema: {
     type: 'object',

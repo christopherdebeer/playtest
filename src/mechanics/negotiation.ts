@@ -76,6 +76,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
 export const negotiationMechanic: MechanicHooks = {
   slug: 'negotiation',
   name: 'Negotiation',
+  requires: ['social'],
 
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'negotiation')) return null;

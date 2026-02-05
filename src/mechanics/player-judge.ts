@@ -41,6 +41,7 @@ function shuffleArray<T>(array: T[]): T[] {
 export const playerJudgeMechanic: MechanicHooks = {
   slug: 'player-judge',
   name: 'Player Judge',
+  requires: ['social'],
 
   configSchema: {
     type: 'object',

@@ -10,6 +10,7 @@
  */
 
 import { GameState, GameConfig } from '../../types/game.js';
+import { mechanicRegistry, applyStateChanges } from '../registry.js';
 
 // ============ Types ============
 
@@ -159,6 +160,15 @@ export function castVote(
     }
   }
 
+  // Social-defined hook: onBeforeVote (only social dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('social', 'onBeforeVote', state, playerId, {
+    sessionId: voteId, choice
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, error: blockReason ?? 'Vote blocked' };
+  }
+
   // Record the vote
   session.votes[playerId] = {
     playerId,
@@ -168,10 +178,28 @@ export function castVote(
     turnNumber: state.turnNumber
   };
 
+  // Social-defined hook: onPlayerVoted (only social dependents) - strangler fig dual-fire
+  const votedChanges = mechanicRegistry.fire('social', 'onPlayerVoted', state, playerId, {
+    sessionId: voteId, choice
+  });
+  if (votedChanges) applyStateChanges(state, votedChanges);
+
   // Check if voting is complete
   if (Object.keys(session.votes).length >= session.eligibleVoters.length) {
     session.complete = true;
     session.result = tallyVotesInternal(session);
+
+    // Social-defined hook: onVoteCompleted (only social dependents) - strangler fig dual-fire
+    if (session.result) {
+      const completedChanges = mechanicRegistry.fire('social', 'onVoteCompleted', state, playerId, {
+        sessionId: voteId,
+        topic: session.topic,
+        winner: session.result.winner,
+        tied: session.result.tied,
+        voteCounts: session.result.voteCounts
+      });
+      if (completedChanges) applyStateChanges(state, completedChanges);
+    }
   }
 
   return { success: true };

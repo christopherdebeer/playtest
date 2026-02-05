@@ -25,6 +25,7 @@ import { PlayerState } from '../types/game.js';
 export const hiddenVictoryPointsMechanic: MechanicHooks = {
   slug: 'hidden-victory-points',
   name: 'Hidden Victory Points',
+  requires: ['visibility'],
 
   /**
    * Filter visible state to hide opponent scores

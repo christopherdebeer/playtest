@@ -17,6 +17,7 @@ const BLOCKING_EFFECT_TYPES = ['block_turn', 'block', 'skip', 'lose_turn'];
 export const loseATurnMechanic: MechanicHooks = {
   slug: 'lose-a-turn',
   name: 'Lose a Turn',
+  requires: ['effects'],
 
   /**
    * Check if player is blocked from taking actions.

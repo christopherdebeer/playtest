@@ -84,6 +84,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
 export const communicationLimitsMechanic: MechanicHooks = {
   slug: 'communication-limits',
   name: 'Communication Limits',
+  requires: ['social'],
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
     if (!isMechanicEnabled(ctx.config, 'communication-limits')) return [];
