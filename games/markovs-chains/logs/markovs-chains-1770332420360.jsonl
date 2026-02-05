@@ -5,3 +5,4 @@
 {"timestamp":"2026-02-05T23:02:00.454Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[],"probabilityModifier":0}}
 {"timestamp":"2026-02-05T23:02:27.716Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"move","target":"Checkpoint-Y","placedCardEffects":[],"probabilityModifier":0}}
 {"timestamp":"2026-02-05T23:02:40.139Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-05T23:04:03.625Z","event":"analysis_submitted","round":3,"turnNumber":5,"data":{"file":"playtest-analysis-v2.3-1770332420360.md","version":"v2.3"}}
