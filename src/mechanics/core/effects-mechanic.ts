@@ -12,6 +12,7 @@
  * - onEffectAdded: After an effect is added to a player (merge)
  * - onEffectRemoved: After an effect expires or is removed (merge)
  * - onBeforeEffectAdd: Before adding an effect, can block/modify (blocking)
+ * - onBeforeEffectRemove: Before removing an effect, can block (blocking)
  */
 
 import { MechanicHooks, HookContext, StateChanges } from '../types.js';
@@ -38,6 +39,11 @@ export interface BeforeEffectAddPayload {
   effect: Effect;
 }
 
+export interface BeforeEffectRemovePayload {
+  /** The effect about to be removed */
+  effect: Effect;
+}
+
 // ============ Typed interface for dependents ============
 
 /**
@@ -48,6 +54,7 @@ export interface EffectsHooks {
   onEffectAdded?(ctx: HookContext, payload: EffectAddedPayload): StateChanges | null;
   onEffectRemoved?(ctx: HookContext, payload: EffectRemovedPayload): StateChanges | null;
   onBeforeEffectAdd?(ctx: HookContext, payload: BeforeEffectAddPayload): { blocked?: boolean; blockReason?: string; effect?: Effect } | null;
+  onBeforeEffectRemove?(ctx: HookContext, payload: BeforeEffectRemovePayload): { blocked?: boolean; blockReason?: string } | null;
 }
 
 // ============ The mechanic itself ============
@@ -68,6 +75,10 @@ export const effectsMechanic: MechanicHooks = {
     onEffectRemoved: {
       description: 'After an effect expires or is removed.',
       resolution: 'merge',
+    },
+    onBeforeEffectRemove: {
+      description: 'Before removing an effect. Can block removal.',
+      resolution: 'blocking',
     },
   },
 };

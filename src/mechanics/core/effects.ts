@@ -6,6 +6,7 @@
  *
  * Fires effects-defined hooks:
  * - onBeforeEffectAdd: Can modify effect or block (blocking)
+ * - onBeforeEffectRemove: Can block effect removal (blocking)
  * - onEffectAdded: Notified after effect added (merge)
  * - onEffectRemoved: Notified when effect removed/expired (merge)
  */
@@ -81,7 +82,7 @@ export function addEffect(
 
 /**
  * Remove an effect from a player by type.
- * Calls onBeforeRemoveEffect hook.
+ * Fires effects-defined onBeforeEffectRemove (blocking) and onEffectRemoved (merge).
  *
  * @returns Result indicating success and the removed effect
  */
@@ -105,11 +106,23 @@ export function removeEffect(
 
   const effect = player.effects[effectIndex];
 
-  // Note: onBeforeRemoveEffect is not yet available as an effects-defined hook.
-  // If needed, add 'onBeforeEffectRemove' to effects mechanic defines.
+  // Fire effects-defined onBeforeEffectRemove hook (blocking)
+  const beforeResult = mechanicRegistry.fire('effects', 'onBeforeEffectRemove', state, playerId, {
+    effect
+  });
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, blocked: true, blockReason };
+  }
 
   // Remove the effect
   player.effects.splice(effectIndex, 1);
+
+  // Fire effects-defined onEffectRemoved hook (merge)
+  const afterChanges = mechanicRegistry.fire('effects', 'onEffectRemoved', state, playerId, {
+    effect, expired: false
+  });
+  if (afterChanges) applyStateChanges(state, afterChanges);
 
   return {
     success: true,

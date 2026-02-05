@@ -27,8 +27,6 @@ import {
   TurnOrderContext,
   TurnOrderResult,
   PassPriorityResult,
-  VoteTallyContext,
-  VoteTallyResult,
   // Agnosticism hooks
   SharedStateInitContext,
   SharedStateInitResult,
@@ -168,7 +166,6 @@ class MechanicRegistry {
         'onExecuteAction', 'getAvailableActions', 'describeAction',
         'getVisibleState', 'canSeeInfo',
         'onDetermineTurnOrder', 'onPassPriority',
-        'onVoteTally',
         // Agnosticism hooks
         'initSharedState', 'getPlayerView', 'applyEffect',
         'isPlayerBlocked', 'canPlayerActNow', 'getActionSchema'
@@ -689,38 +686,6 @@ class MechanicRegistry {
     for (const mechanic of enabledMechanics) {
       if (mechanic.onPassPriority) {
         const result = mechanic.onPassPriority(ctx);
-        if (result) {
-          return result;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  // ============ Voting Computation Hook ============
-
-  /**
-   * Route onVoteTally to all enabled mechanics
-   */
-  onVoteTally(
-    state: GameState,
-    topic: string,
-    voteId: string,
-    votes: Record<string, string | number | null>
-  ): VoteTallyResult | null {
-    const ctx: VoteTallyContext = {
-      state,
-      topic,
-      voteId,
-      votes,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onVoteTally) {
-        const result = mechanic.onVoteTally(ctx);
         if (result) {
           return result;
         }

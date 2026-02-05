@@ -9,6 +9,7 @@
  * Fires social-defined hooks:
  * - onBeforeVote: Can block a vote (blocking)
  * - onPlayerVoted: React to vote being cast (merge)
+ * - onVoteTally: Custom vote tallying logic (first)
  * - onVoteCompleted: React to voting session completing (merge)
  */
 
@@ -190,7 +191,30 @@ export function castVote(
   // Check if voting is complete
   if (Object.keys(session.votes).length >= session.eligibleVoters.length) {
     session.complete = true;
-    session.result = tallyVotesInternal(session);
+
+    // Fire social-defined onVoteTally hook (first) — custom tally logic
+    const votes: Record<string, string | number | null> = {};
+    for (const [pid, vote] of Object.entries(session.votes)) {
+      votes[pid] = vote.choice;
+    }
+    const customTally = mechanicRegistry.fire('social', 'onVoteTally', state, playerId, {
+      sessionId: voteId, topic: session.topic, votes
+    });
+
+    if (customTally && (customTally as Record<string, unknown>).winner !== undefined) {
+      // Use custom tally result
+      const ct = customTally as Record<string, unknown>;
+      const internalResult = tallyVotesInternal(session);
+      session.result = {
+        ...internalResult,
+        winner: ct.winner as string | number | null,
+        tied: (ct.tied as boolean) ?? false,
+        tiedChoices: ct.tiedChoices as (string | number)[] | undefined,
+        tiebreakerUsed: ct.tiebreakerUsed as string | undefined,
+      };
+    } else {
+      session.result = tallyVotesInternal(session);
+    }
 
     // Fire social-defined onVoteCompleted hook (merge)
     if (session.result) {

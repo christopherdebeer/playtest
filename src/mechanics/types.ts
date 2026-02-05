@@ -515,36 +515,6 @@ export interface VoteCastResult {
 }
 
 /**
- * Context for tallying votes
- */
-export interface VoteTallyContext {
-  state: GameState;
-  /** Topic being voted on */
-  topic: string;
-  /** Vote ID */
-  voteId: string;
-  /** All votes cast: playerId -> choice */
-  votes: Record<string, string | number | null>;
-  config: GameConfig;
-}
-
-/**
- * Result from onVoteTally hook
- */
-export interface VoteTallyResult {
-  /** The winning choice */
-  winner: string | number | null;
-  /** True if vote tied */
-  tied?: boolean;
-  /** Tied choices (if tied) */
-  tiedChoices?: (string | number)[];
-  /** How tie was resolved */
-  tiebreakerUsed?: string;
-  /** Additional state changes to apply */
-  stateChanges?: StateChanges;
-}
-
-/**
  * Result from onBeforeMove - can modify target or block
  */
 export interface MoveHookResult {
@@ -744,16 +714,6 @@ export interface MechanicHooks {
    * Can determine next player or remove from round.
    */
   onPassPriority?(ctx: HookContext): PassPriorityResult | null;
-
-  // ============ Voting Computation Hook ============
-
-  /**
-   * Called when votes are tallied.
-   * Can provide custom tally logic or tiebreakers.
-   * Note: This is a computation hook, distinct from the social-defined
-   * notification hooks (onBeforeVote, onPlayerVoted, onVoteCompleted).
-   */
-  onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
 
   // ============ Agnosticism Hooks (game.ts decoupling) ============
 
