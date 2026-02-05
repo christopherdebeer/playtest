@@ -113,7 +113,7 @@ export const boardStateMechanic: MechanicHooks = {
           }
         }
       },
-      advanceTurn: false, // Don't auto-advance — let pass handle turn flow
+      advanceTurn: false, // Game.ts auto-advances if no multi-action mechanic
       checkWin: true, // Board games often check win after move
       logMessage: 'player_moved',
       logData: {

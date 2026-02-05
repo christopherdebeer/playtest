@@ -202,13 +202,9 @@ describe('engine-masters integration', () => {
 
     expect(harness.state.currentPlayer).toBe('player-1');
 
-    // Draw a card
+    // Draw a card — turn auto-advances (no pass needed)
     const drawResult = harness.step('player-1', { type: 'draw', count: 1 });
     expect(drawResult.success).toBe(true);
-
-    // Pass to end turn
-    const passResult = harness.step('player-1', { type: 'pass' });
-    expect(passResult.success).toBe(true);
     expect(harness.state.currentPlayer).toBe('player-2');
   });
 
