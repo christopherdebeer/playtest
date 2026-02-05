@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-05T23:00:20.365Z","event":"game_init","data":{"gameId":"markovs-chains-1770332420360","playerCount":2,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-05T23:00:54.656Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-05T23:01:26.548Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-05T23:01:47.849Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"A","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-05T23:02:00.454Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-05T23:02:27.716Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"move","target":"Checkpoint-Y","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-05T23:02:40.139Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"move","target":"Victory","placedCardEffects":[],"probabilityModifier":0}}

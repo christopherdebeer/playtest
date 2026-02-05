@@ -270,9 +270,10 @@ describe('registry global hooks', () => {
     const state = makeState();
     const actions = mechanicRegistry.getAvailableActions(state, 'player-1');
 
-    // At minimum, pass should always be available
+    // Pass is only available when explicitly enabled in config
+    // With no engine_mechanics.pass, pass should NOT appear
     const passAction = actions.find(a => a.action.type === 'pass');
-    expect(passAction).toBeDefined();
+    expect(passAction).toBeUndefined();
   });
 
   it('getAvailableActions includes mechanic-specific actions when enabled', () => {

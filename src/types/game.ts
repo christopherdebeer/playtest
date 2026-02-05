@@ -206,6 +206,7 @@ export interface EngineMechanics {
   probability_movement?: boolean;  // Moves use edge probabilities (default: true if board.edges have probability)
   card_boosts?: boolean;           // Cards can modify move probability (default: true if deck exists)
   victory_declaration?: boolean;   // Players must declare victory for GM adjudication (default: false)
+  pass?: boolean;                  // Enable explicit pass action (default: false — turns auto-advance)
 
   // New mechanics from mechanics library
   action_points?: ActionPointsConfig;   // Action points budget per turn

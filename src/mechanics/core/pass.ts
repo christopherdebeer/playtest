@@ -141,16 +141,32 @@ export const passMechanic: MechanicHooks = {
   },
 
   /**
-   * Expose pass as a fallback action with low priority.
-   * Other mechanics can override with higher priority actions.
+   * Expose pass only when the game explicitly enables it.
+   * Victory declarations are always shown when victory_declaration is enabled.
+   * Pass is NOT shown as a default fallback — turns auto-advance after actions.
    */
   getAvailableActions(ctx: HookContext): AvailableAction[] {
-    // Pass is always available as a fallback
-    return [{
-      action: { type: 'pass' } as GameAction,
-      priority: 5, // Low priority - other mechanics should override
-      category: 'turn'
-    }];
+    const actions: AvailableAction[] = [];
+
+    // Victory declaration is always available when enabled
+    if (ctx.config.engine_mechanics?.victory_declaration) {
+      actions.push({
+        action: { type: 'pass', declareVictory: true, victoryReason: '' } as unknown as GameAction,
+        priority: 100,
+        category: 'victory'
+      });
+    }
+
+    // Only show plain pass if the game explicitly enables it
+    if (ctx.config.engine_mechanics?.pass) {
+      actions.push({
+        action: { type: 'pass' } as GameAction,
+        priority: 5,
+        category: 'turn'
+      });
+    }
+
+    return actions;
   },
 
   /**

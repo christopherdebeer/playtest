@@ -1067,6 +1067,16 @@ export function maybeAdvanceTurn(state: GameState, playerId: string, action: Gam
     return true;
   }
 
+  // Auto-advance if the player has no more actions this round.
+  // Without action_points, lastActionRound blocks further actions,
+  // so don't leave the player stuck — advance automatically.
+  const player = state.players[playerId];
+  const apConfig = state.config.engine_mechanics?.action_points;
+  if (!apConfig && player && player.lastActionRound === state.round) {
+    advanceTurn(state);
+    return true;
+  }
+
   // Turn continues - save state but don't advance
   saveState(state);
   return false;
@@ -2583,7 +2593,15 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       if (shouldEnd) {
         advanceTurn(state);
       } else {
-        saveState(state);
+        // Auto-advance if the player has no more actions this round.
+        // Without action_points, lastActionRound blocks further actions,
+        // so don't leave the player stuck — advance automatically.
+        const apConfig = state.config.engine_mechanics?.action_points;
+        if (!apConfig && player.lastActionRound === state.round) {
+          advanceTurn(state);
+        } else {
+          saveState(state);
+        }
       }
     }
 
