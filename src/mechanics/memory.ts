@@ -10,12 +10,14 @@
  *     can_take_notes: boolean
  */
 
-import { MechanicHooks, PlayerInitContext, PlayerInitResult, RevealContext, VisibilityContext, TurnStartContext, StateChanges } from './types.js';
+import { MechanicHooks, HookContext, PlayerInitContext, PlayerInitResult, VisibilityContext, TurnStartContext, StateChanges } from './types.js';
 import { MemoryMechanicConfig, PlayerMemory, MemoryEntry } from '../types/game.js';
+import type { VisibilityHooks, InfoRevealedPayload } from './core/visibility-mechanic.js';
 
-export const memoryMechanic: MechanicHooks = {
+export const memoryMechanic: MechanicHooks & VisibilityHooks = {
   slug: 'memory',
   name: 'Memory',
+  requires: ['visibility'],
 
   configSchema: {
     type: 'object',
@@ -51,29 +53,25 @@ export const memoryMechanic: MechanicHooks = {
     };
   },
 
-  onReveal(ctx: RevealContext): StateChanges | null {
+  onInfoRevealed(ctx: HookContext, payload: InfoRevealedPayload): StateChanges | null {
     const config = ctx.config.engine_mechanics?.memory;
     if (!config) return null;
 
     const revealDuration = config.reveal_duration ?? 3;
     const currentTurn = ctx.state.turnNumber;
 
-    const targetPlayers = ctx.toPlayerIds === 'all'
-      ? Object.keys(ctx.state.players)
-      : ctx.toPlayerIds;
-
     const playerChanges: Record<string, Partial<{ memory: PlayerMemory }>> = {};
 
-    for (const playerId of targetPlayers) {
+    for (const playerId of payload.revealedTo) {
       const player = ctx.state.players[playerId];
       const currentMemory = player.memory ?? { entries: [], notes: {} };
 
       const newEntry: MemoryEntry = {
-        infoType: ctx.targetInfo,
-        value: ctx.state.players[ctx.revealingPlayerId],
+        infoType: payload.infoType,
+        value: ctx.state.players[ctx.playerId],
         revealedTurn: currentTurn,
         expiresOnTurn: currentTurn + revealDuration,
-        source: ctx.revealingPlayerId
+        source: ctx.playerId
       };
 
       playerChanges[playerId] = {

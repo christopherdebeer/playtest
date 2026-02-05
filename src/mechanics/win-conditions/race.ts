@@ -11,11 +11,12 @@
 
 import {
   MechanicHooks,
+  HookContext,
   WinCheckContext,
   WinCheckResult,
-  AfterMoveContext,
   StateChanges
 } from '../types.js';
+import type { BoardHooks, PlayerMovedPayload } from '../core/board-mechanic.js';
 
 interface RaceWinConfig {
   /** Target state/location to reach */
@@ -28,9 +29,10 @@ interface RaceWinConfig {
   checkpoints?: string[];
 }
 
-export const raceWinMechanic: MechanicHooks = {
+export const raceWinMechanic: MechanicHooks & BoardHooks = {
   slug: 'win-race',
   name: 'Race Win Condition',
+  requires: ['board'],
 
   configSchema: {
     type: 'object',
@@ -95,7 +97,7 @@ export const raceWinMechanic: MechanicHooks = {
     };
   },
 
-  onAfterMove(ctx: AfterMoveContext): StateChanges | null {
+  onPlayerMoved(ctx: HookContext, payload: PlayerMovedPayload): StateChanges | null {
     const raceConfig = ctx.config.engine_mechanics?.win_race as RaceWinConfig | undefined;
     if (!raceConfig) return null;
 
@@ -107,10 +109,10 @@ export const raceWinMechanic: MechanicHooks = {
     };
 
     // Track checkpoint visits
-    if (raceConfig.checkpoints && raceConfig.checkpoints.includes(ctx.newState)) {
+    if (raceConfig.checkpoints && raceConfig.checkpoints.includes(payload.toState)) {
       const visited = [...((player.visitedCheckpoints as string[]) || [])];
-      if (!visited.includes(ctx.newState)) {
-        visited.push(ctx.newState);
+      if (!visited.includes(payload.toState)) {
+        visited.push(payload.toState);
         stateChanges.playerStateChanges![ctx.playerId] = {
           visitedCheckpoints: visited
         };
@@ -123,7 +125,7 @@ export const raceWinMechanic: MechanicHooks = {
         ? [raceConfig.goal_state, ...raceConfig.goal_states]
         : [raceConfig.goal_state];
 
-      if (goalStates.includes(ctx.newState) && ctx.previousState !== ctx.newState) {
+      if (goalStates.includes(payload.toState) && payload.fromState !== payload.toState) {
         const laps = ((player.lapsCompleted as number) || 0) + 1;
         stateChanges.playerStateChanges![ctx.playerId] = {
           ...stateChanges.playerStateChanges![ctx.playerId],

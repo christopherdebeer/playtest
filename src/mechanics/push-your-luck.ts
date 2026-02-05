@@ -35,6 +35,7 @@ interface PushYourLuckConfig {
 export const pushYourLuckMechanic: MechanicHooks = {
   slug: 'push-your-luck',
   name: 'Push Your Luck',
+  requires: ['cards'],
 
   configSchema: {
     type: 'object',

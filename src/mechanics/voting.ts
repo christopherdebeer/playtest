@@ -18,8 +18,6 @@
 import {
   MechanicHooks,
   HookContext,
-  VoteContext,
-  VoteCastResult,
   VoteTallyContext,
   VoteTallyResult,
   ActionExecutionContext,
@@ -155,19 +153,6 @@ export const votingMechanic: MechanicHooks = {
         result: complete ? getVotingResult(ctx.state, voteId) : undefined
       }
     };
-  },
-
-  /**
-   * Hook into vote casting for custom validation or effects
-   */
-  onVoteCast(ctx: VoteContext): VoteCastResult | null {
-    if (!isMechanicEnabled(ctx.config, 'voting')) {
-      return null;
-    }
-
-    // Default implementation: no modifications
-    // Game-specific mechanics can override this
-    return null;
   },
 
   /**
