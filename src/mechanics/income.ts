@@ -3,17 +3,46 @@
  *
  * Automatic resource generation each turn or round.
  * Supports resource caps from engine_mechanics.resources config.
+ * Uses addResource() service so resource hooks fire (e.g., catch-the-leader
+ * income reduction applies to income gains).
  *
  * Hooks used:
- * - onTurnStart: Generate per_turn and per_round income
+ * - onTurnStart: Generate per_turn and per_round income via addResource()
  */
 
 import { MechanicHooks, TurnStartContext, StateChanges } from './types.js';
-import { GameConfig } from '../types/game.js';
+import { addResource, getResource } from './core/resources.js';
 
 interface ResourceConfig {
   name: string;
   max?: number;
+}
+
+/**
+ * Add income for a set of resources, respecting caps.
+ * Uses addResource() service which fires resource hooks.
+ */
+function applyIncome(
+  state: TurnStartContext['state'],
+  playerId: string,
+  incomeEntries: Record<string, number>,
+  resourcesConfig: ResourceConfig[]
+): void {
+  for (const [resource, amount] of Object.entries(incomeEntries)) {
+    const currentAmount = getResource(state, playerId, resource);
+
+    // Pre-calculate effective gain respecting cap
+    let effectiveGain = amount;
+    const resourceConfig = resourcesConfig.find(r => r.name === resource);
+    if (resourceConfig?.max !== undefined) {
+      const maxGain = Math.max(0, resourceConfig.max - currentAmount);
+      effectiveGain = Math.min(effectiveGain, maxGain);
+    }
+
+    if (effectiveGain > 0) {
+      addResource(state, playerId, resource, effectiveGain);
+    }
+  }
 }
 
 export const incomeMechanic: MechanicHooks = {
@@ -21,7 +50,6 @@ export const incomeMechanic: MechanicHooks = {
   name: 'Income',
   requires: ['resources'],
 
-  // Config schema for validation and documentation
   configSchema: {
     type: 'object',
     description: 'Automatic resource generation each turn or round',
@@ -44,47 +72,20 @@ export const incomeMechanic: MechanicHooks = {
     } | undefined;
 
     if (!incomeConfig) return null;
-    if (!ctx.player.resources) return null;
 
     const resourcesConfig = (ctx.config.engine_mechanics?.resources || []) as ResourceConfig[];
-    const newResources = { ...ctx.player.resources };
-    let hasChanges = false;
 
-    // Apply per-turn income
+    // Apply per-turn income (uses addResource → fires resource hooks)
     if (incomeConfig.per_turn) {
-      for (const [resource, amount] of Object.entries(incomeConfig.per_turn)) {
-        newResources[resource] = (newResources[resource] || 0) + amount;
-
-        // Apply resource cap if configured
-        const resourceConfig = resourcesConfig.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          newResources[resource] = Math.min(newResources[resource], resourceConfig.max);
-        }
-        hasChanges = true;
-      }
+      applyIncome(ctx.state, ctx.playerId, incomeConfig.per_turn, resourcesConfig);
     }
 
     // Apply per-round income (only at start of new round)
     if (ctx.isNewRound && incomeConfig.per_round) {
-      for (const [resource, amount] of Object.entries(incomeConfig.per_round)) {
-        newResources[resource] = (newResources[resource] || 0) + amount;
-
-        const resourceConfig = resourcesConfig.find(r => r.name === resource);
-        if (resourceConfig?.max !== undefined) {
-          newResources[resource] = Math.min(newResources[resource], resourceConfig.max);
-        }
-        hasChanges = true;
-      }
+      applyIncome(ctx.state, ctx.playerId, incomeConfig.per_round, resourcesConfig);
     }
 
-    if (!hasChanges) return null;
-
-    return {
-      playerStateChanges: {
-        [ctx.playerId]: {
-          resources: newResources
-        }
-      }
-    };
+    // State already mutated by addResource(); no StateChanges needed
+    return null;
   }
 };
