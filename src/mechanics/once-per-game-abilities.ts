@@ -122,6 +122,7 @@ function checkCondition(
 export const oncePerGameAbilitiesMechanic: MechanicHooks = {
   slug: 'once-per-game-abilities',
   name: 'Once Per Game Abilities',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',

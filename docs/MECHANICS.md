@@ -553,8 +553,11 @@ replacing hardcoded routing methods in the registry.
 - [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
 - [x] `trick-taking` and `ladder-climbing` now fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
 - [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
-- [ ] Migrate resource leaf mechanics to `requires: ['resources']` with resources-defined hooks:
-  - `income`, `automatic-resource-growth`, `auction-english`, `auction-sealed-bid`, `auction-once-around`, `chaining`, `once-per-game-abilities`, `action-points`
+- [x] Resource leaf mechanics declare `requires: ['resources']`:
+  - `catch-the-leader`, `income`, `automatic-resource-growth`, `chaining`, `once-per-game-abilities`, `multi-use-cards`, `deck-building`, `die-icon-resolution`, `point-to-point-movement`
+  - Note: `income`, `automatic-resource-growth`, and others bypass `addResource()` service (direct `playerStateChanges` mutation). Future refactoring should route through service for hook support.
+- [ ] Migrate remaining resource-adjacent mechanics to `requires: ['resources']`:
+  - `auction-english`, `auction-sealed-bid`, `auction-once-around` (use resources for bidding)
 - [ ] `board` core mechanic: define hooks from current board service
 - [ ] `dice` core mechanic: define hooks from current dice service
 - [ ] `combat` core mechanic: define hooks from current combat service
