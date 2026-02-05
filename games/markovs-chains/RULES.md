@@ -8,6 +8,7 @@ max_rounds: 25
 
 # Engine mechanics - enable/disable engine capabilities for this game
 engine_mechanics:
+  board_state: true            # Validate moves against board edges (requires: board)
   probability_movement: true   # Moves use edge probabilities
   card_boosts: true            # Cards can modify move probability
   victory_declaration: true    # Players must declare victory for GM adjudication
