@@ -1020,6 +1020,7 @@ export interface MechanicConfigSchema {
 const ALWAYS_ENABLED_MECHANICS = [
   'cards',
   'resources',
+  'dice',
   'pass',
   'lose-a-turn',
   'location-effects',

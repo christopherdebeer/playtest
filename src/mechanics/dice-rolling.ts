@@ -34,6 +34,7 @@ import { RollAction, DiceRollingConfig } from '../types/game.js';
 export const diceRollingMechanic: MechanicHooks = {
   slug: 'dice-rolling',
   name: 'Dice Rolling',
+  requires: ['dice'],
 
   getAvailableActions(ctx): AvailableAction[] {
     const diceConfig = ctx.config.engine_mechanics?.dice_rolling as DiceRollingConfig | undefined;

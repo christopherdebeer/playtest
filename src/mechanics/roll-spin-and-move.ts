@@ -43,6 +43,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
 export const rollSpinAndMoveMechanic: MechanicHooks = {
   slug: 'roll-spin-and-move',
   name: 'Roll Spin and Move',
+  requires: ['dice'],
 
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'roll-spin-and-move')) return null;

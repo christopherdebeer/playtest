@@ -31,6 +31,7 @@ import { rollDice } from './core/dice.js';
 export const rerollingAndLockingMechanic: MechanicHooks = {
   slug: 're-rolling-and-locking',
   name: 'Re-Rolling and Locking',
+  requires: ['dice'],
 
   /**
    * Reset re-roll count at turn start

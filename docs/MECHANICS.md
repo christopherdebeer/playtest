@@ -413,8 +413,12 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │     ├── grid-movement (requires: board)
   │     └── area-movement (requires: board)
   │
-  └── dice (defines: onRolled, ...)
-        └── push-your-luck (requires: dice)
+  └── dice (defines: onDiceRolled, onBeforeDiceRoll)
+        ├── dice-rolling (requires: dice) ← MIGRATED
+        ├── different-dice-movement (requires: dice) ← MIGRATED
+        ├── re-rolling-and-locking (requires: dice) ← MIGRATED
+        ├── roll-spin-and-move (requires: dice) ← MIGRATED
+        └── die-icon-resolution (requires: dice, resources) ← MIGRATED
 ```
 
 ### HookDefinition
@@ -558,8 +562,11 @@ replacing hardcoded routing methods in the registry.
   - Note: `income`, `automatic-resource-growth`, and others bypass `addResource()` service (direct `playerStateChanges` mutation). Future refactoring should route through service for hook support.
 - [ ] Migrate remaining resource-adjacent mechanics to `requires: ['resources']`:
   - `auction-english`, `auction-sealed-bid`, `auction-once-around` (use resources for bidding)
+- [x] `dice` core mechanic: defines `onBeforeDiceRoll`, `onDiceRolled`
+- [x] `dice.ts` dual-fires global hooks AND dice-defined hooks (strangler fig)
+- [x] Dice leaf mechanics declare `requires: ['dice']`:
+  - `dice-rolling`, `different-dice-movement`, `re-rolling-and-locking`, `roll-spin-and-move`, `die-icon-resolution`
 - [ ] `board` core mechanic: define hooks from current board service
-- [ ] `dice` core mechanic: define hooks from current dice service
 - [ ] `combat` core mechanic: define hooks from current combat service
 - [ ] `effects` core mechanic: define hooks from current effects service
 - [ ] `visibility` core mechanic: define hooks from current visibility service
@@ -607,7 +614,7 @@ replacing hardcoded routing methods in the registry.
 - `createSnakeDraftOrder`
 
 ### Dice (`core/dice.ts`)
-- `rollDice(state, playerId, count, sides, purpose)` - Fires dice hooks
+- `rollDice(state, playerId, options)` - Fires `onBeforeRoll`/`onAfterRoll` + `onBeforeDiceRoll`/`onDiceRolled`
 - `getLastRoll`, `modifyRoll`
 
 ### Visibility (`core/visibility.ts`)
