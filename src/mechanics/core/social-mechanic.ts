@@ -12,6 +12,7 @@
  * - onVoteCompleted: After a voting session completes (merge)
  * - onPlayerVoted: After a player casts a vote (merge)
  * - onBeforeVote: Before a vote is cast, can block (blocking)
+ * - onVoteTally: Custom vote tallying logic, first handler wins (first)
  */
 
 import { MechanicHooks, HookContext, StateChanges } from '../types.js';
@@ -45,6 +46,26 @@ export interface BeforeVotePayload {
   choice: string | number | null;
 }
 
+export interface VoteTallyPayload {
+  /** Voting session ID */
+  sessionId: string;
+  /** Topic being voted on */
+  topic: string;
+  /** All votes cast: playerId -> choice */
+  votes: Record<string, string | number | null>;
+}
+
+export interface VoteTallyHookResult {
+  /** The winning choice */
+  winner: string | number | null;
+  /** True if vote tied */
+  tied?: boolean;
+  /** Tied choices (if tied) */
+  tiedChoices?: (string | number)[];
+  /** How tie was resolved */
+  tiebreakerUsed?: string;
+}
+
 // ============ Typed interface for dependents ============
 
 /**
@@ -55,6 +76,7 @@ export interface SocialHooks {
   onVoteCompleted?(ctx: HookContext, payload: VoteCompletedPayload): StateChanges | null;
   onPlayerVoted?(ctx: HookContext, payload: PlayerVotedPayload): StateChanges | null;
   onBeforeVote?(ctx: HookContext, payload: BeforeVotePayload): { blocked?: boolean; blockReason?: string } | null;
+  onVoteTally?(ctx: HookContext, payload: VoteTallyPayload): VoteTallyHookResult | null;
 }
 
 // ============ The mechanic itself ============
@@ -75,6 +97,10 @@ export const socialMechanic: MechanicHooks = {
     onVoteCompleted: {
       description: 'After a voting session completes.',
       resolution: 'merge',
+    },
+    onVoteTally: {
+      description: 'Custom vote tallying logic. First handler wins.',
+      resolution: 'first',
     },
   },
 };

@@ -166,11 +166,6 @@ The system provides hooks across two tiers:
 | `onDetermineTurnOrder` | `(ctx) → TurnOrderResult \| null` | Provide custom turn order |
 | `onPassPriority` | `(ctx) → PassPriorityResult \| null` | Handle pass/claim priority |
 
-##### Voting (1 hook)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onVoteTally` | `(ctx) → VoteTallyResult \| null` | Custom tally logic |
-
 ##### Agnosticism (6 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
@@ -191,9 +186,9 @@ See [Mechanic-Defined Hooks](#mechanic-defined-hooks) section for details. Summa
 | `resources` | `onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent` | `resources.ts` |
 | `dice` | `onBeforeDiceRoll`, `onDiceRolled` | `dice.ts` |
 | `board` | `onBeforePlayerMove`, `onPlayerMoved` | `board.ts` |
-| `effects` | `onBeforeEffectAdd`, `onEffectAdded`, `onEffectRemoved` | `effects.ts` |
+| `effects` | `onBeforeEffectAdd`, `onBeforeEffectRemove`, `onEffectAdded`, `onEffectRemoved` | `effects.ts` |
 | `visibility` | `onBeforeReveal`, `onInfoRevealed` | `visibility.ts` |
-| `social` | `onBeforeVote`, `onPlayerVoted`, `onVoteCompleted` | `social.ts` |
+| `social` | `onBeforeVote`, `onPlayerVoted`, `onVoteTally`, `onVoteCompleted` | `social.ts` |
 
 ### Mechanic Composition
 
@@ -404,7 +399,7 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │     ├── roll-spin-and-move (requires: dice, board)
   │     └── die-icon-resolution (requires: dice, resources)
   │
-  ├── effects (defines: onEffectAdded, onEffectRemoved, onBeforeEffectAdd)
+  ├── effects (defines: onEffectAdded, onEffectRemoved, onBeforeEffectAdd, onBeforeEffectRemove)
   │     ├── lose-a-turn (requires: effects)
   │     └── take-that (requires: cards, effects)
   │
@@ -417,7 +412,7 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │     ├── roles-asymmetric-info (requires: hidden-roles, visibility)
   │     └── traitor-game (requires: hidden-roles, visibility)
   │
-  └── social (defines: onVoteCompleted, onPlayerVoted, onBeforeVote)
+  └── social (defines: onVoteCompleted, onPlayerVoted, onBeforeVote, onVoteTally)
         ├── voting (requires: social)
         ├── negotiation (requires: social)
         ├── communication-limits (requires: social)
@@ -509,7 +504,7 @@ interface MechanicHooks {
   requires?: string[];
   defines?: Record<string, HookDefinition>;
 
-  // ~21 global hooks (engine-fired, all enabled mechanics)
+  // ~20 global hooks (engine-fired, all enabled mechanics)
   preValidateAction?(...): ValidationResult | null;
   onExecuteAction?(...): ActionExecutionResult | null;
   postExecuteAction?(...): StateChanges | null;
@@ -530,7 +525,6 @@ interface MechanicHooks {
   canSeeInfo?(...): boolean | undefined;
   onDetermineTurnOrder?(...): TurnOrderResult | null;
   onPassPriority?(...): PassPriorityResult | null;
-  onVoteTally?(...): VoteTallyResult | null;
 
   // Domain hooks live on defining mechanics, implemented via [key: string]
 }
@@ -580,16 +574,16 @@ replacing the hardcoded routing methods that were removed from the registry.
 - [x] `board.ts` fires board-defined hooks (`onBeforePlayerMove`, `onPlayerMoved`)
 - [x] Board leaf mechanics declare `requires: ['board']`:
   - `area-movement`, `board-state`, `grid-movement`, `movement-points`, `roll-spin-and-move`, `hidden-movement`
-- [x] `effects` core mechanic: defines `onEffectAdded`, `onEffectRemoved`, `onBeforeEffectAdd`
-- [x] `effects.ts` fires effects-defined hooks (`onBeforeEffectAdd`, `onEffectAdded`, `onEffectRemoved`)
+- [x] `effects` core mechanic: defines `onEffectAdded`, `onEffectRemoved`, `onBeforeEffectAdd`, `onBeforeEffectRemove`
+- [x] `effects.ts` fires effects-defined hooks (`onBeforeEffectAdd`, `onBeforeEffectRemove`, `onEffectAdded`, `onEffectRemoved`)
 - [x] Effects leaf mechanics declare `requires: ['effects']`:
   - `lose-a-turn`, `take-that`
 - [x] `visibility` core mechanic: defines `onInfoRevealed`, `onBeforeReveal`
 - [x] `visibility.ts` fires visibility-defined hooks (`onBeforeReveal`, `onInfoRevealed`) in `revealInfo()`
 - [x] Visibility leaf mechanics declare `requires: ['visibility']`:
   - `hidden-roles`, `hidden-objectives`, `hidden-victory-points`, `hidden-movement`, `deduction`, `roles-asymmetric-info`, `traitor-game`
-- [x] `social` core mechanic: defines `onVoteCompleted`, `onPlayerVoted`, `onBeforeVote`
-- [x] `social.ts` fires social-defined hooks (`onBeforeVote`, `onPlayerVoted`, `onVoteCompleted`) in `castVote()`
+- [x] `social` core mechanic: defines `onVoteCompleted`, `onPlayerVoted`, `onBeforeVote`, `onVoteTally`
+- [x] `social.ts` fires social-defined hooks (`onBeforeVote`, `onPlayerVoted`, `onVoteTally`, `onVoteCompleted`) in `castVote()`
 - [x] Social leaf mechanics declare `requires: ['social']`:
   - `voting`, `negotiation`, `communication-limits`, `player-judge`, `bribery`
 - [x] Generic `applyEffect` removed from cards `onExecuteAction`; card effects now handled by `onCardPlayed` responders:
@@ -629,16 +623,16 @@ replacing the hardcoded routing methods that were removed from the registry.
 - [x] Removed global hook calls from all core services (card-piles, hand, resources, effects, board, dice, visibility, social)
 - [x] Cleaned up unused type imports in registry
 
+**Post-Phase 4 cleanup:**
+
+- [x] Added `onBeforeEffectRemove` to effects-defined hooks; `removeEffect()` now fires blocking pre-removal hook and `onEffectRemoved` after removal
+- [x] Migrated `onVoteTally` from dead global hook to social-defined hook (`first` resolution); `voting.ts` implements custom tally logic; `social.ts` fires it before falling back to internal tally
+- [x] Removed `VoteTallyContext`, `VoteTallyResult` from types.ts and `onVoteTally` routing method from registry
+
 **Hooks that remain global (by design):**
 - `canSeeInfo` — query hook, not event; polled by visibility service across all mechanics
-- `onVoteTally` — computation hook that calculates vote winner; distinct from social-defined `onVoteCompleted`
 - `getVisibleState` — state filter hook; each mechanic redacts its own fields
 - `onDetermineTurnOrder`, `onPassPriority` — turn order hooks, engine-level concerns
-
-### Outstanding
-
-- [ ] Add `onBeforeEffectRemove` to effects-defined hooks (effects.removeEffect currently has no pre-removal hook)
-- [ ] Consider extracting `onVoteTally` to social-defined hook if only social-dependent mechanics use it
 
 ---
 
@@ -664,7 +658,7 @@ replacing the hardcoded routing methods that were removed from the registry.
 
 ### Effects (`core/effects.ts`)
 - `addEffect(state, playerId, effect)` - Fires effects-defined `onBeforeEffectAdd`/`onEffectAdded`
-- `removeEffect(state, playerId, effectType)` - Removes effect (no pre-removal hook yet)
+- `removeEffect(state, playerId, effectType)` - Fires effects-defined `onBeforeEffectRemove`/`onEffectRemoved`
 - `decrementEffectDurations(state, playerId)` - Fires effects-defined `onEffectRemoved` for expired effects
 - `hasEffect`, `getEffect`, `getEffects`, `getEffectsByType`, `getEffectValue`, `isBlocked`, `clearEffects`
 
@@ -692,7 +686,7 @@ replacing the hardcoded routing methods that were removed from the registry.
 
 ### Social (`core/social.ts`)
 - `startVoting(state, topic, voters, config)` - Initialize voting session
-- `castVote(state, voteId, playerId, choice)` - Fires social-defined `onBeforeVote`/`onPlayerVoted`/`onVoteCompleted`
+- `castVote(state, voteId, playerId, choice)` - Fires social-defined `onBeforeVote`/`onPlayerVoted`/`onVoteTally`/`onVoteCompleted`
 - `getVotingResult`, `isVotingComplete`, `completeVoting`
 
 ### Pass (`core/pass.ts`) - NEW

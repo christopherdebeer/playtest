@@ -18,14 +18,13 @@
 import {
   MechanicHooks,
   HookContext,
-  VoteTallyContext,
-  VoteTallyResult,
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
   isMechanicEnabled
 } from './types.js';
 import { GameAction, VotingMechanicConfig } from '../types/game.js';
+import type { SocialHooks, VoteTallyPayload, VoteTallyHookResult } from './core/social-mechanic.js';
 import {
   startVoting,
   castVote,
@@ -37,7 +36,7 @@ import {
   validateVoteAction
 } from './core/social.js';
 
-export const votingMechanic: MechanicHooks = {
+export const votingMechanic: MechanicHooks & SocialHooks = {
   slug: 'voting',
   name: 'Voting',
   requires: ['social'],
@@ -156,9 +155,10 @@ export const votingMechanic: MechanicHooks = {
   },
 
   /**
-   * Hook into vote tallying for custom tiebreakers or resolution
+   * Custom vote tallying with config-driven voting type and tiebreakers.
+   * Social-defined hook (first resolution) — overrides internal tally.
    */
-  onVoteTally(ctx: VoteTallyContext): VoteTallyResult | null {
+  onVoteTally(ctx: HookContext, payload: VoteTallyPayload): VoteTallyHookResult | null {
     if (!isMechanicEnabled(ctx.config, 'voting')) {
       return null;
     }
@@ -171,7 +171,7 @@ export const votingMechanic: MechanicHooks = {
     let abstentions = 0;
     let totalVotes = 0;
 
-    for (const choice of Object.values(ctx.votes)) {
+    for (const choice of Object.values(payload.votes)) {
       totalVotes++;
       if (choice === null) {
         abstentions++;
@@ -186,7 +186,6 @@ export const votingMechanic: MechanicHooks = {
       return {
         winner: null,
         tied: false,
-        stateChanges: {}
       };
     }
 
@@ -240,7 +239,6 @@ export const votingMechanic: MechanicHooks = {
       tied,
       tiedChoices: tied ? topChoices : undefined,
       tiebreakerUsed,
-      stateChanges: {}
     };
   }
 };
