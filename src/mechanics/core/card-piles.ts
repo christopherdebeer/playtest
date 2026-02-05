@@ -83,48 +83,33 @@ function drawFromDeckInternal(state: GameState, count: number): { cards: Card[];
 /**
  * Draw cards from deck, reshuffling discard if needed.
  * Does NOT add to hand - caller decides destination.
- * Calls onBeforeDraw and onAfterDraw hooks.
+ * Fires cards-defined onBeforeCardDraw and onCardDrawn hooks.
  *
  * @param state - Game state
  * @param count - Number of cards to draw
  * @param playerId - Player drawing (for hook context). If not provided, hooks are skipped.
  */
 export function drawFromDeck(state: GameState, count: number, playerId?: string): DrawResult {
-  // Run onBeforeDraw hooks if we have a player context
   let actualCount = count;
   if (playerId) {
-    // Global hook (all mechanics)
-    const beforeResult = mechanicRegistry.onBeforeDraw(state, playerId, count);
-    if (beforeResult.blocked) {
-      return { cards: [], reshuffled: false, blocked: true, blockReason: beforeResult.blockReason };
-    }
-    if (beforeResult.count !== undefined) {
-      actualCount = beforeResult.count;
-    }
-
-    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
-    const cardsBeforeResult = mechanicRegistry.fire('cards', 'onBeforeCardDraw', state, playerId, {
+    // Fire cards-defined onBeforeCardDraw hook (blocking)
+    const beforeResult = mechanicRegistry.fire('cards', 'onBeforeCardDraw', state, playerId, {
       requestedCount: actualCount
     });
-    if (cardsBeforeResult && (cardsBeforeResult as Record<string, unknown>).blocked) {
-      const blockReason = (cardsBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+      const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
       return { cards: [], reshuffled: false, blocked: true, blockReason };
     }
-    if (cardsBeforeResult && typeof (cardsBeforeResult as Record<string, unknown>).count === 'number') {
-      actualCount = (cardsBeforeResult as Record<string, unknown>).count as number;
+    if (beforeResult && typeof (beforeResult as Record<string, unknown>).count === 'number') {
+      actualCount = (beforeResult as Record<string, unknown>).count as number;
     }
   }
 
   // Perform the draw
   const { cards: drawn, reshuffled } = drawFromDeckInternal(state, actualCount);
 
-  // Run onAfterDraw hooks
+  // Fire cards-defined onCardDrawn hook (merge)
   if (playerId && drawn.length > 0) {
-    // Global hook (all mechanics)
-    const afterChanges = mechanicRegistry.onAfterDraw(state, playerId, count, drawn, reshuffled);
-    applyStateChanges(state, afterChanges);
-
-    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
     const cardsChanges = mechanicRegistry.fire('cards', 'onCardDrawn', state, playerId, {
       cards: drawn, requestedCount: count, reshuffled
     });
@@ -136,7 +121,7 @@ export function drawFromDeck(state: GameState, count: number, playerId?: string)
 
 /**
  * Add cards to discard pile, updating top card tracking.
- * Calls onDiscard hook after cards are added.
+ * Fires cards-defined onCardDiscarded hook.
  *
  * @param state - Game state
  * @param cards - Cards to discard
@@ -150,17 +135,10 @@ export function addToDiscard(state: GameState, cards: Card[], playerId?: string)
     state.shared.topCard = card;
   }
 
-  // Run onDiscard hooks
-  if (cards.length > 0) {
-    // Global hook (all mechanics)
-    const changes = mechanicRegistry.onDiscard(state, cards, playerId);
-    applyStateChanges(state, changes);
-
-    // Cards-defined hook (only cards dependents) - strangler fig dual-fire
-    if (playerId) {
-      const cardsChanges = mechanicRegistry.fire('cards', 'onCardDiscarded', state, playerId, { cards });
-      if (cardsChanges) applyStateChanges(state, cardsChanges);
-    }
+  // Fire cards-defined onCardDiscarded hook (merge)
+  if (cards.length > 0 && playerId) {
+    const cardsChanges = mechanicRegistry.fire('cards', 'onCardDiscarded', state, playerId, { cards });
+    if (cardsChanges) applyStateChanges(state, cardsChanges);
   }
 }
 

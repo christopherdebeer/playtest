@@ -19,11 +19,11 @@ import {
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
-  HandAddContext,
   StateChanges,
   isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
+import type { CardsHooks, CardsAddedToHandPayload } from './core/cards.js';
 
 interface PushYourLuckConfig {
   max_rolls?: number;
@@ -32,7 +32,7 @@ interface PushYourLuckConfig {
   points_per_success: number;
 }
 
-export const pushYourLuckMechanic: MechanicHooks = {
+export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
   slug: 'push-your-luck',
   name: 'Push Your Luck',
   requires: ['cards'],
@@ -235,14 +235,15 @@ export const pushYourLuckMechanic: MechanicHooks = {
   },
 
   /**
-   * Apply point effects when cards are added to hand (e.g., drafted cards).
+   * Cards-defined hook: Apply point effects when cards are added to hand (e.g., drafted cards).
    * Cards with effect.type: "points" have their value added to player score.
+   * Fired by hand.ts via mechanicRegistry.fire('cards', 'onAfterAddToHand', ...).
    */
-  onAfterAddToHand(ctx: HandAddContext): StateChanges | null {
+  onAfterAddToHand(ctx: HookContext, payload: CardsAddedToHandPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'push-your-luck')) return null;
 
     let totalPoints = 0;
-    for (const card of ctx.cards) {
+    for (const card of payload.cards) {
       if (card.effect?.type === 'points' && typeof card.effect.value === 'number') {
         totalPoints += card.effect.value;
       }
@@ -250,8 +251,7 @@ export const pushYourLuckMechanic: MechanicHooks = {
 
     if (totalPoints === 0) return null;
 
-    const player = ctx.state.players[ctx.playerId];
-    const currentScore = (player?.score as number) ?? 0;
+    const currentScore = (ctx.player?.score as number) ?? 0;
 
     return {
       playerStateChanges: {

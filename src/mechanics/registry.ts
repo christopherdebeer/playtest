@@ -16,39 +16,17 @@ import {
   StateChanges,
   PlayerInitResult,
   PlayerInitContext,
-  DrawContext,
-  DrawHookResult,
-  AfterDrawContext,
-  DiscardContext,
-  HandAddContext,
-  HandAddHookResult,
-  HandRemoveContext,
   WinCheckContext,
   WinCheckResult,
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
-  ResourceChangeContext,
-  ResourceChangeHookResult,
-  AfterResourceChangeContext,
-  EffectContext,
-  EffectAddHookResult,
-  EffectRemoveHookResult,
-  MoveContext,
-  MoveHookResult,
-  AfterMoveContext,
   VisibilityContext,
-  RevealContext,
   VisibleState,
-  DiceRollContext,
-  AfterRollContext,
-  DiceRollHookResult,
   TurnOrderContext,
   TurnOrderResult,
   PassPriorityResult,
-  VoteContext,
-  VoteCastResult,
   VoteTallyContext,
   VoteTallyResult,
   // Agnosticism hooks
@@ -59,8 +37,7 @@ import {
   ActionSchema,
   isMechanicEnabled
 } from './types.js';
-import { Effect } from '../types/game.js';
-import { GameState, GameConfig, GameAction, PlayerState, Card } from '../types/game.js';
+import { GameState, GameConfig, GameAction, PlayerState, Card, Effect } from '../types/game.js';
 import { logEvent } from '../core/game.js';
 
 /**
@@ -189,17 +166,12 @@ class MechanicRegistry {
         'preValidateAction', 'postExecuteAction', 'shouldAutoEndTurn',
         'initPlayerState', 'onTurnStart', 'onTurnEnd', 'onCheckWin',
         'onExecuteAction', 'getAvailableActions', 'describeAction',
-        'onBeforeDraw', 'onAfterDraw', 'onDiscard',
-        'onBeforeAddToHand', 'onAfterAddToHand', 'onAfterRemoveFromHand',
-        'onBeforeResourceChange', 'onAfterResourceChange',
-        'onBeforeAddEffect', 'onAfterAddEffect', 'onBeforeRemoveEffect', 'onEffectExpired',
-        'onBeforeMove', 'onAfterMove',
-        // Visibility System (Phase 4)
-        'getVisibleState', 'onReveal', 'canSeeInfo',
-        // Dice System (Phase 2)
-        'onBeforeRoll', 'onAfterRoll',
-        // Dynamic Turn Order (Phase 3)
-        'onDetermineTurnOrder', 'onPassPriority'
+        'getVisibleState', 'canSeeInfo',
+        'onDetermineTurnOrder', 'onPassPriority',
+        'onVoteTally',
+        // Agnosticism hooks
+        'initSharedState', 'getPlayerView', 'applyEffect',
+        'isPlayerBlocked', 'canPlayerActNow', 'getActionSchema'
       ];
 
       for (const hookName of hookNames) {
@@ -586,418 +558,7 @@ class MechanicRegistry {
     return null;
   }
 
-  // ============ Core Operation Hook Routing ============
-
-  /**
-   * Run onBeforeDraw hooks. Returns merged result with possibly modified count.
-   * If any mechanic blocks, returns blocked: true.
-   */
-  onBeforeDraw(state: GameState, playerId: string, requestedCount: number): DrawHookResult {
-    const ctx: DrawContext = {
-      state,
-      playerId,
-      requestedCount,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let finalCount = requestedCount;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeDraw) {
-        const result = mechanic.onBeforeDraw(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.count !== undefined) {
-            finalCount = result.count;
-          }
-        }
-      }
-    }
-
-    return { count: finalCount };
-  }
-
-  /**
-   * Run onAfterDraw hooks. Returns merged state changes.
-   */
-  onAfterDraw(
-    state: GameState,
-    playerId: string,
-    requestedCount: number,
-    drawnCards: Card[],
-    reshuffled: boolean
-  ): StateChanges {
-    const ctx: AfterDrawContext = {
-      state,
-      playerId,
-      requestedCount,
-      drawnCards,
-      reshuffled,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterDraw) {
-        const changes = mechanic.onAfterDraw(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onDiscard hooks. Returns merged state changes.
-   */
-  onDiscard(state: GameState, cards: Card[], playerId?: string): StateChanges {
-    const ctx: DiscardContext = {
-      state,
-      playerId,
-      cards,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onDiscard) {
-        const changes = mechanic.onDiscard(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onBeforeAddToHand hooks. Returns possibly filtered cards or blocked.
-   */
-  onBeforeAddToHand(state: GameState, playerId: string, cards: Card[]): HandAddHookResult {
-    const ctx: HandAddContext = {
-      state,
-      playerId,
-      cards,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let filteredCards = cards;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeAddToHand) {
-        const result = mechanic.onBeforeAddToHand(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.cards !== undefined) {
-            filteredCards = result.cards;
-          }
-        }
-      }
-    }
-
-    return { cards: filteredCards };
-  }
-
-  /**
-   * Run onAfterAddToHand hooks. Returns merged state changes.
-   */
-  onAfterAddToHand(state: GameState, playerId: string, cards: Card[]): StateChanges {
-    const ctx: HandAddContext = {
-      state,
-      playerId,
-      cards,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterAddToHand) {
-        const changes = mechanic.onAfterAddToHand(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onAfterRemoveFromHand hooks. Returns merged state changes.
-   */
-  onAfterRemoveFromHand(state: GameState, playerId: string, cards: Card[]): StateChanges {
-    const ctx: HandRemoveContext = {
-      state,
-      playerId,
-      cards,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterRemoveFromHand) {
-        const changes = mechanic.onAfterRemoveFromHand(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  // ============ Resource Operation Hook Routing ============
-
-  /**
-   * Run onBeforeResourceChange hooks. Returns possibly modified amount or blocked.
-   */
-  onBeforeResourceChange(
-    state: GameState,
-    playerId: string,
-    resource: string,
-    amount: number
-  ): ResourceChangeHookResult {
-    const ctx: ResourceChangeContext = {
-      state,
-      playerId,
-      resource,
-      amount,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let finalAmount = Math.abs(amount); // Use absolute for hook processing
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeResourceChange) {
-        const result = mechanic.onBeforeResourceChange(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.amount !== undefined) {
-            finalAmount = result.amount;
-          }
-        }
-      }
-    }
-
-    return { amount: finalAmount };
-  }
-
-  /**
-   * Run onAfterResourceChange hooks. Returns merged state changes.
-   */
-  onAfterResourceChange(
-    state: GameState,
-    playerId: string,
-    resource: string,
-    amount: number,
-    newAmount: number
-  ): StateChanges {
-    const ctx: AfterResourceChangeContext = {
-      state,
-      playerId,
-      resource,
-      amount,
-      newAmount,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterResourceChange) {
-        const changes = mechanic.onAfterResourceChange(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  // ============ Effect Operation Hook Routing ============
-
-  /**
-   * Run onBeforeAddEffect hooks. Returns possibly modified effect or blocked.
-   */
-  onBeforeAddEffect(state: GameState, playerId: string, effect: Effect): EffectAddHookResult {
-    const ctx: EffectContext = {
-      state,
-      playerId,
-      effect,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let finalEffect = effect;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeAddEffect) {
-        const result = mechanic.onBeforeAddEffect(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.effect !== undefined) {
-            finalEffect = result.effect;
-          }
-        }
-      }
-    }
-
-    return { effect: finalEffect };
-  }
-
-  /**
-   * Run onAfterAddEffect hooks. Returns merged state changes.
-   */
-  onAfterAddEffect(state: GameState, playerId: string, effect: Effect): StateChanges {
-    const ctx: EffectContext = {
-      state,
-      playerId,
-      effect,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterAddEffect) {
-        const changes = mechanic.onAfterAddEffect(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onBeforeRemoveEffect hooks. Returns possibly blocked.
-   */
-  onBeforeRemoveEffect(state: GameState, playerId: string, effect: Effect): EffectRemoveHookResult {
-    const ctx: EffectContext = {
-      state,
-      playerId,
-      effect,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeRemoveEffect) {
-        const result = mechanic.onBeforeRemoveEffect(ctx);
-        if (result?.blocked) {
-          return { blocked: true, blockReason: result.blockReason };
-        }
-      }
-    }
-
-    return {};
-  }
-
-  /**
-   * Run onEffectExpired hooks. Returns merged state changes.
-   */
-  onEffectExpired(state: GameState, playerId: string, effect: Effect): StateChanges {
-    const ctx: EffectContext = {
-      state,
-      playerId,
-      effect,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onEffectExpired) {
-        const changes = mechanic.onEffectExpired(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  // ============ Board Movement Hook Routing ============
-
-  /**
-   * Run onBeforeMove hooks. Returns possibly modified target or blocked.
-   */
-  onBeforeMove(state: GameState, playerId: string, target: string): MoveHookResult {
-    const ctx: MoveContext = {
-      state,
-      playerId,
-      target,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let finalTarget = target;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeMove) {
-        const result = mechanic.onBeforeMove(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.target !== undefined) {
-            finalTarget = result.target;
-          }
-        }
-      }
-    }
-
-    return { target: finalTarget };
-  }
-
-  /**
-   * Run onAfterMove hooks. Returns merged state changes.
-   */
-  onAfterMove(
-    state: GameState,
-    playerId: string,
-    previousState: string,
-    newState: string
-  ): StateChanges {
-    const ctx: AfterMoveContext = {
-      state,
-      playerId,
-      previousState,
-      newState,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterMove) {
-        const changes = mechanic.onAfterMove(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  // ============ Visibility System Hook Routing (Phase 4) ============
+  // ============ Visibility System Hook Routing ============
 
   /**
    * Run getVisibleState hooks. Returns merged visible state.
@@ -1046,38 +607,6 @@ class MechanicRegistry {
   }
 
   /**
-   * Run onReveal hooks when hidden information is revealed.
-   * Returns merged state changes.
-   */
-  onReveal(
-    state: GameState,
-    revealingPlayerId: string,
-    targetInfo: string,
-    toPlayerIds: string[] | 'all'
-  ): StateChanges {
-    const ctx: RevealContext = {
-      state,
-      revealingPlayerId,
-      targetInfo,
-      toPlayerIds,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onReveal) {
-        const changes = mechanic.onReveal(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
    * Check if a player can see specific information.
    * Returns true if any mechanic grants visibility, false if any denies.
    * Returns undefined if no mechanics have an opinion (default: visible).
@@ -1114,73 +643,7 @@ class MechanicRegistry {
     return !anyDenied;
   }
 
-  // ============ Dice System Hook Routing (Phase 2) ============
-
-  /**
-   * Run onBeforeRoll hooks. Returns merged result with possibly modified dice.
-   * If any mechanic blocks, returns blocked: true.
-   */
-  onBeforeRoll(
-    state: GameState,
-    playerId: string,
-    ctx: DiceRollContext
-  ): DiceRollHookResult {
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    let finalDiceCount = ctx.diceCount;
-    let finalDiceSides = ctx.diceSides;
-    let totalModifier = 0;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onBeforeRoll) {
-        const result = mechanic.onBeforeRoll(ctx);
-        if (result) {
-          if (result.blocked) {
-            return { blocked: true, blockReason: result.blockReason };
-          }
-          if (result.diceCount !== undefined) {
-            finalDiceCount = result.diceCount;
-          }
-          if (result.diceSides !== undefined) {
-            finalDiceSides = result.diceSides;
-          }
-          if (result.modifier !== undefined) {
-            totalModifier += result.modifier;
-          }
-        }
-      }
-    }
-
-    return {
-      diceCount: finalDiceCount,
-      diceSides: finalDiceSides,
-      modifier: totalModifier !== 0 ? totalModifier : undefined
-    };
-  }
-
-  /**
-   * Run onAfterRoll hooks. Returns merged state changes.
-   */
-  onAfterRoll(
-    state: GameState,
-    playerId: string,
-    ctx: AfterRollContext
-  ): StateChanges {
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onAfterRoll) {
-        const changes = mechanic.onAfterRoll(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  // ============ Dynamic Turn Order Hook Routing (Phase 3) ============
+  // ============ Dynamic Turn Order Hook Routing ============
 
   /**
    * Run onDetermineTurnOrder hooks. Returns new turn order if any mechanic provides one.
@@ -1235,39 +698,7 @@ class MechanicRegistry {
     return null;
   }
 
-  // ============ Voting & Social Hooks (Phase 5) ============
-
-  /**
-   * Route onVoteCast to all enabled mechanics
-   */
-  onVoteCast(
-    state: GameState,
-    playerId: string,
-    topic: string,
-    voteId: string,
-    choice: string | number | null
-  ): VoteCastResult | null {
-    const ctx: VoteContext = {
-      state,
-      playerId,
-      topic,
-      voteId,
-      choice,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onVoteCast) {
-        const result = mechanic.onVoteCast(ctx);
-        if (result) {
-          return result;
-        }
-      }
-    }
-
-    return null;
-  }
+  // ============ Voting Computation Hook ============
 
   /**
    * Route onVoteTally to all enabled mechanics

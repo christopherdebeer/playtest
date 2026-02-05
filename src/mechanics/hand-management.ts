@@ -7,15 +7,16 @@
  * Requires: cards (core mechanic)
  *
  * Hooks used:
- * - onBeforeAddToHand: Block or limit ANY card acquisition (global, still needed)
+ * - onBeforeAddToHand: Block or limit ANY card acquisition (cards-defined hook)
  * - onBeforeCardDraw: Block or limit draw (cards-defined hook)
  *
  * Note: discard_choice and discard_oldest policies require execution-time
  * handling which remains in game.ts for now (requires state mutation during action).
  */
 
-import { MechanicHooks, HookContext, HandAddContext, HandAddHookResult } from './types.js';
-import type { CardsHooks, BeforeCardDrawPayload } from './core/cards.js';
+import { MechanicHooks, HookContext } from './types.js';
+import type { CardsHooks, BeforeCardDrawPayload, BeforeAddToHandPayload } from './core/cards.js';
+import { Card } from '../types/game.js';
 
 export const handManagementMechanic: MechanicHooks & CardsHooks = {
   slug: 'hand-management',
@@ -40,20 +41,18 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
   },
 
   /**
-   * Proposal 012: Enforce hand limit on ALL card acquisition (trades, effects, location draws)
+   * Cards-defined hook: Enforce hand limit on ALL card acquisition (trades, effects, location draws).
    * This hook runs before ANY cards are added to hand, not just draws.
+   * Fired by hand.ts via mechanicRegistry.fire('cards', 'onBeforeAddToHand', ...).
    */
-  onBeforeAddToHand(ctx: HandAddContext): HandAddHookResult | null {
+  onBeforeAddToHand(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; blockReason?: string; cards?: Card[] } | null {
     const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
     if (handLimit === undefined) return null;
 
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
 
-    const player = ctx.state.players[ctx.playerId];
-    if (!player) return null;
-
-    const currentHandSize = player.hand.length;
-    const cardsToAdd = ctx.cards.length;
+    const currentHandSize = ctx.player.hand.length;
+    const cardsToAdd = payload.cards.length;
     const wouldExceed = currentHandSize + cardsToAdd > handLimit;
 
     if (!wouldExceed) return null;
@@ -70,7 +69,7 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
       }
       // Otherwise limit the cards being added
       return {
-        cards: ctx.cards.slice(0, maxAddable),
+        cards: payload.cards.slice(0, maxAddable),
         blockReason: `Only ${maxAddable} cards added due to hand limit (${handLimit}).`
       };
     }

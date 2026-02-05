@@ -5,9 +5,8 @@
  * Any mechanic that works with hidden information should declare `requires: ['visibility']`
  * and implement the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global visibility hooks (getVisibleState, onReveal, canSeeInfo) as part of the
- * strangler fig migration.
+ * This mechanic is always enabled. Core visibility services fire these hooks
+ * and only mechanics that declare `requires: ['visibility']` receive them.
  *
  * Defined hooks:
  * - onInfoRevealed: After information is revealed to players (merge)

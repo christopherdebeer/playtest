@@ -128,9 +128,11 @@ src/mechanics/
 
 ### Hook Categories
 
-The system provides **38 hooks** across 10 categories:
+The system provides hooks across two tiers:
 
-#### Action & Validation (5 hooks)
+#### Global Hooks (engine-fired, all enabled mechanics receive)
+
+##### Action & Validation (5 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `preValidateAction` | `(ctx, action) → ValidationResult \| null` | Block invalid actions before execution |
@@ -139,75 +141,37 @@ The system provides **38 hooks** across 10 categories:
 | `getAvailableActions` | `(ctx) → AvailableAction[]` | Expose available actions dynamically |
 | `describeAction` | `(action) → ActionDescription \| null` | Describe action for UI/agents |
 
-#### Turn Lifecycle (3 hooks)
+##### Turn Lifecycle (3 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `onTurnStart` | `(ctx, isNewRound) → StateChanges \| null` | Turn initialization |
 | `onTurnEnd` | `(ctx, nextPlayerId, isRoundEnd) → StateChanges \| null` | Turn cleanup |
 | `shouldAutoEndTurn` | `(ctx) → boolean` | Force turn advancement |
 
-#### Player & Win (2 hooks)
+##### Player & Win (2 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `initPlayerState` | `(ctx) → PlayerInitResult \| null` | Initialize player state |
 | `onCheckWin` | `(ctx, trigger) → WinCheckResult \| null` | Check win conditions |
 
-#### Card Operations (6 hooks)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onBeforeDraw` | `(ctx, count) → DrawHookResult \| null` | Modify/block draw |
-| `onAfterDraw` | `(ctx, cards, reshuffled) → StateChanges \| null` | React to draw |
-| `onBeforeAddToHand` | `(ctx, cards) → HandAddHookResult \| null` | Filter/block hand add |
-| `onAfterAddToHand` | `(ctx, cards) → StateChanges \| null` | React to hand add |
-| `onAfterRemoveFromHand` | `(ctx, cards) → StateChanges \| null` | React to hand remove |
-| `onDiscard` | `(ctx, cards) → StateChanges \| null` | React to discard |
-
-#### Resource Operations (2 hooks)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onBeforeResourceChange` | `(ctx, resource, amount) → ResourceHookResult \| null` | Modify/block resource change |
-| `onAfterResourceChange` | `(ctx, resource, amount, newAmount) → StateChanges \| null` | React to resource change |
-
-#### Effect Operations (4 hooks)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onBeforeAddEffect` | `(ctx, effect) → EffectHookResult \| null` | Modify/block effect add |
-| `onAfterAddEffect` | `(ctx, effect) → StateChanges \| null` | React to effect add |
-| `onBeforeRemoveEffect` | `(ctx, effect) → { blocked?: boolean } \| null` | Block effect removal |
-| `onEffectExpired` | `(ctx, effect) → StateChanges \| null` | React to effect expiration |
-
-#### Movement Operations (2 hooks)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onBeforeMove` | `(ctx, target) → MoveHookResult \| null` | Modify/block move |
-| `onAfterMove` | `(ctx, previousState, newState) → StateChanges \| null` | React to move |
-
-#### Visibility System (3 hooks)
+##### Visibility Query (2 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `getVisibleState` | `(ctx) → VisibleState \| null` | Filter state for viewer |
-| `onReveal` | `(ctx) → StateChanges \| null` | Handle info reveals |
 | `canSeeInfo` | `(ctx, infoType, targetPlayerId?) → boolean \| undefined` | Check visibility permissions |
 
-#### Dice System (2 hooks)
-| Hook | Signature | Purpose |
-|------|-----------|---------|
-| `onBeforeRoll` | `(ctx) → DiceRollHookResult \| null` | Modify dice or block |
-| `onAfterRoll` | `(ctx) → StateChanges \| null` | React to roll results |
-
-#### Turn Order (2 hooks)
+##### Turn Order (2 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `onDetermineTurnOrder` | `(ctx) → TurnOrderResult \| null` | Provide custom turn order |
 | `onPassPriority` | `(ctx) → PassPriorityResult \| null` | Handle pass/claim priority |
 
-#### Voting & Social (2 hooks)
+##### Voting (1 hook)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
-| `onVoteCast` | `(ctx) → VoteCastResult \| null` | Intercept/modify vote |
 | `onVoteTally` | `(ctx) → VoteTallyResult \| null` | Custom tally logic |
 
-#### NEW: Agnosticism Hooks (6 hooks)
+##### Agnosticism (6 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `initSharedState` | `(ctx) → SharedStateChanges \| null` | Initialize shared state |
@@ -216,6 +180,20 @@ The system provides **38 hooks** across 10 categories:
 | `isPlayerBlocked` | `(ctx) → boolean \| null` | Determine if player is blocked |
 | `canPlayerActNow` | `(ctx) → boolean \| null` | Allow out-of-turn actions (freeplay) |
 | `getActionSchema` | `(action) → ActionSchema \| null` | Define action validation schema |
+
+#### Mechanic-Defined Hooks (fired by core services, only dependents receive)
+
+See [Mechanic-Defined Hooks](#mechanic-defined-hooks) section for details. Summary:
+
+| Domain | Hooks | Fired by |
+|--------|-------|----------|
+| `cards` | `onBeforeCardDraw`, `onCardDrawn`, `onCardPlayed`, `onCardDiscarded`, `onBeforeCardPlay`, `onBeforeAddToHand`, `onAfterAddToHand`, `onAfterRemoveFromHand` | `card-piles.ts`, `hand.ts` |
+| `resources` | `onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent` | `resources.ts` |
+| `dice` | `onBeforeDiceRoll`, `onDiceRolled` | `dice.ts` |
+| `board` | `onBeforePlayerMove`, `onPlayerMoved` | `board.ts` |
+| `effects` | `onBeforeEffectAdd`, `onEffectAdded`, `onEffectRemoved` | `effects.ts` |
+| `visibility` | `onBeforeReveal`, `onInfoRevealed` | `visibility.ts` |
+| `social` | `onBeforeVote`, `onPlayerVoted`, `onVoteCompleted` | `social.ts` |
 
 ### Mechanic Composition
 
@@ -497,6 +475,10 @@ export interface CardsHooks {
   onCardPlayed?(ctx: HookContext, payload: CardPlayedPayload): StateChanges | null;
   onCardDiscarded?(ctx: HookContext, payload: CardDiscardedPayload): StateChanges | null;
   onBeforeCardDraw?(ctx: HookContext, payload: BeforeDrawPayload): DrawHookResult | null;
+  onBeforeCardPlay?(ctx: HookContext, payload: BeforeCardPlayPayload): { blocked?: boolean; blockReason?: string } | null;
+  onBeforeAddToHand?(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; cards?: Card[] } | null;
+  onAfterAddToHand?(ctx: HookContext, payload: CardsAddedToHandPayload): StateChanges | null;
+  onAfterRemoveFromHand?(ctx: HookContext, payload: CardsRemovedFromHandPayload): StateChanges | null;
 }
 ```
 
@@ -509,27 +491,16 @@ const myMechanic: MechanicHooks & CardsHooks = { ... };
 
 ### Strangler Fig Migration
 
-Global hooks and mechanic-defined hooks coexist during migration:
+The migration followed a phased approach to incrementally move from monolithic global hooks to mechanic-defined hooks:
 
-1. **Phase 1**: Add `defines`, `requires`, `fire()` infrastructure
-2. **Phase 2**: Core services fire BOTH global hooks AND mechanic-defined hooks
-3. **Phase 3**: Leaf mechanics migrate from global to mechanic-defined hooks (one at a time)
-4. **Phase 4**: Deprecate global domain hooks (onBeforeDraw, onAfterDraw, etc.)
-5. **Phase 5**: Global hooks shrink to ~15 truly engine-level hooks
+1. **Phase 1** ✅: Add `defines`, `requires`, `fire()` infrastructure
+2. **Phase 2** ✅: Core services fire BOTH global hooks AND mechanic-defined hooks (dual-fire)
+3. **Phase 3** ✅: Leaf mechanics migrate from global to mechanic-defined hooks (one at a time)
+4. **Phase 4** ✅: Remove deprecated global domain hooks — `MechanicHooks` slimmed to global-only hooks, ~400 lines of routing methods removed from registry, core services fire only mechanic-defined hooks
 
-During transition, `card-piles.ts` fires both:
-```typescript
-// Existing: fire global hook (all mechanics)
-mechanicRegistry.onAfterDraw(state, playerId, ...);
-// New: fire cards-defined hook (only cards dependents)
-mechanicRegistry.fire('cards', 'onCardDrawn', state, playerId, { cards });
-```
+### Current State
 
-Both paths work. Mechanics can implement either. No breaking changes.
-
-### End State
-
-`MechanicHooks` shrinks to engine-level global hooks only:
+`MechanicHooks` now contains only engine-level global hooks:
 
 ```typescript
 interface MechanicHooks {
@@ -538,26 +509,35 @@ interface MechanicHooks {
   requires?: string[];
   defines?: Record<string, HookDefinition>;
 
-  // ~15 global hooks (engine-fired)
+  // ~21 global hooks (engine-fired, all enabled mechanics)
   preValidateAction?(...): ValidationResult | null;
   onExecuteAction?(...): ActionExecutionResult | null;
   postExecuteAction?(...): StateChanges | null;
   onTurnStart?(...): StateChanges | null;
   onTurnEnd?(...): StateChanges | null;
+  shouldAutoEndTurn?(...): boolean;
   onCheckWin?(...): WinCheckResult | null;
   initSharedState?(...): SharedStateInitResult | null;
   initPlayerState?(...): PlayerInitResult | null;
   getAvailableActions?(...): AvailableAction[];
+  describeAction?(...): ActionDescription | null;
   getPlayerView?(...): Record<string, unknown> | null;
   isPlayerBlocked?(...): boolean | null;
   canPlayerActNow?(...): boolean | null;
+  applyEffect?(...): EffectResult | null;
+  getActionSchema?(...): ActionSchema | null;
+  getVisibleState?(...): VisibleState | null;
+  canSeeInfo?(...): boolean | undefined;
+  onDetermineTurnOrder?(...): TurnOrderResult | null;
+  onPassPriority?(...): PassPriorityResult | null;
+  onVoteTally?(...): VoteTallyResult | null;
 
   // Domain hooks live on defining mechanics, implemented via [key: string]
 }
 ```
 
-Each domain's routing becomes a `fire()` call in the defining mechanic,
-replacing hardcoded routing methods in the registry.
+Each domain's routing is a `fire()` call in the core service,
+replacing the hardcoded routing methods that were removed from the registry.
 
 ### Progress
 
@@ -566,7 +546,7 @@ replacing hardcoded routing methods in the registry.
 - [x] Infrastructure: `HookDefinition` type with resolution strategies
 - [x] `cards` core mechanic: defines `onCardDrawn`, `onCardPlayed`, `onCardDiscarded`, `onBeforeCardDraw`, `onBeforeCardPlay`
 - [x] `cards` core mechanic: owns `play_card` action via `onExecuteAction` (removed from game.ts fallback)
-- [x] `card-piles.ts` dual-fires global hooks AND cards-defined hooks (strangler fig)
+- [x] `card-piles.ts` fires cards-defined hooks (`onBeforeCardDraw`, `onCardDrawn`, `onCardDiscarded`)
 - [x] `card-piles.ts` `playCard()` function: removes from hand, discards, fires `onCardPlayed`
 - [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn` and `onCardPlayed` (currentColor); legacy `postExecuteAction` removed
 - [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`; legacy `onBeforeDraw` removed
@@ -575,7 +555,7 @@ replacing hardcoded routing methods in the registry.
 - [x] All card leaf mechanics declare `requires: ['cards']`:
   - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`, `take-that`
 - [x] `resources` core mechanic: defines `onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`
-- [x] `resources.ts` dual-fires global hooks AND resources-defined hooks (strangler fig)
+- [x] `resources.ts` fires resources-defined hooks (`onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`)
 - [x] `catch-the-leader`: migrated to `requires: ['resources']`, implements `onBeforeResourceGain` (leader income reduction); legacy `onBeforeResourceChange` removed
 
 - [x] `trick-taking` and `ladder-climbing` fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
@@ -593,23 +573,23 @@ replacing hardcoded routing methods in the registry.
   - `kill-steal` → `addResource()` (bounty distribution; added `requires: ['resources']`)
   - `events` → `addResource()`/`spendResource()` (event resource effects)
 - [x] `dice` core mechanic: defines `onBeforeDiceRoll`, `onDiceRolled`
-- [x] `dice.ts` dual-fires global hooks AND dice-defined hooks (strangler fig)
+- [x] `dice.ts` fires dice-defined hooks (`onBeforeDiceRoll`, `onDiceRolled`)
 - [x] Dice leaf mechanics declare `requires: ['dice']`:
   - `dice-rolling`, `different-dice-movement`, `re-rolling-and-locking`, `roll-spin-and-move`, `die-icon-resolution`
 - [x] `board` core mechanic: defines `onPlayerMoved`, `onBeforePlayerMove`
-- [x] `board.ts` dual-fires global hooks AND board-defined hooks (strangler fig)
+- [x] `board.ts` fires board-defined hooks (`onBeforePlayerMove`, `onPlayerMoved`)
 - [x] Board leaf mechanics declare `requires: ['board']`:
   - `area-movement`, `board-state`, `grid-movement`, `movement-points`, `roll-spin-and-move`, `hidden-movement`
 - [x] `effects` core mechanic: defines `onEffectAdded`, `onEffectRemoved`, `onBeforeEffectAdd`
-- [x] `effects.ts` dual-fires global hooks AND effects-defined hooks (strangler fig)
+- [x] `effects.ts` fires effects-defined hooks (`onBeforeEffectAdd`, `onEffectAdded`, `onEffectRemoved`)
 - [x] Effects leaf mechanics declare `requires: ['effects']`:
   - `lose-a-turn`, `take-that`
 - [x] `visibility` core mechanic: defines `onInfoRevealed`, `onBeforeReveal`
-- [x] `visibility.ts` dual-fires visibility-defined hooks in `revealInfo()`
+- [x] `visibility.ts` fires visibility-defined hooks (`onBeforeReveal`, `onInfoRevealed`) in `revealInfo()`
 - [x] Visibility leaf mechanics declare `requires: ['visibility']`:
   - `hidden-roles`, `hidden-objectives`, `hidden-victory-points`, `hidden-movement`, `deduction`, `roles-asymmetric-info`, `traitor-game`
 - [x] `social` core mechanic: defines `onVoteCompleted`, `onPlayerVoted`, `onBeforeVote`
-- [x] `social.ts` dual-fires social-defined hooks in `castVote()`
+- [x] `social.ts` fires social-defined hooks (`onBeforeVote`, `onPlayerVoted`, `onVoteCompleted`) in `castVote()`
 - [x] Social leaf mechanics declare `requires: ['social']`:
   - `voting`, `negotiation`, `communication-limits`, `player-judge`, `bribery`
 - [x] Generic `applyEffect` removed from cards `onExecuteAction`; card effects now handled by `onCardPlayed` responders:
@@ -638,48 +618,58 @@ replacing hardcoded routing methods in the registry.
   - `bribery`: resource mutation refactored to use `spendResource()`/`addResource()`
   - `voting`: no-op `onVoteCast` removed (was always returning null)
 
-**Hooks that remain global (cannot migrate):**
+**Phase 4: Global domain hooks deprecated and removed:**
+
+- [x] Added cards-defined hand hooks: `onBeforeAddToHand`, `onAfterAddToHand`, `onAfterRemoveFromHand`
+- [x] Migrated `hand-management` to cards-defined `onBeforeAddToHand` (hand limit enforcement)
+- [x] Migrated `push-your-luck` to cards-defined `onAfterAddToHand` (bust detection)
+- [x] `hand.ts` fires cards-defined hooks only (no global hook calls)
+- [x] Removed 18 deprecated domain hooks from `MechanicHooks` interface
+- [x] Removed ~400 lines of deprecated routing methods from registry (onBeforeDraw, onAfterDraw, onDiscard, onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand, onBeforeResourceChange, onAfterResourceChange, onBeforeAddEffect, onAfterAddEffect, onBeforeRemoveEffect, onEffectExpired, onBeforeMove, onAfterMove, onReveal, onBeforeRoll, onAfterRoll, onVoteCast)
+- [x] Removed global hook calls from all core services (card-piles, hand, resources, effects, board, dice, visibility, social)
+- [x] Cleaned up unused type imports in registry
+
+**Hooks that remain global (by design):**
 - `canSeeInfo` — query hook, not event; polled by visibility service across all mechanics
-- `onVoteTally` — computation hook that calculates vote winner; `onVoteCompleted` is a notification hook with different purpose
+- `onVoteTally` — computation hook that calculates vote winner; distinct from social-defined `onVoteCompleted`
 - `getVisibleState` — state filter hook; each mechanic redacts its own fields
-- `onBeforeAddToHand`/`onAfterAddToHand` — no cards-defined equivalent exists yet
+- `onDetermineTurnOrder`, `onPassPriority` — turn order hooks, engine-level concerns
 
 ### Outstanding
 
-- [ ] Deprecate global domain hooks once all leaf mechanics migrated (dice, board, visibility event hooks can be deprecated now; card and social computation hooks still needed)
-- [ ] Slim `MechanicHooks` interface to global-only hooks
-- [ ] Add cards-defined hooks for hand operations (`onBeforeAddToHand`, `onAfterAddToHand`) to enable full card domain migration
+- [ ] Add `onBeforeEffectRemove` to effects-defined hooks (effects.removeEffect currently has no pre-removal hook)
+- [ ] Consider extracting `onVoteTally` to social-defined hook if only social-dependent mechanics use it
 
 ---
 
 ## Core Services
 
 ### Card Piles (`core/card-piles.ts`)
-- `drawFromDeck(state, count, playerId?)` - Fires `onBeforeDraw`/`onAfterDraw` + `onBeforeCardDraw`/`onCardDrawn`
-- `addToDiscard(state, cards, playerId?)` - Fires `onDiscard` + `onCardDiscarded`
+- `drawFromDeck(state, count, playerId?)` - Fires cards-defined `onBeforeCardDraw`/`onCardDrawn`
+- `addToDiscard(state, cards, playerId?)` - Fires cards-defined `onCardDiscarded`
 - `playCard(state, playerId, cardName, playContext?)` - Removes from hand, discards, fires `onCardPlayed`
 - `peekDiscard`, `hasCardsAvailable`, `getDeckSize`, `getDiscardSize`
 
 ### Hand (`core/hand.ts`)
-- `addToHand(state, playerId, cards)` - Fires `onBeforeAddToHand`/`onAfterAddToHand`
-- `removeFromHandByIndex/ByName` - Fires `onAfterRemoveFromHand`
+- `addToHand(state, playerId, cards)` - Fires cards-defined `onBeforeAddToHand`/`onAfterAddToHand`
+- `removeFromHandByIndex/ByName` - Fires cards-defined `onAfterRemoveFromHand`
 - `removeCardsFromHand` - Batched operations
 - `findInHand`, `getHandSize`, `getHand`
 
 ### Resources (`core/resources.ts`)
-- `addResource(state, playerId, resource, amount)` - Fires `onBeforeResourceChange`/`onAfterResourceChange` + `onBeforeResourceGain`/`onResourceGained`
-- `spendResource(state, playerId, resource, amount)` - Fires `onBeforeResourceChange`/`onAfterResourceChange` + `onBeforeResourceSpend`/`onResourceSpent`
+- `addResource(state, playerId, resource, amount)` - Fires resources-defined `onBeforeResourceGain`/`onResourceGained`
+- `spendResource(state, playerId, resource, amount)` - Fires resources-defined `onBeforeResourceSpend`/`onResourceSpent`
 - `setResource(state, playerId, resource, amount)` - Fires appropriate gain/spend hooks based on delta direction
 - `getResource`, `hasResource`, `getAllResources`, `getResourceNames`
 
 ### Effects (`core/effects.ts`)
-- `addEffect(state, playerId, effect)` - Fires `onBeforeAddEffect`/`onAfterAddEffect` + `onBeforeEffectAdd`/`onEffectAdded`
-- `removeEffect(state, playerId, effectType)` - Fires `onBeforeRemoveEffect`
-- `decrementEffectDurations(state, playerId)` - Fires `onEffectExpired` + `onEffectRemoved` for expired effects
+- `addEffect(state, playerId, effect)` - Fires effects-defined `onBeforeEffectAdd`/`onEffectAdded`
+- `removeEffect(state, playerId, effectType)` - Removes effect (no pre-removal hook yet)
+- `decrementEffectDurations(state, playerId)` - Fires effects-defined `onEffectRemoved` for expired effects
 - `hasEffect`, `getEffect`, `getEffects`, `getEffectsByType`, `getEffectValue`, `isBlocked`, `clearEffects`
 
 ### Board (`core/board.ts`)
-- `setBoardState(state, playerId, newState)` - Fires `onBeforeMove`/`onAfterMove` + `onBeforePlayerMove`/`onPlayerMoved`
+- `setBoardState(state, playerId, newState)` - Fires board-defined `onBeforePlayerMove`/`onPlayerMoved`
 - `getBoardState`, `getValidMoveTargets`, `getValidMoveTargetsForPlayer`, `isValidMove`
 - `getEdge`, `getMoveProbability`, `getPlayersAtState`, `hasBoard`
 
@@ -690,17 +680,19 @@ replacing hardcoded routing methods in the registry.
 - `createSnakeDraftOrder`
 
 ### Dice (`core/dice.ts`)
-- `rollDice(state, playerId, options)` - Fires `onBeforeRoll`/`onAfterRoll` + `onBeforeDiceRoll`/`onDiceRolled`
-- `getLastRoll`, `modifyRoll`
+- `rollDice(state, playerId, options)` - Fires dice-defined `onBeforeDiceRoll`/`onDiceRolled`
+- `rollSingleDie`, `rollD6`, `rollForMovement`, `rollCheck`
+- `rollWithAdvantage`, `rollWithDisadvantage`, `rollExploding`, `countSuccesses`
+- `parseDiceNotation`, `rollFromNotation`
 
 ### Visibility (`core/visibility.ts`)
 - `getVisibleStateForPlayer(state, viewerId)` - Applies `getVisibleState` filters from all mechanics
-- `revealInfo(state, revealingPlayerId, targetInfo, toPlayerIds)` - Fires `onReveal` + `onBeforeReveal`/`onInfoRevealed`
+- `revealInfo(state, revealingPlayerId, targetInfo, toPlayerIds)` - Fires visibility-defined `onBeforeReveal`/`onInfoRevealed`
 - `canPlayerSeeInfo(state, viewerId, infoType, targetId)` - Polls `canSeeInfo` from all mechanics
 
 ### Social (`core/social.ts`)
 - `startVoting(state, topic, voters, config)` - Initialize voting session
-- `castVote(state, voteId, playerId, choice)` - Fires `onBeforeVote`/`onPlayerVoted`/`onVoteCompleted`
+- `castVote(state, voteId, playerId, choice)` - Fires social-defined `onBeforeVote`/`onPlayerVoted`/`onVoteCompleted`
 - `getVotingResult`, `isVotingComplete`, `completeVoting`
 
 ### Pass (`core/pass.ts`) - NEW

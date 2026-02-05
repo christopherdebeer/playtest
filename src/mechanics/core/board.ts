@@ -4,9 +4,9 @@
  * Manages board state operations for games with board/state-based movement.
  * This is a "trunk" mechanic that board-related mechanics depend on.
  *
- * Hooks:
- * - onBeforeMove: Can modify target or block move
- * - onAfterMove: Notified after player moved
+ * Fires board-defined hooks:
+ * - onBeforePlayerMove: Can modify target or block move (blocking)
+ * - onPlayerMoved: Notified after player moved (merge)
  */
 
 import { GameState, BoardConfig, EdgeConfig } from '../../types/game.js';
@@ -42,7 +42,7 @@ export function getBoardState(state: GameState, playerId: string): string {
 
 /**
  * Set a player's board state directly.
- * Calls onBeforeMove and onAfterMove hooks.
+ * Fires board-defined onBeforePlayerMove and onPlayerMoved hooks.
  *
  * @returns Result indicating success
  */
@@ -58,42 +58,27 @@ export function setBoardState(
 
   const previousState = player.state;
 
-  // Run onBeforeMove hooks (global - all mechanics)
-  const beforeResult = mechanicRegistry.onBeforeMove(state, playerId, newState);
-  if (beforeResult.blocked) {
-    return {
-      success: false,
-      blocked: true,
-      reason: beforeResult.blockReason
-    };
-  }
-
-  let targetState = beforeResult.target ?? newState;
-
-  // Board-defined hook (only board dependents) - strangler fig dual-fire
-  const definedBeforeResult = mechanicRegistry.fire('board', 'onBeforePlayerMove', state, playerId, {
+  // Fire board-defined onBeforePlayerMove hook (blocking)
+  let targetState = newState;
+  const beforeResult = mechanicRegistry.fire('board', 'onBeforePlayerMove', state, playerId, {
     fromState: previousState, toState: targetState
   });
-  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
-    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
     return { success: false, blocked: true, reason: blockReason };
   }
-  if (definedBeforeResult && typeof (definedBeforeResult as Record<string, unknown>).target === 'string') {
-    targetState = (definedBeforeResult as Record<string, unknown>).target as string;
+  if (beforeResult && typeof (beforeResult as Record<string, unknown>).target === 'string') {
+    targetState = (beforeResult as Record<string, unknown>).target as string;
   }
 
   // Apply the state change
   player.state = targetState;
 
-  // Run onAfterMove hooks (global - all mechanics)
-  const afterChanges = mechanicRegistry.onAfterMove(state, playerId, previousState, targetState);
-  applyStateChanges(state, afterChanges);
-
-  // Board-defined hook (only board dependents) - strangler fig dual-fire
-  const boardAfterChanges = mechanicRegistry.fire('board', 'onPlayerMoved', state, playerId, {
+  // Fire board-defined onPlayerMoved hook (merge)
+  const afterChanges = mechanicRegistry.fire('board', 'onPlayerMoved', state, playerId, {
     fromState: previousState, toState: targetState
   });
-  if (boardAfterChanges) applyStateChanges(state, boardAfterChanges);
+  if (afterChanges) applyStateChanges(state, afterChanges);
 
   return {
     success: true,

@@ -1,5 +1,5 @@
 /**
- * Visibility Core Service (Phase 4)
+ * Visibility Core Service
  *
  * Manages information visibility for hidden information games.
  * This enables mechanics like:
@@ -8,14 +8,17 @@
  * - hidden-victory-points: Secret scoring
  * - traitor-game: Hidden traitor role
  *
- * Hooks:
+ * Global hooks (remain on MechanicHooks):
  * - getVisibleState: Filter state for a specific viewer
- * - onReveal: Trigger effects when info is revealed
  * - canSeeInfo: Check if viewer can see specific info type
+ *
+ * Fires visibility-defined hooks:
+ * - onBeforeReveal: Can block reveals (blocking)
+ * - onInfoRevealed: Notified after info revealed (merge)
  */
 
 import { GameState, PlayerState } from '../../types/game.js';
-import { VisibilityContext, RevealContext, VisibleState, StateChanges } from '../types.js';
+import { VisibilityContext, VisibleState } from '../types.js';
 import { mechanicRegistry, applyStateChanges } from '../registry.js';
 
 /**
@@ -159,7 +162,7 @@ export function canPlayerSeeInfo(
 
 /**
  * Reveal information from one player to others.
- * Calls onReveal hooks to update game state.
+ * Fires visibility-defined onBeforeReveal and onInfoRevealed hooks.
  */
 export function revealInfo(
   state: GameState,
@@ -167,40 +170,20 @@ export function revealInfo(
   targetInfo: string,
   toPlayerIds: string[] | 'all'
 ): VisibilityOperationResult {
-  const ctx: RevealContext = {
-    state,
-    revealingPlayerId,
-    targetInfo,
-    toPlayerIds,
-    config: state.config
-  };
-
-  const enabledMechanics = mechanicRegistry.getEnabledMechanics(state.config);
-
-  // Visibility-defined hook: onBeforeReveal (only visibility dependents) - strangler fig dual-fire
-  const definedBeforeResult = mechanicRegistry.fire('visibility', 'onBeforeReveal', state, revealingPlayerId, {
-    infoType: targetInfo, targetPlayerId: revealingPlayerId, revealTo: toPlayerIds === 'all' ? Object.keys(state.players) : toPlayerIds
-  });
-  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
-    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
-    return { success: false, error: blockReason ?? 'Reveal blocked' };
-  }
-
-  // Collect state changes from onReveal hooks (global - all mechanics)
-  for (const mechanic of enabledMechanics) {
-    if (mechanic.onReveal) {
-      const changes = mechanic.onReveal(ctx);
-      if (changes) {
-        applyStateChanges(state, changes);
-      }
-    }
-  }
-
-  // Update player knowledge tracking
   const targetPlayers = toPlayerIds === 'all'
     ? Object.keys(state.players)
     : toPlayerIds;
 
+  // Fire visibility-defined onBeforeReveal hook (blocking)
+  const beforeResult = mechanicRegistry.fire('visibility', 'onBeforeReveal', state, revealingPlayerId, {
+    infoType: targetInfo, targetPlayerId: revealingPlayerId, revealTo: targetPlayers
+  });
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, error: blockReason ?? 'Reveal blocked' };
+  }
+
+  // Update player knowledge tracking
   for (const receiverId of targetPlayers) {
     if (receiverId === revealingPlayerId) continue;
 
@@ -221,11 +204,11 @@ export function revealInfo(
     receiver.knowledge.revealed[revealKey] = true;
   }
 
-  // Visibility-defined hook: onInfoRevealed (only visibility dependents) - strangler fig dual-fire
-  const visibilityChanges = mechanicRegistry.fire('visibility', 'onInfoRevealed', state, revealingPlayerId, {
+  // Fire visibility-defined onInfoRevealed hook (merge)
+  const afterChanges = mechanicRegistry.fire('visibility', 'onInfoRevealed', state, revealingPlayerId, {
     infoType: targetInfo, targetPlayerId: revealingPlayerId, revealedTo: targetPlayers, info: targetInfo
   });
-  if (visibilityChanges) applyStateChanges(state, visibilityChanges);
+  if (afterChanges) applyStateChanges(state, afterChanges);
 
   return { success: true };
 }
