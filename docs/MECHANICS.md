@@ -578,16 +578,10 @@ replacing hardcoded routing methods in the registry.
 - [x] `resources.ts` dual-fires global hooks AND resources-defined hooks (strangler fig)
 - [x] `catch-the-leader`: migrated to `requires: ['resources']`, implements `onBeforeResourceGain` (leader income reduction); legacy `onBeforeResourceChange` removed
 
-### Outstanding
-
-- [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
-- [x] `trick-taking` and `ladder-climbing` now fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
-- [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
+- [x] `trick-taking` and `ladder-climbing` fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
 - [x] Resource leaf mechanics declare `requires: ['resources']`:
-  - `catch-the-leader`, `income`, `automatic-resource-growth`, `chaining`, `once-per-game-abilities`, `multi-use-cards`, `deck-building`, `die-icon-resolution`, `point-to-point-movement`
+  - `catch-the-leader`, `income`, `automatic-resource-growth`, `chaining`, `once-per-game-abilities`, `multi-use-cards`, `deck-building`, `die-icon-resolution`, `point-to-point-movement`, `auction-english`, `auction-sealed-bid`, `auction-once-around`
   - Note: `income`, `automatic-resource-growth`, and others bypass `addResource()` service (direct `playerStateChanges` mutation). Future refactoring should route through service for hook support.
-- [ ] Migrate remaining resource-adjacent mechanics to `requires: ['resources']`:
-  - `auction-english`, `auction-sealed-bid`, `auction-once-around` (use resources for bidding)
 - [x] `dice` core mechanic: defines `onBeforeDiceRoll`, `onDiceRolled`
 - [x] `dice.ts` dual-fires global hooks AND dice-defined hooks (strangler fig)
 - [x] Dice leaf mechanics declare `requires: ['dice']`:
@@ -608,13 +602,14 @@ replacing hardcoded routing methods in the registry.
 - [x] `social.ts` dual-fires social-defined hooks in `castVote()`
 - [x] Social leaf mechanics declare `requires: ['social']`:
   - `voting`, `negotiation`, `communication-limits`, `player-judge`, `bribery`
+- [x] Generic `applyEffect` removed from cards `onExecuteAction`; card effects now handled by `onCardPlayed` responders:
+  - `placed-card-effects`: `probability_boost`, `probability_penalty`, `force_discard`
+  - `take-that`: `block_turn`, `skip`
+  - `card-matching`: `currentColor`
 
 ### Outstanding
 
-- [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
 - [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
-- [ ] Migrate remaining resource-adjacent mechanics to `requires: ['resources']`:
-  - `auction-english`, `auction-sealed-bid`, `auction-once-around` (use resources for bidding)
 - [ ] Refactor direct resource mutations (income, automatic-resource-growth, etc.) to use `addResource()` service for proper hook support
 - [ ] Deprecate global domain hooks once all leaf mechanics migrated
 - [ ] Slim `MechanicHooks` interface to global-only hooks

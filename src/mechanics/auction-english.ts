@@ -19,6 +19,7 @@ interface AuctionConfig {
 export const auctionEnglishMechanic: MechanicHooks = {
   slug: 'auction-english',
   name: 'Auction (English)',
+  requires: ['resources'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'bid') return null;

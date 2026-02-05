@@ -97,6 +97,7 @@ function resolveAuction(
 export const auctionSealedBidMechanic: MechanicHooks = {
   slug: 'auction-sealed-bid',
   name: 'Auction (Sealed Bid)',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',
