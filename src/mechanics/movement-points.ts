@@ -59,6 +59,7 @@ function getTargetState(action: MoveAction): string | null {
 export const movementPointsMechanic: MechanicHooks = {
   slug: 'movement-points',
   name: 'Movement Points',
+  requires: ['board'],
 
   configSchema: {
     type: 'object',

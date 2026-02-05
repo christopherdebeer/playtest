@@ -64,6 +64,7 @@ function shuffleArray<T>(array: T[]): T[] {
 export const hiddenObjectivesMechanic: MechanicHooks = {
   slug: 'hidden-objectives',
   name: 'Hidden Objectives',
+  requires: ['visibility'],
 
   configSchema: {
     type: 'object',

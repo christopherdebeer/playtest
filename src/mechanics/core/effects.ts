@@ -44,7 +44,7 @@ export function addEffect(
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Run onBeforeAddEffect hooks
+  // Run onBeforeAddEffect hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeAddEffect(state, playerId, effect);
   if (beforeResult.blocked) {
     return {
@@ -54,11 +54,24 @@ export function addEffect(
     };
   }
 
-  const effectToAdd = beforeResult.effect ?? effect;
+  let effectToAdd = beforeResult.effect ?? effect;
+
+  // Effects-defined hook (only effects dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('effects', 'onBeforeEffectAdd', state, playerId, {
+    effect: effectToAdd
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, blocked: true, blockReason };
+  }
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).effect) {
+    effectToAdd = (definedBeforeResult as Record<string, unknown>).effect as Effect;
+  }
 
   // Check if an effect of the same type already exists
   const existingIndex = player.effects.findIndex(e => e.type === effectToAdd.type);
-  if (existingIndex !== -1) {
+  const replaced = existingIndex !== -1;
+  if (replaced) {
     // Replace existing effect (refresh duration)
     player.effects[existingIndex] = effectToAdd;
   } else {
@@ -66,9 +79,15 @@ export function addEffect(
     player.effects.push(effectToAdd);
   }
 
-  // Run onAfterAddEffect hooks
+  // Run onAfterAddEffect hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterAddEffect(state, playerId, effectToAdd);
   applyStateChanges(state, afterChanges);
+
+  // Effects-defined hook (only effects dependents) - strangler fig dual-fire
+  const effectsAfterChanges = mechanicRegistry.fire('effects', 'onEffectAdded', state, playerId, {
+    effect: effectToAdd, replaced
+  });
+  if (effectsAfterChanges) applyStateChanges(state, effectsAfterChanges);
 
   return {
     success: true,
@@ -167,8 +186,15 @@ export function decrementEffectDurations(state: GameState, playerId: string): Ef
 
   // Notify hooks about expired effects
   for (const effect of expiredEffects) {
+    // Global hook (all mechanics)
     const changes = mechanicRegistry.onEffectExpired(state, playerId, effect);
     applyStateChanges(state, changes);
+
+    // Effects-defined hook (only effects dependents) - strangler fig dual-fire
+    const effectsChanges = mechanicRegistry.fire('effects', 'onEffectRemoved', state, playerId, {
+      effect, expired: true
+    });
+    if (effectsChanges) applyStateChanges(state, effectsChanges);
   }
 
   return expiredEffects;

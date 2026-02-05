@@ -42,6 +42,7 @@ import {
 export const votingMechanic: MechanicHooks = {
   slug: 'voting',
   name: 'Voting',
+  requires: ['social'],
 
   /**
    * Provide vote action when a voting session is active

@@ -112,6 +112,7 @@ function buildRoleAssignments(config: HiddenRolesConfig, playerCount: number): s
 export const hiddenRolesMechanic: MechanicHooks = {
   slug: 'hidden-roles',
   name: 'Hidden Roles',
+  requires: ['visibility'],
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;

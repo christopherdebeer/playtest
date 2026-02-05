@@ -71,6 +71,7 @@ function getProximityClue(
 export const hiddenMovementMechanic: MechanicHooks = {
   slug: 'hidden-movement',
   name: 'Hidden Movement',
+  requires: ['board', 'visibility'],
 
   getVisibleState(ctx: VisibilityContext): VisibleState | null {
     if (!isMechanicEnabled(ctx.config, 'hidden-movement')) return null;

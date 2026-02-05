@@ -28,6 +28,7 @@ interface Bribe {
 export const briberyMechanic: MechanicHooks = {
   slug: 'bribery',
   name: 'Bribery',
+  requires: ['social'],
 
   configSchema: {
     type: 'object',

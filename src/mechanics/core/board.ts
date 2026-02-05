@@ -58,7 +58,7 @@ export function setBoardState(
 
   const previousState = player.state;
 
-  // Run onBeforeMove hooks
+  // Run onBeforeMove hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeMove(state, playerId, newState);
   if (beforeResult.blocked) {
     return {
@@ -68,14 +68,32 @@ export function setBoardState(
     };
   }
 
-  const targetState = beforeResult.target ?? newState;
+  let targetState = beforeResult.target ?? newState;
+
+  // Board-defined hook (only board dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('board', 'onBeforePlayerMove', state, playerId, {
+    fromState: previousState, toState: targetState
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { success: false, blocked: true, reason: blockReason };
+  }
+  if (definedBeforeResult && typeof (definedBeforeResult as Record<string, unknown>).target === 'string') {
+    targetState = (definedBeforeResult as Record<string, unknown>).target as string;
+  }
 
   // Apply the state change
   player.state = targetState;
 
-  // Run onAfterMove hooks
+  // Run onAfterMove hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterMove(state, playerId, previousState, targetState);
   applyStateChanges(state, afterChanges);
+
+  // Board-defined hook (only board dependents) - strangler fig dual-fire
+  const boardAfterChanges = mechanicRegistry.fire('board', 'onPlayerMoved', state, playerId, {
+    fromState: previousState, toState: targetState
+  });
+  if (boardAfterChanges) applyStateChanges(state, boardAfterChanges);
 
   return {
     success: true,

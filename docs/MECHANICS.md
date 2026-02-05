@@ -405,20 +405,46 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │           └── trump-cards (requires: trick-taking)
   │
   ├── resources (defines: onResourceGained, onResourceSpent, onBeforeResourceGain, onBeforeResourceSpend)
-  │     ├── catch-the-leader (requires: resources) ← MIGRATED
-  │     ├── action-points (requires: resources) ← planned
-  │     └── income (requires: resources) ← planned
+  │     ├── catch-the-leader (requires: resources)
+  │     ├── income (requires: resources)
+  │     ├── automatic-resource-growth (requires: resources)
+  │     ├── chaining (requires: resources)
+  │     └── once-per-game-abilities (requires: resources)
   │
-  ├── board (defines: onMoved, onLocationEntered, ...)
+  ├── board (defines: onPlayerMoved, onBeforePlayerMove)
+  │     ├── area-movement (requires: board)
+  │     ├── board-state (requires: board)
   │     ├── grid-movement (requires: board)
-  │     └── area-movement (requires: board)
+  │     ├── movement-points (requires: board)
+  │     ├── roll-spin-and-move (requires: dice, board)
+  │     └── hidden-movement (requires: board, visibility)
   │
-  └── dice (defines: onDiceRolled, onBeforeDiceRoll)
-        ├── dice-rolling (requires: dice) ← MIGRATED
-        ├── different-dice-movement (requires: dice) ← MIGRATED
-        ├── re-rolling-and-locking (requires: dice) ← MIGRATED
-        ├── roll-spin-and-move (requires: dice) ← MIGRATED
-        └── die-icon-resolution (requires: dice, resources) ← MIGRATED
+  ├── dice (defines: onDiceRolled, onBeforeDiceRoll)
+  │     ├── dice-rolling (requires: dice)
+  │     ├── different-dice-movement (requires: dice)
+  │     ├── re-rolling-and-locking (requires: dice)
+  │     ├── roll-spin-and-move (requires: dice, board)
+  │     └── die-icon-resolution (requires: dice, resources)
+  │
+  ├── effects (defines: onEffectAdded, onEffectRemoved, onBeforeEffectAdd)
+  │     ├── lose-a-turn (requires: effects)
+  │     └── take-that (requires: cards, effects)
+  │
+  ├── visibility (defines: onInfoRevealed, onBeforeReveal)
+  │     ├── hidden-roles (requires: visibility)
+  │     ├── hidden-objectives (requires: visibility)
+  │     ├── hidden-victory-points (requires: visibility)
+  │     ├── hidden-movement (requires: board, visibility)
+  │     ├── deduction (requires: visibility)
+  │     ├── roles-asymmetric-info (requires: hidden-roles, visibility)
+  │     └── traitor-game (requires: hidden-roles, visibility)
+  │
+  └── social (defines: onVoteCompleted, onPlayerVoted, onBeforeVote)
+        ├── voting (requires: social)
+        ├── negotiation (requires: social)
+        ├── communication-limits (requires: social)
+        ├── player-judge (requires: social)
+        └── bribery (requires: social)
 ```
 
 ### HookDefinition
@@ -566,11 +592,30 @@ replacing hardcoded routing methods in the registry.
 - [x] `dice.ts` dual-fires global hooks AND dice-defined hooks (strangler fig)
 - [x] Dice leaf mechanics declare `requires: ['dice']`:
   - `dice-rolling`, `different-dice-movement`, `re-rolling-and-locking`, `roll-spin-and-move`, `die-icon-resolution`
-- [ ] `board` core mechanic: define hooks from current board service
-- [ ] `combat` core mechanic: define hooks from current combat service
-- [ ] `effects` core mechanic: define hooks from current effects service
-- [ ] `visibility` core mechanic: define hooks from current visibility service
-- [ ] `social` core mechanic: define hooks from current social service
+- [x] `board` core mechanic: defines `onPlayerMoved`, `onBeforePlayerMove`
+- [x] `board.ts` dual-fires global hooks AND board-defined hooks (strangler fig)
+- [x] Board leaf mechanics declare `requires: ['board']`:
+  - `area-movement`, `board-state`, `grid-movement`, `movement-points`, `roll-spin-and-move`, `hidden-movement`
+- [x] `effects` core mechanic: defines `onEffectAdded`, `onEffectRemoved`, `onBeforeEffectAdd`
+- [x] `effects.ts` dual-fires global hooks AND effects-defined hooks (strangler fig)
+- [x] Effects leaf mechanics declare `requires: ['effects']`:
+  - `lose-a-turn`, `take-that`
+- [x] `visibility` core mechanic: defines `onInfoRevealed`, `onBeforeReveal`
+- [x] `visibility.ts` dual-fires visibility-defined hooks in `revealInfo()`
+- [x] Visibility leaf mechanics declare `requires: ['visibility']`:
+  - `hidden-roles`, `hidden-objectives`, `hidden-victory-points`, `hidden-movement`, `deduction`, `roles-asymmetric-info`, `traitor-game`
+- [x] `social` core mechanic: defines `onVoteCompleted`, `onPlayerVoted`, `onBeforeVote`
+- [x] `social.ts` dual-fires social-defined hooks in `castVote()`
+- [x] Social leaf mechanics declare `requires: ['social']`:
+  - `voting`, `negotiation`, `communication-limits`, `player-judge`, `bribery`
+
+### Outstanding
+
+- [ ] Move generic `applyEffect` call from cards `onExecuteAction` to per-mechanic `onCardPlayed` handlers (once all effect types have handlers)
+- [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
+- [ ] Migrate remaining resource-adjacent mechanics to `requires: ['resources']`:
+  - `auction-english`, `auction-sealed-bid`, `auction-once-around` (use resources for bidding)
+- [ ] Refactor direct resource mutations (income, automatic-resource-growth, etc.) to use `addResource()` service for proper hook support
 - [ ] Deprecate global domain hooks once all leaf mechanics migrated
 - [ ] Slim `MechanicHooks` interface to global-only hooks
 
@@ -597,15 +642,15 @@ replacing hardcoded routing methods in the registry.
 - `getResource`, `hasResource`, `getAllResources`, `getResourceNames`
 
 ### Effects (`core/effects.ts`)
-- `addEffect(state, playerId, effect)` - Fires effect hooks
-- `removeEffect(state, playerId, effectId)` - With removal hooks
-- `tickEffects(state, playerId)` - Decrement durations, fire expiration
-- `hasEffect`, `getEffects`, `clearEffects`
+- `addEffect(state, playerId, effect)` - Fires `onBeforeAddEffect`/`onAfterAddEffect` + `onBeforeEffectAdd`/`onEffectAdded`
+- `removeEffect(state, playerId, effectType)` - Fires `onBeforeRemoveEffect`
+- `decrementEffectDurations(state, playerId)` - Fires `onEffectExpired` + `onEffectRemoved` for expired effects
+- `hasEffect`, `getEffect`, `getEffects`, `getEffectsByType`, `getEffectValue`, `isBlocked`, `clearEffects`
 
 ### Board (`core/board.ts`)
-- `movePlayer(state, playerId, target)` - Fires movement hooks
-- `getPlayerPosition`, `getAdjacentStates`
-- `validateMovement` - Path/adjacency validation
+- `setBoardState(state, playerId, newState)` - Fires `onBeforeMove`/`onAfterMove` + `onBeforePlayerMove`/`onPlayerMoved`
+- `getBoardState`, `getValidMoveTargets`, `getValidMoveTargetsForPlayer`, `isValidMove`
+- `getEdge`, `getMoveProbability`, `getPlayersAtState`, `hasBoard`
 
 ### Turns (`core/turns.ts`)
 - `setTurnOrder`, `shuffleTurnOrder`, `reverseTurnOrder`
@@ -618,13 +663,13 @@ replacing hardcoded routing methods in the registry.
 - `getLastRoll`, `modifyRoll`
 
 ### Visibility (`core/visibility.ts`)
-- `getVisibleStateForPlayer(state, viewerId)` - Applies visibility filters
-- `revealInfo(state, info, toPlayers)` - Fires reveal hooks
-- `canPlayerSee(state, viewerId, infoType, targetId)`
+- `getVisibleStateForPlayer(state, viewerId)` - Applies `getVisibleState` filters from all mechanics
+- `revealInfo(state, revealingPlayerId, targetInfo, toPlayerIds)` - Fires `onReveal` + `onBeforeReveal`/`onInfoRevealed`
+- `canPlayerSeeInfo(state, viewerId, infoType, targetId)` - Polls `canSeeInfo` from all mechanics
 
 ### Social (`core/social.ts`)
 - `startVoting(state, topic, voters, config)` - Initialize voting session
-- `castVote(state, voteId, playerId, choice)` - With vote hooks
+- `castVote(state, voteId, playerId, choice)` - Fires `onBeforeVote`/`onPlayerVoted`/`onVoteCompleted`
 - `getVotingResult`, `isVotingComplete`, `completeVoting`
 
 ### Pass (`core/pass.ts`) - NEW

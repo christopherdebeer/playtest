@@ -67,6 +67,7 @@ function getValidMoveTargets(ctx: HookContext): string[] {
 export const gridMovementMechanic: MechanicHooks = {
   slug: 'grid-movement',
   name: 'Grid Movement',
+  requires: ['board'],
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate move actions

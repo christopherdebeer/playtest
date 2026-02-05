@@ -123,6 +123,7 @@ function canEnterArea(
 export const areaMovementMechanic: MechanicHooks = {
   slug: 'area-movement',
   name: 'Area Movement',
+  requires: ['board'],
 
   configSchema: {
     type: 'object',
