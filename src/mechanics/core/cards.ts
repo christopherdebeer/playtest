@@ -27,8 +27,6 @@ import {
 } from '../types.js';
 import { Card, PlayCardAction } from '../../types/game.js';
 import { playCard } from './card-piles.js';
-import { mechanicRegistry } from '../registry.js';
-import { applyStateChanges } from '../registry.js';
 
 // ============ Payload types for cards-defined hooks ============
 
@@ -146,20 +144,12 @@ export const cardsMechanic: MechanicHooks = {
 
     const card = result.card;
 
-    // Apply card effects via mechanic registry (generic: any card with an effect)
-    if (card.effect?.type) {
-      const effectTarget = playAction.target || playerId;
-      const effectToApply = {
-        type: card.effect.type,
-        value: card.effect.value,
-        duration: card.effect.duration ?? 1,
-        source: playerId
-      };
-      const effectResult = mechanicRegistry.applyEffect(state, effectTarget, effectToApply, playerId);
-      if (effectResult?.handled) {
-        applyStateChanges(state, effectResult.stateChanges || {});
-      }
-    }
+    // Card effects are now handled by onCardPlayed responders:
+    // - placed-card-effects: probability_boost, probability_penalty, force_discard
+    // - take-that: block_turn, skip
+    // - card-matching: currentColor
+    // The generic applyEffect dispatch has been removed; each mechanic
+    // reacts to the card play via the onCardPlayed hook fired by playCard().
 
     return {
       handled: true,
