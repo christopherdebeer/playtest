@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-05T21:00:41.936Z",
+  "generated": "2026-02-05T21:18:36.927Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -20,6 +20,27 @@
         "initPlayerState",
         "onTurnStart",
         "getPlayerView"
+      ]
+    },
+    "action-programming": {
+      "config_key": "action_programming",
+      "since": "3.0.0",
+      "description": "Program a sequence of actions to execute",
+      "config_schema": {
+        "program_size": "number",
+        "simultaneous": "boolean",
+        "reveal_order": "string",
+        "allowed_actions": "array"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView",
+        "canPlayerActNow"
       ]
     },
     "area-impulse": {
@@ -57,6 +78,24 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions"
+      ]
+    },
+    "auction-dutch": {
+      "config_key": "auction_dutch",
+      "since": "3.0.0",
+      "description": "Descending price auction",
+      "config_schema": {
+        "starting_price": "number",
+        "decrement": "number",
+        "min_price": "number",
+        "currency": "string"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState"
       ]
     },
     "auction-english": {
@@ -257,6 +296,29 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "cooperative-actions": {
+      "config_key": "cooperative_actions",
+      "since": "3.0.0",
+      "description": "Cooperative play with shared resources and threat tracking",
+      "config_schema": {
+        "shared_pool": "object",
+        "threat_level": "number",
+        "threat_per_round": "number",
+        "max_threat": "number",
+        "cooperative_actions": "array",
+        "loss_message": "string"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onTurnStart",
+        "onCheckWin",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "critical-hits-and-failures": {
@@ -562,6 +624,26 @@
         "isPlayerBlocked"
       ]
     },
+    "market": {
+      "config_key": "market",
+      "since": "3.0.0",
+      "description": "Dynamic commodity pricing system",
+      "config_schema": {
+        "commodities": "array",
+        "price_volatility": "number",
+        "price_floor": "number",
+        "price_ceiling": "number",
+        "currency": "string"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "memory": {
       "config_key": "memory",
       "since": "3.0.0",
@@ -838,6 +920,26 @@
         "describeAction"
       ]
     },
+    "simultaneous-action-selection": {
+      "config_key": "simultaneous_action_selection",
+      "since": "3.0.0",
+      "description": "All players select actions simultaneously",
+      "config_schema": {
+        "resolution_order": "string",
+        "actions_per_round": "number",
+        "reveal_before_resolve": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView",
+        "canPlayerActNow"
+      ]
+    },
     "social": {
       "config_key": "social",
       "since": "3.0.0",
@@ -854,6 +956,27 @@
       },
       "hooks": [
         "onCheckWin"
+      ]
+    },
+    "tableau-building": {
+      "config_key": "tableau_building",
+      "since": "3.0.0",
+      "description": "Build a personal tableau of cards for ongoing benefits",
+      "config_schema": {
+        "max_size": "number",
+        "placement_cost": "object",
+        "score_per_card": "number",
+        "synergy_bonuses": "array",
+        "income_per_card_type": "object"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "getPlayerView"
       ]
     },
     "take-that": {
@@ -1161,6 +1284,22 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "worker-placement-different-worker-types": {
+      "config_key": "worker_placement_different_worker_types",
+      "since": "3.0.0",
+      "description": "Worker placement with multiple worker types",
+      "config_schema": {
+        "types": "array",
+        "type_restrictions": "object",
+        "type_bonuses": "object"
+      },
+      "hooks": [
+        "preValidateAction",
+        "postExecuteAction",
         "initSharedState",
         "getPlayerView"
       ]

@@ -74,7 +74,7 @@ A game engine where:
 │  - resources    │ │ - push-luck     │ │ - empty-hand    │
 │  - effects      │ │ - ladder-climb  │ │ - elimination   │
 │  - board        │ │ - trick-taking  │ │ - timeout       │
-│  - turns        │ │ - 45+ more      │ │ - race          │
+│  - turns        │ │ - 55+ more      │ │ - race          │
 │  - dice         │ │                 │ │ - sudden-death  │
 │  - visibility   │ │                 │ │                 │
 │  - social       │ │                 │ │                 │
@@ -1152,18 +1152,18 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ## Current Status
 
-### Implemented Mechanics: 59 of 192 (31%)
+### Implemented Mechanics: 66 of 192 (34%)
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
-| Action | 1 | 7 | 14% |
-| Auction | 1 | 12 | 8% |
-| Building | 1 | 11 | 9% |
+| Action | 3 | 7 | 43% |
+| Auction | 4 | 12 | 33% |
+| Building | 2 | 11 | 18% |
 | Cards | 10 | 15 | 67% |
 | Conflict | 8 | 8 | 100% |
-| Cooperative | 0 | 10 | 0% |
+| Cooperative | 1 | 10 | 10% |
 | Dice | 5 | 6 | 83% |
-| Economic | 2 | 9 | 22% |
+| Economic | 3 | 9 | 33% |
 | Ending | 1 | 4 | 25% |
 | Information | 5 | 8 | 63% |
 | Movement | 4 | 22 | 18% |
@@ -1172,7 +1172,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Social | 3 | 11 | 27% |
 | Turn Order | 4 | 8 | 50% |
 | Victory | 7 | 5 | 140% |
-| Worker Placement | 1 | 7 | 14% |
+| Worker Placement | 2 | 7 | 29% |
 
 ### Hook Infrastructure Status
 
@@ -1185,10 +1185,10 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Phase 8 | Auctions (5 hooks) | Planned |
 
 **Agnosticism Hooks (Complete):**
-- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading, auction-english, trick-taking, worker-placement
-- `getPlayerView` - Used by push-your-luck, action-points, variable-player-powers, worker-placement
+- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading, auction-english, trick-taking, worker-placement, auction-dutch, simultaneous-action-selection, market, action-programming, cooperative-actions
+- `getPlayerView` - Used by push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions
 - `isPlayerBlocked` - Used by lose-a-turn
-- `canPlayerActNow` - Used by freeplay (enables parallel play)
+- `canPlayerActNow` - Used by freeplay, simultaneous-action-selection, action-programming (enables parallel play)
 - `applyEffect` - Used by location-effects, placed-card-effects
 - `getActionSchema` - Defined, ready for mechanic implementations
 
@@ -1205,6 +1205,12 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | auction-english | `currentBid`, `highBidder`, `auctionActive` | **Done** |
 | trick-taking | `currentTrick`, `leadSuit`, `trickLeader` | **Done** |
 | worker-placement | `workerSpaces` | **Done** |
+| auction-dutch | `dutchAuction` | **Done** |
+| simultaneous-action-selection | `simultaneousSelection` | **Done** |
+| market | `market` (prices, supply, demand) | **Done** |
+| action-programming | `actionProgramming` | **Done** |
+| cooperative-actions | `cooperative` (sharedPool, threat) | **Done** |
+| different-worker-types | `workerTypeDefinitions`, `workerTypeRestrictions` | **Done** |
 
 #### `getPlayerView` - Mechanics with player-specific view data
 | Mechanic | Properties | Status |
@@ -1213,6 +1219,12 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | action-points | `actionPoints`, `actionPointsUsed`, `actionPointsPerTurn` | **Done** |
 | variable-player-powers | `powerId`, `powerName` | **Done** |
 | worker-placement | `workersAvailable`, `workersPlaced`, `workerPlacements` | **Done** |
+| different-worker-types | `workersByType`, `workerTypeRestrictions` | **Done** |
+| simultaneous-action-selection | `simultaneousPhase`, `hasSelected`, `revealedActions` | **Done** |
+| market | `marketPrices`, `marketSupply` | **Done** |
+| tableau-building | `tableau`, `tableauSize`, `tableauMaxSize` | **Done** |
+| action-programming | `programmingPhase`, `myProgram`, `allPrograms` | **Done** |
+| cooperative-actions | `sharedPool`, `threatLevel`, `maxThreat` | **Done** |
 | resources (if mechanic) | resource amounts | Pending |
 
 #### `applyEffect` - Effect type handlers
@@ -1234,8 +1246,8 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 |------|---------------|--------|--------|
 | Pass action | ~~Hardcoded~~ | `core/pass.ts` mechanic | **Done** |
 | Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
-| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (8 mechanics) |
-| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (4 mechanics) |
+| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (14 mechanics) |
+| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (10 mechanics) |
 | Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
 | Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
@@ -1245,8 +1257,8 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
 - **Play card action**: `src/mechanics/core/cards.ts` handles play_card via `onExecuteAction`
 - **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
-- **Shared state init**: 8 mechanics implement `initSharedState` (open-drafting, deck-building, trading, auction-english, trick-taking, card-matching, freeplay, worker-placement)
-- **Player view**: 4 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement)
+- **Shared state init**: 14 mechanics implement `initSharedState` (open-drafting, deck-building, trading, auction-english, trick-taking, card-matching, freeplay, worker-placement, auction-dutch, simultaneous-action-selection, market, action-programming, cooperative-actions, different-worker-types)
+- **Player view**: 10 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions)
 - **Effect types**: `location-effects` and `placed-card-effects` implement `applyEffect` hook
 - **Combat hooks**: `src/mechanics/core/combat-mechanic.ts` defines 6 combat hooks (onBeforeCombat, onCombatStarted, onAttackModifier, onDefenseModifier, onCombatResolved, onCasualtiesApplied)
 - **Worker hooks**: `src/mechanics/core/workers-mechanic.ts` defines 5 worker hooks (onBeforeWorkerPlace, onWorkerPlaced, onBeforeWorkerRetrieve, onWorkersRetrieved, onSpaceActivated)
@@ -1328,13 +1340,16 @@ All Phase 1-5 mechanics have been implemented. Remaining work is hook completene
 | Phase 4 | **Complete** | `deduction`, `memory`, `targeted-clues`, `roles-asymmetric-info` registered |
 | Phase 5 | **Complete** | `player-judge`, `i-cut-you-choose`, `bribery` registered |
 
-### Medium-Term: Phase 6-8
+### Medium-Term: Phase 6-9
 
 | Phase | Focus | New Hooks | Status |
 |-------|-------|-----------|--------|
 | Phase 6 | Combat System | 6 combat hooks | **Done** - Core mechanic + 8 leaf mechanics |
-| Phase 7 | Worker Placement | 5 worker hooks | **Done** - Core mechanic + worker-placement leaf |
+| Phase 7 | Worker Placement | 5 worker hooks | **Done** - Core mechanic + 2 leaf mechanics |
 | Phase 8 | Advanced Auctions | 5 auction hooks | Planned |
+| Phase 9 | Multi-Category Expansion | - | **Done** - 7 new mechanics across 6 categories |
+
+**Phase 9 details:** Added auction-dutch (Auction), simultaneous-action-selection + action-programming (Action), market (Economic), cooperative-actions (Cooperative), tableau-building (Building), different-worker-types (Worker Placement).
 
 ### Long-Term: Refactoring
 
