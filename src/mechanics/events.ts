@@ -16,6 +16,7 @@
 
 import { MechanicHooks, TurnStartContext, StateChanges } from './types.js';
 import { Effect } from '../types/game.js';
+import { addResource, spendResource } from './core/resources.js';
 
 interface EventEffect {
   /** Type of effect */
@@ -120,10 +121,12 @@ function applyEventEffects(
       stateChanges.playerStateChanges[targetId] = stateChanges.playerStateChanges[targetId] || {};
 
       if (effect.type === 'resource' && effect.resource && effect.amount !== undefined) {
-        const currentResources = player.resources || {};
-        const newResources = { ...currentResources };
-        newResources[effect.resource] = (newResources[effect.resource] || 0) + effect.amount;
-        stateChanges.playerStateChanges[targetId].resources = newResources;
+        // Use resource service (fires hooks)
+        if (effect.amount >= 0) {
+          addResource(ctx.state, targetId, effect.resource, effect.amount);
+        } else {
+          spendResource(ctx.state, targetId, effect.resource, Math.abs(effect.amount));
+        }
       }
 
       if (effect.type === 'score' && effect.amount !== undefined) {

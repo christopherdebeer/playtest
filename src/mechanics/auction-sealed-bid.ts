@@ -18,6 +18,7 @@
 
 import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges } from './types.js';
 import { GameAction, SealedBidAction, AuctionSealedBidConfig } from '../types/game.js';
+import { spendResource } from './core/resources.js';
 
 interface SealedAuction {
   id: string;
@@ -35,7 +36,6 @@ function resolveAuction(
 ): {
   auction: SealedAuction;
   result: { winner: string | null; winningBid: number; allBids?: Record<string, number> };
-  playerChanges?: Record<string, { resources: Record<string, number> }>;
 } {
   // Find highest bid
   let highestBid = -1;
@@ -77,21 +77,12 @@ function resolveAuction(
     result.allBids = { ...auction.bids };
   }
 
-  // Deduct winning bid from winner's resources
-  let playerChanges: Record<string, { resources: Record<string, number> }> | undefined;
+  // Deduct winning bid from winner via resource service (fires hooks)
   if (winner && highestBid > 0) {
-    const currentResources = ctx.state.players[winner].resources?.[config.currency] ?? 0;
-    playerChanges = {
-      [winner]: {
-        resources: {
-          ...ctx.state.players[winner].resources,
-          [config.currency]: currentResources - highestBid
-        }
-      }
-    };
+    spendResource(ctx.state, winner, config.currency, highestBid);
   }
 
-  return { auction, result, playerChanges };
+  return { auction, result };
 }
 
 export const auctionSealedBidMechanic: MechanicHooks = {
@@ -185,16 +176,13 @@ export const auctionSealedBidMechanic: MechanicHooks = {
       }
     };
 
-    // If all bids are in, resolve the auction
+    // If all bids are in, resolve the auction (spendResource called inside)
     if (allBidsIn) {
       const resolved = resolveAuction(ctx, activeAuction, config);
       stateChanges.sharedStateChanges = {
         activeAuction: resolved.auction,
         lastAuctionResult: resolved.result
       };
-      if (resolved.playerChanges) {
-        stateChanges.playerStateChanges = resolved.playerChanges;
-      }
     }
 
     return {

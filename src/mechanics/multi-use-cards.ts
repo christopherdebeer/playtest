@@ -30,6 +30,7 @@ import {
   StateChanges
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
+import { addResource, spendResource } from './core/resources.js';
 
 interface CardUse {
   /** Use type identifier */
@@ -170,7 +171,7 @@ function applyUseEffect(
   use: CardUse,
   card: Card
 ): StateChanges {
-  const { playerId, player } = ctx;
+  const { playerId, player, state } = ctx;
   const changes: StateChanges = {
     playerStateChanges: {
       [playerId]: {}
@@ -181,22 +182,18 @@ function applyUseEffect(
 
   const playerChanges = changes.playerStateChanges![playerId];
 
-  // Gain resources
+  // Gain resources via resource service (fires hooks)
   if (use.effect.gain_resources) {
-    const newResources = { ...(player.resources || {}) };
     for (const [resource, amount] of Object.entries(use.effect.gain_resources)) {
-      newResources[resource] = (newResources[resource] ?? 0) + amount;
+      addResource(state, playerId, resource, amount);
     }
-    playerChanges.resources = newResources;
   }
 
-  // Spend resources
+  // Spend resources via resource service (fires hooks)
   if (use.effect.spend_resources) {
-    const newResources = playerChanges.resources || { ...(player.resources || {}) };
     for (const [resource, amount] of Object.entries(use.effect.spend_resources)) {
-      newResources[resource] = (newResources[resource] ?? 0) - amount;
+      spendResource(state, playerId, resource, amount);
     }
-    playerChanges.resources = newResources;
   }
 
   // Gain points
@@ -329,13 +326,10 @@ export const multiUseCardsMechanic: MechanicHooks = {
       hand
     };
 
-    // Handle currency use specifically
+    // Handle currency use specifically via resource service (fires hooks)
     if (selectedUse.type === 'currency') {
       const currencyValue = multiConfig.card_currency_value ?? 1;
-      const newResources = effectChanges.playerStateChanges[playerId].resources ||
-        { ...(player.resources || {}) };
-      newResources.currency = (newResources.currency ?? 0) + currencyValue;
-      effectChanges.playerStateChanges[playerId].resources = newResources;
+      addResource(state, playerId, 'currency', currencyValue);
     }
 
     // Add card to discard if configured
