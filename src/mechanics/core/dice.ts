@@ -101,7 +101,7 @@ export function rollDice(
     config: state.config
   };
 
-  // Run onBeforeRoll hooks
+  // Run onBeforeRoll hooks (global - all mechanics)
   const beforeResult = mechanicRegistry.onBeforeRoll(state, playerId, ctx);
 
   if (beforeResult.blocked) {
@@ -114,9 +114,24 @@ export function rollDice(
   }
 
   // Apply hook modifications
-  const actualDiceCount = beforeResult.diceCount ?? diceCount;
-  const actualDiceSides = beforeResult.diceSides ?? diceSides;
-  const hookModifier = beforeResult.modifier ?? 0;
+  let actualDiceCount = beforeResult.diceCount ?? diceCount;
+  let actualDiceSides = beforeResult.diceSides ?? diceSides;
+  let hookModifier = beforeResult.modifier ?? 0;
+
+  // Dice-defined hook (only dice dependents) - strangler fig dual-fire
+  const definedBeforeResult = mechanicRegistry.fire('dice', 'onBeforeDiceRoll', state, playerId, {
+    diceCount: actualDiceCount, diceSides: actualDiceSides, purpose
+  });
+  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { results: [], total: 0, blocked: true, blockReason };
+  }
+  if (definedBeforeResult) {
+    const dr = definedBeforeResult as Record<string, unknown>;
+    if (typeof dr.diceCount === 'number') actualDiceCount = dr.diceCount;
+    if (typeof dr.diceSides === 'number') actualDiceSides = dr.diceSides;
+    if (typeof dr.modifier === 'number') hookModifier += dr.modifier;
+  }
 
   // Handle re-rolling (keep some dice from previous results)
   let results: number[];
@@ -158,9 +173,15 @@ export function rollDice(
     keptDice
   };
 
-  // Run onAfterRoll hooks
+  // Run onAfterRoll hooks (global - all mechanics)
   const afterChanges = mechanicRegistry.onAfterRoll(state, playerId, afterCtx);
   applyStateChanges(state, afterChanges);
+
+  // Dice-defined hook (only dice dependents) - strangler fig dual-fire
+  const diceRolledChanges = mechanicRegistry.fire('dice', 'onDiceRolled', state, playerId, {
+    results, total, diceCount: actualDiceCount, diceSides: actualDiceSides, purpose, keptDice
+  });
+  if (diceRolledChanges) applyStateChanges(state, diceRolledChanges);
 
   return {
     results,

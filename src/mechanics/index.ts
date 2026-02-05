@@ -118,6 +118,7 @@ import {
 import { passMechanic } from './core/pass.js';
 import { cardsMechanic } from './core/cards.js';
 import { resourcesMechanic } from './core/resources-mechanic.js';
+import { diceMechanic } from './core/dice-mechanic.js';
 
 // Effect handling mechanics
 import { locationEffectsMechanic } from './location-effects.js';
@@ -236,6 +237,7 @@ mechanicRegistry.register(suddenDeathMechanic);
 // Register core mechanics (always available)
 mechanicRegistry.register(cardsMechanic);
 mechanicRegistry.register(resourcesMechanic);
+mechanicRegistry.register(diceMechanic);
 mechanicRegistry.register(passMechanic);
 
 // Register effect handling mechanics

@@ -43,6 +43,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
 export const differentDiceMovementMechanic: MechanicHooks = {
   slug: 'different-dice-movement',
   name: 'Different Dice Movement',
+  requires: ['dice'],
 
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'different-dice-movement')) return null;
