@@ -49,6 +49,7 @@ function buildIconTable(icons: Record<string, { weight: number; effect: string; 
 export const dieIconResolutionMechanic: MechanicHooks = {
   slug: 'die-icon-resolution',
   name: 'Die Icon Resolution',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',

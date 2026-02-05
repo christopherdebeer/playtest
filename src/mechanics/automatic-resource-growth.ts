@@ -78,6 +78,7 @@ function applyGrowth(currentValue: number, rule: GrowthRule): number {
 export const automaticResourceGrowthMechanic: MechanicHooks = {
   slug: 'automatic-resource-growth',
   name: 'Automatic Resource Growth',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',

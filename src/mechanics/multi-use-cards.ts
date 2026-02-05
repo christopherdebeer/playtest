@@ -212,7 +212,7 @@ function applyUseEffect(
 export const multiUseCardsMechanic: MechanicHooks = {
   slug: 'multi-use-cards',
   name: 'Multi-Use Cards',
-  requires: ['cards'],
+  requires: ['cards', 'resources'],
 
   configSchema: {
     type: 'object',

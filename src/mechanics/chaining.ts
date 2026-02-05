@@ -258,6 +258,7 @@ function applyChainEffect(
 export const chainingMechanic: MechanicHooks = {
   slug: 'chaining',
   name: 'Chaining',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',

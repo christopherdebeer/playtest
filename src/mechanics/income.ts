@@ -19,6 +19,7 @@ interface ResourceConfig {
 export const incomeMechanic: MechanicHooks = {
   slug: 'income',
   name: 'Income',
+  requires: ['resources'],
 
   // Config schema for validation and documentation
   configSchema: {

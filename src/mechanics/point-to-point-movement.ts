@@ -165,6 +165,7 @@ function getDestination(route: RouteDefinition, fromNode: string): string {
 export const pointToPointMovementMechanic: MechanicHooks = {
   slug: 'point-to-point-movement',
   name: 'Point-to-Point Movement',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',
