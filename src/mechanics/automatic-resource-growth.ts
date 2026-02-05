@@ -3,6 +3,8 @@
  *
  * Resources that grow based on their current value (interest, regeneration).
  * Unlike income which adds flat amounts, this multiplies existing values.
+ * Uses setResource() service so resource hooks fire (e.g., blocking hooks
+ * can prevent growth, notification hooks observe changes).
  *
  * Supports:
  * - Percentage growth (e.g., 10% interest on gold)
@@ -11,10 +13,11 @@
  * - Resource caps
  *
  * Hooks used:
- * - onTurnStart: Apply growth rates at turn/round start
+ * - onTurnStart: Apply growth rates at turn/round start via setResource()
  */
 
 import { MechanicHooks, TurnStartContext, StateChanges } from './types.js';
+import { getResource, setResource } from './core/resources.js';
 
 interface GrowthRule {
   /** Resource to grow */
@@ -98,33 +101,22 @@ export const automaticResourceGrowthMechanic: MechanicHooks = {
     if (!growthConfig?.rules) return null;
     if (!ctx.player.resources) return null;
 
-    const newResources = { ...ctx.player.resources };
-    let hasChanges = false;
-
     for (const rule of growthConfig.rules) {
       // Check timing
       const timing = rule.timing ?? 'turn';
       if (timing === 'round' && !ctx.isNewRound) continue;
 
-      const currentValue = newResources[rule.resource];
-      if (currentValue === undefined) continue;
+      const currentValue = getResource(ctx.state, ctx.playerId, rule.resource);
+      if (currentValue === 0 && !ctx.player.resources.hasOwnProperty(rule.resource)) continue;
 
       const newValue = applyGrowth(currentValue, rule);
 
       if (newValue !== currentValue) {
-        newResources[rule.resource] = newValue;
-        hasChanges = true;
+        setResource(ctx.state, ctx.playerId, rule.resource, newValue);
       }
     }
 
-    if (!hasChanges) return null;
-
-    return {
-      playerStateChanges: {
-        [ctx.playerId]: {
-          resources: newResources
-        }
-      }
-    };
+    // State already mutated by setResource(); no StateChanges needed
+    return null;
   }
 };

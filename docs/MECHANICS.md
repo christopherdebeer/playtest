@@ -581,7 +581,8 @@ replacing hardcoded routing methods in the registry.
 - [x] `trick-taking` and `ladder-climbing` fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
 - [x] Resource leaf mechanics declare `requires: ['resources']`:
   - `catch-the-leader`, `income`, `automatic-resource-growth`, `chaining`, `once-per-game-abilities`, `multi-use-cards`, `deck-building`, `die-icon-resolution`, `point-to-point-movement`, `auction-english`, `auction-sealed-bid`, `auction-once-around`
-  - Note: `income`, `automatic-resource-growth`, and others bypass `addResource()` service (direct `playerStateChanges` mutation). Future refactoring should route through service for hook support.
+- [x] `income`: refactored to use `addResource()` service (enables catch-the-leader income reduction)
+- [x] `automatic-resource-growth`: refactored to use `setResource()` service (enables resource hooks on growth/decay)
 - [x] `dice` core mechanic: defines `onBeforeDiceRoll`, `onDiceRolled`
 - [x] `dice.ts` dual-fires global hooks AND dice-defined hooks (strangler fig)
 - [x] Dice leaf mechanics declare `requires: ['dice']`:
@@ -609,8 +610,15 @@ replacing hardcoded routing methods in the registry.
 
 ### Outstanding
 
-- [ ] Migrate card leaf mechanics to implement cards-defined hooks (e.g., `onCardPlayed`, `onCardDrawn`) where relevant
-- [ ] Refactor direct resource mutations (income, automatic-resource-growth, etc.) to use `addResource()` service for proper hook support
+- [ ] Refactor remaining mechanics that bypass resource service (direct `playerStateChanges` mutation):
+  - `auction-once-around` (deducts winning bid)
+  - `auction-sealed-bid` (deducts winning bid)
+  - `die-icon-resolution` (gains resources from icon effects)
+  - `point-to-point-movement` (deducts route resource costs)
+  - `multi-use-cards` (gains/spends resources for card effects)
+  - `kill-steal` (gains gold/bounty)
+  - `turn-order-auction` (deducts bids)
+  - `events` (applies resource effects)
 - [ ] Deprecate global domain hooks once all leaf mechanics migrated
 - [ ] Slim `MechanicHooks` interface to global-only hooks
 
