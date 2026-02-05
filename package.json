@@ -23,6 +23,8 @@
     "build:engine": "tsc -p tsconfig.json",
     "build:site": "npm run build:engine && npm run generate && tsc -p tsconfig.site.json && vite build",
     "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "dev:site": "npm run generate && vite",
     "generate": "npm run generate:registry && npm run generate:games && npm run generate:mechanics-index && npm run generate:mechanics && npm run generate:logs && npm run generate:docs",
     "generate:registry": "npx tsx scripts/generate-mechanics-registry.ts",
@@ -37,7 +39,12 @@
     "pt:status": "node dist/cli/index.js status",
     "pt:list": "node dist/cli/index.js list"
   },
-  "keywords": ["game", "playtesting", "multi-agent", "claude"],
+  "keywords": [
+    "game",
+    "playtesting",
+    "multi-agent",
+    "claude"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {
@@ -45,11 +52,11 @@
   },
   "dependencies": {
     "commander": "^12.0.0",
-    "yaml": "^2.3.0",
     "marked": "^17.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.22.0"
+    "react-router-dom": "^6.22.0",
+    "yaml": "^2.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",
@@ -57,6 +64,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.3.0",
-    "vite": "^5.1.0"
+    "vite": "^5.1.0",
+    "vitest": "^4.0.18"
   }
 }

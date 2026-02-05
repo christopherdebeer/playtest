@@ -62,13 +62,26 @@ export const boardStateMechanic: MechanicHooks = {
     if (ctx.config.engine_mechanics?.grid) return null; // Grid takes precedence
 
     const moveAction = action as MoveAction;
-    const validStates = ctx.config.board.states || [];
+    const boardConfig = ctx.config.board as BoardConfig;
+    const validStates = boardConfig.states || [];
 
+    // Check target is a valid state name
     if (!validStates.includes(moveAction.target)) {
       return {
         valid: false,
         error: `Invalid move target "${moveAction.target}". Valid states: ${validStates.join(', ')}`
       };
+    }
+
+    // Check target is reachable from current state via edges
+    if (boardConfig.edges && boardConfig.edges.length > 0) {
+      const reachable = getValidMoveTargets(boardConfig, ctx.player.state);
+      if (!reachable.includes(moveAction.target)) {
+        return {
+          valid: false,
+          error: `Cannot move from "${ctx.player.state}" to "${moveAction.target}". Reachable states: ${reachable.join(', ')}`
+        };
+      }
     }
 
     return { valid: true };
@@ -100,7 +113,7 @@ export const boardStateMechanic: MechanicHooks = {
           }
         }
       },
-      advanceTurn: true,
+      advanceTurn: false, // Don't auto-advance — let pass handle turn flow
       checkWin: true, // Board games often check win after move
       logMessage: 'player_moved',
       logData: {

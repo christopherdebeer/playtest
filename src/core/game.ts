@@ -2516,6 +2516,16 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   winner?: string;
 } {
   const player = state.players[playerId];
+  if (!player) {
+    return { success: false, error: `Player ${playerId} not found` };
+  }
+
+  // Run mechanic pre-validation hooks (e.g., board-state edge checks)
+  const preValidation = mechanicRegistry.preValidateAction(state, playerId, action);
+  if (!preValidation.valid) {
+    return { success: false, error: preValidation.error || 'Action blocked by mechanic' };
+  }
+
   const contestState = ensureContestState(state);
 
   // Mark that player has acted this round (prevents multiple actions without action points)
