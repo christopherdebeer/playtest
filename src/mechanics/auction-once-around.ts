@@ -18,6 +18,7 @@
 
 import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges } from './types.js';
 import { GameAction, OnceAroundBidAction, OnceAroundPassAction, AuctionOnceAroundConfig } from '../types/game.js';
+import { spendResource } from './core/resources.js';
 
 interface OnceAroundAuction {
   id: string;
@@ -146,18 +147,9 @@ export const auctionOnceAroundMechanic: MechanicHooks = {
       activeAuction.winner = activeAuction.currentBidder ?? undefined;
       activeAuction.winningBid = activeAuction.currentBid;
 
-      // Deduct winning bid from winner
+      // Deduct winning bid from winner via resource service (fires hooks)
       if (activeAuction.winner && activeAuction.winningBid > 0) {
-        const winner = activeAuction.winner;
-        const currentResources = state.players[winner].resources?.[config.currency] ?? 0;
-        stateChanges.playerStateChanges = {
-          [winner]: {
-            resources: {
-              ...state.players[winner].resources,
-              [config.currency]: currentResources - activeAuction.winningBid
-            }
-          }
-        };
+        spendResource(state, activeAuction.winner, config.currency, activeAuction.winningBid);
       }
 
       logMessage = activeAuction.winner

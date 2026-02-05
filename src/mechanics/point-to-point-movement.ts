@@ -35,6 +35,7 @@ import {
   EffectApplicationResult
 } from './types.js';
 import { GameAction } from '../types/game.js';
+import { spendResource } from './core/resources.js';
 
 interface NodeDefinition {
   /** Unique node identifier */
@@ -333,13 +334,11 @@ export const pointToPointMovementMechanic: MechanicHooks = {
       stateChanges.playerStateChanges[playerId].movementPointsUsed = used + cost;
     }
 
-    // Deduct resource costs
+    // Deduct resource costs via resource service (fires hooks)
     if (route.resource_cost) {
-      const currentResources = { ...(player.resources || {}) };
       for (const [resource, amount] of Object.entries(route.resource_cost)) {
-        currentResources[resource] = (currentResources[resource] || 0) - amount;
+        spendResource(state, playerId, resource, amount);
       }
-      stateChanges.playerStateChanges[playerId].resources = currentResources;
     }
 
     // Track stops

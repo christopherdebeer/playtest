@@ -21,6 +21,7 @@
 
 import { MechanicHooks, HookContext, ActionExecutionContext, ActionExecutionResult, AvailableAction, AfterRollContext, StateChanges } from './types.js';
 import { GameAction, IconRollAction, DieIconResolutionConfig } from '../types/game.js';
+import { addResource } from './core/resources.js';
 
 interface IconRollResult {
   icons: string[];
@@ -114,21 +115,12 @@ export const dieIconResolutionMechanic: MechanicHooks = {
       }
     };
 
-    // Apply resource effects
-    const playerChanges: Record<string, { resources: Record<string, number> }> = {};
+    // Apply resource effects via resource service (fires hooks)
     for (const [effect, count] of Object.entries(effectCounts)) {
       if (effect.startsWith('gain_')) {
         const resource = effect.replace('gain_', '');
-        const current = state.players[playerId].resources?.[resource] ?? 0;
-        if (!playerChanges[playerId]) {
-          playerChanges[playerId] = { resources: { ...state.players[playerId].resources } };
-        }
-        playerChanges[playerId].resources[resource] = current + count;
+        addResource(state, playerId, resource, count);
       }
-    }
-
-    if (Object.keys(playerChanges).length > 0) {
-      stateChanges.playerStateChanges = playerChanges;
     }
 
     return {

@@ -17,6 +17,7 @@
 
 import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, TurnOrderContext, TurnOrderResult, StateChanges } from './types.js';
 import { GameAction, TurnOrderBidAction, TurnOrderAuctionConfig } from '../types/game.js';
+import { spendResource } from './core/resources.js';
 
 interface TurnOrderAuction {
   bids: Record<string, number>;
@@ -27,6 +28,7 @@ interface TurnOrderAuction {
 export const turnOrderAuctionMechanic: MechanicHooks = {
   slug: 'turn-order-auction',
   name: 'Turn Order: Auction',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',
@@ -128,21 +130,13 @@ export const turnOrderAuctionMechanic: MechanicHooks = {
       auction.resolved = true;
       auction.resultOrder = newOrder;
 
-      // Deduct bids from all players
-      const playerChanges: Record<string, { resources: Record<string, number> }> = {};
+      // Deduct bids from all players via resource service (fires hooks)
       for (const [pid, bid] of playerBids) {
         if (bid > 0) {
-          const current = state.players[pid].resources?.[config.currency] ?? 0;
-          playerChanges[pid] = {
-            resources: {
-              ...state.players[pid].resources,
-              [config.currency]: current - bid
-            }
-          };
+          spendResource(state, pid, config.currency, bid);
         }
       }
 
-      stateChanges.playerStateChanges = playerChanges;
       stateChanges.sharedStateChanges = {
         turnOrderAuction: auction,
         pendingTurnOrder: newOrder

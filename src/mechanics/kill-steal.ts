@@ -12,6 +12,7 @@
  */
 
 import { MechanicHooks, CombatHookContext, CombatHookResult, StateChanges } from './types.js';
+import { addResource } from './core/resources.js';
 
 interface KillStealConfig {
   bounty_type?: 'fixed' | 'percentage' | 'unit_value';
@@ -37,6 +38,7 @@ interface KillRecord {
 export const killStealMechanic: MechanicHooks = {
   slug: 'kill-steal',
   name: 'Kill Steal',
+  requires: ['resources'],
 
   configSchema: {
     type: 'object',
@@ -113,15 +115,13 @@ export const killStealMechanic: MechanicHooks = {
       turnNumber: ctx.state.turnNumber
     });
 
-    // Distribute bounty
-    const playerStateChanges: Record<string, Partial<{ resources: Record<string, number>; score: number }>> = {};
+    // Distribute bounty via resource service (fires hooks)
+    const playerStateChanges: Record<string, Partial<{ score: number }>> = {};
 
     // Killer gets main bounty
     const killerState = ctx.state.players[killer];
-    const killerResources = { ...((killerState?.resources as Record<string, number>) ?? {}) };
-    killerResources['gold'] = (killerResources['gold'] ?? 0) + bounty;
+    addResource(ctx.state, killer, 'gold', bounty);
     playerStateChanges[killer] = {
-      resources: killerResources,
       score: (killerState?.score ?? 0) + bounty
     };
 
@@ -130,10 +130,8 @@ export const killStealMechanic: MechanicHooks = {
       const assistBounty = Math.floor(bounty * (assistShare / 100));
       for (const assister of assisters) {
         const assisterState = ctx.state.players[assister];
-        const assisterResources = { ...((assisterState?.resources as Record<string, number>) ?? {}) };
-        assisterResources['gold'] = (assisterResources['gold'] ?? 0) + assistBounty;
+        addResource(ctx.state, assister, 'gold', assistBounty);
         playerStateChanges[assister] = {
-          resources: assisterResources,
           score: (assisterState?.score ?? 0) + assistBounty
         };
       }
