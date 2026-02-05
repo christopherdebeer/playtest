@@ -19,9 +19,10 @@
  * - getAvailableActions: Expose icon dice roll action
  */
 
-import { MechanicHooks, HookContext, ActionExecutionContext, ActionExecutionResult, AvailableAction, AfterRollContext, StateChanges } from './types.js';
+import { MechanicHooks, HookContext, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges } from './types.js';
 import { GameAction, IconRollAction, DieIconResolutionConfig } from '../types/game.js';
 import { addResource } from './core/resources.js';
+import type { DiceHooks, DiceRolledPayload } from './core/dice-mechanic.js';
 
 interface IconRollResult {
   icons: string[];
@@ -47,7 +48,7 @@ function buildIconTable(icons: Record<string, { weight: number; effect: string; 
   return table;
 }
 
-export const dieIconResolutionMechanic: MechanicHooks = {
+export const dieIconResolutionMechanic: MechanicHooks & DiceHooks = {
   slug: 'die-icon-resolution',
   name: 'Die Icon Resolution',
   requires: ['dice', 'resources'],
@@ -146,17 +147,17 @@ export const dieIconResolutionMechanic: MechanicHooks = {
     }];
   },
 
-  onAfterRoll(ctx: AfterRollContext): StateChanges | null {
+  onDiceRolled(ctx: HookContext, payload: DiceRolledPayload): StateChanges | null {
     const config = ctx.config.engine_mechanics?.die_icon_resolution;
     if (!config) return null;
 
     // Only intercept if purpose indicates icon resolution
-    if (ctx.purpose !== 'icon') return null;
+    if (payload.purpose !== 'icon') return null;
 
     const iconTable = buildIconTable(config.icons);
 
     // Convert numeric results to icons
-    const icons: string[] = ctx.results.map(result => {
+    const icons: string[] = payload.results.map(result => {
       const index = (result - 1) % iconTable.length;
       return iconTable[index];
     });

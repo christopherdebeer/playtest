@@ -11,8 +11,9 @@
  *     must_attack: boolean       # Must attack unit projecting ZoC
  */
 
-import { MechanicHooks, HookContext, MoveContext, MoveHookResult, StateChanges, CombatModifierResult, CombatHookContext } from './types.js';
+import { MechanicHooks, HookContext, StateChanges, CombatModifierResult, CombatHookContext } from './types.js';
 import { hasZoneOfControl, getControlledZones } from './core/combat.js';
+import type { BoardHooks, BeforePlayerMovePayload, PlayerMovedPayload } from './core/board-mechanic.js';
 
 interface ZoneOfControlConfig {
   zoc_range?: number;
@@ -27,9 +28,10 @@ interface CombatUnit {
   owner: string;
 }
 
-export const zoneOfControlMechanic: MechanicHooks = {
+export const zoneOfControlMechanic: MechanicHooks & BoardHooks = {
   slug: 'zone-of-control',
   name: 'Zone of Control',
+  requires: ['board'],
 
   configSchema: {
     type: 'object',
@@ -58,7 +60,7 @@ export const zoneOfControlMechanic: MechanicHooks = {
     }
   },
 
-  onBeforeMove(ctx: MoveContext): MoveHookResult | null {
+  onBeforePlayerMove(ctx: HookContext, payload: BeforePlayerMovePayload): { blocked?: boolean; blockReason?: string; target?: string } | null {
     const config = ctx.config.engine_mechanics?.zone_of_control as ZoneOfControlConfig | undefined;
     if (!config) return null;
 
@@ -68,18 +70,16 @@ export const zoneOfControlMechanic: MechanicHooks = {
     const enemies = Object.keys(ctx.state.players).filter(pid => pid !== ctx.playerId);
 
     for (const enemyId of enemies) {
-      if (hasZoneOfControl(ctx.state, enemyId, ctx.target)) {
+      if (hasZoneOfControl(ctx.state, enemyId, payload.toState)) {
         if (config.must_stop) {
           // Allow move but mark that player entered ZoC
-          return {
-            blocked: false
-          };
+          return null;
         }
 
         if (config.blocks_movement) {
           return {
             blocked: true,
-            blockReason: `Cannot move to ${ctx.target} - blocked by enemy zone of control`
+            blockReason: `Cannot move to ${payload.toState} - blocked by enemy zone of control`
           };
         }
       }
@@ -88,7 +88,7 @@ export const zoneOfControlMechanic: MechanicHooks = {
     return null;
   },
 
-  onAfterMove(ctx: { state: import('../types/game.js').GameState; playerId: string; previousState: string; newState: string; config: import('../types/game.js').GameConfig }): StateChanges | null {
+  onPlayerMoved(ctx: HookContext, payload: PlayerMovedPayload): StateChanges | null {
     const config = ctx.config.engine_mechanics?.zone_of_control as ZoneOfControlConfig | undefined;
     if (!config) return null;
 
@@ -96,7 +96,7 @@ export const zoneOfControlMechanic: MechanicHooks = {
     const enemies = Object.keys(ctx.state.players).filter(pid => pid !== ctx.playerId);
 
     for (const enemyId of enemies) {
-      if (hasZoneOfControl(ctx.state, enemyId, ctx.newState)) {
+      if (hasZoneOfControl(ctx.state, enemyId, payload.toState)) {
         return {
           playerStateChanges: {
             [ctx.playerId]: {

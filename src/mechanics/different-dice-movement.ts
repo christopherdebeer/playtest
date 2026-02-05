@@ -13,12 +13,12 @@ import {
   AvailableAction,
   TurnStartContext,
   StateChanges,
-  AfterRollContext,
   HookContext,
   isMechanicEnabled
 } from './types.js';
 import { rollDice } from './core/dice.js';
 import { MoveAction, PlayerState } from '../types/game.js';
+import type { DiceHooks, DiceRolledPayload } from './core/dice-mechanic.js';
 
 export interface DifferentDiceMovementConfig {
   dice_count?: number;
@@ -40,7 +40,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
   return player as unknown as Record<string, unknown>;
 }
 
-export const differentDiceMovementMechanic: MechanicHooks = {
+export const differentDiceMovementMechanic: MechanicHooks & DiceHooks = {
   slug: 'different-dice-movement',
   name: 'Different Dice Movement',
   requires: ['dice'],
@@ -204,17 +204,17 @@ export const differentDiceMovementMechanic: MechanicHooks = {
     return null;
   },
 
-  onAfterRoll(ctx: AfterRollContext): StateChanges | null {
+  onDiceRolled(ctx: HookContext, payload: DiceRolledPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'different-dice-movement')) return null;
-    if (ctx.purpose !== 'different_movement') return null;
+    if (payload.purpose !== 'different_movement') return null;
 
     const config = ctx.config.engine_mechanics?.different_dice_movement as DifferentDiceMovementConfig | undefined;
     const player = ctx.state.players[ctx.playerId];
 
     if (player) {
       const extras = getPlayerExtras(player);
-      let remainingDice = [...ctx.results];
-      const isDoubles = ctx.results.length === 2 && ctx.results[0] === ctx.results[1];
+      let remainingDice = [...payload.results];
+      const isDoubles = payload.results.length === 2 && payload.results[0] === payload.results[1];
 
       if (config?.doubles_bonus && isDoubles) {
         remainingDice = [...remainingDice, ...remainingDice];

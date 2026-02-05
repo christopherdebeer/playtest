@@ -7,8 +7,8 @@
  * Hooks used:
  * - getAvailableActions: Expose roll action
  * - onExecuteAction: Handle roll action
- * - onBeforeRoll: Apply modifiers from effects
- * - onAfterRoll: Apply roll results to player state
+ * - onBeforeDiceRoll: Apply modifiers from effects (dice-defined hook)
+ * - onDiceRolled: Apply roll results to player state (dice-defined hook)
  *
  * Config options:
  * - dice_count: Default number of dice
@@ -20,18 +20,17 @@
 
 import {
   MechanicHooks,
+  HookContext,
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  DiceRollContext,
-  DiceRollHookResult,
-  AfterRollContext,
   StateChanges
 } from './types.js';
+import type { DiceHooks, BeforeDiceRollPayload, DiceRolledPayload } from './core/dice-mechanic.js';
 import { rollDice } from './core/dice.js';
 import { RollAction, DiceRollingConfig } from '../types/game.js';
 
-export const diceRollingMechanic: MechanicHooks = {
+export const diceRollingMechanic: MechanicHooks & DiceHooks = {
   slug: 'dice-rolling',
   name: 'Dice Rolling',
   requires: ['dice'],
@@ -126,7 +125,7 @@ export const diceRollingMechanic: MechanicHooks = {
     };
   },
 
-  onBeforeRoll(ctx: DiceRollContext): DiceRollHookResult | null {
+  onBeforeDiceRoll(ctx: HookContext, payload: BeforeDiceRollPayload): { blocked?: boolean; blockReason?: string; diceCount?: number; diceSides?: number; modifier?: number } | null {
     const diceConfig = ctx.config.engine_mechanics?.dice_rolling as DiceRollingConfig | undefined;
     if (!diceConfig?.modifiers) return null;
 
@@ -140,14 +139,13 @@ export const diceRollingMechanic: MechanicHooks = {
 
     // Apply per-die bonus
     if (modifiers.per_die_bonus) {
-      totalModifier += modifiers.per_die_bonus * ctx.diceCount;
+      totalModifier += modifiers.per_die_bonus * payload.diceCount;
     }
 
     // Apply effect-based modifiers
     if (modifiers.effect_modifiers) {
-      const player = ctx.state.players[ctx.playerId];
-      if (player?.effects) {
-        for (const effect of player.effects) {
+      if (ctx.player?.effects) {
+        for (const effect of ctx.player.effects) {
           const effectMod = modifiers.effect_modifiers[effect.type];
           if (effectMod) {
             totalModifier += effectMod * (effect.value ?? 1);
@@ -161,7 +159,7 @@ export const diceRollingMechanic: MechanicHooks = {
     return { modifier: totalModifier };
   },
 
-  onAfterRoll(ctx: AfterRollContext): StateChanges | null {
+  onDiceRolled(ctx: HookContext, payload: DiceRolledPayload): StateChanges | null {
     const diceConfig = ctx.config.engine_mechanics?.dice_rolling as DiceRollingConfig | undefined;
     if (!diceConfig) return null;
 
@@ -169,8 +167,8 @@ export const diceRollingMechanic: MechanicHooks = {
     return {
       playerStateChanges: {
         [ctx.playerId]: {
-          lastRollResults: ctx.results,
-          lastRollTotal: ctx.total
+          lastRollResults: payload.results,
+          lastRollTotal: payload.total
         }
       }
     };

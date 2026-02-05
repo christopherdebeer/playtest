@@ -617,10 +617,38 @@ replacing hardcoded routing methods in the registry.
   - `take-that`: `block_turn`, `skip`
   - `card-matching`: `currentColor`
 
+**Phase 3: Leaf mechanics migrated from global to mechanic-defined hooks:**
+
+- [x] Missing `requires` added: `push-your-luck` → `['cards']`, `zone-of-control` → `['board']`, `memory` → `['visibility']`, `race` → `['board']`
+- [x] **Dice domain** (`onBeforeRoll`/`onAfterRoll` → `onBeforeDiceRoll`/`onDiceRolled`):
+  - `dice-rolling`: `onBeforeRoll` → `onBeforeDiceRoll`, `onAfterRoll` → `onDiceRolled`
+  - `die-icon-resolution`: `onAfterRoll` → `onDiceRolled`
+  - `roll-spin-and-move`: `onAfterRoll` → `onDiceRolled`
+  - `different-dice-movement`: `onAfterRoll` → `onDiceRolled`
+- [x] **Board domain** (`onBeforeMove`/`onAfterMove` → `onBeforePlayerMove`/`onPlayerMoved`):
+  - `zone-of-control`: `onBeforeMove` → `onBeforePlayerMove`, `onAfterMove` → `onPlayerMoved`
+  - `hidden-movement`: `onAfterMove` → `onPlayerMoved`
+  - `race` (win condition): `onAfterMove` → `onPlayerMoved`
+- [x] **Visibility domain** (`onReveal` → `onInfoRevealed`):
+  - `hidden-roles`: `onReveal` → `onInfoRevealed`
+  - `memory`: `onReveal` → `onInfoRevealed`
+  - `hidden-movement`: `onReveal` → `onInfoRevealed`
+- [x] **Social domain** (`onVoteCast` → `onBeforeVote`/`onPlayerVoted`):
+  - `bribery`: `onVoteCast` split into `onBeforeVote` (blocking check) + `onPlayerVoted` (obligation fulfillment)
+  - `bribery`: resource mutation refactored to use `spendResource()`/`addResource()`
+  - `voting`: no-op `onVoteCast` removed (was always returning null)
+
+**Hooks that remain global (cannot migrate):**
+- `canSeeInfo` — query hook, not event; polled by visibility service across all mechanics
+- `onVoteTally` — computation hook that calculates vote winner; `onVoteCompleted` is a notification hook with different purpose
+- `getVisibleState` — state filter hook; each mechanic redacts its own fields
+- `onBeforeAddToHand`/`onAfterAddToHand` — no cards-defined equivalent exists yet
+
 ### Outstanding
 
-- [ ] Deprecate global domain hooks once all leaf mechanics migrated
+- [ ] Deprecate global domain hooks once all leaf mechanics migrated (dice, board, visibility event hooks can be deprecated now; card and social computation hooks still needed)
 - [ ] Slim `MechanicHooks` interface to global-only hooks
+- [ ] Add cards-defined hooks for hand operations (`onBeforeAddToHand`, `onAfterAddToHand`) to enable full card domain migration
 
 ---
 

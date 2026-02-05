@@ -8,14 +8,15 @@
 
 import {
   MechanicHooks,
+  HookContext,
   VisibilityContext,
   VisibleState,
-  RevealContext,
   StateChanges,
-  AfterMoveContext,
   isMechanicEnabled
 } from './types.js';
 import { GameState, PlayerState } from '../types/game.js';
+import type { BoardHooks, PlayerMovedPayload } from './core/board-mechanic.js';
+import type { VisibilityHooks, InfoRevealedPayload } from './core/visibility-mechanic.js';
 
 export interface HiddenMovementConfig {
   hidden_players?: string[];
@@ -68,7 +69,7 @@ function getProximityClue(
   return 'far away';
 }
 
-export const hiddenMovementMechanic: MechanicHooks = {
+export const hiddenMovementMechanic: MechanicHooks & BoardHooks & VisibilityHooks = {
   slug: 'hidden-movement',
   name: 'Hidden Movement',
   requires: ['board', 'visibility'],
@@ -146,11 +147,11 @@ export const hiddenMovementMechanic: MechanicHooks = {
     return undefined;
   },
 
-  onReveal(ctx: RevealContext): StateChanges | null {
+  onInfoRevealed(ctx: HookContext, payload: InfoRevealedPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'hidden-movement')) return null;
 
-    if (ctx.targetInfo === 'position') {
-      const player = ctx.state.players[ctx.revealingPlayerId];
+    if (payload.infoType === 'position') {
+      const player = ctx.state.players[ctx.playerId];
       if (!player) return null;
 
       const extras = getPlayerExtras(player);
@@ -162,7 +163,7 @@ export const hiddenMovementMechanic: MechanicHooks = {
     return null;
   },
 
-  onAfterMove(ctx: AfterMoveContext): StateChanges | null {
+  onPlayerMoved(ctx: HookContext, payload: PlayerMovedPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'hidden-movement')) return null;
 
     const config = ctx.config.engine_mechanics?.hidden_movement as HiddenMovementConfig | undefined;
@@ -172,7 +173,7 @@ export const hiddenMovementMechanic: MechanicHooks = {
       const player = ctx.state.players[ctx.playerId];
       if (player) {
         const extras = getPlayerExtras(player);
-        extras.truePosition = ctx.newState;
+        extras.truePosition = payload.toState;
       }
     }
 

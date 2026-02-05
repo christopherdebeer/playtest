@@ -8,7 +8,7 @@
  * - onTurnStart: Auto-roll dice for movement if configured
  * - getAvailableActions: Expose roll_and_move action
  * - onExecuteAction: Handle roll_and_move, calculate destination
- * - onAfterRoll: Store roll result for movement
+ * - onDiceRolled: Store roll result for movement (dice-defined hook)
  */
 
 import {
@@ -18,11 +18,11 @@ import {
   AvailableAction,
   TurnStartContext,
   StateChanges,
-  AfterRollContext,
   HookContext,
   isMechanicEnabled
 } from './types.js';
 import { rollDice } from './core/dice.js';
+import type { DiceHooks, DiceRolledPayload } from './core/dice-mechanic.js';
 import { PlayerState } from '../types/game.js';
 
 export interface RollSpinMoveConfig {
@@ -40,7 +40,7 @@ function getPlayerExtras(player: PlayerState): Record<string, unknown> {
   return player as unknown as Record<string, unknown>;
 }
 
-export const rollSpinAndMoveMechanic: MechanicHooks = {
+export const rollSpinAndMoveMechanic: MechanicHooks & DiceHooks = {
   slug: 'roll-spin-and-move',
   name: 'Roll Spin and Move',
   requires: ['dice', 'board'],
@@ -206,15 +206,15 @@ export const rollSpinAndMoveMechanic: MechanicHooks = {
     return null;
   },
 
-  onAfterRoll(ctx: AfterRollContext): StateChanges | null {
+  onDiceRolled(ctx: HookContext, payload: DiceRolledPayload): StateChanges | null {
     if (!isMechanicEnabled(ctx.config, 'roll-spin-and-move')) return null;
-    if (ctx.purpose !== 'movement') return null;
+    if (payload.purpose !== 'movement') return null;
 
     const player = ctx.state.players[ctx.playerId];
     if (player) {
       const extras = getPlayerExtras(player);
-      extras.pendingMovement = ctx.total;
-      player.lastRollResults = ctx.results;
+      extras.pendingMovement = payload.total;
+      player.lastRollResults = payload.results;
     }
 
     return null;

@@ -18,15 +18,16 @@
 
 import {
   MechanicHooks,
+  HookContext,
   VisibilityContext,
   VisibleState,
-  RevealContext,
   StateChanges,
   PlayerInitContext,
   PlayerInitResult
 } from './types.js';
 import { PlayerState } from '../types/game.js';
 import { setHiddenRole, isSameTeam, redactPlayerState } from './core/visibility.js';
+import type { VisibilityHooks, InfoRevealedPayload } from './core/visibility-mechanic.js';
 
 /**
  * Role definition for hidden roles mechanic
@@ -109,7 +110,7 @@ function buildRoleAssignments(config: HiddenRolesConfig, playerCount: number): s
   return roles;
 }
 
-export const hiddenRolesMechanic: MechanicHooks = {
+export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
   slug: 'hidden-roles',
   name: 'Hidden Roles',
   requires: ['visibility'],
@@ -279,25 +280,22 @@ export const hiddenRolesMechanic: MechanicHooks = {
     return false;
   },
 
-  onReveal(ctx: RevealContext): StateChanges | null {
+  onInfoRevealed(ctx: HookContext, payload: InfoRevealedPayload): StateChanges | null {
     const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;
     if (!hiddenRolesConfig) return null;
 
     // Only handle role reveals
-    if (ctx.targetInfo !== 'role') return null;
+    if (payload.infoType !== 'role') return null;
 
-    const revealingPlayer = ctx.state.players[ctx.revealingPlayerId];
+    const revealingPlayerId = ctx.playerId;
+    const revealingPlayer = ctx.state.players[revealingPlayerId];
     if (!revealingPlayer?.hiddenRole) return null;
 
     const playerStateChanges: Record<string, Partial<PlayerState>> = {};
 
     // Update knowledge for all receiving players
-    const recipients = ctx.toPlayerIds === 'all'
-      ? Object.keys(ctx.state.players)
-      : ctx.toPlayerIds;
-
-    for (const recipientId of recipients) {
-      if (recipientId === ctx.revealingPlayerId) continue;
+    for (const recipientId of payload.revealedTo) {
+      if (recipientId === revealingPlayerId) continue;
 
       const recipient = ctx.state.players[recipientId];
       if (!recipient) continue;
@@ -314,7 +312,7 @@ export const hiddenRolesMechanic: MechanicHooks = {
           ...currentKnowledge,
           knownRoles: {
             ...currentKnowledge.knownRoles,
-            [ctx.revealingPlayerId]: revealingPlayer.hiddenRole
+            [revealingPlayerId]: revealingPlayer.hiddenRole
           }
         }
       };

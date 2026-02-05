@@ -11,8 +11,10 @@
  *     bribe_targets: string[]
  */
 
-import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, VoteContext, VoteCastResult, StateChanges } from './types.js';
+import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges } from './types.js';
 import { GameAction, OfferBribeAction, RespondToBribeAction, BriberyConfig } from '../types/game.js';
+import type { SocialHooks, BeforeVotePayload, PlayerVotedPayload } from './core/social-mechanic.js';
+import { spendResource, addResource } from './core/resources.js';
 
 interface Bribe {
   id: string;
@@ -25,7 +27,7 @@ interface Bribe {
   turn: number;
 }
 
-export const briberyMechanic: MechanicHooks = {
+export const briberyMechanic: MechanicHooks & SocialHooks = {
   slug: 'bribery',
   name: 'Bribery',
   requires: ['social'],
@@ -167,16 +169,8 @@ export const briberyMechanic: MechanicHooks = {
       };
 
       if (respondAction.accept) {
-        const offererResources = { ...state.players[bribe.offerer].resources };
-        const targetResources = { ...state.players[bribe.target].resources };
-
-        offererResources[config.currency] = (offererResources[config.currency] ?? 0) - bribe.amount;
-        targetResources[config.currency] = (targetResources[config.currency] ?? 0) + bribe.amount;
-
-        stateChanges.playerStateChanges = {
-          [bribe.offerer]: { resources: offererResources },
-          [bribe.target]: { resources: targetResources }
-        };
+        spendResource(state, bribe.offerer, config.currency, bribe.amount);
+        addResource(state, bribe.target, config.currency, bribe.amount);
 
         if (config.binding) {
           const obligations = [...((state.shared.bribeObligations as Bribe[]) ?? [])];
@@ -199,7 +193,7 @@ export const briberyMechanic: MechanicHooks = {
     return null;
   },
 
-  onVoteCast(ctx: VoteContext): VoteCastResult | null {
+  onBeforeVote(ctx: HookContext, payload: BeforeVotePayload): { blocked?: boolean; blockReason?: string } | null {
     const config = ctx.config.engine_mechanics?.bribery;
     if (!config || !config.binding) return null;
 
@@ -213,22 +207,40 @@ export const briberyMechanic: MechanicHooks = {
     if (voteObligation && voteObligation.requestedDetails) {
       const requestedChoice = voteObligation.requestedDetails.choice as string | number;
 
-      if (ctx.choice !== requestedChoice) {
+      if (payload.choice !== requestedChoice) {
         return {
           blocked: true,
           blockReason: `You accepted a bribe to vote for ${requestedChoice}. Breaking the deal!`
         };
       }
+    }
 
-      return {
-        stateChanges: {
+    return null;
+  },
+
+  onPlayerVoted(ctx: HookContext, payload: PlayerVotedPayload): StateChanges | null {
+    const config = ctx.config.engine_mechanics?.bribery;
+    if (!config || !config.binding) return null;
+
+    const obligations = (ctx.state.shared.bribeObligations as Bribe[]) ?? [];
+    const voteObligation = obligations.find(
+      b => b.target === ctx.playerId &&
+           b.requestedAction === 'vote' &&
+           b.status === 'accepted'
+    );
+
+    if (voteObligation && voteObligation.requestedDetails) {
+      const requestedChoice = voteObligation.requestedDetails.choice as string | number;
+
+      if (payload.choice === requestedChoice) {
+        return {
           sharedStateChanges: {
             bribeObligations: obligations.map(b =>
               b.id === voteObligation.id ? { ...b, status: 'fulfilled' } : b
             )
           }
-        }
-      };
+        };
+      }
     }
 
     return null;
