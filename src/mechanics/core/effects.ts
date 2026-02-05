@@ -4,11 +4,10 @@
  * Manages player effects (status effects, buffs, debuffs).
  * This is a "trunk" mechanic that other mechanics depend on.
  *
- * Hooks:
- * - onBeforeAddEffect: Can modify effect or block
- * - onAfterAddEffect: Notified after effect added
- * - onBeforeRemoveEffect: Can block removal
- * - onEffectExpired: Notified when effect duration reaches 0
+ * Fires effects-defined hooks:
+ * - onBeforeEffectAdd: Can modify effect or block (blocking)
+ * - onEffectAdded: Notified after effect added (merge)
+ * - onEffectRemoved: Notified when effect removed/expired (merge)
  */
 
 import { GameState, Effect } from '../../types/game.js';
@@ -44,28 +43,17 @@ export function addEffect(
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Run onBeforeAddEffect hooks (global - all mechanics)
-  const beforeResult = mechanicRegistry.onBeforeAddEffect(state, playerId, effect);
-  if (beforeResult.blocked) {
-    return {
-      success: false,
-      blocked: true,
-      blockReason: beforeResult.blockReason
-    };
-  }
-
-  let effectToAdd = beforeResult.effect ?? effect;
-
-  // Effects-defined hook (only effects dependents) - strangler fig dual-fire
-  const definedBeforeResult = mechanicRegistry.fire('effects', 'onBeforeEffectAdd', state, playerId, {
+  // Fire effects-defined onBeforeEffectAdd hook (blocking)
+  let effectToAdd = effect;
+  const beforeResult = mechanicRegistry.fire('effects', 'onBeforeEffectAdd', state, playerId, {
     effect: effectToAdd
   });
-  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
-    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
     return { success: false, blocked: true, blockReason };
   }
-  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).effect) {
-    effectToAdd = (definedBeforeResult as Record<string, unknown>).effect as Effect;
+  if (beforeResult && (beforeResult as Record<string, unknown>).effect) {
+    effectToAdd = (beforeResult as Record<string, unknown>).effect as Effect;
   }
 
   // Check if an effect of the same type already exists
@@ -79,15 +67,11 @@ export function addEffect(
     player.effects.push(effectToAdd);
   }
 
-  // Run onAfterAddEffect hooks (global - all mechanics)
-  const afterChanges = mechanicRegistry.onAfterAddEffect(state, playerId, effectToAdd);
-  applyStateChanges(state, afterChanges);
-
-  // Effects-defined hook (only effects dependents) - strangler fig dual-fire
-  const effectsAfterChanges = mechanicRegistry.fire('effects', 'onEffectAdded', state, playerId, {
+  // Fire effects-defined onEffectAdded hook (merge)
+  const afterChanges = mechanicRegistry.fire('effects', 'onEffectAdded', state, playerId, {
     effect: effectToAdd, replaced
   });
-  if (effectsAfterChanges) applyStateChanges(state, effectsAfterChanges);
+  if (afterChanges) applyStateChanges(state, afterChanges);
 
   return {
     success: true,
@@ -121,15 +105,8 @@ export function removeEffect(
 
   const effect = player.effects[effectIndex];
 
-  // Run onBeforeRemoveEffect hooks
-  const beforeResult = mechanicRegistry.onBeforeRemoveEffect(state, playerId, effect);
-  if (beforeResult.blocked) {
-    return {
-      success: false,
-      blocked: true,
-      blockReason: beforeResult.blockReason
-    };
-  }
+  // Note: onBeforeRemoveEffect is not yet available as an effects-defined hook.
+  // If needed, add 'onBeforeEffectRemove' to effects mechanic defines.
 
   // Remove the effect
   player.effects.splice(effectIndex, 1);
@@ -184,17 +161,12 @@ export function decrementEffectDurations(state: GameState, playerId: string): Ef
   // Update player's effects
   player.effects = remainingEffects;
 
-  // Notify hooks about expired effects
+  // Fire effects-defined onEffectRemoved hook for each expired effect
   for (const effect of expiredEffects) {
-    // Global hook (all mechanics)
-    const changes = mechanicRegistry.onEffectExpired(state, playerId, effect);
-    applyStateChanges(state, changes);
-
-    // Effects-defined hook (only effects dependents) - strangler fig dual-fire
-    const effectsChanges = mechanicRegistry.fire('effects', 'onEffectRemoved', state, playerId, {
+    const changes = mechanicRegistry.fire('effects', 'onEffectRemoved', state, playerId, {
       effect, expired: true
     });
-    if (effectsChanges) applyStateChanges(state, effectsChanges);
+    if (changes) applyStateChanges(state, changes);
   }
 
   return expiredEffects;

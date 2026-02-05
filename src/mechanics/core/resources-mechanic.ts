@@ -5,10 +5,8 @@
  * Any mechanic that works with resources should declare `requires: ['resources']` and implement
  * the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global resource hooks (onBeforeResourceChange, onAfterResourceChange) as part of the
- * strangler fig migration. Leaf mechanics can implement either the global hooks or the
- * resources-defined hooks during the transition period.
+ * This mechanic is always enabled. Core resource services fire these hooks
+ * and only mechanics that declare `requires: ['resources']` receive them.
  *
  * Defined hooks:
  * - onResourceGained: After resources are added (merge)

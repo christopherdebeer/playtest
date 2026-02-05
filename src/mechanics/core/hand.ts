@@ -4,10 +4,10 @@
  * Manages player hand operations.
  * This is a "trunk" mechanic that other mechanics depend on.
  *
- * Hooks:
- * - onBeforeAddToHand: Can filter cards or block add
- * - onAfterAddToHand: Notified after cards added
- * - onAfterRemoveFromHand: Notified after cards removed
+ * Fires cards-defined hooks:
+ * - onBeforeAddToHand: Can filter cards or block add (blocking)
+ * - onAfterAddToHand: Notified after cards added (merge)
+ * - onAfterRemoveFromHand: Notified after cards removed (merge)
  */
 
 import { GameState, Card, PlayerState } from '../../types/game.js';
@@ -37,21 +37,22 @@ export function addToHand(state: GameState, playerId: string, cards: Card[]): Ad
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Run onBeforeAddToHand hooks
-  const beforeResult = mechanicRegistry.onBeforeAddToHand(state, playerId, cards);
-  if (beforeResult.blocked) {
-    return { addedCards: [], blocked: true, blockReason: beforeResult.blockReason };
+  // Fire cards-defined onBeforeAddToHand hook (blocking)
+  const beforeResult = mechanicRegistry.fire('cards', 'onBeforeAddToHand', state, playerId, { cards });
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
+    return { addedCards: [], blocked: true, blockReason };
   }
 
-  const cardsToAdd = beforeResult.cards ?? cards;
+  const cardsToAdd = (beforeResult && (beforeResult as Record<string, unknown>).cards as Card[] | undefined) ?? cards;
 
   // Add cards to hand
   player.hand.push(...cardsToAdd);
 
-  // Run onAfterAddToHand hooks
+  // Fire cards-defined onAfterAddToHand hook (merge)
   if (cardsToAdd.length > 0) {
-    const afterChanges = mechanicRegistry.onAfterAddToHand(state, playerId, cardsToAdd);
-    applyStateChanges(state, afterChanges);
+    const afterChanges = mechanicRegistry.fire('cards', 'onAfterAddToHand', state, playerId, { cards: cardsToAdd });
+    if (afterChanges) applyStateChanges(state, afterChanges);
   }
 
   return { addedCards: cardsToAdd };
@@ -74,9 +75,9 @@ export function removeFromHandByIndex(state: GameState, playerId: string, cardIn
 
   const [card] = player.hand.splice(cardIndex, 1);
 
-  // Run onAfterRemoveFromHand hook
-  const changes = mechanicRegistry.onAfterRemoveFromHand(state, playerId, [card]);
-  applyStateChanges(state, changes);
+  // Fire cards-defined onAfterRemoveFromHand hook
+  const changes = mechanicRegistry.fire('cards', 'onAfterRemoveFromHand', state, playerId, { cards: [card] });
+  if (changes) applyStateChanges(state, changes);
 
   return card;
 }
@@ -99,9 +100,9 @@ export function removeFromHandByName(state: GameState, playerId: string, cardNam
 
   const [card] = player.hand.splice(cardIndex, 1);
 
-  // Run onAfterRemoveFromHand hook
-  const changes = mechanicRegistry.onAfterRemoveFromHand(state, playerId, [card]);
-  applyStateChanges(state, changes);
+  // Fire cards-defined onAfterRemoveFromHand hook
+  const changes = mechanicRegistry.fire('cards', 'onAfterRemoveFromHand', state, playerId, { cards: [card] });
+  if (changes) applyStateChanges(state, changes);
 
   return card;
 }
@@ -127,10 +128,10 @@ export function removeCardsFromHand(state: GameState, playerId: string, cardName
     }
   }
 
-  // Fire single batched hook for all removed cards
+  // Fire cards-defined onAfterRemoveFromHand hook (batched)
   if (removed.length > 0) {
-    const changes = mechanicRegistry.onAfterRemoveFromHand(state, playerId, removed);
-    applyStateChanges(state, changes);
+    const changes = mechanicRegistry.fire('cards', 'onAfterRemoveFromHand', state, playerId, { cards: removed });
+    if (changes) applyStateChanges(state, changes);
   }
 
   return removed;

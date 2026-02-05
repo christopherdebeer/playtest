@@ -5,10 +5,8 @@
  * Any mechanic that works with dice should declare `requires: ['dice']` and implement
  * the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global dice hooks (onBeforeRoll, onAfterRoll) as part of the strangler fig migration.
- * Leaf mechanics can implement either the global hooks or the dice-defined hooks during
- * the transition period.
+ * This mechanic is always enabled. Core dice services fire these hooks
+ * and only mechanics that declare `requires: ['dice']` receive them.
  *
  * Defined hooks:
  * - onDiceRolled: After dice are rolled (merge)

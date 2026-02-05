@@ -5,9 +5,8 @@
  * Any mechanic that works with player effects (buffs, debuffs, status) should declare
  * `requires: ['effects']` and implement the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global effect hooks (onBeforeAddEffect, onAfterAddEffect, etc.) as part of the
- * strangler fig migration.
+ * This mechanic is always enabled. Core effects services fire these hooks
+ * and only mechanics that declare `requires: ['effects']` receive them.
  *
  * Defined hooks:
  * - onEffectAdded: After an effect is added to a player (merge)

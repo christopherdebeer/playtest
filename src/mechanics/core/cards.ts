@@ -5,10 +5,8 @@
  * Any mechanic that works with cards should declare `requires: ['cards']` and implement
  * the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global card hooks (onBeforeDraw, onAfterDraw, etc.) as part of the strangler fig
- * migration. Leaf mechanics can implement either the global hooks or the cards-defined
- * hooks during the transition period.
+ * This mechanic is always enabled. Core card services fire these hooks
+ * and only mechanics that declare `requires: ['cards']` receive them.
  *
  * Defined hooks:
  * - onCardDrawn: After cards are drawn from deck (merge)
@@ -65,6 +63,21 @@ export interface BeforeCardPlayPayload {
   hand: Card[];
 }
 
+export interface BeforeAddToHandPayload {
+  /** Cards about to be added to hand */
+  cards: Card[];
+}
+
+export interface CardsAddedToHandPayload {
+  /** Cards that were added to hand */
+  cards: Card[];
+}
+
+export interface CardsRemovedFromHandPayload {
+  /** Cards that were removed from hand */
+  cards: Card[];
+}
+
 // ============ Typed interface for dependents ============
 
 /**
@@ -82,6 +95,9 @@ export interface CardsHooks {
   onCardDiscarded?(ctx: HookContext, payload: CardDiscardedPayload): StateChanges | null;
   onBeforeCardDraw?(ctx: HookContext, payload: BeforeCardDrawPayload): { blocked?: boolean; blockReason?: string; count?: number } | null;
   onBeforeCardPlay?(ctx: HookContext, payload: BeforeCardPlayPayload): { blocked?: boolean; blockReason?: string } | null;
+  onBeforeAddToHand?(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; blockReason?: string; cards?: Card[] } | null;
+  onAfterAddToHand?(ctx: HookContext, payload: CardsAddedToHandPayload): StateChanges | null;
+  onAfterRemoveFromHand?(ctx: HookContext, payload: CardsRemovedFromHandPayload): StateChanges | null;
 }
 
 // ============ The mechanic itself ============
@@ -111,13 +127,25 @@ export const cardsMechanic: MechanicHooks = {
       description: 'After cards are discarded.',
       resolution: 'merge',
     },
+    onBeforeAddToHand: {
+      description: 'Before cards are added to hand. Can block or filter cards.',
+      resolution: 'blocking',
+    },
+    onAfterAddToHand: {
+      description: 'After cards are added to hand.',
+      resolution: 'merge',
+    },
+    onAfterRemoveFromHand: {
+      description: 'After cards are removed from hand.',
+      resolution: 'merge',
+    },
   },
 
   /**
    * Handle play_card action.
    * Core operation: remove from hand, discard, fire onCardPlayed.
-   * Also applies card effects (strangler fig lift from game.ts - to be
-   * extracted to proper mechanics responding to onCardPlayed).
+   * Also applies card effects directly (to be extracted to proper
+   * mechanics responding to onCardPlayed).
    */
   onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
     if (ctx.action.type !== 'play_card') return null;

@@ -5,8 +5,8 @@
  * Any mechanic that works with board positions or movement should declare `requires: ['board']`
  * and implement the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global board hooks (onBeforeMove, onAfterMove) as part of the strangler fig migration.
+ * This mechanic is always enabled. Core board services fire these hooks
+ * and only mechanics that declare `requires: ['board']` receive them.
  *
  * Defined hooks:
  * - onPlayerMoved: After a player moves to a new state (merge)

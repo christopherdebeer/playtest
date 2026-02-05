@@ -1,5 +1,5 @@
 /**
- * Dice Core Service (Phase 2)
+ * Dice Core Service
  *
  * Manages dice rolling operations with hook support.
  * Enables mechanics like:
@@ -9,13 +9,12 @@
  * - roll-spin-and-move: Classic board game movement
  * - re-rolling-and-locking: Yahtzee-style dice selection
  *
- * Hooks:
- * - onBeforeRoll: Modify dice count/sides or block roll
- * - onAfterRoll: React to roll results, apply effects
+ * Fires dice-defined hooks:
+ * - onBeforeDiceRoll: Modify dice count/sides or block roll (blocking)
+ * - onDiceRolled: React to roll results, apply effects (merge)
  */
 
 import { GameState } from '../../types/game.js';
-import { DiceRollContext, AfterRollContext, DiceRollHookResult, StateChanges } from '../types.js';
 import { mechanicRegistry, applyStateChanges } from '../registry.js';
 
 /**
@@ -91,43 +90,20 @@ export function rollDice(
 ): DiceRollResult {
   const { diceCount, diceSides, purpose, modifier = 0, keepIndices, previousResults } = options;
 
-  // Create context for hooks
-  const ctx: DiceRollContext = {
-    state,
-    playerId,
-    diceCount,
-    diceSides,
-    purpose,
-    config: state.config
-  };
+  // Fire dice-defined onBeforeDiceRoll hook (blocking)
+  let actualDiceCount = diceCount;
+  let actualDiceSides = diceSides;
+  let hookModifier = 0;
 
-  // Run onBeforeRoll hooks (global - all mechanics)
-  const beforeResult = mechanicRegistry.onBeforeRoll(state, playerId, ctx);
-
-  if (beforeResult.blocked) {
-    return {
-      results: [],
-      total: 0,
-      blocked: true,
-      blockReason: beforeResult.blockReason
-    };
-  }
-
-  // Apply hook modifications
-  let actualDiceCount = beforeResult.diceCount ?? diceCount;
-  let actualDiceSides = beforeResult.diceSides ?? diceSides;
-  let hookModifier = beforeResult.modifier ?? 0;
-
-  // Dice-defined hook (only dice dependents) - strangler fig dual-fire
-  const definedBeforeResult = mechanicRegistry.fire('dice', 'onBeforeDiceRoll', state, playerId, {
+  const beforeResult = mechanicRegistry.fire('dice', 'onBeforeDiceRoll', state, playerId, {
     diceCount: actualDiceCount, diceSides: actualDiceSides, purpose
   });
-  if (definedBeforeResult && (definedBeforeResult as Record<string, unknown>).blocked) {
-    const blockReason = (definedBeforeResult as Record<string, unknown>).blockReason as string | undefined;
+  if (beforeResult && (beforeResult as Record<string, unknown>).blocked) {
+    const blockReason = (beforeResult as Record<string, unknown>).blockReason as string | undefined;
     return { results: [], total: 0, blocked: true, blockReason };
   }
-  if (definedBeforeResult) {
-    const dr = definedBeforeResult as Record<string, unknown>;
+  if (beforeResult) {
+    const dr = beforeResult as Record<string, unknown>;
     if (typeof dr.diceCount === 'number') actualDiceCount = dr.diceCount;
     if (typeof dr.diceSides === 'number') actualDiceSides = dr.diceSides;
     if (typeof dr.modifier === 'number') hookModifier += dr.modifier;
@@ -163,25 +139,11 @@ export function rollDice(
   const totalModifier = modifier + hookModifier;
   const finalTotal = total + totalModifier;
 
-  // Create after-roll context
-  const afterCtx: AfterRollContext = {
-    ...ctx,
-    diceCount: actualDiceCount,
-    diceSides: actualDiceSides,
-    results,
-    total,
-    keptDice
-  };
-
-  // Run onAfterRoll hooks (global - all mechanics)
-  const afterChanges = mechanicRegistry.onAfterRoll(state, playerId, afterCtx);
-  applyStateChanges(state, afterChanges);
-
-  // Dice-defined hook (only dice dependents) - strangler fig dual-fire
-  const diceRolledChanges = mechanicRegistry.fire('dice', 'onDiceRolled', state, playerId, {
+  // Fire dice-defined onDiceRolled hook (merge)
+  const afterChanges = mechanicRegistry.fire('dice', 'onDiceRolled', state, playerId, {
     results, total, diceCount: actualDiceCount, diceSides: actualDiceSides, purpose, keptDice
   });
-  if (diceRolledChanges) applyStateChanges(state, diceRolledChanges);
+  if (afterChanges) applyStateChanges(state, afterChanges);
 
   return {
     results,

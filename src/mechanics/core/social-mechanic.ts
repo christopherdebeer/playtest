@@ -5,8 +5,8 @@
  * Any mechanic that works with voting, negotiation, or communication should declare
  * `requires: ['social']` and implement the hooks defined here.
  *
- * This mechanic is always enabled. It fires domain-specific hooks alongside the existing
- * global social hooks (onVoteCast, onVoteTally) as part of the strangler fig migration.
+ * This mechanic is always enabled. Core social services fire these hooks
+ * and only mechanics that declare `requires: ['social']` receive them.
  *
  * Defined hooks:
  * - onVoteCompleted: After a voting session completes (merge)

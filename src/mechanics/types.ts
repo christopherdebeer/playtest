@@ -714,101 +714,7 @@ export interface MechanicHooks {
    */
   describeAction?(action: GameAction): ActionDescription | null;
 
-  // ============ Core Operation Hooks ============
-  // These hooks are called by core services (card-piles, hand)
-  // to allow mechanics to intercept fundamental operations.
-
-  /**
-   * Called before drawing cards.
-   * Can modify count or block draw entirely.
-   */
-  onBeforeDraw?(ctx: DrawContext): DrawHookResult | null;
-
-  /**
-   * Called after cards are drawn.
-   * Can trigger effects based on what was drawn.
-   */
-  onAfterDraw?(ctx: AfterDrawContext): StateChanges | null;
-
-  /**
-   * Called when cards are added to discard.
-   * Can trigger effects or modify behavior.
-   */
-  onDiscard?(ctx: DiscardContext): StateChanges | null;
-
-  /**
-   * Called before adding cards to hand.
-   * Can filter cards or block entirely.
-   */
-  onBeforeAddToHand?(ctx: HandAddContext): HandAddHookResult | null;
-
-  /**
-   * Called after cards are added to hand.
-   * Can trigger effects.
-   */
-  onAfterAddToHand?(ctx: HandAddContext): StateChanges | null;
-
-  /**
-   * Called after cards are removed from hand.
-   * Can trigger effects.
-   */
-  onAfterRemoveFromHand?(ctx: HandRemoveContext): StateChanges | null;
-
-  // ============ Resource Operation Hooks ============
-
-  /**
-   * Called before a resource change (add or spend).
-   * Can modify the amount or block the change.
-   */
-  onBeforeResourceChange?(ctx: ResourceChangeContext): ResourceChangeHookResult | null;
-
-  /**
-   * Called after a resource change is applied.
-   * Can trigger effects based on resource changes.
-   */
-  onAfterResourceChange?(ctx: AfterResourceChangeContext): StateChanges | null;
-
-  // ============ Effect Operation Hooks ============
-
-  /**
-   * Called before adding an effect to a player.
-   * Can modify the effect or block the add.
-   */
-  onBeforeAddEffect?(ctx: EffectContext): EffectAddHookResult | null;
-
-  /**
-   * Called after an effect is added to a player.
-   * Can trigger side effects.
-   */
-  onAfterAddEffect?(ctx: EffectContext): StateChanges | null;
-
-  /**
-   * Called before removing an effect from a player.
-   * Can block the removal.
-   */
-  onBeforeRemoveEffect?(ctx: EffectContext): EffectRemoveHookResult | null;
-
-  /**
-   * Called when an effect expires (duration reaches 0).
-   * Can trigger side effects or cleanup.
-   */
-  onEffectExpired?(ctx: EffectContext): StateChanges | null;
-
-  // ============ Board Movement Hooks ============
-
-  /**
-   * Called before a player moves to a new board state.
-   * Can modify the target or block the move.
-   */
-  onBeforeMove?(ctx: MoveContext): MoveHookResult | null;
-
-  /**
-   * Called after a player moves to a new board state.
-   * Can trigger effects or update state.
-   */
-  onAfterMove?(ctx: AfterMoveContext): StateChanges | null;
-
-  // ============ Visibility System Hooks (Phase 4) ============
+  // ============ Visibility System Hooks ============
 
   /**
    * Filter game state for a specific viewer.
@@ -818,12 +724,6 @@ export interface MechanicHooks {
   getVisibleState?(ctx: VisibilityContext): VisibleState | null;
 
   /**
-   * Called when hidden information is revealed.
-   * Can trigger effects or update state based on reveals.
-   */
-  onReveal?(ctx: RevealContext): StateChanges | null;
-
-  /**
    * Check if a player can see specific information.
    * Return true/false to allow/deny, or undefined to defer to other mechanics.
    * @param infoType - Type of info: 'role', 'hand', 'position', 'score', etc.
@@ -831,19 +731,7 @@ export interface MechanicHooks {
    */
   canSeeInfo?(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean | undefined;
 
-  // ============ Dice System Hooks (Phase 2) ============
-
-  /**
-   * Called before a dice roll. Can modify dice count/sides or block.
-   */
-  onBeforeRoll?(ctx: DiceRollContext): DiceRollHookResult | null;
-
-  /**
-   * Called after a dice roll. Can react to results and modify state.
-   */
-  onAfterRoll?(ctx: AfterRollContext): StateChanges | null;
-
-  // ============ Dynamic Turn Order Hooks (Phase 3) ============
+  // ============ Dynamic Turn Order Hooks ============
 
   /**
    * Called to determine turn order at round start or when order changes.
@@ -857,17 +745,13 @@ export interface MechanicHooks {
    */
   onPassPriority?(ctx: HookContext): PassPriorityResult | null;
 
-  // ============ Voting & Social Hooks (Phase 5) ============
-
-  /**
-   * Called when a player casts a vote.
-   * Can modify the vote, block it, or trigger effects.
-   */
-  onVoteCast?(ctx: VoteContext): VoteCastResult | null;
+  // ============ Voting Computation Hook ============
 
   /**
    * Called when votes are tallied.
    * Can provide custom tally logic or tiebreakers.
+   * Note: This is a computation hook, distinct from the social-defined
+   * notification hooks (onBeforeVote, onPlayerVoted, onVoteCompleted).
    */
   onVoteTally?(ctx: VoteTallyContext): VoteTallyResult | null;
 
