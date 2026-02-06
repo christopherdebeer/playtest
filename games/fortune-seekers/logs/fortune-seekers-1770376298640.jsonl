@@ -20,3 +20,5 @@
 {"timestamp":"2026-02-06T11:52:07.106Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"roll","roll":6,"points":10,"accumulated":20}}
 {"timestamp":"2026-02-06T11:53:43.845Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"draft","card":"Extra Roll","displayRemaining":5}}
 {"timestamp":"2026-02-06T11:53:44.461Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"roll","roll":3,"points":10,"accumulated":30}}
+{"timestamp":"2026-02-06T11:55:14.377Z","event":"action_executed","round":11,"turnNumber":21,"player":"player-1","data":{"type":"play_card","card":"Extra Roll","effect":{"type":"bonus_rolls","value":1},"handSize":0,"newTopCard":"Extra Roll"}}
+{"timestamp":"2026-02-06T11:55:14.987Z","event":"action_executed","round":11,"turnNumber":22,"player":"player-2","data":{"type":"roll","roll":2,"points":10,"accumulated":40}}
