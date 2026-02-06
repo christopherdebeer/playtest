@@ -2,22 +2,28 @@
 name: "AAOTE: An Agent of the Enemy"
 version: "0.3"
 players: 3-5
-starting_cards: 5
 win_condition: "objective_completed"
 max_turns: 40  # Proposal 012: Turn-based limit (40 turns, not rounds)
 
-# Reference mechanics from library
-mechanics:
-  - traitor-game
-  - hidden-roles
-  - hidden-objectives  # Proposal 012: Secret objective distribution
-  - grid-movement
-  - tile-placement
-  - trading
-  - hand-management
+# Player Cards (dealt face-up, visible to all)
+player_cards:
+  - { name: "The Scholar", count: 1, ability: "May look at top card of deck before drawing" }
+  - { name: "The Merchant", count: 1, ability: "Trades cost 0 AP" }
+  - { name: "The Scout", count: 1, ability: "May move 2 spaces for 1 AP" }
+  - { name: "The Guardian", count: 1, ability: "May block one trade per round" }
+  - { name: "The Mystic", count: 1, ability: "May peek at one player's objective once per game" }
 
-# Engine mechanics configuration
-engine_mechanics:
+# Objective Cards (dealt face-down, hidden)
+objectives:
+  # Regular objectives
+  - { name: "The Collector", count: 1, type: "regular", condition: "Hold 4 different items simultaneously" }
+  - { name: "The Explorer", count: 1, type: "regular", condition: "Visit 6 different locations" }
+  - { name: "The Builder", count: 1, type: "regular", condition: "Place 5 location cards" }
+  - { name: "The Trader", count: 1, type: "regular", condition: "Complete 4 trades" }
+  # The Enemy objective
+  - { name: "The Enemy", count: 1, type: "enemy", condition: "Prevent all other players from completing objectives OR collect the 3 Forbidden Items" }
+
+mechanics:
   # Action points system (Proposal 006: cost multiplied by count)
   action_points:
     points_per_turn: 3
@@ -77,71 +83,59 @@ engine_mechanics:
 
   # Victory declaration - GM must verify objective completion
   victory_declaration: true
+  hidden_roles: true
+  traitor_game: true
+  tile_placement: true
+  trading: true
+  hand_management: true
 
-# Player Cards (dealt face-up, visible to all)
-player_cards:
-  - { name: "The Scholar", count: 1, ability: "May look at top card of deck before drawing" }
-  - { name: "The Merchant", count: 1, ability: "Trades cost 0 AP" }
-  - { name: "The Scout", count: 1, ability: "May move 2 spaces for 1 AP" }
-  - { name: "The Guardian", count: 1, ability: "May block one trade per round" }
-  - { name: "The Mystic", count: 1, ability: "May peek at one player's objective once per game" }
+  cards:
+    starting_hand: 5
+    deck:
+      # === LOCATIONS (placed on grid) ===
+      # Basic locations
+      - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", effect: { type: "safe" } }
+      - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", effect: { type: "safe" } }
+      - { name: "River Crossing", count: 2, type: "location", terrain: "water", effect: { type: "safe" } }
+      - { name: "Village Square", count: 2, type: "location", terrain: "settlement", effect: { type: "trade_bonus" } }
+      - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", effect: { type: "draw_on_enter", value: 1 } }
+      - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, effect: { type: "safe" } }
 
-# Objective Cards (dealt face-down, hidden)
-objectives:
-  # Regular objectives
-  - { name: "The Collector", count: 1, type: "regular", condition: "Hold 4 different items simultaneously" }
-  - { name: "The Explorer", count: 1, type: "regular", condition: "Visit 6 different locations" }
-  - { name: "The Builder", count: 1, type: "regular", condition: "Place 5 location cards" }
-  - { name: "The Trader", count: 1, type: "regular", condition: "Complete 4 trades" }
-  # The Enemy objective
-  - { name: "The Enemy", count: 1, type: "enemy", condition: "Prevent all other players from completing objectives OR collect the 3 Forbidden Items" }
+      # Special locations
+      - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", effect: { type: "hide", description: "Avatar cannot be seen by others" } }
+      - { name: "Watchtower", count: 1, type: "location", terrain: "tower", effect: { type: "reveal", description: "See all player positions" } }
+      - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
 
-# Main Deck - Locations, Items, Events
-deck:
-  # === LOCATIONS (placed on grid) ===
-  # Basic locations
-  - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", effect: { type: "safe" } }
-  - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", effect: { type: "safe" } }
-  - { name: "River Crossing", count: 2, type: "location", terrain: "water", effect: { type: "safe" } }
-  - { name: "Village Square", count: 2, type: "location", terrain: "settlement", effect: { type: "trade_bonus" } }
-  - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", effect: { type: "draw_on_enter", value: 1 } }
-  - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, effect: { type: "safe" } }
+      # === ITEMS (held in hand, tradeable) ===
+      # Common items
+      - { name: "Lantern", count: 3, type: "item", effect: { type: "utility", description: "Required for cave locations" } }
+      - { name: "Rope", count: 3, type: "item", effect: { type: "utility", description: "Required for mountain locations" } }
+      - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn" } }
+      - { name: "Map Fragment", count: 4, type: "item", effect: { type: "collectible", description: "Collect 3 to peek at any objective" } }
+      - { name: "Supplies", count: 3, type: "item", effect: { type: "currency", description: "Used for certain events" } }
 
-  # Special locations
-  - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", effect: { type: "hide", description: "Avatar cannot be seen by others" } }
-  - { name: "Watchtower", count: 1, type: "location", terrain: "tower", effect: { type: "reveal", description: "See all player positions" } }
-  - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
+      # Forbidden items (Enemy objective)
+      - { name: "Cursed Amulet", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 1/3" } }
+      - { name: "Dark Tome", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 2/3" } }
+      - { name: "Shadow Key", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 3/3" } }
 
-  # === ITEMS (held in hand, tradeable) ===
-  # Common items
-  - { name: "Lantern", count: 3, type: "item", effect: { type: "utility", description: "Required for cave locations" } }
-  - { name: "Rope", count: 3, type: "item", effect: { type: "utility", description: "Required for mountain locations" } }
-  - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn" } }
-  - { name: "Map Fragment", count: 4, type: "item", effect: { type: "collectible", description: "Collect 3 to peek at any objective" } }
-  - { name: "Supplies", count: 3, type: "item", effect: { type: "currency", description: "Used for certain events" } }
+      # === EVENTS (played during turn) ===
+      # Movement events
+      - { name: "Swift Journey", count: 2, type: "event", effect: { type: "extra_movement", value: 2 } }
+      - { name: "Shortcut", count: 2, type: "event", effect: { type: "teleport_adjacent", description: "Move to any tile adjacent to any player" } }
 
-  # Forbidden items (Enemy objective)
-  - { name: "Cursed Amulet", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 1/3" } }
-  - { name: "Dark Tome", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 2/3" } }
-  - { name: "Shadow Key", count: 1, type: "item", subtype: "forbidden", effect: { type: "enemy_item", description: "Forbidden Item 3/3" } }
+      # Information events
+      - { name: "Spy", count: 2, type: "event", effect: { type: "peek_hand", description: "Look at target player's hand" } }
+      - { name: "Interrogate", count: 1, type: "event", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective" } }
 
-  # === EVENTS (played during turn) ===
-  # Movement events
-  - { name: "Swift Journey", count: 2, type: "event", effect: { type: "extra_movement", value: 2 } }
-  - { name: "Shortcut", count: 2, type: "event", effect: { type: "teleport_adjacent", description: "Move to any tile adjacent to any player" } }
+      # Interference events
+      - { name: "Roadblock", count: 2, type: "event", effect: { type: "block_tile", duration: 1, description: "Block a location for 1 round" } }
+      - { name: "Theft", count: 2, type: "event", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from adjacent player" } }
+      - { name: "Sabotage", count: 1, type: "event", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
 
-  # Information events
-  - { name: "Spy", count: 2, type: "event", effect: { type: "peek_hand", description: "Look at target player's hand" } }
-  - { name: "Interrogate", count: 1, type: "event", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective" } }
-
-  # Interference events
-  - { name: "Roadblock", count: 2, type: "event", effect: { type: "block_tile", duration: 1, description: "Block a location for 1 round" } }
-  - { name: "Theft", count: 2, type: "event", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from adjacent player" } }
-  - { name: "Sabotage", count: 1, type: "event", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
-
-  # Defensive events
-  - { name: "Evasion", count: 2, type: "event", effect: { type: "counter", description: "Cancel an event targeting you" } }
-  - { name: "Hidden Path", count: 2, type: "event", effect: { type: "secret_move", description: "Move without revealing destination" } }
+      # Defensive events
+      - { name: "Evasion", count: 2, type: "event", effect: { type: "counter", description: "Cancel an event targeting you" } }
+      - { name: "Hidden Path", count: 2, type: "event", effect: { type: "secret_move", description: "Move without revealing destination" } }
 ---
 
 # AAOTE: An Agent of the Enemy

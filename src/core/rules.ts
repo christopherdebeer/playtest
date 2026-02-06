@@ -14,6 +14,65 @@ export interface ParsedRules {
   markdown: string;
 }
 
+/**
+ * Convert unified RULES.md format (single `mechanics:` object) to internal GameConfig.
+ * Unified format: root has only metadata; `mechanics:` maps slug → config.
+ * Special pseudo-keys: `cards` (deck/starting_hand), `board` (board config).
+ */
+function normalizeUnifiedConfig(raw: Record<string, unknown>): GameConfig {
+  const mechanicsObj = raw.mechanics as Record<string, unknown>;
+  const engineMechanics: Record<string, unknown> = {};
+  const mechanicsList: string[] = [];
+
+  const config: Partial<GameConfig> & Record<string, unknown> = {
+    name: raw.name as string,
+    version: (raw.version as string) ?? '1.0',
+    players: raw.players as number | { min: number; max: number },
+    win_condition: raw.win_condition as string,
+    max_rounds: raw.max_rounds as number ?? 50,
+    max_turns: raw.max_turns as number | undefined,
+  };
+
+  for (const [key, value] of Object.entries(mechanicsObj)) {
+    // Pseudo-key: cards → extract deck and starting_hand
+    if (key === 'cards') {
+      const cardsConfig = value as Record<string, unknown>;
+      if (cardsConfig.deck) config.deck = cardsConfig.deck as DeckConfig[];
+      if (cardsConfig.starting_hand !== undefined) config.starting_cards = cardsConfig.starting_hand as number;
+      continue;
+    }
+
+    // Pseudo-key: board → extract board config
+    if (key === 'board') {
+      config.board = value as GameConfig['board'];
+      continue;
+    }
+
+    // Regular mechanic: add to mechanics list + engine_mechanics
+    mechanicsList.push(key);
+    const configKey = key.replace(/-/g, '_');
+
+    if (value === true || value === null || (typeof value === 'object' && !Array.isArray(value) && Object.keys(value as object).length === 0)) {
+      // No-config mechanic: store empty object so code can safely access properties
+      engineMechanics[configKey] = {};
+    } else {
+      engineMechanics[configKey] = value;
+    }
+  }
+
+  config.mechanics = mechanicsList;
+  config.engine_mechanics = engineMechanics as GameConfig['engine_mechanics'];
+
+  // Pass through any other root-level keys (e.g., player_cards, objectives)
+  for (const [key, value] of Object.entries(raw)) {
+    if (!['name', 'version', 'players', 'win_condition', 'max_rounds', 'max_turns', 'mechanics'].includes(key)) {
+      config[key] = value;
+    }
+  }
+
+  return config as GameConfig;
+}
+
 export function parseRules(rulesPath: string): ParsedRules {
   const content = readFileSync(rulesPath, 'utf-8');
 
@@ -27,11 +86,22 @@ export function parseRules(rulesPath: string): ParsedRules {
   const yamlContent = frontmatterMatch[1];
   const markdown = frontmatterMatch[2].trim();
 
-  let config: GameConfig;
+  let raw: Record<string, unknown>;
   try {
-    config = parseYAML(yamlContent) as GameConfig;
+    raw = parseYAML(yamlContent) as Record<string, unknown>;
   } catch (e) {
     throw new Error(`Failed to parse YAML frontmatter: ${e}`);
+  }
+
+  // Detect unified format: mechanics is an object (not an array)
+  const mechanics = raw.mechanics;
+  const isUnifiedFormat = mechanics && typeof mechanics === 'object' && !Array.isArray(mechanics);
+
+  let config: GameConfig;
+  if (isUnifiedFormat) {
+    config = normalizeUnifiedConfig(raw);
+  } else {
+    config = raw as GameConfig;
   }
 
   // Validate required fields

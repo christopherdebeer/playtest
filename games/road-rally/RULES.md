@@ -2,19 +2,10 @@
 name: "Road Rally"
 version: "1.0"
 players: 2-4
-starting_cards: 7
 win_condition: "First player to reach the Finish Line"
 max_rounds: 50
 
-# Reference mechanics from library (for documentation)
 mechanics:
-  - point-to-point-movement
-  - trick-taking
-  - ladder-climbing
-  - race
-
-# Engine mechanics configuration
-engine_mechanics:
   # Point-to-point movement - the rally track
   point_to_point_movement:
     nodes:
@@ -62,22 +53,24 @@ engine_mechanics:
     goal_state: "Finish"
     checkpoints: ["Pit1", "Mountain", "Valley", "Pit2"]
 
-# Speed card deck
-deck:
-  # Speed cards - higher = faster
-  - { name: "Speed 1", count: 4, type: "speed", value: 1, suit: "speed" }
-  - { name: "Speed 2", count: 4, type: "speed", value: 2, suit: "speed" }
-  - { name: "Speed 3", count: 4, type: "speed", value: 3, suit: "speed" }
-  - { name: "Speed 4", count: 4, type: "speed", value: 4, suit: "speed" }
-  - { name: "Speed 5", count: 4, type: "speed", value: 5, suit: "speed" }
-  - { name: "Speed 6", count: 4, type: "speed", value: 6, suit: "speed" }
-  - { name: "Speed 7", count: 4, type: "speed", value: 7, suit: "speed" }
-  - { name: "Speed 8", count: 4, type: "speed", value: 8, suit: "speed" }
-  - { name: "Speed 9", count: 4, type: "speed", value: 9, suit: "speed" }
-  - { name: "Speed 10", count: 4, type: "speed", value: 10, suit: "speed" }
-  # Turbo cards - special high value cards
-  - { name: "Turbo Boost", count: 2, type: "turbo", value: 11, suit: "turbo" }
-  - { name: "Nitro Burst", count: 2, type: "turbo", value: 12, suit: "turbo" }
+  # Cards configuration
+  cards:
+    starting_hand: 7
+    deck:
+      # Speed cards - higher = faster
+      - { name: "Speed 1", count: 4, type: "speed", value: 1, suit: "speed" }
+      - { name: "Speed 2", count: 4, type: "speed", value: 2, suit: "speed" }
+      - { name: "Speed 3", count: 4, type: "speed", value: 3, suit: "speed" }
+      - { name: "Speed 4", count: 4, type: "speed", value: 4, suit: "speed" }
+      - { name: "Speed 5", count: 4, type: "speed", value: 5, suit: "speed" }
+      - { name: "Speed 6", count: 4, type: "speed", value: 6, suit: "speed" }
+      - { name: "Speed 7", count: 4, type: "speed", value: 7, suit: "speed" }
+      - { name: "Speed 8", count: 4, type: "speed", value: 8, suit: "speed" }
+      - { name: "Speed 9", count: 4, type: "speed", value: 9, suit: "speed" }
+      - { name: "Speed 10", count: 4, type: "speed", value: 10, suit: "speed" }
+      # Turbo cards - special high value cards
+      - { name: "Turbo Boost", count: 2, type: "turbo", value: 11, suit: "turbo" }
+      - { name: "Nitro Burst", count: 2, type: "turbo", value: 12, suit: "turbo" }
 ---
 
 # Road Rally

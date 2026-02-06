@@ -25,7 +25,7 @@ interface GameConfig {
     states: string[]
     start: string
   }
-  mechanics?: string[]
+  mechanics?: string[] | Record<string, unknown>
 }
 
 interface Game {
@@ -94,16 +94,21 @@ function GamePage() {
           </div>
         </div>
 
-        {game.config.mechanics && game.config.mechanics.length > 0 && (
+        {game.config.mechanics && (() => {
+          const slugs = Array.isArray(game.config.mechanics)
+            ? game.config.mechanics
+            : Object.keys(game.config.mechanics).filter(k => k !== 'cards' && k !== 'board');
+          return slugs.length > 0 && (
           <div className="mechanics-section">
             <h2>Game Mechanics</h2>
             <div className="mechanics-badges">
-              {game.config.mechanics.map((slug) => (
+              {slugs.map((slug: string) => (
                 <MechanicBadge key={slug} slug={slug} showCategory />
               ))}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         <div className="quick-start">
           <h2>Quick Start</h2>

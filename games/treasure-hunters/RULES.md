@@ -2,19 +2,10 @@
 name: "Treasure Hunters"
 version: "1.0"
 players: 2-4
-starting_cards: 5
 win_condition: "score >= 50"
 max_rounds: 30
 
-# Reference mechanics from library
 mechanics:
-  - action-points
-  - set-collection
-  - income
-  - hand-management
-
-# Engine mechanics configuration
-engine_mechanics:
   # Action points system - 3 actions per turn
   action_points:
     points_per_turn: 3
@@ -43,33 +34,36 @@ engine_mechanics:
     scoring: per_set
     points_per_set: 15
 
-# Treasure deck
-deck:
-  # Ruby treasures (Red)
-  - { name: "Ruby Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Red", value: 3 } }
-  - { name: "Ruby Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Red", value: 5 } }
-  - { name: "Ruby Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Red", value: 4 } }
+  hand_management: true
 
-  # Sapphire treasures (Blue)
-  - { name: "Sapphire Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Blue", value: 3 } }
-  - { name: "Sapphire Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Blue", value: 5 } }
-  - { name: "Sapphire Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Blue", value: 4 } }
+  cards:
+    starting_hand: 5
+    deck:
+      # Ruby treasures (Red)
+      - { name: "Ruby Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Red", value: 3 } }
+      - { name: "Ruby Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Red", value: 5 } }
+      - { name: "Ruby Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Red", value: 4 } }
 
-  # Emerald treasures (Green)
-  - { name: "Emerald Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Green", value: 3 } }
-  - { name: "Emerald Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Green", value: 5 } }
-  - { name: "Emerald Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Green", value: 4 } }
+      # Sapphire treasures (Blue)
+      - { name: "Sapphire Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Blue", value: 3 } }
+      - { name: "Sapphire Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Blue", value: 5 } }
+      - { name: "Sapphire Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Blue", value: 4 } }
 
-  # Diamond treasures (White)
-  - { name: "Diamond Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "White", value: 3 } }
-  - { name: "Diamond Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "White", value: 5 } }
-  - { name: "Diamond Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "White", value: 4 } }
+      # Emerald treasures (Green)
+      - { name: "Emerald Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "Green", value: 3 } }
+      - { name: "Emerald Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "Green", value: 5 } }
+      - { name: "Emerald Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "Green", value: 4 } }
 
-  # Special action cards
-  - { name: "Treasure Map", count: 3, type: "action", effect: { type: "draw", value: 2 } }
-  - { name: "Merchant", count: 2, type: "action", effect: { type: "gold_gain", value: 3 } }
-  - { name: "Gem Finder", count: 2, type: "action", effect: { type: "gem_gain", value: 2 } }
-  - { name: "Thief", count: 2, type: "interference", effect: { type: "force_discard", value: 1, duration: 1 } }
+      # Diamond treasures (White)
+      - { name: "Diamond Ring", count: 3, type: "jewelry", effect: { type: "treasure", color: "White", value: 3 } }
+      - { name: "Diamond Crown", count: 2, type: "royalty", effect: { type: "treasure", color: "White", value: 5 } }
+      - { name: "Diamond Goblet", count: 2, type: "artifact", effect: { type: "treasure", color: "White", value: 4 } }
+
+      # Special action cards
+      - { name: "Treasure Map", count: 3, type: "action", effect: { type: "draw", value: 2 } }
+      - { name: "Merchant", count: 2, type: "action", effect: { type: "gold_gain", value: 3 } }
+      - { name: "Gem Finder", count: 2, type: "action", effect: { type: "gem_gain", value: 2 } }
+      - { name: "Thief", count: 2, type: "interference", effect: { type: "force_discard", value: 1, duration: 1 } }
 ---
 
 # Treasure Hunters

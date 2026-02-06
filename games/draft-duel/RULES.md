@@ -2,20 +2,10 @@
 name: "Draft Duel"
 version: "1.0"
 players: 2-4
-starting_cards: 0
 win_condition: "Most points after 3 drafting rounds"
 max_rounds: 15
 
-# Library mechanics (from BGG)
 mechanics:
-  - closed-drafting
-  - catch-the-leader
-  - once-per-game-abilities
-  - set-collection
-  - hand-management
-
-# Engine mechanics configuration
-engine_mechanics:
   # Closed Drafting: 7 Wonders style simultaneous drafting
   closed_drafting:
     pool_size: 7
@@ -73,27 +63,30 @@ engine_mechanics:
     scoring: per_set
     points_per_set: 5
 
-# Card deck for drafting
-deck:
-  # Element cards - core of the game
-  - { name: "Fire", count: 8, type: "element", element: "fire", points: 1 }
-  - { name: "Water", count: 8, type: "element", element: "water", points: 1 }
-  - { name: "Earth", count: 8, type: "element", element: "earth", points: 1 }
-  - { name: "Air", count: 8, type: "element", element: "air", points: 1 }
+  hand_management: true
 
-  # Power cards - harder to collect but valuable
-  - { name: "Power", count: 6, type: "special", element: "power", points: 2 }
+  cards:
+    starting_hand: 0
+    deck:
+      # Element cards - core of the game
+      - { name: "Fire", count: 8, type: "element", element: "fire", points: 1 }
+      - { name: "Water", count: 8, type: "element", element: "water", points: 1 }
+      - { name: "Earth", count: 8, type: "element", element: "earth", points: 1 }
+      - { name: "Air", count: 8, type: "element", element: "air", points: 1 }
 
-  # Wild cards - can substitute in sets
-  - { name: "Wild", count: 4, type: "wild", element: "wild", points: 0 }
+      # Power cards - harder to collect but valuable
+      - { name: "Power", count: 6, type: "special", element: "power", points: 2 }
 
-  # Bonus cards - valuable for type sets
-  - { name: "Swift", count: 4, type: "bonus", element: "bonus", points: 1 }
-  - { name: "Insight", count: 4, type: "bonus", element: "bonus", points: 1 }
+      # Wild cards - can substitute in sets
+      - { name: "Wild", count: 4, type: "wild", element: "wild", points: 0 }
 
-  # Action cards - for variety
-  - { name: "Trade", count: 3, type: "action", element: "action", points: 0 }
-  - { name: "Block", count: 3, type: "action", element: "action", points: 0 }
+      # Bonus cards - valuable for type sets
+      - { name: "Swift", count: 4, type: "bonus", element: "bonus", points: 1 }
+      - { name: "Insight", count: 4, type: "bonus", element: "bonus", points: 1 }
+
+      # Action cards - for variety
+      - { name: "Trade", count: 3, type: "action", element: "action", points: 0 }
+      - { name: "Block", count: 3, type: "action", element: "action", points: 0 }
 ---
 
 # Draft Duel

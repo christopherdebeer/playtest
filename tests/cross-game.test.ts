@@ -243,6 +243,317 @@ describe('engine-masters integration', () => {
   });
 });
 
+// ============ UNO (hand-management + take-that + win-empty-hand) ============
+
+describe('uno', () => {
+  it('initializes with 7 cards', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.players['player-1'].hand.length).toBe(7);
+    expect(harness.state.players['player-2'].hand.length).toBe(7);
+  });
+
+  it('has a top card on shared state', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.shared.topCard).toBeDefined();
+  });
+
+  it('draw adds a card', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    const before = harness.state.players['player-1'].hand.length;
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.players['player-1'].hand.length).toBe(before + 1);
+  });
+
+  it('auto-advances turn after draw (no AP)', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.currentPlayer).toBe('player-1');
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+
+  it('deck has 108 cards total', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    const totalCards = harness.state.deck.length +
+      harness.state.players['player-1'].hand.length +
+      harness.state.players['player-2'].hand.length + 1; // +1 for topCard
+    expect(totalCards).toBe(108);
+  });
+});
+
+// ============ Parallel Race (point-to-point + freeplay) ============
+
+describe('parallel-race', () => {
+  it('initializes with starting position', () => {
+    harness = GameTestHarness.create('parallel-race', 2, { seed: 1 });
+    harness.start();
+    const p1 = harness.state.players['player-1'];
+    const pos = (p1 as unknown as { currentNode?: string }).currentNode || p1.state;
+    expect(pos.toLowerCase()).toBe('start');
+  });
+
+  it('players get starting cards', () => {
+    harness = GameTestHarness.create('parallel-race', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.players['player-1'].hand.length).toBe(3);
+  });
+
+  it('move action available', () => {
+    harness = GameTestHarness.create('parallel-race', 2, { seed: 1 });
+    harness.start();
+    const acts = harness.getActions('player-1');
+    const moveAction = acts.actions.find((a: { type: string }) => a.type === 'move');
+    expect(moveAction).toBeDefined();
+  });
+});
+
+// ============ Road Rally (point-to-point + trick-taking + ladder) ============
+
+describe('road-rally', () => {
+  it('initializes with starting position', () => {
+    harness = GameTestHarness.create('road-rally', 2, { seed: 1 });
+    harness.start();
+    const p1 = harness.state.players['player-1'];
+    const pos = (p1 as unknown as { currentNode?: string }).currentNode || p1.state;
+    expect(pos.toLowerCase()).toBe('start');
+  });
+
+  it('players get 7 starting cards', () => {
+    harness = GameTestHarness.create('road-rally', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.players['player-1'].hand.length).toBe(7);
+  });
+
+  it('draw auto-advances turn', () => {
+    harness = GameTestHarness.create('road-rally', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.currentPlayer).toBe('player-1');
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+
+  it('deck contains speed cards', () => {
+    harness = GameTestHarness.create('road-rally', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.deck.length).toBeGreaterThan(0);
+  });
+});
+
+// ============ Draft Duel (closed-drafting + catch-the-leader) ============
+
+describe('draft-duel', () => {
+  it('initializes with zero starting cards', () => {
+    harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.players['player-1'].hand.length).toBe(0);
+  });
+
+  it('has a non-empty deck', () => {
+    harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.deck.length).toBeGreaterThan(0);
+  });
+
+  it('draw gives a card', () => {
+    harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.players['player-1'].hand.length).toBe(1);
+  });
+
+  it('auto-advances turn after draw', () => {
+    harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+});
+
+// ============ AAOTE (traitor + grid + trading + AP) ============
+
+describe('aaote', () => {
+  it('initializes with action points', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    const p1 = harness.state.players['player-1'];
+    expect(p1.actionPoints).toBe(3);
+  });
+
+  it('players start with 5 cards', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    expect(harness.state.players['player-1'].hand.length).toBe(5);
+  });
+
+  it('initializes with trading shared state', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    expect(harness.state.shared.pendingTrades).toBeDefined();
+  });
+
+  it('draw costs 1 AP', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.players['player-1'].actionPoints).toBe(2);
+  });
+
+  it('pass costs 0 AP and ends turn', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'pass' });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+
+  it('AP exhaustion ends turn', () => {
+    harness = GameTestHarness.create('aaote', 3, { seed: 1 });
+    harness.start();
+    // 3 AP: draw (1) x 3 = 0 AP
+    harness.step('player-1', { type: 'draw', count: 1 });
+    harness.step('player-1', { type: 'draw', count: 1 });
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+});
+
+// ============ Battle Forge (worker-placement + market + AP) ============
+
+describe('battle-forge', () => {
+  it('initializes with resources and workers', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    const p1 = harness.state.players['player-1'];
+    expect(p1.resources!.gold).toBe(10);
+    expect(p1.actionPoints).toBe(4);
+  });
+
+  it('worker spaces initialized', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.shared.workerSpaces).toBeDefined();
+  });
+
+  it('market prices initialized', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    const market = harness.state.shared.market as { prices: Record<string, number> };
+    expect(market).toBeDefined();
+    expect(market.prices).toBeDefined();
+  });
+
+  it('buy_market action available', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    const acts = harness.getActions('player-1');
+    const buyAction = acts.actions.find((a: { type: string }) => a.type === 'buy_market');
+    expect(buyAction).toBeDefined();
+  });
+
+  it('draw costs 1 AP', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.players['player-1'].actionPoints).toBe(3);
+    expect(harness.state.currentPlayer).toBe('player-1'); // still has AP
+  });
+
+  it('pass ends turn with AP remaining', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    harness.step('player-1', { type: 'pass' });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+
+  it('AP exhaustion ends turn', () => {
+    harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
+    harness.start();
+    // 4 AP: draw (1) x 4 = 0 AP
+    harness.step('player-1', { type: 'draw', count: 1 });
+    harness.step('player-1', { type: 'draw', count: 1 });
+    harness.step('player-1', { type: 'draw', count: 1 });
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+});
+
+// ============ Alliance (cooperative + tableau-building + resources) ============
+
+describe('alliance', () => {
+  it('initializes with resources and cards', () => {
+    harness = GameTestHarness.create('alliance', 2, { seed: 1 });
+    harness.start();
+    const p1 = harness.state.players['player-1'];
+    expect(p1.resources!.gold).toBe(5);
+    expect(p1.resources!.food).toBe(3);
+    expect(p1.hand.length).toBe(4);
+  });
+
+  it('cooperative shared pool initialized', () => {
+    harness = GameTestHarness.create('alliance', 2, { seed: 1 });
+    harness.start();
+    const coop = harness.state.shared.cooperative as {
+      sharedPool: Record<string, number>;
+      threatLevel: number;
+    };
+    expect(coop).toBeDefined();
+    expect(coop.sharedPool.supplies).toBe(10);
+    expect(coop.sharedPool.morale).toBe(5);
+    expect(coop.threatLevel).toBe(0);
+  });
+
+  it('add_to_tableau action available', () => {
+    harness = GameTestHarness.create('alliance', 2, { seed: 1 });
+    harness.start();
+    const acts = harness.getActions('player-1');
+    const tableauAction = acts.actions.find((a: { type: string }) => a.type === 'add_to_tableau');
+    expect(tableauAction).toBeDefined();
+  });
+
+  it('draw auto-advances turn (no AP)', () => {
+    harness = GameTestHarness.create('alliance', 2, { seed: 1 });
+    harness.start();
+    expect(harness.state.currentPlayer).toBe('player-1');
+    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-2');
+  });
+
+  it('add_to_tableau moves card from hand', () => {
+    harness = GameTestHarness.create('alliance', 2, { seed: 1 });
+    harness.start();
+    const hand = harness.state.players['player-1'].hand;
+    const cardName = hand[0].name;
+    const handBefore = hand.length;
+    const result = harness.step('player-1', { type: 'add_to_tableau', card: cardName });
+    expect(result.success).toBe(true);
+    const p1 = harness.state.players['player-1'];
+    expect(p1.hand.length).toBe(handBefore - 1);
+  });
+});
+
+// ============ Cross-game: all games initialize ============
+
+describe('all games', () => {
+  it('all games initialize without errors', () => {
+    const games = ['markovs-chains', 'treasure-hunters', 'fortune-seekers',
+                   'engine-masters', 'uno', 'parallel-race', 'road-rally',
+                   'draft-duel', 'aaote', 'battle-forge', 'alliance'];
+
+    for (const game of games) {
+      const playerCount = game === 'aaote' ? 3 : 2;
+      const h = GameTestHarness.create(game, playerCount, { seed: 1 });
+      h.start();
+      expect(h.state.status).toBe('in_progress');
+      expect(h.state.round).toBe(1);
+      expect(h.state.currentPlayer).toBe('player-1');
+      h.cleanup();
+    }
+  });
+});
+
 // ============ Deterministic seeded replay across games ============
 
 describe('cross-game seeded determinism', () => {

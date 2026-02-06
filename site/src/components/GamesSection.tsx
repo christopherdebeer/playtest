@@ -11,7 +11,7 @@ interface GameConfig {
   startingCards?: number
   deckSize?: number
   boardStates?: string[]
-  mechanics?: string[]
+  mechanics?: string[] | Record<string, unknown>
 }
 
 interface Game {
@@ -42,16 +42,21 @@ function GamesSection() {
 
               <p className="game-objective">{game.config.winCondition}</p>
 
-              {game.config.mechanics && game.config.mechanics.length > 0 && (
+              {game.config.mechanics && (() => {
+                const slugs = Array.isArray(game.config.mechanics)
+                  ? game.config.mechanics
+                  : Object.keys(game.config.mechanics).filter(k => k !== 'cards' && k !== 'board');
+                return slugs.length > 0 && (
                 <div className="game-mechanics" onClick={(e) => e.preventDefault()}>
-                  {game.config.mechanics.slice(0, 4).map((slug) => (
+                  {slugs.slice(0, 4).map((slug: string) => (
                     <MechanicBadge key={slug} slug={slug} showCategory linkToPage />
                   ))}
-                  {game.config.mechanics.length > 4 && (
-                    <span className="more-mechanics">+{game.config.mechanics.length - 4}</span>
+                  {slugs.length > 4 && (
+                    <span className="more-mechanics">+{slugs.length - 4}</span>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               <div className="game-stats">
                 {game.config.startingCards != null && game.config.startingCards > 0 && (
