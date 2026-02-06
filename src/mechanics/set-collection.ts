@@ -19,7 +19,7 @@ import {
   AvailableAction,
   ActionDescription
 } from './types.js';
-import { GameAction, Card, SetDefinition, CollectSetAction } from '../types/game.js';
+import { GameAction, Card, SetDefinition, CollectSetAction, PlayerState } from '../types/game.js';
 import { removeCardsFromHand } from './core/hand.js';
 import { addToDiscard } from './core/card-piles.js';
 
@@ -151,10 +151,14 @@ export const setCollectionMechanic: MechanicHooks = {
       };
     }
 
-    // Calculate new state
+    // Track collected sets
     const collectedSets = [...(player.collectedSets || []), collectAction.setType];
-    const pointsAwarded = setConfig.points_per_set ?? 0;
-    const newScore = (player.score ?? 0) + pointsAwarded;
+
+    // Award points if configured (match game.ts conditional behavior)
+    const playerChanges: Partial<PlayerState> = { collectedSets };
+    if (setConfig.points_per_set) {
+      playerChanges.score = (player.score ?? 0) + setConfig.points_per_set;
+    }
 
     // Add cards to discard using core service
     addToDiscard(state, collectedCards, playerId);
@@ -163,19 +167,16 @@ export const setCollectionMechanic: MechanicHooks = {
       handled: true,
       stateChanges: {
         playerStateChanges: {
-          [playerId]: {
-            collectedSets,
-            score: newScore
-          }
+          [playerId]: playerChanges
         }
       },
-      advanceTurn: true,
+      advanceTurn: false,
       checkWin: true,
       logMessage: 'set_collected',
       logData: {
         setType: collectAction.setType,
         cards: collectAction.cards,
-        points: pointsAwarded,
+        points: setConfig.points_per_set,
         totalSets: collectedSets.length
       }
     };
