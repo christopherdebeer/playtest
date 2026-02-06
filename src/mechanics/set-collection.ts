@@ -183,9 +183,10 @@ export const setCollectionMechanic: MechanicHooks = {
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
     const setConfig = ctx.config.engine_mechanics?.set_collection as SetCollectionConfig | undefined;
-    if (!setConfig) return [];
+    if (!setConfig?.sets?.length) return [];
 
-    const handCards = ctx.player.hand.map(c => c.name);
+    const hand = ctx.player.hand || [];
+    const handCards = hand.map(c => c.name);
     const minSetSize = Math.min(...setConfig.sets.map(s => s.size));
 
     // Only show action if player has enough cards for smallest set

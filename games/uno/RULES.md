@@ -6,6 +6,7 @@ max_rounds: 200
 
 mechanics:
   hand_management: true
+  card_matching: true
   set_collection: true
   take_that: true
   lose_a_turn: true

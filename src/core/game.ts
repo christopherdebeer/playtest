@@ -912,7 +912,7 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     .map(pid => ({
       playerId: pid,
       state: state.players[pid].state,
-      handSize: state.players[pid].hand.length,
+      handSize: (state.players[pid].hand || []).length,
       effects: state.players[pid].effects
     }));
 
@@ -1677,10 +1677,13 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const gridConfig = state.config.engine_mechanics?.grid as { type?: string; starting_tile?: string; adjacency?: string } | undefined;
   const hasGrid = !!gridConfig;
   const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
-  const handCards = player.hand.map(c => c.name);
-  const placeableCards = player.hand.filter(c => c.placeable).map(c => c.name);
-  const locationCards = player.hand.filter(c => c.type === 'location').map(c => c.name);
-  const playableCards = player.hand.filter(c => !c.placeable && c.type !== 'location').map(c => c.name);
+  const hand = player.hand || [];
+  const handCards = hand.map(c => c.name);
+  const placeableCards = hand.filter(c => c.placeable).map(c => c.name);
+  const locationCards = hand.filter(c => c.type === 'location').map(c => c.name);
+  const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
+  const filteredPlayable = mechanicRegistry.filterPlayableCards(state, playerId, basePlayable);
+  const playableCards = filteredPlayable.map(c => c.name);
   const boardStates = state.config.board?.states || [];
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
   const placedLocations = (state.shared.placedLocations as string[]) || [];
@@ -1751,7 +1754,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   // === PLAY_CARD action (for regular cards) ===
   if (playableCards.length > 0) {
     const playEnabled = isYourTurn && !isBlocked;
-    const interferenceCards = player.hand.filter(c =>
+    const interferenceCards = hand.filter(c =>
       c.type === 'interference' ||
       ['block_turn', 'probability_penalty', 'force_discard', 'skip'].includes(c.effect?.type || '')
     ).map(c => c.name);
@@ -1774,7 +1777,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
         }).filter(([_, v]) => v !== undefined)
       ) as Record<string, string>,
       examples: playableCards.slice(0, 2).map(card => {
-        const c = player.hand.find(h => h.name === card)!;
+        const c = hand.find(h => h.name === card)!;
         const isInterference = interferenceCards.includes(card);
         const example: PlayCardAction = { type: 'play_card', card };
         if (isInterference && opponents.length > 0) {
@@ -1802,7 +1805,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       },
       optional: { reasoning: 'Explanation of your placement strategy' },
       examples: placeableCards.slice(0, 2).flatMap(card => {
-        const c = player.hand.find(h => h.name === card)!;
+        const c = hand.find(h => h.name === card)!;
         // Suggest strategic placements
         return boardStates.slice(0, 2).map(targetState => ({
           type: 'place_card' as const,
@@ -1872,8 +1875,8 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
   if (tradeConfig?.enabled) {
     const tradeableCards = tradeConfig.item_types_only
-      ? player.hand.filter(c => c.type === 'item').map(c => c.name)
-      : player.hand.map(c => c.name);
+      ? hand.filter(c => c.type === 'item').map(c => c.name)
+      : hand.map(c => c.name);
     const tradeEnabled = isYourTurn && !isBlocked && tradeableCards.length > 0;
 
     // Find valid trade targets based on location constraints
@@ -1991,7 +1994,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   // === NEW MECHANICS: COLLECT_SET action (for set collection games) ===
   const setConfig = state.config.engine_mechanics?.set_collection;
-  if (setConfig && handCards.length >= Math.min(...setConfig.sets.map(s => s.size))) {
+  if (setConfig?.sets?.length && handCards.length >= Math.min(...setConfig.sets.map(s => s.size))) {
     const canCollect = isYourTurn && !isBlocked;
 
     actions.push({
