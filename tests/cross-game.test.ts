@@ -283,6 +283,93 @@ describe('uno', () => {
       harness.state.players['player-2'].hand.length + 1; // +1 for topCard
     expect(totalCards).toBe(108);
   });
+
+  it('card-matching: initializes currentColor in shared state', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+    // card-matching mechanic should init currentColor (null until first play)
+    expect('currentColor' in harness.state.shared).toBe(true);
+  });
+
+  it('card-matching: play_card only lists matching cards', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 42 });
+    harness.start();
+
+    // Set a known currentColor and topCard to test filtering
+    harness.state.shared.currentColor = 'Red';
+    harness.state.shared.topCard = { name: 'Red 5', type: 'number', effect: { type: 'none', color: 'Red', value: 5 } };
+
+    const acts = harness.getActions('player-1');
+    const playCard = acts.actions.find((a: { type: string }) => a.type === 'play_card');
+
+    if (playCard && playCard.cards) {
+      // Every listed card should be playable (match color, value, or be wild)
+      const hand = harness.state.players['player-1'].hand;
+      for (const cardName of playCard.cards) {
+        const card = hand.find(c => c.name === cardName);
+        expect(card).toBeDefined();
+        const matchesColor = card!.effect?.color === 'Red';
+        const matchesValue = (card!.value ?? card!.effect?.value) === 5;
+        const isWild = card!.type === 'wild';
+        expect(matchesColor || matchesValue || isWild).toBe(true);
+      }
+    }
+  });
+
+  it('card-matching: rejects non-matching card play', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 42 });
+    harness.start();
+
+    // Set color to Red
+    harness.state.shared.currentColor = 'Red';
+    harness.state.shared.topCard = { name: 'Red 5', type: 'number', effect: { type: 'none', color: 'Red', value: 5 } };
+
+    // Find a non-matching card in hand (not Red, not value 5, not wild)
+    const hand = harness.state.players['player-1'].hand;
+    const nonMatch = hand.find(c =>
+      c.type !== 'wild' &&
+      c.effect?.color !== 'Red' &&
+      (c.value ?? c.effect?.value) !== 5
+    );
+
+    if (nonMatch) {
+      const result = harness.step('player-1', { type: 'play_card', card: nonMatch.name });
+      expect(result.success).toBe(false);
+    }
+  });
+
+  it('card-matching: updates currentColor after card play', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 42 });
+    harness.start();
+
+    // Allow any card initially (no color set)
+    harness.state.shared.currentColor = null;
+
+    const hand = harness.state.players['player-1'].hand;
+    const colorCard = hand.find(c => c.effect?.color && c.type !== 'wild');
+    if (colorCard) {
+      const result = harness.step('player-1', { type: 'play_card', card: colorCard.name });
+      expect(result.success).toBe(true);
+      expect(harness.state.shared.currentColor).toBe(colorCard.effect!.color);
+    }
+  });
+
+  it('getAvailableActions handles undefined hand gracefully', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+
+    // Simulate corrupted state where hand is undefined
+    const savedHand = harness.state.players['player-1'].hand;
+    (harness.state.players['player-1'] as any).hand = undefined;
+
+    // Should not throw
+    const acts = harness.getActions('player-1');
+    expect(acts).toBeDefined();
+    expect(acts.actions).toBeDefined();
+
+    // Restore hand
+    harness.state.players['player-1'].hand = savedHand;
+  });
 });
 
 // ============ Parallel Race (point-to-point + freeplay) ============

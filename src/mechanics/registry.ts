@@ -538,6 +538,32 @@ class MechanicRegistry {
   }
 
   /**
+   * Filter playable cards through cards-domain mechanics.
+   * Routes to mechanics that declare `requires: ['cards']` and implement filterPlayableCards.
+   * Returns the filtered card list (may be smaller than input).
+   */
+  filterPlayableCards(state: GameState, playerId: string, cards: Card[]): Card[] {
+    const ctx = this.createContext(state, playerId);
+
+    // Route only to enabled mechanics that require 'cards' (cards-domain dependents)
+    const dependents = this.getEnabledMechanics(state.config)
+      .filter(m => getMechanicRequires(m).includes('cards'));
+
+    let filtered = cards;
+    for (const dep of dependents) {
+      const handler = (dep as Record<string, unknown>)['filterPlayableCards'];
+      if (typeof handler === 'function') {
+        const result = handler.call(dep, ctx, { cards: filtered });
+        if (result !== null && Array.isArray(result)) {
+          filtered = result;
+        }
+      }
+    }
+
+    return filtered;
+  }
+
+  /**
    * Get description for an action from the owning mechanic.
    */
   describeAction(state: GameState, action: GameAction): ActionDescription | null {

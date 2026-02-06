@@ -24,7 +24,7 @@ import {
   isMechanicEnabled
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
-import type { CardsHooks, CardDrawnPayload, CardPlayedPayload } from './core/cards.js';
+import type { CardsHooks, CardDrawnPayload, CardPlayedPayload, FilterPlayableCardsPayload } from './core/cards.js';
 
 interface CardMatchingConfig {
   /** Colors available in the game */
@@ -44,7 +44,7 @@ const DEFAULT_COLORS = ['Red', 'Blue', 'Green', 'Yellow'];
 /**
  * Check if a card is playable given the current game state
  */
-function isCardPlayable(
+export function isCardPlayable(
   card: Card,
   currentColor: string | null,
   topCard: Card | null,
@@ -143,6 +143,21 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
       currentColor: null,
       cardMatchingDraws: drawTracking
     };
+  },
+
+  /**
+   * Filter playable cards to only those matching current color/top card.
+   * Cards-domain hook: called when building the play_card action's card list.
+   */
+  filterPlayableCards(ctx: HookContext, { cards }: FilterPlayableCardsPayload): Card[] | null {
+    if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
+
+    const mechanics = ctx.config.engine_mechanics as Record<string, unknown> | undefined;
+    const matchConfig = mechanics?.card_matching as CardMatchingConfig | undefined;
+    const currentColor = ctx.state.shared.currentColor as string | null;
+    const topCard = ctx.state.shared.topCard as Card | null;
+
+    return cards.filter(card => isCardPlayable(card, currentColor, topCard, matchConfig || {}));
   },
 
   /**

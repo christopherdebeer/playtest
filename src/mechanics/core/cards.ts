@@ -89,6 +89,11 @@ export interface CardsRemovedFromHandPayload {
  * const myMechanic: MechanicHooks & CardsHooks = { ... };
  * ```
  */
+export interface FilterPlayableCardsPayload {
+  /** The candidate cards to filter */
+  cards: Card[];
+}
+
 export interface CardsHooks {
   onCardDrawn?(ctx: HookContext, payload: CardDrawnPayload): StateChanges | null;
   onCardPlayed?(ctx: HookContext, payload: CardPlayedPayload): StateChanges | null;
@@ -98,6 +103,8 @@ export interface CardsHooks {
   onBeforeAddToHand?(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; blockReason?: string; cards?: Card[] } | null;
   onAfterAddToHand?(ctx: HookContext, payload: CardsAddedToHandPayload): StateChanges | null;
   onAfterRemoveFromHand?(ctx: HookContext, payload: CardsRemovedFromHandPayload): StateChanges | null;
+  /** Filter which cards from hand are playable. Return filtered subset or null to skip. */
+  filterPlayableCards?(ctx: HookContext, payload: FilterPlayableCardsPayload): Card[] | null;
 }
 
 // ============ The mechanic itself ============
@@ -138,6 +145,10 @@ export const cardsMechanic: MechanicHooks = {
     onAfterRemoveFromHand: {
       description: 'After cards are removed from hand.',
       resolution: 'merge',
+    },
+    filterPlayableCards: {
+      description: 'Filter which cards from hand are playable for play_card. Returns filtered Card[].',
+      resolution: 'first',
     },
   },
 

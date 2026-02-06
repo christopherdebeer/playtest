@@ -6,3 +6,6 @@
 {"timestamp":"2026-02-06T08:30:53.500Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Diamond Ring","effect":{"type":"treasure","color":"White","value":3},"handSize":6,"currentColor":"White","newTopCard":"Diamond Ring"}}
 {"timestamp":"2026-02-06T08:35:24.596Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
 {"timestamp":"2026-02-06T08:35:56.226Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"collect_set","setType":"Type Set","cards":["Ruby Ring","Diamond Ring","Emerald Ring"],"points":15,"totalSets":2}}
+{"timestamp":"2026-02-06T08:39:25.767Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-06T08:40:41.484Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-06T08:41:20.937Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Diamond Crown","effect":{"type":"treasure","color":"White","value":5},"handSize":7,"currentColor":"White","newTopCard":"Diamond Crown"}}
