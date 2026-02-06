@@ -18,3 +18,4 @@
 {"timestamp":"2026-02-06T11:39:11.832Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"collect_set","setType":"Type Set","cards":["Sapphire Ring","Emerald Ring","Diamond Ring"],"points":15,"totalSets":1}}
 {"timestamp":"2026-02-06T11:53:52.595Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1}}
 {"timestamp":"2026-02-06T11:54:37.742Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-06T11:57:37.471Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"pass"}}
