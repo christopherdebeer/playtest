@@ -17,7 +17,10 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  PlayerInitContext,
+  PlayerInitResult,
+  isMechanicEnabled
 } from './types.js';
 import { GameAction, Card, SetDefinition, CollectSetAction, PlayerState } from '../types/game.js';
 import { removeCardsFromHand } from './core/hand.js';
@@ -84,6 +87,18 @@ export const setCollectionMechanic: MechanicHooks = {
       }
     },
     required: ['sets']
+  },
+
+  initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
+    if (!isMechanicEnabled(ctx.config, 'set-collection')) return null;
+    return { collectedSets: [] };
+  },
+
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    if (!isMechanicEnabled(ctx.config, 'set-collection')) return null;
+    const collectedSets = ctx.player.collectedSets || [];
+    if (collectedSets.length === 0) return null;
+    return { collectedSets };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {

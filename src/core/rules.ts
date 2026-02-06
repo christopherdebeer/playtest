@@ -34,17 +34,19 @@ function normalizeUnifiedConfig(raw: Record<string, unknown>): GameConfig {
   };
 
   for (const [key, value] of Object.entries(mechanicsObj)) {
-    // Pseudo-key: cards → extract deck and starting_hand
+    // Pseudo-key: cards → extract deck and starting_hand, also mark as enabled mechanic
     if (key === 'cards') {
       const cardsConfig = value as Record<string, unknown>;
       if (cardsConfig.deck) config.deck = cardsConfig.deck as DeckConfig[];
       if (cardsConfig.starting_hand !== undefined) config.starting_cards = cardsConfig.starting_hand as number;
+      engineMechanics.cards = {};
       continue;
     }
 
-    // Pseudo-key: board → extract board config
+    // Pseudo-key: board → extract board config, also mark as enabled mechanic
     if (key === 'board') {
       config.board = value as GameConfig['board'];
+      engineMechanics.board = {};
       continue;
     }
 

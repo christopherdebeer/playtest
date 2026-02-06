@@ -253,7 +253,8 @@ describe('registry global hooks', () => {
   });
 
   it('executeAction delegates to first handling mechanic', () => {
-    const state = makeState();
+    // pass mechanic requires explicit config to be enabled
+    const state = makeState({ engine_mechanics: { pass: {} } });
     // pass mechanic handles 'pass' action type
     const result = mechanicRegistry.executeAction(state, 'player-1', { type: 'pass' });
     expect(result).not.toBeNull();
@@ -300,7 +301,7 @@ describe('registry global hooks', () => {
   });
 
   it('describeAction returns description from owning mechanic', () => {
-    const state = makeState();
+    const state = makeState({ engine_mechanics: { pass: {} } });
     const desc = mechanicRegistry.describeAction(state, { type: 'pass' });
     expect(desc).not.toBeNull();
     expect(desc!.type).toBe('pass');
@@ -361,10 +362,11 @@ describe('registry win conditions', () => {
 
 describe('registry agnosticism hooks', () => {
   it('isPlayerBlocked returns true when blocking effect present', () => {
-    const state = makeState();
+    // lose-a-turn requires explicit config (requires effects via dependency)
+    const state = makeState({ engine_mechanics: { lose_a_turn: {} } });
     addEffect(state, 'player-1', { type: 'block_turn', duration: 1 });
 
-    // lose-a-turn mechanic (always enabled) implements isPlayerBlocked
+    // lose-a-turn mechanic implements isPlayerBlocked
     const result = mechanicRegistry.isPlayerBlocked(state, 'player-1');
     expect(result).toBe(true);
   });
@@ -449,7 +451,7 @@ describe('registry dependency validation', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('getEnabledMechanics returns core mechanics even without config', () => {
+  it('getEnabledMechanics requires explicit config or dependency', () => {
     const config: GameConfig = {
       name: 'test',
       version: '1.0',
@@ -461,15 +463,34 @@ describe('registry dependency validation', () => {
     const enabled = mechanicRegistry.getEnabledMechanics(config);
     const slugs = enabled.map(m => m.slug);
 
-    // Core mechanics should always be enabled
+    // Without config, no mechanics should be enabled
+    expect(slugs).not.toContain('cards');
+    expect(slugs).not.toContain('resources');
+    expect(slugs).not.toContain('dice');
+    expect(slugs).not.toContain('pass');
+  });
+
+  it('getEnabledMechanics enables dependencies of configured mechanics', () => {
+    const config: GameConfig = {
+      name: 'test',
+      version: '1.0',
+      players: 2,
+      win_condition: 'test',
+      max_rounds: 10,
+      engine_mechanics: {
+        card_matching: {},
+      },
+    };
+
+    const enabled = mechanicRegistry.getEnabledMechanics(config);
+    const slugs = enabled.map(m => m.slug);
+
+    // card-matching requires 'cards', so cards should be enabled via dependency
+    expect(slugs).toContain('card-matching');
     expect(slugs).toContain('cards');
-    expect(slugs).toContain('resources');
-    expect(slugs).toContain('dice');
-    expect(slugs).toContain('board');
-    expect(slugs).toContain('effects');
-    expect(slugs).toContain('visibility');
-    expect(slugs).toContain('social');
-    expect(slugs).toContain('pass');
+    // Other core mechanics should NOT be enabled
+    expect(slugs).not.toContain('resources');
+    expect(slugs).not.toContain('dice');
   });
 
   it('getEnabledMechanics includes explicitly configured mechanics', () => {

@@ -20,6 +20,8 @@ import {
   AvailableAction,
   ActionDescription,
   StateChanges,
+  PlayerInitContext,
+  PlayerInitResult,
   isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
@@ -62,6 +64,11 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
       }
     },
     required: ['dice_sides', 'bust_threshold', 'points_per_success']
+  },
+
+  initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
+    if (!isMechanicEnabled(ctx.config, 'push-your-luck')) return null;
+    return { rollAccumulator: 0, rollCount: 0 };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
