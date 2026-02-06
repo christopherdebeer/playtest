@@ -1,2 +1,0 @@
-{"timestamp":"2026-02-05T23:28:56.922Z","event":"game_init","data":{"gameId":"battle-forge-1770334136917","playerCount":2,"config":"Battle Forge"}}
-{"timestamp":"2026-02-05T23:28:56.925Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}

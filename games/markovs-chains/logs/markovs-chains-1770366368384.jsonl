@@ -1,6 +1,0 @@
-{"timestamp":"2026-02-06T08:26:08.388Z","event":"game_init","data":{"gameId":"markovs-chains-1770366368384","playerCount":2,"config":"Markov's Chains"}}
-{"timestamp":"2026-02-06T08:26:33.487Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
-{"timestamp":"2026-02-06T08:27:58.291Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_card","card":"Safe Haven","targetState":"B","targetMode":"owner","effect":{"type":"probability_boost","value":0.15}}}
-{"timestamp":"2026-02-06T08:31:25.405Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_card","card":"Hazard","targetState":"B","targetMode":"opponents","effect":{"type":"probability_penalty","value":-0.2}}}
-{"timestamp":"2026-02-06T08:36:10.166Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[],"probabilityModifier":0}}
-{"timestamp":"2026-02-06T08:40:05.030Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Friction","effect":{"type":"probability_penalty","value":-0.25},"actionTarget":"player-1","handSize":3,"currentColor":null,"newTopCard":"Friction"}}
