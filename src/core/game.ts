@@ -585,11 +585,6 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     // Pass existing players for cross-player coordination (e.g., unique power assignment)
     const playerIndex = i - 1;
     const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players);
-    const actionPoints = mechanicState.actionPoints as number | undefined;
-    const actionPointsUsed = mechanicState.actionPointsUsed as number | undefined;
-    const powerId = mechanicState.powerId as string | undefined;
-    const personalDeck = mechanicState.personalDeck as Card[] | undefined;
-    const personalDiscard = mechanicState.personalDiscard as Card[] | undefined;
 
     // Initialize score from starting_state if configured
     const startingScore = startingState?.score ?? 0;
@@ -600,15 +595,10 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       effects: [],
       persona,
       resources,
-      score: startingScore,
-      actionPoints,
-      actionPointsUsed,
-      powerId,
-      personalDeck,
-      personalDiscard
+      score: startingScore
     };
 
-    // Apply any additional mechanic state (e.g. currentNode, stopsThisTurn, movementPoints)
+    // Apply all mechanic-provided state (actionPoints, powerId, personalDeck, currentNode, etc.)
     for (const [key, value] of Object.entries(mechanicState)) {
       if (value !== undefined && !(key in players[playerId])) {
         (players[playerId] as unknown as Record<string, unknown>)[key] = value;
@@ -618,22 +608,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 
   // Deal starting cards
   const startingCards = config.starting_cards ?? 0;
-  const deckBuildingConfig = config.engine_mechanics?.deck_building;
-
-  // For deck-building games, draw from personal deck instead of main deck
-  if (deckBuildingConfig?.draw_count) {
-    for (const playerId of turnOrder) {
-      const player = players[playerId];
-      const drawCount = deckBuildingConfig.draw_count;
-
-      if (player.personalDeck && player.personalDeck.length > 0) {
-        const drawn = player.personalDeck.splice(0, Math.min(drawCount, player.personalDeck.length));
-        player.hand = drawn;
-      }
-    }
-  }
-  // For non-deck-building games, draw from main deck
-  else if (startingCards > 0 && deck.length > 0) {
+  // Deal starting cards from main deck (deck-building games handle personal deck draws via onTurnStart)
+  if (startingCards > 0 && deck.length > 0) {
     for (const playerId of turnOrder) {
       const drawn = deck.splice(0, startingCards);
       players[playerId].hand = drawn;
@@ -1493,107 +1469,7 @@ export function applyPlacedCardEffects(
   return { probabilityModifier, effectsApplied };
 }
 
-/**
- * Apply effects from a location card when a player enters it.
- * This handles the inherent effects of location cards in grid-based games.
- *
- * @param state - Current game state
- * @param playerId - Player entering the location
- * @param locationName - Name of the location being entered
- * @returns Object with effects applied
- */
-export function applyLocationEffects(
-  state: GameState,
-  playerId: string,
-  locationName: string
-): { effectsApplied: string[]; cardsDrawn: number } {
-  const effectsApplied: string[] = [];
-  let cardsDrawn = 0;
-
-  // Look up location card definition from deck config
-  const deckConfig = state.config.deck || [];
-  const locationCard = deckConfig.find(
-    (cardDef: { name: string; type?: string }) =>
-      cardDef.name === locationName && cardDef.type === 'location'
-  ) as { name: string; type: string; effect?: { type: string; value?: number; description?: string } } | undefined;
-
-  if (!locationCard?.effect) {
-    return { effectsApplied, cardsDrawn };
-  }
-
-  const player = state.players[playerId];
-  const effect = locationCard.effect;
-
-  switch (effect.type) {
-    case 'draw_on_enter': {
-      // Draw cards when entering this location
-      const drawCount = effect.value ?? 1;
-      const handLimit = state.config.engine_mechanics?.hand_limit ?? Infinity;
-
-      // Check if player can draw (hand limit)
-      if (player.hand.length < handLimit) {
-        const actualDrawCount = Math.min(drawCount, handLimit - player.hand.length);
-        if (actualDrawCount > 0 && state.deck.length > 0) {
-          const drawnCards = state.deck.splice(0, actualDrawCount);
-          player.hand.push(...drawnCards);
-          cardsDrawn = drawnCards.length;
-          effectsApplied.push(`${locationName}: Drew ${cardsDrawn} card${cardsDrawn !== 1 ? 's' : ''}`);
-
-          // Log the draw
-          logEvent(state, {
-            event: 'location_effect_triggered',
-            round: state.round,
-            turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              location: locationName,
-              effect: 'draw_on_enter',
-              cardsDrawn
-            }
-          });
-        }
-      }
-      break;
-    }
-
-    case 'trade_bonus': {
-      // Trading at this location has reduced or zero AP cost
-      effectsApplied.push(`${locationName}: Trading costs 0 AP here`);
-      break;
-    }
-
-    case 'hide': {
-      // Player's position is hidden from others
-      effectsApplied.push(`${locationName}: Your position is hidden from others`);
-      break;
-    }
-
-    case 'reveal': {
-      // Player can see all other player positions
-      effectsApplied.push(`${locationName}: You can see all player positions`);
-      break;
-    }
-
-    case 'enemy_only': {
-      // Only The Enemy can enter - should be validated before move
-      // If player is here, they might be revealed as The Enemy
-      effectsApplied.push(`${locationName}: Only The Enemy may enter this location!`);
-      break;
-    }
-
-    case 'safe':
-      // No special effect
-      break;
-
-    default:
-      // Unknown effect type - log but don't crash
-      if (effect.description) {
-        effectsApplied.push(`${locationName}: ${effect.description}`);
-      }
-  }
-
-  return { effectsApplied, cardsDrawn };
-}
+// applyLocationEffects removed - location-effects mechanic handles via applyEffect hook
 
 /**
  * Place a card on a board state.
@@ -2147,41 +2023,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const drawAction = action as DrawAction;
         const count = drawAction.count || 1;
         const cards = drawCards(state, playerId, count);
-
-        // Proposal 008: Hand limit enforcement (for discard_choice and discard_oldest policies)
-        const handLimit = state.config.engine_mechanics?.hand_limit as number | undefined;
-        const handPolicy = (state.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
-        let discardedCards: Card[] = [];
-
-        if (handLimit !== undefined && player.hand.length > handLimit) {
-          const excess = player.hand.length - handLimit;
-
-          if (handPolicy === 'discard_oldest') {
-            // Auto-discard the oldest (first) cards in hand
-            for (let i = 0; i < excess; i++) {
-              const card = removeFromHandByIndex(state, playerId, 0);
-              if (card) discardedCards.push(card);
-            }
-            addToDiscard(state, discardedCards, playerId);
-          } else if (handPolicy === 'discard_choice') {
-            // Note: Full implementation would require a pending_discard state
-            // For now, log a warning - the player should discard manually
-            logEvent(state, {
-              event: 'hand_limit_exceeded',
-              round: state.round,
-        turnNumber: state.turnNumber,
-              player: playerId,
-              data: {
-                handSize: player.hand.length,
-                limit: handLimit,
-                excess: excess,
-                policy: handPolicy,
-                message: `Hand limit (${handLimit}) exceeded by ${excess}. Player should discard ${excess} cards.`
-              }
-            });
-          }
-          // 'cannot_draw' is handled in validation, should never reach here
-        }
+        // Hand limit enforcement (discard_oldest/discard_choice) handled by hand-management postExecuteAction
 
         recordAction(contestState, {
           player: playerId,
@@ -2191,7 +2033,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         turnNumber: state.turnNumber,
           result: {
             success: true,
-            details: { drawnCount: cards.length, discarded: discardedCards.length || undefined }
+            details: { drawnCount: cards.length }
           }
         });
 

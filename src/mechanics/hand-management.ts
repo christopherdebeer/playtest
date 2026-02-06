@@ -9,14 +9,12 @@
  * Hooks used:
  * - onBeforeAddToHand: Block or limit ANY card acquisition (cards-defined hook)
  * - onBeforeCardDraw: Block or limit draw (cards-defined hook)
- *
- * Note: discard_choice and discard_oldest policies require execution-time
- * handling which remains in game.ts for now (requires state mutation during action).
+ * - postExecuteAction: Enforce hand limit AFTER draw (discard_oldest auto-discards)
  */
 
-import { MechanicHooks, HookContext } from './types.js';
+import { MechanicHooks, HookContext, StateChanges } from './types.js';
 import type { CardsHooks, BeforeCardDrawPayload, BeforeAddToHandPayload } from './core/cards.js';
-import { Card } from '../types/game.js';
+import { Card, GameAction } from '../types/game.js';
 
 export const handManagementMechanic: MechanicHooks & CardsHooks = {
   slug: 'hand-management',
@@ -108,6 +106,44 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
       };
     }
 
+    return null;
+  },
+
+  /**
+   * Post-execution hook: Enforce hand limit AFTER draw action.
+   * Handles discard_oldest (auto-discard) and discard_choice (warning only).
+   * The cannot_draw policy is already handled by onBeforeCardDraw above.
+   */
+  postExecuteAction(ctx: HookContext, action: GameAction): StateChanges | null {
+    // Only run after draw actions
+    if (action.type !== 'draw') return null;
+
+    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    if (handLimit === undefined) return null;
+
+    const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+    if (policy === 'cannot_draw') return null; // Already blocked before draw
+
+    if (ctx.player.hand.length <= handLimit) return null; // No excess
+
+    const excess = ctx.player.hand.length - handLimit;
+
+    if (policy === 'discard_oldest') {
+      // Auto-discard the oldest (first) cards
+      // Direct mutation since we're in postExecuteAction
+      const discarded: Card[] = [];
+      for (let i = 0; i < excess; i++) {
+        const card = ctx.player.hand.shift();
+        if (card) {
+          discarded.push(card);
+          ctx.state.discardPile.push(card);
+        }
+      }
+      return null; // Direct mutation, no stateChanges needed
+    }
+
+    // discard_choice: just return null, game.ts logs warning
+    // Full implementation would need pending_discard state
     return null;
   }
 };

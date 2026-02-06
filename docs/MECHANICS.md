@@ -1254,10 +1254,13 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
 | Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (14 mechanics) |
 | Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (13 mechanics) |
-| Player init | ~~Hardcoded fields~~ | `initPlayerState` hook | **Done** (set-collection, push-your-luck, action-points, variable-player-powers, deck-building) |
+| Player init | ~~Hardcoded fields~~ | `initPlayerState` hook | **Done** (all fields via generic merge loop) |
 | Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
 | Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
+| Hand limit enforcement | ~~Hardcoded in draw~~ | `postExecuteAction` hook | **Done** (hand-management) |
+| Deck-building init draw | ~~Hardcoded init~~ | `onTurnStart` hook | **Done** (deck-building) |
+| Location effects | ~~Dead code~~ | `applyEffect` hook | **Done** (removed ~90 lines) |
 | Play card action | ~~Fallback switch~~ | Cards mechanic `onExecuteAction` | **Done** |
 | Place card/location | ~~Hardcoded~~ | `place-card` mechanic | **Done** |
 | Collect set | ~~Hardcoded~~ | `set-collection` mechanic | **Done** |
@@ -1280,6 +1283,13 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 - **Player init fields**: `collectedSets`, `rollAccumulator`, `rollCount` removed from game.ts, provided by mechanic `initPlayerState`
 - **Always-enabled removed**: `ALWAYS_ENABLED_MECHANICS` list removed; mechanics now enabled via explicit config or dependency resolution (`isMechanicEnabled` checks config + `requires` chains)
 - **~900 lines removed from game.ts** across getAvailableActions, executeAction, playerView, validation
+
+#### Phase 11 Migrations (Completed):
+- **Hand limit enforcement**: `hand-management` mechanic now handles `discard_oldest` and `discard_choice` policies via `postExecuteAction` hook (removed ~35 lines from game.ts draw case)
+- **Deck-building init draw**: `deck-building` mechanic now handles personal deck initial draws via `onTurnStart` hook (removed ~15 lines from game.ts init)
+- **Player init generalized**: Removed named extraction of `actionPoints`, `actionPointsUsed`, `powerId`, `personalDeck`, `personalDiscard` — all mechanic state now applied via generic merge loop
+- **Dead code removed**: `applyLocationEffects` function (~90 lines) was defined but never called — removed entirely
+- **~140 additional lines removed from game.ts**
 
 #### Earlier Completed Migrations:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
@@ -1377,10 +1387,13 @@ All Phase 1-5 mechanics have been implemented. Remaining work is hook completene
 | Phase 8 | Advanced Auctions | 5 auction hooks | Planned |
 | Phase 9 | Multi-Category Expansion | - | **Done** - 7 new mechanics across 6 categories |
 | Phase 10 | Mechanic Migration | - | **Done** - 8 action types migrated, ~900 lines removed |
+| Phase 11 | Deep Cleanup | postExecuteAction, onTurnStart | **Done** - hand limit, deck-building init, player init generalized, dead code removed |
 
 **Phase 9 details:** Added auction-dutch (Auction), simultaneous-action-selection + action-programming (Action), market (Economic), cooperative-actions (Cooperative), tableau-building (Building), different-worker-types (Worker Placement).
 
 **Phase 10 details:** Migrated place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend from hardcoded game.ts to mechanic hooks. Removed `ALWAYS_ENABLED_MECHANICS` - mechanics now enabled via explicit config or dependency resolution. Added `initPlayerState` to set-collection and push-your-luck. Added `getPlayerView` to resources, open-drafting, set-collection, variable-player-powers (enhanced with full power object).
+
+**Phase 11 details:** Deep cleanup of game.ts. Added `postExecuteAction` to hand-management (discard_oldest/discard_choice enforcement after draw). Added `onTurnStart` to deck-building (personal deck initial draws). Generalized player init to use generic merge loop for all mechanic state. Removed dead `applyLocationEffects` function. ~140 additional lines removed from game.ts.
 
 ### Long-Term: Refactoring
 
