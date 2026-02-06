@@ -34,6 +34,7 @@ import {
   StateChanges,
   SharedStateInitContext,
   SharedStateInitResult,
+  TurnStartContext,
   isMechanicEnabled
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
@@ -222,6 +223,40 @@ export const deckBuildingMechanic: MechanicHooks = {
       personalDeck: shuffledDeck,
       personalDiscard: [],
       deckCardsAcquired: 0
+    };
+  },
+
+  onTurnStart(ctx: TurnStartContext): StateChanges | null {
+    const dbConfig = ctx.config.engine_mechanics?.deck_building;
+    if (!isDeckBuildingConfig(dbConfig) || !dbConfig.draw_count) return null;
+
+    let personalDeck = [...((ctx.player.personalDeck as Card[]) || [])];
+    let personalDiscard = [...((ctx.player.personalDiscard as Card[]) || [])];
+
+    // If no cards in deck or discard, nothing to do
+    if (personalDeck.length === 0 && personalDiscard.length === 0) return null;
+
+    // Draw from personal deck
+    const drawCount = dbConfig.draw_count;
+    const hand: Card[] = [];
+
+    for (let i = 0; i < drawCount; i++) {
+      if (personalDeck.length === 0 && personalDiscard.length > 0) {
+        personalDeck = shuffleArray(personalDiscard);
+        personalDiscard = [];
+      }
+      if (personalDeck.length === 0) break;
+      hand.push(personalDeck.shift()!);
+    }
+
+    return {
+      playerStateChanges: {
+        [ctx.playerId]: {
+          hand,
+          personalDeck,
+          personalDiscard
+        }
+      }
     };
   },
 
