@@ -118,7 +118,7 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
               }
             }
           },
-          advanceTurn: true,
+          advanceTurn: false, // Use maybeAdvanceTurn semantics (respects action points)
           checkWin: false,
           logMessage: 'push_your_luck_bust',
           logData: { roll: rollValue, lostPoints }
@@ -160,7 +160,7 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
             }
           }
         },
-        advanceTurn: true,
+        advanceTurn: false, // Use maybeAdvanceTurn semantics (respects action points)
         checkWin: true, // Check win after banking
         logMessage: 'push_your_luck_bank',
         logData: { bankedPoints, totalScore: newScore }
@@ -181,8 +181,15 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
     const canBank = accumulated > 0;
 
     if (canRoll) {
+      // Include bust threshold, max rolls, accumulated points info via RollAction fields
+      // purpose carries the decision-relevant info for the AI agent
+      const maxRollsInfo = pylConfig.max_rolls ? `, max ${pylConfig.max_rolls} rolls` : '';
       actions.push({
-        action: { type: 'roll' } as GameAction,
+        action: {
+          type: 'roll',
+          diceSides: pylConfig.dice_sides,
+          purpose: `bust on ${pylConfig.bust_threshold} or less, gain ${pylConfig.points_per_success} pts on success${maxRollsInfo}, ${accumulated} pts accumulated, roll #${(rollCount as number) + 1}`
+        } as GameAction,
         priority: 50,
         category: 'push-your-luck'
       });

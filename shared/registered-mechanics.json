@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-06T19:08:39.142Z",
+  "generated": "2026-02-06T19:32:34.721Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-points": {
@@ -737,7 +737,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "initSharedState"
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "pass": {

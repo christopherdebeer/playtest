@@ -30,7 +30,6 @@ import type {
   PassAction,
   MoveAction,
   ResignAction,
-  PlaceCardAction,
   PlacedCard,
   ActionValidationResult,
   LastAction,
@@ -44,11 +43,8 @@ import type {
   AvailableActionsResult,
   BidAction,
   SpendAction,
-  CollectSetAction,
-  SetDefinition,
   RollAction,
   BankAction,
-  DraftAction,
   PlayerPower,
   GameAnalysis,
   KeyMoment
@@ -1780,60 +1776,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     });
   }
 
-  // === PLACE_CARD action (for state/placeable cards on board games) ===
-  if (hasBoard && placeableCards.length > 0) {
-    const placeEnabled = isYourTurn && !isBlocked;
-    actions.push({
-      type: 'place_card',
-      description: 'Place a state card on a board location to create a trap or buff',
-      enabled: placeEnabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
-      required: {
-        card: 'The name of the placeable card (Hazard, Safe Haven, Toll Gate, etc.)',
-        targetState: 'The board state to place the card on'
-      },
-      optional: { reasoning: 'Explanation of your placement strategy' },
-      examples: placeableCards.slice(0, 2).flatMap(card => {
-        const c = hand.find(h => h.name === card)!;
-        // Suggest strategic placements
-        return boardStates.slice(0, 2).map(targetState => ({
-          type: 'place_card' as const,
-          card,
-          targetState
-        }));
-      }).slice(0, 3),
-      cards: placeableCards,
-      targets: boardStates
-    });
-  }
-
-  // === PLACE_LOCATION action (for grid games with location cards) ===
-  if (hasGrid && locationCards.length > 0) {
-    const placeEnabled = isYourTurn && !isBlocked;
-    const validAdjacentTargets = [startingTile, ...placedLocations];
-    actions.push({
-      type: 'place_location',
-      description: 'Place a location card on the grid adjacent to an existing location',
-      enabled: placeEnabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
-      required: {
-        card: 'The name of the location card to place',
-        adjacentTo: 'The existing location to place adjacent to'
-      },
-      optional: { reasoning: 'Explanation of your placement strategy' },
-      examples: locationCards.slice(0, 2).map(card => ({
-        type: 'place_location' as const,
-        card,
-        adjacentTo: player.state || startingTile
-      })),
-      cards: locationCards,
-      targets: validAdjacentTargets
-    });
-  }
+  // place_card and place_location actions are now provided by the place-card mechanic
 
   // === DRAW action (for card games) ===
   if (hasDeck) {
@@ -1983,82 +1926,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     }
   }
 
-  // === NEW MECHANICS: COLLECT_SET action (for set collection games) ===
-  const setConfig = state.config.engine_mechanics?.set_collection;
-  if (setConfig?.sets?.length && handCards.length >= Math.min(...setConfig.sets.map(s => s.size))) {
-    const canCollect = isYourTurn && !isBlocked;
-
-    actions.push({
-      type: 'collect_set',
-      description: 'Claim a set of cards for points',
-      enabled: canCollect,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
-      required: {
-        cards: 'Array of card names that form the set',
-        setType: `Set definition (${setConfig.sets.map(s => s.name).join(', ')})`
-      },
-      examples: setConfig.sets.slice(0, 1).map(setDef => ({
-        type: 'collect_set' as const,
-        cards: handCards.slice(0, setDef.size),
-        setType: setDef.name
-      }))
-    });
-  }
-
-  // === NEW MECHANICS: ROLL action (for push your luck) ===
-  const pylConfig = state.config.engine_mechanics?.push_your_luck;
-  if (pylConfig) {
-    const accumulated = player.rollAccumulator ?? 0;
-    const rollCount = player.rollCount ?? 0;
-    const canRoll = isYourTurn && !isBlocked && (!pylConfig.max_rolls || rollCount < pylConfig.max_rolls);
-    const canBank = isYourTurn && !isBlocked && accumulated > 0;
-
-    actions.push({
-      type: 'roll',
-      description: `Roll the dice (bust on ${pylConfig.bust_threshold} or less, gain ${pylConfig.points_per_success} pts on success)`,
-      enabled: canRoll,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              !canRoll ? `Max rolls (${pylConfig.max_rolls}) reached` :
-              undefined,
-      required: {},
-      examples: [{ type: 'roll' as const }]
-    });
-
-    actions.push({
-      type: 'bank',
-      description: `Bank your ${accumulated} accumulated points`,
-      enabled: canBank,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              accumulated === 0 ? 'No points to bank' :
-              undefined,
-      required: {},
-      examples: [{ type: 'bank' as const }]
-    });
-  }
-
-  // === NEW MECHANICS: DRAFT action (for open drafting) ===
-  const draftConfig = state.config.engine_mechanics?.open_drafting;
-  if (draftConfig) {
-    const display = (state.shared.draftDisplay || []) as Card[];
-    const canDraft = isYourTurn && !isBlocked && display.length > 0;
-
-    actions.push({
-      type: 'draft',
-      description: 'Draft a card from the display',
-      enabled: canDraft,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              display.length === 0 ? 'No cards in display' :
-              undefined,
-      required: { card: 'Card name to draft' },
-      examples: display.slice(0, 2).map(c => ({ type: 'draft' as const, card: c.name })),
-      cards: display.map(c => c.name)
-    });
-  }
+  // collect_set, roll, bank, and draft actions are now provided by their respective mechanics
 
   // === RESIGN action (always available) ===
   actions.push({
@@ -2128,11 +1996,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const mechanicView = mechanicRegistry.getPlayerView(state, playerId);
   Object.assign(result, mechanicView);
 
-  // Draft display (still included for backward compatibility, but could move to mechanic)
-  if (state.config.engine_mechanics?.open_drafting) {
-    const display = (state.shared.draftDisplay || []) as Card[];
-    (result as any).draftDisplay = display.map(c => c.name);
-  }
+  // draftDisplay now provided by open-drafting mechanic (getPlayerView)
 
   // Player power
   if (player.powerId && state.config.engine_mechanics?.variable_powers) {
@@ -2364,27 +2228,10 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       break;
     }
 
-    case 'place_card': {
-      // Note: place_card validation moved to place-card mechanic
-      // Core still handles card-in-hand check
-      const placeAction = action as PlaceCardAction;
-      const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-      if (cardIndex === -1) {
-        errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-      }
+    case 'place_card':
+    case 'place_location':
+      // Validation handled by place-card mechanic (preValidateAction)
       break;
-    }
-
-    case 'place_location': {
-      // Note: place_location validation moved to place-location mechanic
-      // Core still handles card-in-hand check
-      const placeAction = action as { card: string; adjacentTo: string };
-      const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-      if (cardIndex === -1) {
-        errors.push(`Card "${placeAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
-      }
-      break;
-    }
 
     case 'trade_offer': {
       // Note: trade_offer validation moved to trading mechanic
@@ -2759,129 +2606,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         };
       }
 
-      case 'place_card': {
-        const placeAction = action as PlaceCardAction;
-        const placedCard = placeCard(state, playerId, placeAction.card, placeAction.targetState);
-
-        if (!placedCard) {
-          return { success: false, error: `Failed to place card "${placeAction.card}"` };
-        }
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              card: placedCard.cardName,
-              targetState: placedCard.state,
-              targetMode: placedCard.targetMode,
-              effect: placedCard.effect
-            }
-          }
-        });
-
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            type: 'place_card',
-            card: placedCard.cardName,
-            targetState: placedCard.state,
-            targetMode: placedCard.targetMode,
-            effect: placedCard.effect
-          }
-        });
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'place_card',
-            details: {
-              card: placedCard.cardName,
-              targetState: placedCard.state,
-              targetMode: placedCard.targetMode,
-              handSize: player.hand.length,
-              turnAdvanced
-            }
-          }
-        };
-      }
-
-      case 'place_location': {
-        const placeAction = action as { card: string; adjacentTo: string };
-        const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
-
-        if (cardIndex === -1) {
-          return { success: false, error: `Card "${placeAction.card}" not in your hand` };
-        }
-
-        const card = player.hand[cardIndex];
-
-        if (card.type !== 'location') {
-          return { success: false, error: `Card "${placeAction.card}" is not a location card` };
-        }
-
-        // Remove card from hand
-        player.hand.splice(cardIndex, 1);
-
-        // Add to placed locations
-        if (!state.shared.placedLocations) {
-          state.shared.placedLocations = [];
-        }
-        (state.shared.placedLocations as string[]).push(placeAction.card);
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-          turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              card: placeAction.card,
-              adjacentTo: placeAction.adjacentTo
-            }
-          }
-        });
-
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-          turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            type: 'place_location',
-            card: placeAction.card,
-            adjacentTo: placeAction.adjacentTo
-          }
-        });
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'place_location',
-            details: {
-              card: placeAction.card,
-              adjacentTo: placeAction.adjacentTo,
-              handSize: player.hand.length,
-              turnAdvanced
-            }
-          }
-        };
-      }
+      // place_card and place_location now handled by place-card mechanic (onExecuteAction)
 
       case 'trade_offer': {
         const tradeAction = action as { target: string; offer: string[]; request: string[] };
@@ -3146,288 +2871,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         };
       }
 
-      case 'collect_set': {
-        const collectAction = action as CollectSetAction;
-        const setConfig = state.config.engine_mechanics?.set_collection;
-        if (!setConfig) {
-          return { success: false, error: 'Set collection not configured for this game' };
-        }
-
-        const setDef = setConfig.sets.find(s => s.name === collectAction.setType);
-        if (!setDef) {
-          return { success: false, error: `Unknown set type: ${collectAction.setType}` };
-        }
-
-        // Remove cards from hand
-        const collectedCards: Card[] = [];
-        for (const cardName of collectAction.cards) {
-          const cardIndex = player.hand.findIndex(c => c.name === cardName);
-          if (cardIndex !== -1) {
-            const [card] = player.hand.splice(cardIndex, 1);
-            collectedCards.push(card);
-          }
-        }
-
-        // Validate the set matches the definition
-        const isValidSet = validateSet(collectedCards, setDef);
-        if (!isValidSet) {
-          // Put cards back
-          player.hand.push(...collectedCards);
-          return { success: false, error: `Cards do not form a valid "${collectAction.setType}" set` };
-        }
-
-        // Add to collected sets
-        if (!player.collectedSets) player.collectedSets = [];
-        player.collectedSets.push(collectAction.setType);
-
-        // Award points if configured
-        if (setConfig.points_per_set) {
-          player.score = (player.score ?? 0) + setConfig.points_per_set;
-        }
-
-        // Move cards to discard
-        state.discardPile.push(...collectedCards);
-
-        logEvent(state, {
-          event: 'set_collected',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            setType: collectAction.setType,
-            cards: collectAction.cards,
-            points: setConfig.points_per_set,
-            totalSets: player.collectedSets.length
-          }
-        });
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: { success: true, details: { setType: collectAction.setType } }
-        });
-
-        // Check win condition
-        const winCheck = checkAllWinConditions(state);
-        if (winCheck) {
-          state.status = 'pending_analysis';
-          state.shared.winner = winCheck.winner;
-          state.shared.endReason = winCheck.reason;
-          saveState(state);
-          return {
-            success: true,
-            gameOver: true,
-            winner: winCheck.winner,
-            effect: { type: 'collect_set', details: { setType: collectAction.setType } }
-          };
-        }
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'collect_set',
-            details: {
-              setType: collectAction.setType,
-              points: setConfig.points_per_set,
-              totalSets: player.collectedSets.length,
-              turnAdvanced
-            }
-          }
-        };
-      }
-
-      // === NEW MECHANICS: Push Your Luck ===
-
-      case 'roll': {
-        const pylConfig = state.config.engine_mechanics?.push_your_luck;
-        if (!pylConfig) {
-          return { success: false, error: 'Push your luck not configured' };
-        }
-
-        // Roll the dice
-        const rollValue = Math.floor(Math.random() * pylConfig.dice_sides) + 1;
-        const isBust = rollValue <= pylConfig.bust_threshold;
-
-        player.rollCount = (player.rollCount ?? 0) + 1;
-
-        if (isBust) {
-          // Bust! Lose all accumulated points
-          const lostPoints = player.rollAccumulator ?? 0;
-          player.rollAccumulator = 0;
-          player.rollCount = 0;
-
-          logEvent(state, {
-            event: 'push_your_luck_bust',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            player: playerId,
-            data: { roll: rollValue, lostPoints }
-          });
-
-          recordAction(contestState, {
-            player: playerId,
-            action,
-            timestamp: new Date().toISOString(),
-            round: state.round,
-        turnNumber: state.turnNumber,
-            result: { success: false, details: { roll: rollValue, bust: true, lostPoints } }
-          });
-
-          // Bust ends turn
-          maybeAdvanceTurn(state, playerId, action);
-
-          return {
-            success: true,
-            effect: {
-              type: 'roll',
-              details: { roll: rollValue, bust: true, lostPoints, accumulated: 0 }
-            }
-          };
-        } else {
-          // Success! Add points to accumulator
-          player.rollAccumulator = (player.rollAccumulator ?? 0) + pylConfig.points_per_success;
-
-          logEvent(state, {
-            event: 'push_your_luck_roll',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            player: playerId,
-            data: { roll: rollValue, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
-          });
-
-          recordAction(contestState, {
-            player: playerId,
-            action,
-            timestamp: new Date().toISOString(),
-            round: state.round,
-        turnNumber: state.turnNumber,
-            result: { success: true, details: { roll: rollValue, accumulated: player.rollAccumulator } }
-          });
-
-          // Don't advance turn - player can roll again or bank
-          saveState(state);
-
-          return {
-            success: true,
-            effect: {
-              type: 'roll',
-              details: { roll: rollValue, bust: false, points: pylConfig.points_per_success, accumulated: player.rollAccumulator }
-            }
-          };
-        }
-      }
-
-      case 'bank': {
-        const bankedPoints = player.rollAccumulator ?? 0;
-        player.score = (player.score ?? 0) + bankedPoints;
-        player.rollAccumulator = 0;
-        player.rollCount = 0;
-
-        logEvent(state, {
-          event: 'push_your_luck_bank',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: { bankedPoints, totalScore: player.score }
-        });
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: { success: true, details: { bankedPoints, totalScore: player.score } }
-        });
-
-        // Check win condition
-        const winCheck = checkAllWinConditions(state);
-        if (winCheck) {
-          state.status = 'pending_analysis';
-          state.shared.winner = winCheck.winner;
-          state.shared.endReason = winCheck.reason;
-          saveState(state);
-          return {
-            success: true,
-            gameOver: true,
-            winner: winCheck.winner,
-            effect: { type: 'bank', details: { bankedPoints, totalScore: player.score } }
-          };
-        }
-
-        // Bank ends turn (player chose to stop rolling)
-        maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'bank',
-            details: { bankedPoints, totalScore: player.score }
-          }
-        };
-      }
-
-      // === NEW MECHANICS: Open Drafting ===
-
-      case 'draft': {
-        const draftAction = action as DraftAction;
-        const draftConfig = state.config.engine_mechanics?.open_drafting;
-        if (!draftConfig) {
-          return { success: false, error: 'Open drafting not configured' };
-        }
-
-        const display = (state.shared.draftDisplay || []) as Card[];
-        const cardIndex = display.findIndex(c => c.name === draftAction.card);
-        if (cardIndex === -1) {
-          return { success: false, error: `Card "${draftAction.card}" not in display` };
-        }
-
-        // Remove card from display and add to player's hand
-        const [draftedCard] = display.splice(cardIndex, 1);
-        player.hand.push(draftedCard);
-        state.shared.draftDisplay = display;
-
-        // Refill display if configured
-        if (draftConfig.refill === 'immediate' && state.deck.length > 0) {
-          const newCard = state.deck.shift()!;
-          display.push(newCard);
-          state.shared.draftDisplay = display;
-        }
-
-        logEvent(state, {
-          event: 'card_drafted',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: { card: draftedCard.name, displayRemaining: display.length }
-        });
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: { success: true, details: { card: draftedCard.name } }
-        });
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'draft',
-            details: { card: draftedCard.name, handSize: player.hand.length, turnAdvanced }
-          }
-        };
-      }
+      // collect_set, roll, bank, and draft now handled by their respective mechanics (onExecuteAction)
 
       default:
         return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
@@ -3437,39 +2881,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   }
 }
 
-// Helper function to validate a set matches its definition
-function validateSet(cards: Card[], setDef: SetDefinition): boolean {
-  if (cards.length !== setDef.size) return false;
-
-  // Get the field values to match
-  const getFieldValue = (card: Card, field: string): unknown => {
-    const parts = field.split('.');
-    let value: unknown = card;
-    for (const part of parts) {
-      if (value && typeof value === 'object') {
-        value = (value as Record<string, unknown>)[part];
-      } else {
-        return undefined;
-      }
-    }
-    return value;
-  };
-
-  const values = cards.map(c => getFieldValue(c, setDef.match_field));
-
-  // All values must be the same for a matching set
-  const firstValue = values[0];
-  const allMatch = values.every(v => v === firstValue);
-
-  // If unique is required, all cards must be different
-  if (setDef.unique) {
-    const cardNames = cards.map(c => c.name);
-    const uniqueNames = new Set(cardNames);
-    if (uniqueNames.size !== cards.length) return false;
-  }
-
-  return allMatch;
-}
+// validateSet moved to set-collection mechanic
 
 // File a contest against the previous action
 export function fileContest(state: GameState, contestingPlayer: string, reason: string): {

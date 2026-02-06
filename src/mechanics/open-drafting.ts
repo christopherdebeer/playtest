@@ -8,6 +8,7 @@
  * - preValidateAction: Validate draft action (card in display)
  * - onExecuteAction: Handle draft execution
  * - getAvailableActions: Expose draft action
+ * - getPlayerView: Expose draft display card names in player view
  * - describeAction: Describe draft action
  */
 
@@ -142,7 +143,7 @@ export const openDraftingMechanic: MechanicHooks = {
           draftDisplay: newDisplay
         }
       },
-      advanceTurn: true,
+      advanceTurn: false, // Use maybeAdvanceTurn semantics (respects action points)
       checkWin: false,
       logMessage: 'card_drafted',
       logData: {
@@ -168,6 +169,14 @@ export const openDraftingMechanic: MechanicHooks = {
       priority: 45,
       category: 'drafting'
     }));
+  },
+
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    const draftConfig = ctx.config.engine_mechanics?.open_drafting as OpenDraftingConfig | undefined;
+    if (!draftConfig) return null;
+
+    const display = (ctx.state.shared.draftDisplay || []) as Card[];
+    return { draftDisplay: display.map(c => c.name) };
   },
 
   describeAction(action: GameAction): ActionDescription | null {
