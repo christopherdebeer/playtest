@@ -2,18 +2,10 @@
 name: "Engine Masters"
 version: "1.0"
 players: 2-4
-starting_cards: 3
 win_condition: "First player to reach 50 victory points"
 max_rounds: 30
 
-# Mechanics from BGG taxonomy
 mechanics:
-  - deck-bag-and-pool-building
-  - automatic-resource-growth
-  - chaining
-
-# Engine mechanics configuration
-engine_mechanics:
   # Deck Building: Personal deck acquisition
   deck_building:
     starting_deck:
@@ -172,14 +164,16 @@ engine_mechanics:
     threshold: 50
     resource: "score"
 
-# Player starting state
-starting_state:
+  # Player resources
   resources:
-    power: 3
-    engine_level: 1
-    engine_bonus: 0
-    combo_active: 0
-  score: 0
+    - { name: "power", starting_amount: 3, max: 50 }
+    - { name: "engine_level", starting_amount: 1 }
+    - { name: "engine_bonus", starting_amount: 0 }
+    - { name: "combo_active", starting_amount: 0 }
+
+  # Cards configuration
+  cards:
+    starting_hand: 3
 ---
 
 # Engine Masters

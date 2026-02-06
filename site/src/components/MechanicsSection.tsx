@@ -32,7 +32,7 @@ function MechanicsSection() {
 
   // Get total and implemented counts per category
   const categoryCounts: Record<string, { total: number; implemented: number }> = {}
-  for (const mech of mechanicsData.mechanics) {
+  for (const mech of mechanicsData.mechanics as Array<{ category: string; implementationStatus?: string }>) {
     if (!categoryCounts[mech.category]) {
       categoryCounts[mech.category] = { total: 0, implemented: 0 }
     }

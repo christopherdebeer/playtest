@@ -1,18 +1,11 @@
 ---
-name: Parallel Race
+name: "Parallel Race"
 version: "1.0"
 players: 2-4
-starting_cards: 3
 win_condition: "First player to reach the Finish Line"
 max_rounds: 20
 
-# Reference mechanics from library (for documentation)
 mechanics:
-  - point-to-point-movement
-
-# Engine mechanics configuration
-engine_mechanics:
-  # Point-to-point movement - the race track
   point_to_point_movement:
     nodes:
       - { id: "Start", name: "Starting Line", type: "checkpoint" }
@@ -31,7 +24,6 @@ engine_mechanics:
       - { from: "Mile5", to: "Finish", bidirectional: false, cost: 1 }
     starting_node: "Start"
 
-  # Freeplay - parallel play without turn blocking
   freeplay:
     actions_per_round: 8
     interaction_timeout: 30
@@ -39,46 +31,46 @@ engine_mechanics:
       - trade_offer
       - trade_respond
 
-  # Race win condition - first to finish wins
   win_race:
     goal_state: "Finish"
 
-# Movement card deck
-deck:
-  - name: Sprint
-    count: 8
-    type: movement
-    value: 2
-    effect:
-      type: move_forward
-      value: 2
-  - name: Dash
-    count: 6
-    type: movement
-    value: 3
-    effect:
-      type: move_forward
-      value: 3
-  - name: Burst
-    count: 4
-    type: movement
-    value: 4
-    effect:
-      type: move_forward
-      value: 4
-  - name: Stumble
-    count: 4
-    type: interference
-    value: -1
-    effect:
-      type: move_backward
-      value: 1
-  - name: Block
-    count: 4
-    type: interference
-    effect:
-      type: block_turn
-      duration: 1
+  cards:
+    starting_hand: 3
+    deck:
+      - name: Sprint
+        count: 8
+        type: movement
+        value: 2
+        effect:
+          type: move_forward
+          value: 2
+      - name: Dash
+        count: 6
+        type: movement
+        value: 3
+        effect:
+          type: move_forward
+          value: 3
+      - name: Burst
+        count: 4
+        type: movement
+        value: 4
+        effect:
+          type: move_forward
+          value: 4
+      - name: Stumble
+        count: 4
+        type: interference
+        value: -1
+        effect:
+          type: move_backward
+          value: 1
+      - name: Block
+        count: 4
+        type: interference
+        effect:
+          type: block_turn
+          duration: 1
 ---
 
 # Parallel Race

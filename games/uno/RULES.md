@@ -1,90 +1,78 @@
 ---
 name: "UNO"
 players: 2-4
-starting_cards: 7
 win_condition: "First player to empty their hand wins the round"
 max_rounds: 200
 
-# Game mechanics (from mechanics/ folder)
 mechanics:
-  - hand-management
-  - set-collection
-  - take-that
-  - lose-a-turn
-  - win-empty-hand
-
-# Engine mechanics configuration
-engine_mechanics:
-  # Take-that: Attack cards (Draw Two, Wild Draw Four)
-  take_that: {}
-
-  # Lose-a-turn: Skip cards
-  lose_a_turn: {}
-
-  # Win condition: First to empty hand wins
+  hand_management: true
+  set_collection: true
+  take_that: true
+  lose_a_turn: true
   win_empty_hand:
     enabled: true
 
-# Structured config for engine
-deck:
-  # Number cards (0-9 in four colors) - 76 total
-  # One 0 per color, two of each 1-9 per color
-  - { name: "Red 0", count: 1, type: "number", effect: { type: "none", color: "Red", value: 0 } }
-  - { name: "Red 1", count: 2, type: "number", effect: { type: "none", color: "Red", value: 1 } }
-  - { name: "Red 2", count: 2, type: "number", effect: { type: "none", color: "Red", value: 2 } }
-  - { name: "Red 3", count: 2, type: "number", effect: { type: "none", color: "Red", value: 3 } }
-  - { name: "Red 4", count: 2, type: "number", effect: { type: "none", color: "Red", value: 4 } }
-  - { name: "Red 5", count: 2, type: "number", effect: { type: "none", color: "Red", value: 5 } }
-  - { name: "Red 6", count: 2, type: "number", effect: { type: "none", color: "Red", value: 6 } }
-  - { name: "Red 7", count: 2, type: "number", effect: { type: "none", color: "Red", value: 7 } }
-  - { name: "Red 8", count: 2, type: "number", effect: { type: "none", color: "Red", value: 8 } }
-  - { name: "Red 9", count: 2, type: "number", effect: { type: "none", color: "Red", value: 9 } }
-  - { name: "Yellow 0", count: 1, type: "number", effect: { type: "none", color: "Yellow", value: 0 } }
-  - { name: "Yellow 1", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 1 } }
-  - { name: "Yellow 2", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 2 } }
-  - { name: "Yellow 3", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 3 } }
-  - { name: "Yellow 4", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 4 } }
-  - { name: "Yellow 5", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 5 } }
-  - { name: "Yellow 6", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 6 } }
-  - { name: "Yellow 7", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 7 } }
-  - { name: "Yellow 8", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 8 } }
-  - { name: "Yellow 9", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 9 } }
-  - { name: "Green 0", count: 1, type: "number", effect: { type: "none", color: "Green", value: 0 } }
-  - { name: "Green 1", count: 2, type: "number", effect: { type: "none", color: "Green", value: 1 } }
-  - { name: "Green 2", count: 2, type: "number", effect: { type: "none", color: "Green", value: 2 } }
-  - { name: "Green 3", count: 2, type: "number", effect: { type: "none", color: "Green", value: 3 } }
-  - { name: "Green 4", count: 2, type: "number", effect: { type: "none", color: "Green", value: 4 } }
-  - { name: "Green 5", count: 2, type: "number", effect: { type: "none", color: "Green", value: 5 } }
-  - { name: "Green 6", count: 2, type: "number", effect: { type: "none", color: "Green", value: 6 } }
-  - { name: "Green 7", count: 2, type: "number", effect: { type: "none", color: "Green", value: 7 } }
-  - { name: "Green 8", count: 2, type: "number", effect: { type: "none", color: "Green", value: 8 } }
-  - { name: "Green 9", count: 2, type: "number", effect: { type: "none", color: "Green", value: 9 } }
-  - { name: "Blue 0", count: 1, type: "number", effect: { type: "none", color: "Blue", value: 0 } }
-  - { name: "Blue 1", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 1 } }
-  - { name: "Blue 2", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 2 } }
-  - { name: "Blue 3", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 3 } }
-  - { name: "Blue 4", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 4 } }
-  - { name: "Blue 5", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 5 } }
-  - { name: "Blue 6", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 6 } }
-  - { name: "Blue 7", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 7 } }
-  - { name: "Blue 8", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 8 } }
-  - { name: "Blue 9", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 9 } }
-  # Action cards (2 each per color) - 24 total
-  - { name: "Red Skip", count: 2, type: "action", effect: { type: "skip", color: "Red" } }
-  - { name: "Red Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Red" } }
-  - { name: "Red Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Red", value: 2 } }
-  - { name: "Yellow Skip", count: 2, type: "action", effect: { type: "skip", color: "Yellow" } }
-  - { name: "Yellow Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Yellow" } }
-  - { name: "Yellow Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Yellow", value: 2 } }
-  - { name: "Green Skip", count: 2, type: "action", effect: { type: "skip", color: "Green" } }
-  - { name: "Green Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Green" } }
-  - { name: "Green Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Green", value: 2 } }
-  - { name: "Blue Skip", count: 2, type: "action", effect: { type: "skip", color: "Blue" } }
-  - { name: "Blue Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Blue" } }
-  - { name: "Blue Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Blue", value: 2 } }
-  # Wild cards - 8 total
-  - { name: "Wild", count: 4, type: "wild", effect: { type: "wild" } }
-  - { name: "Wild Draw Four", count: 4, type: "wild", effect: { type: "wild_draw", value: 4 } }
+  cards:
+    starting_hand: 7
+    deck:
+      # Number cards (0-9 in four colors) - 76 total
+      # One 0 per color, two of each 1-9 per color
+      - { name: "Red 0", count: 1, type: "number", effect: { type: "none", color: "Red", value: 0 } }
+      - { name: "Red 1", count: 2, type: "number", effect: { type: "none", color: "Red", value: 1 } }
+      - { name: "Red 2", count: 2, type: "number", effect: { type: "none", color: "Red", value: 2 } }
+      - { name: "Red 3", count: 2, type: "number", effect: { type: "none", color: "Red", value: 3 } }
+      - { name: "Red 4", count: 2, type: "number", effect: { type: "none", color: "Red", value: 4 } }
+      - { name: "Red 5", count: 2, type: "number", effect: { type: "none", color: "Red", value: 5 } }
+      - { name: "Red 6", count: 2, type: "number", effect: { type: "none", color: "Red", value: 6 } }
+      - { name: "Red 7", count: 2, type: "number", effect: { type: "none", color: "Red", value: 7 } }
+      - { name: "Red 8", count: 2, type: "number", effect: { type: "none", color: "Red", value: 8 } }
+      - { name: "Red 9", count: 2, type: "number", effect: { type: "none", color: "Red", value: 9 } }
+      - { name: "Yellow 0", count: 1, type: "number", effect: { type: "none", color: "Yellow", value: 0 } }
+      - { name: "Yellow 1", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 1 } }
+      - { name: "Yellow 2", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 2 } }
+      - { name: "Yellow 3", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 3 } }
+      - { name: "Yellow 4", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 4 } }
+      - { name: "Yellow 5", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 5 } }
+      - { name: "Yellow 6", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 6 } }
+      - { name: "Yellow 7", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 7 } }
+      - { name: "Yellow 8", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 8 } }
+      - { name: "Yellow 9", count: 2, type: "number", effect: { type: "none", color: "Yellow", value: 9 } }
+      - { name: "Green 0", count: 1, type: "number", effect: { type: "none", color: "Green", value: 0 } }
+      - { name: "Green 1", count: 2, type: "number", effect: { type: "none", color: "Green", value: 1 } }
+      - { name: "Green 2", count: 2, type: "number", effect: { type: "none", color: "Green", value: 2 } }
+      - { name: "Green 3", count: 2, type: "number", effect: { type: "none", color: "Green", value: 3 } }
+      - { name: "Green 4", count: 2, type: "number", effect: { type: "none", color: "Green", value: 4 } }
+      - { name: "Green 5", count: 2, type: "number", effect: { type: "none", color: "Green", value: 5 } }
+      - { name: "Green 6", count: 2, type: "number", effect: { type: "none", color: "Green", value: 6 } }
+      - { name: "Green 7", count: 2, type: "number", effect: { type: "none", color: "Green", value: 7 } }
+      - { name: "Green 8", count: 2, type: "number", effect: { type: "none", color: "Green", value: 8 } }
+      - { name: "Green 9", count: 2, type: "number", effect: { type: "none", color: "Green", value: 9 } }
+      - { name: "Blue 0", count: 1, type: "number", effect: { type: "none", color: "Blue", value: 0 } }
+      - { name: "Blue 1", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 1 } }
+      - { name: "Blue 2", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 2 } }
+      - { name: "Blue 3", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 3 } }
+      - { name: "Blue 4", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 4 } }
+      - { name: "Blue 5", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 5 } }
+      - { name: "Blue 6", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 6 } }
+      - { name: "Blue 7", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 7 } }
+      - { name: "Blue 8", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 8 } }
+      - { name: "Blue 9", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 9 } }
+      # Action cards (2 each per color) - 24 total
+      - { name: "Red Skip", count: 2, type: "action", effect: { type: "skip", color: "Red" } }
+      - { name: "Red Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Red" } }
+      - { name: "Red Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Red", value: 2 } }
+      - { name: "Yellow Skip", count: 2, type: "action", effect: { type: "skip", color: "Yellow" } }
+      - { name: "Yellow Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Yellow" } }
+      - { name: "Yellow Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Yellow", value: 2 } }
+      - { name: "Green Skip", count: 2, type: "action", effect: { type: "skip", color: "Green" } }
+      - { name: "Green Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Green" } }
+      - { name: "Green Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Green", value: 2 } }
+      - { name: "Blue Skip", count: 2, type: "action", effect: { type: "skip", color: "Blue" } }
+      - { name: "Blue Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Blue" } }
+      - { name: "Blue Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Blue", value: 2 } }
+      # Wild cards - 8 total
+      - { name: "Wild", count: 4, type: "wild", effect: { type: "wild" } }
+      - { name: "Wild Draw Four", count: 4, type: "wild", effect: { type: "wild_draw", value: 4 } }
 ---
 
 # UNO Game Rules

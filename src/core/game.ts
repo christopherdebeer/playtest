@@ -619,6 +619,13 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       personalDeck,
       personalDiscard
     };
+
+    // Apply any additional mechanic state (e.g. currentNode, stopsThisTurn, movementPoints)
+    for (const [key, value] of Object.entries(mechanicState)) {
+      if (value !== undefined && !(key in players[playerId])) {
+        (players[playerId] as unknown as Record<string, unknown>)[key] = value;
+      }
+    }
   }
 
   // Deal starting cards
@@ -2187,124 +2194,35 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  const validTypes = ['play_card', 'draw', 'pass', 'move', 'place_card', 'place_location', 'resign', 'bid', 'spend', 'collect_set', 'roll', 'bank', 'draft', 'trade_offer', 'trade_respond', 'acquire', 'buy', 'trash', 'draw_deck'];
-  if (!validTypes.includes(act.type)) {
-    return { valid: false, errors: [`Invalid action type "${act.type}". Valid types: ${validTypes.join(', ')}`] };
+  // Action types are defined by mechanics - no hardcoded list.
+  // Basic schema validation for well-known fields:
+  if (act.type === 'play_card') {
+    if (!act.card || typeof act.card !== 'string') {
+      errors.push('play_card action requires "card" field (string) - the exact name of the card to play');
+    }
+    if (act.declaredColor !== undefined && typeof act.declaredColor !== 'string') {
+      errors.push('declaredColor must be a string (e.g., "Red", "Blue", "Green", "Yellow")');
+    }
   }
-
-  // Type-specific validation
-  switch (act.type) {
-    case 'play_card':
-      if (!act.card || typeof act.card !== 'string') {
-        errors.push('play_card action requires "card" field (string) - the exact name of the card to play');
-      }
-      if (act.declaredColor !== undefined && typeof act.declaredColor !== 'string') {
-        errors.push('declaredColor must be a string (e.g., "Red", "Blue", "Green", "Yellow")');
-      }
-      break;
-
-    case 'draw':
-      if (act.count !== undefined && (typeof act.count !== 'number' || act.count < 1)) {
-        errors.push('draw count must be a positive number (default: 1)');
-      }
-      break;
-
-    case 'pass':
-      // No additional fields required
-      break;
-
-    case 'move':
-      if (!act.target || typeof act.target !== 'string') {
-        errors.push('move action requires "target" field (string) - the state/position to move to');
-      }
-      break;
-
-    case 'place_card':
-      if (!act.card || typeof act.card !== 'string') {
-        errors.push('place_card action requires "card" field (string) - the exact name of the card to place');
-      }
-      if (!act.targetState || typeof act.targetState !== 'string') {
-        errors.push('place_card action requires "targetState" field (string) - the board state to place the card on');
-      }
-      break;
-
-    case 'place_location':
-      if (!act.card || typeof act.card !== 'string') {
-        errors.push('place_location action requires "card" field (string) - the location card name to place');
-      }
-      if (!act.adjacentTo || typeof act.adjacentTo !== 'string') {
-        errors.push('place_location action requires "adjacentTo" field (string) - existing location to place adjacent to');
-      }
-      break;
-
-    case 'resign':
-      if (!act.reason || typeof act.reason !== 'string' || act.reason.trim().length === 0) {
-        errors.push('resign action requires "reason" field (non-empty string) - explanation for resignation');
-      }
-      break;
-
-    // === NEW MECHANIC ACTIONS ===
-
-    case 'bid':
-      if (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 0) {
-        errors.push('bid action requires "amount" field (non-negative number)');
-      }
-      break;
-
-    case 'spend':
-      if (!act.resource || typeof act.resource !== 'string') {
-        errors.push('spend action requires "resource" field (string) - the resource type to spend');
-      }
-      if (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 1) {
-        errors.push('spend action requires "amount" field (positive number)');
-      }
-      break;
-
-    case 'collect_set':
-      if (!act.cards || !Array.isArray(act.cards) || act.cards.length === 0) {
-        errors.push('collect_set action requires "cards" field (array of card names)');
-      }
-      if (!act.setType || typeof act.setType !== 'string') {
-        errors.push('collect_set action requires "setType" field (string) - which set definition to use');
-      }
-      break;
-
-    // === NEW MECHANIC ACTIONS ===
-
-    case 'roll':
-      // No additional fields required - just roll the dice
-      break;
-
-    case 'bank':
-      // No additional fields required - bank accumulated points
-      break;
-
-    case 'draft':
-      if (!act.card || typeof act.card !== 'string') {
-        errors.push('draft action requires "card" field (string) - the card name to draft from display');
-      }
-      break;
-
-    case 'trade_offer':
-      if (!act.target || typeof act.target !== 'string') {
-        errors.push('trade_offer action requires "target" field (string) - player ID to trade with');
-      }
-      if (!act.offer || !Array.isArray(act.offer)) {
-        errors.push('trade_offer action requires "offer" field (array) - card names you are offering');
-      }
-      if (!act.request || !Array.isArray(act.request)) {
-        errors.push('trade_offer action requires "request" field (array) - card names you want (empty array for gifts)');
-      }
-      break;
-
-    case 'trade_respond':
-      if (!act.offerId || typeof act.offerId !== 'string') {
-        errors.push('trade_respond action requires "offerId" field (string) - ID of the pending trade');
-      }
-      if (act.accept === undefined || typeof act.accept !== 'boolean') {
-        errors.push('trade_respond action requires "accept" field (boolean) - whether to accept the trade');
-      }
-      break;
+  if (act.type === 'draw' && act.count !== undefined && (typeof act.count !== 'number' || act.count < 1)) {
+    errors.push('draw "count" must be a positive number');
+  }
+  if (act.type === 'move' && act.target !== undefined && typeof act.target !== 'string') {
+    errors.push('move "target" field must be a string');
+  }
+  if (act.type === 'resign' && (!act.reason || typeof act.reason !== 'string')) {
+    errors.push('resign action requires a "reason" field (string)');
+  }
+  if (act.type === 'place_card') {
+    if (!act.card || typeof act.card !== 'string') {
+      errors.push('place_card action requires "card" field (string)');
+    }
+    if (!act.targetState || typeof act.targetState !== 'string') {
+      errors.push('place_card action requires "targetState" field (string)');
+    }
+  }
+  if (act.type === 'bid' && (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 0)) {
+    errors.push('bid action requires "amount" field (non-negative number)');
   }
 
   return {

@@ -2,18 +2,10 @@
 name: "Fortune Seekers"
 version: "1.0"
 players: 2-4
-starting_cards: 0
 win_condition: "score >= 100"
 max_rounds: 20
 
-# Reference mechanics from library
 mechanics:
-  - push-your-luck
-  - open-drafting
-  - variable-player-powers
-
-# Engine mechanics configuration
-engine_mechanics:
   # Push your luck - roll dice for points, but risk busting
   push_your_luck:
     dice_sides: 6
@@ -48,21 +40,23 @@ engine_mechanics:
         description: "Can bank after every roll (even before first)"
         effect: { type: "extra_cards", value: 1 }
 
-# Fortune cards deck
-deck:
-  # Point value cards
-  - { name: "Gold Coin", count: 8, type: "treasure", effect: { type: "points", value: 5 } }
-  - { name: "Silver Bar", count: 6, type: "treasure", effect: { type: "points", value: 10 } }
-  - { name: "Diamond", count: 4, type: "treasure", effect: { type: "points", value: 20 } }
-  - { name: "Crown Jewel", count: 2, type: "treasure", effect: { type: "points", value: 30 } }
+  # Fortune cards
+  cards:
+    starting_hand: 0
+    deck:
+      # Point value cards
+      - { name: "Gold Coin", count: 8, type: "treasure", effect: { type: "points", value: 5 } }
+      - { name: "Silver Bar", count: 6, type: "treasure", effect: { type: "points", value: 10 } }
+      - { name: "Diamond", count: 4, type: "treasure", effect: { type: "points", value: 20 } }
+      - { name: "Crown Jewel", count: 2, type: "treasure", effect: { type: "points", value: 30 } }
 
-  # Modifier cards
-  - { name: "Lucky Dice", count: 3, type: "modifier", effect: { type: "reroll", value: 1 } }
-  - { name: "Extra Roll", count: 3, type: "modifier", effect: { type: "bonus_rolls", value: 1 } }
-  - { name: "Double Down", count: 2, type: "modifier", effect: { type: "multiplier", value: 2 } }
+      # Modifier cards
+      - { name: "Lucky Dice", count: 3, type: "modifier", effect: { type: "reroll", value: 1 } }
+      - { name: "Extra Roll", count: 3, type: "modifier", effect: { type: "bonus_rolls", value: 1 } }
+      - { name: "Double Down", count: 2, type: "modifier", effect: { type: "multiplier", value: 2 } }
 
-  # Risk cards
-  - { name: "Gambler's Ruin", count: 2, type: "risk", effect: { type: "penalty", value: -15 } }
+      # Risk cards
+      - { name: "Gambler's Ruin", count: 2, type: "risk", effect: { type: "penalty", value: -15 } }
 ---
 
 # Fortune Seekers

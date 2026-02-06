@@ -116,8 +116,10 @@ export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
   requires: ['visibility'],
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
-    const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;
-    if (!hiddenRolesConfig) return null;
+    const rawHiddenRoles = ctx.config.engine_mechanics?.hidden_roles;
+    if (!rawHiddenRoles || typeof rawHiddenRoles !== 'object') return null;
+    const hiddenRolesConfig = rawHiddenRoles as HiddenRolesConfig;
+    if (!hiddenRolesConfig.roles) return null;
 
     // Get player count from config
     const playersConfig = ctx.config.players;
@@ -185,8 +187,10 @@ export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
   },
 
   getVisibleState(ctx: VisibilityContext): VisibleState | null {
-    const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;
-    if (!hiddenRolesConfig) return null;
+    const rawHiddenRoles = ctx.config.engine_mechanics?.hidden_roles;
+    if (!rawHiddenRoles || typeof rawHiddenRoles !== 'object') return null;
+    const hiddenRolesConfig = rawHiddenRoles as HiddenRolesConfig;
+    if (!hiddenRolesConfig.roles) return null;
 
     const viewer = ctx.state.players[ctx.viewerPlayerId];
     if (!viewer) return null;
@@ -230,8 +234,10 @@ export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
   },
 
   canSeeInfo(ctx: VisibilityContext, infoType: string, targetPlayerId?: string): boolean | undefined {
-    const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;
-    if (!hiddenRolesConfig) return undefined;
+    const rawHiddenRoles2 = ctx.config.engine_mechanics?.hidden_roles;
+    if (!rawHiddenRoles2 || typeof rawHiddenRoles2 !== 'object') return undefined;
+    const hiddenRolesConfig = rawHiddenRoles2 as HiddenRolesConfig;
+    if (!hiddenRolesConfig.roles) return undefined;
 
     // Only handle role/team/alignment info types
     if (!['role', 'team', 'alignment'].includes(infoType)) {
@@ -281,8 +287,10 @@ export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
   },
 
   onInfoRevealed(ctx: HookContext, payload: InfoRevealedPayload): StateChanges | null {
-    const hiddenRolesConfig = ctx.config.engine_mechanics?.hidden_roles as HiddenRolesConfig | undefined;
-    if (!hiddenRolesConfig) return null;
+    const rawHiddenRoles = ctx.config.engine_mechanics?.hidden_roles;
+    if (!rawHiddenRoles || typeof rawHiddenRoles !== 'object') return null;
+    const hiddenRolesConfig = rawHiddenRoles as HiddenRolesConfig;
+    if (!hiddenRolesConfig.roles) return null;
 
     // Only handle role reveals
     if (payload.infoType !== 'role') return null;
