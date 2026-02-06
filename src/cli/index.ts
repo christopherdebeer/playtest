@@ -568,6 +568,99 @@ program
     }
   });
 
+// ============ List Games Command ============
+
+program
+  .command('list-games')
+  .description('List all available games (games with RULES.md)')
+  .option('--json', 'Output as JSON (default)')
+  .option('--validate', 'Run validation on each game\'s RULES.md')
+  .action(async (options: { json?: boolean; validate?: boolean }) => {
+    try {
+      const fs = await import('fs');
+      const pathMod = await import('path');
+      const GAMES_DIR = pathMod.join(process.cwd(), 'games');
+
+      if (!fs.existsSync(GAMES_DIR)) {
+        console.log(JSON.stringify({ success: true, games: [], count: 0 }));
+        return;
+      }
+
+      const allDirs = fs.readdirSync(GAMES_DIR).filter((f: string) => {
+        try {
+          return fs.statSync(pathMod.join(GAMES_DIR, f)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+
+      const games: Array<{
+        name: string;
+        hasRules: boolean;
+        title?: string;
+        players?: string;
+        instances?: number;
+        valid?: boolean;
+        errors?: number;
+        warnings?: number;
+      }> = [];
+
+      for (const dir of allDirs) {
+        const rulesPath = pathMod.join(GAMES_DIR, dir, 'RULES.md');
+        const hasRules = fs.existsSync(rulesPath);
+        if (!hasRules) continue;
+
+        const entry: typeof games[number] = { name: dir, hasRules };
+
+        // Get basic info from RULES.md frontmatter
+        try {
+          const parsed = parseRules(dir);
+          entry.title = parsed.config.name || dir;
+          entry.players = parsed.config.players?.toString();
+        } catch {
+          entry.title = dir;
+        }
+
+        // Count active instances
+        try {
+          entry.instances = listGameInstances(dir).length;
+        } catch {
+          entry.instances = 0;
+        }
+
+        // Optionally validate
+        if (options.validate) {
+          try {
+            const result = validateRules(rulesPath);
+            entry.valid = result.valid;
+            entry.errors = result.errors.length;
+            entry.warnings = result.warnings.length;
+          } catch {
+            entry.valid = false;
+            entry.errors = 1;
+          }
+        }
+
+        games.push(entry);
+      }
+
+      games.sort((a, b) => a.name.localeCompare(b.name));
+
+      console.log(JSON.stringify({
+        success: true,
+        games,
+        count: games.length
+      }, null, 2));
+
+    } catch (e) {
+      console.log(JSON.stringify({
+        success: false,
+        error: (e as Error).message
+      }));
+      process.exit(1);
+    }
+  });
+
 // ============ Turn Management Commands ============
 
 program
@@ -678,7 +771,19 @@ program
         process.exit(1);
       }
 
-      const action = JSON.parse(options.action);
+      let action;
+      try {
+        action = JSON.parse(options.action);
+      } catch {
+        const raw = options.action;
+        const jsonStart = raw.indexOf('{');
+        const jsonEnd = raw.lastIndexOf('}');
+        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+          action = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
+        } else {
+          throw new Error(`Invalid JSON action: ${raw.slice(0, 120)}`);
+        }
+      }
 
       // Queue the action for gamemaster validation (don't advance yet)
       state.shared.pendingAction = {
@@ -726,21 +831,36 @@ program
     try {
       const state = loadState(game);
 
-      // Parse action JSON
-      let action: GameAction;
-      try {
-        action = JSON.parse(options.action);
-      } catch {
-        console.log(JSON.stringify({
-          success: false,
-          validation: {
-            valid: false,
-            errors: ['Invalid JSON. Action must be valid JSON object. Example: \'{"type": "play_card", "card": "Red 5"}\'']
+      // Parse action JSON - try raw first, then try to extract JSON from mangled input
+      const action: GameAction = (() => {
+        try {
+          return JSON.parse(options.action);
+        } catch {
+          // Shell quoting can mangle JSON - try to extract a valid JSON object
+          const raw = options.action;
+          const jsonStart = raw.indexOf('{');
+          const jsonEnd = raw.lastIndexOf('}');
+          if (jsonStart >= 0 && jsonEnd > jsonStart) {
+            try {
+              return JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
+            } catch {
+              // Still failed
+            }
           }
-        }));
-        process.exit(1);
-        return;
-      }
+          console.log(JSON.stringify({
+            success: false,
+            validation: {
+              valid: false,
+              errors: [
+                `Invalid JSON. Action must be valid JSON object. Received: ${raw.slice(0, 120)}`,
+                'Tip: Avoid special characters (!?"\'\\) in reasoning fields. Keep action JSON simple: \'{"type": "move", "target": "A"}\''
+              ]
+            }
+          }));
+          process.exit(1);
+          return undefined as never;
+        }
+      })();
 
       // Step 1: Schema validation
       const schemaResult = validateActionSchema(action);

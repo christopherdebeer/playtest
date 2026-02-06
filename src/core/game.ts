@@ -2080,8 +2080,16 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   });
 
   // === MECHANIC HOOKS: Collect actions from all enabled mechanics ===
+  // Skip mechanic actions that duplicate base actions (move, play_card, draw, pass, etc.)
+  // But keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
+  const baseActionTypes = new Set(actions.map(a => a.type));
   const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
   for (const mechanicAction of mechanicActions) {
+    // Skip movement/pass/draw mechanics that duplicate base actions
+    // Keep special categories like "victory" that add new functionality
+    if (baseActionTypes.has(mechanicAction.action.type) &&
+        !['victory', 'trading', 'auction', 'programming'].includes(mechanicAction.category || '')) continue;
+
     const enabled = isYourTurn && !isBlocked;
     // Extract required fields from action (everything except 'type')
     const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
