@@ -48,8 +48,9 @@ function normalizeUnifiedConfig(raw: Record<string, unknown>): GameConfig {
       continue;
     }
 
-    // Regular mechanic: add to mechanics list + engine_mechanics
-    mechanicsList.push(key);
+    // Regular mechanic: add slug to mechanics list + config key to engine_mechanics
+    const slug = key.replace(/_/g, '-');
+    mechanicsList.push(slug);
     const configKey = key.replace(/-/g, '_');
 
     if (value === true || value === null || (typeof value === 'object' && !Array.isArray(value) && Object.keys(value as object).length === 0)) {
