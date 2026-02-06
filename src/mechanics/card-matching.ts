@@ -125,22 +125,24 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
   },
 
   /**
-   * Initialize shared state with currentColor and draw tracking
+   * Initialize shared state with currentColor and draw tracking.
+   * Reads topCard from shared context to set initial color (e.g., flipped discard pile card).
    */
   initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
     if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
 
-    // Initialize currentColor as null - will be set when first card is played
-    // Game initialization will set topCard separately, and postExecuteAction
-    // will update currentColor when cards are played
-    // Also initialize draw tracking for forced draw rule
+    // Set currentColor from the flipped top card if available
+    const topCard = ctx.shared.topCard as Card | undefined;
+    const initialColor = topCard?.effect?.color ?? null;
+
+    // Initialize draw tracking for forced draw rule
     const drawTracking: Record<string, boolean> = {};
     for (const playerId of ctx.playerIds) {
       drawTracking[playerId] = false;
     }
 
     return {
-      currentColor: null,
+      currentColor: initialColor,
       cardMatchingDraws: drawTracking
     };
   },

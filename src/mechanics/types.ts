@@ -385,6 +385,8 @@ export interface SharedStateInitContext {
   deck: Card[];
   /** Players being initialized */
   playerIds: string[];
+  /** Shared state accumulated so far (includes topCard from discard pile init) */
+  shared: Record<string, unknown>;
 }
 
 /**

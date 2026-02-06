@@ -654,25 +654,16 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 
   // Initialize discard pile for card games (flip top card from deck)
   let discardPile: Card[] = [];
-  const shared: Record<string, unknown> = {
-    placedCards: []  // Track cards placed on board states (state cards mechanic)
-  };
+  const shared: Record<string, unknown> = {};
 
   if (deck.length > 0 && startingCards > 0) {
     const topCard = deck.shift()!;
     discardPile = [topCard];
     shared.topCard = topCard;
-    shared.currentColor = topCard.effect?.color ?? null;
   }
 
-  // Initialize supply pile for deck-building games
-  if (config.engine_mechanics?.deck_building?.supply) {
-    shared.supply = config.engine_mechanics.deck_building.supply;
-  }
-
-  // Let mechanics initialize their own shared state (e.g., open-drafting's draftDisplay)
-  // This removes the need for game.ts to know about mechanic-specific shared state
-  const mechanicSharedState = mechanicRegistry.initSharedState(config, deck, turnOrder);
+  // Let mechanics initialize their own shared state (currentColor, placedCards, supply, etc.)
+  const mechanicSharedState = mechanicRegistry.initSharedState(config, deck, turnOrder, shared);
   Object.assign(shared, mechanicSharedState);
 
   const logPath = getLogPath(gameName, gameId);
@@ -2340,41 +2331,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
       const card = player.hand[cardIndex];
       // Note: Card type playable validation moved to card-type-rules mechanic
-
-      const topCard = state.shared.topCard as Card | undefined;
-      const currentColor = state.shared.currentColor as string | undefined;
-
-      // Basic UNO matching validation (color or number match, or wild)
-      // ONLY apply to games that use color-based card matching (e.g., UNO)
-      // Skip for board games or games without color mechanics
-      const hasColorMechanics = currentColor !== null && currentColor !== undefined;
-      const isColorBasedCardGame = hasColorMechanics && topCard && topCard.effect?.color;
-
-      if (isColorBasedCardGame && card.type !== 'wild') {
-        const colorMatch = card.effect?.color === currentColor;
-        const numberMatch = card.effect?.value !== undefined &&
-                          topCard.effect?.value !== undefined &&
-                          card.effect.value === topCard.effect.value;
-        const typeMatch = card.type === topCard.type && card.type === 'action' &&
-                         card.effect?.type === topCard.effect?.type;
-
-        if (!colorMatch && !numberMatch && !typeMatch) {
-          errors.push(`Card "${playAction.card}" doesn't match current color (${currentColor}) or top card (${topCard.name}). Play a matching card or draw.`);
-        }
-      }
-
-      // Wild card color declaration
-      if (card.type === 'wild' && !playAction.declaredColor) {
-        errors.push('Wild cards require "declaredColor" field. Specify: "Red", "Blue", "Green", or "Yellow"');
-      }
-
-      if (playAction.declaredColor) {
-        const validColors = ['Red', 'Blue', 'Green', 'Yellow'];
-        if (!validColors.includes(playAction.declaredColor)) {
-          errors.push(`Invalid color "${playAction.declaredColor}". Valid colors: ${validColors.join(', ')}`);
-        }
-      }
-
+      // Note: Color/value matching validation moved to card-matching mechanic (preValidateAction)
+      // Note: Wild card declaredColor validation moved to card-matching mechanic (preValidateAction)
       // Note: Interference card targeting validation moved to take-that mechanic
       break;
     }
@@ -3792,7 +3750,10 @@ function reverseAction(state: GameState, lastAction: LastAction): boolean {
           // Restore previous top card
           if (state.discardPile.length > 0) {
             state.shared.topCard = state.discardPile[state.discardPile.length - 1];
-            state.shared.currentColor = (state.shared.topCard as Card).effect?.color;
+            // Restore currentColor only if a mechanic (card-matching) previously set it
+            if (state.shared.currentColor !== undefined) {
+              state.shared.currentColor = (state.shared.topCard as Card).effect?.color ?? null;
+            }
           }
         }
 

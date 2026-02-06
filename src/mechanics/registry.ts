@@ -731,12 +731,14 @@ class MechanicRegistry {
   initSharedState(
     config: GameConfig,
     deck: Card[],
-    playerIds: string[]
+    playerIds: string[],
+    shared: Record<string, unknown> = {}
   ): SharedStateInitResult {
     const ctx: SharedStateInitContext = {
       config,
       deck,
-      playerIds
+      playerIds,
+      shared
     };
 
     const result: SharedStateInitResult = {};
