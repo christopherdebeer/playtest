@@ -1,5 +1,0 @@
-{"timestamp":"2026-02-04T08:31:31.779Z","event":"game_init","data":{"gameId":"treasure-hunters-1770193891775","playerCount":2,"config":"Treasure Hunters"}}
-{"timestamp":"2026-02-04T08:33:20.659Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
-{"timestamp":"2026-02-04T08:35:30.380Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"collect_set","setType":"Type Set","cards":["Diamond Goblet","Ruby Goblet","Emerald Goblet"],"points":15,"totalSets":1}}
-{"timestamp":"2026-02-04T08:43:06.405Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":3}}
-{"timestamp":"2026-02-04T08:53:00.268Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":3}}
