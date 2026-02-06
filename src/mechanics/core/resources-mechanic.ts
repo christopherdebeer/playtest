@@ -15,7 +15,18 @@
  * - onBeforeResourceSpend: Before spending resources, can block/modify (blocking)
  */
 
-import { MechanicHooks, HookContext, StateChanges } from '../types.js';
+import {
+  MechanicHooks,
+  HookContext,
+  StateChanges,
+  ValidationResult,
+  ActionExecutionContext,
+  ActionExecutionResult,
+  AvailableAction,
+  ActionDescription
+} from '../types.js';
+import { SpendAction, GameAction } from '../../types/game.js';
+import { spendResource } from './resources.js';
 
 // ============ Payload types for resources-defined hooks ============
 
@@ -100,5 +111,100 @@ export const resourcesMechanic: MechanicHooks = {
       description: 'After resources are spent.',
       resolution: 'merge',
     },
+  },
+
+  preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
+    if (action.type !== 'spend') return null;
+
+    const spendAction = action as SpendAction;
+    const { resource, amount } = spendAction;
+    const available = ctx.player.resources?.[resource] ?? 0;
+
+    if (available <= 0) {
+      return {
+        valid: false,
+        error: `Cannot spend ${resource}: you have none`
+      };
+    }
+
+    if (amount > available) {
+      return {
+        valid: false,
+        error: `Insufficient ${resource}: need ${amount}, have ${available}`
+      };
+    }
+
+    return { valid: true };
+  },
+
+  onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
+    if (ctx.action.type !== 'spend') return null;
+
+    const spendAction = ctx.action as SpendAction;
+    const { resource, amount, target } = spendAction;
+
+    const result = spendResource(ctx.state, ctx.playerId, resource, amount);
+
+    if (!result.success) {
+      return {
+        handled: true,
+        logMessage: `spend_failed`,
+        logData: { resource, amount, reason: result.blockReason }
+      };
+    }
+
+    return {
+      handled: true,
+      stateChanges: {},
+      advanceTurn: false,
+      checkWin: false,
+      logMessage: 'resource_spent',
+      logData: { resource, amount, target, remaining: result.newAmount }
+    };
+  },
+
+  getAvailableActions(ctx: HookContext): AvailableAction[] {
+    const actions: AvailableAction[] = [];
+    const resourcesConfig = ctx.config.engine_mechanics?.resources;
+
+    if (!resourcesConfig || !Array.isArray(resourcesConfig)) return actions;
+
+    for (const resCfg of resourcesConfig) {
+      const resourceName = resCfg.name;
+      const available = ctx.player.resources?.[resourceName] ?? 0;
+
+      if (available > 0) {
+        actions.push({
+          action: { type: 'spend', resource: resourceName, amount: 1 } as GameAction,
+          priority: 40,
+          category: 'resource'
+        });
+      }
+    }
+
+    return actions;
+  },
+
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    const resourcesConfig = ctx.config.engine_mechanics?.resources;
+    if (!resourcesConfig || !ctx.player.resources) return null;
+
+    return {
+      resources: ctx.player.resources
+    };
+  },
+
+  describeAction(action: GameAction): ActionDescription | null {
+    if (action.type !== 'spend') return null;
+
+    return {
+      type: 'spend',
+      label: 'Spend Resource',
+      description: 'Spend a specified amount of a resource. Optionally specify a target for the expenditure.',
+      examples: [
+        'spend resource:"gold" amount:2',
+        'spend resource:"mana" amount:1 target:"spell"'
+      ]
+    };
   },
 };

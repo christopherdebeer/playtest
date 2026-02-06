@@ -861,33 +861,23 @@ export interface MechanicConfigSchema {
 }
 
 /**
- * Core mechanics that are always enabled (no config required)
+ * Dependency resolver callback - set by the registry after all mechanics are registered.
+ * Returns true if the given slug is required by any explicitly-enabled mechanic.
  */
-const ALWAYS_ENABLED_MECHANICS = [
-  'cards',
-  'resources',
-  'dice',
-  'board',
-  'effects',
-  'visibility',
-  'social',
-  'combat',
-  'workers',
-  'pass',
-  'lose-a-turn',
-  'location-effects',
-  'placed-card-effects'
-];
+let _dependencyResolver: ((config: GameConfig, slug: string) => boolean) | null = null;
 
 /**
- * Check if a mechanic is enabled in the game config
+ * Set the dependency resolver (called by the registry during initialization).
  */
-export function isMechanicEnabled(config: GameConfig, slug: string): boolean {
-  // Core mechanics are always enabled
-  if (ALWAYS_ENABLED_MECHANICS.includes(slug)) {
-    return true;
-  }
+export function setDependencyResolver(resolver: (config: GameConfig, slug: string) => boolean): void {
+  _dependencyResolver = resolver;
+}
 
+/**
+ * Check if a mechanic has explicit config (directly configured in engine_mechanics).
+ * Does NOT check dependencies - use isMechanicEnabled for full check.
+ */
+export function hasExplicitConfig(config: GameConfig, slug: string): boolean {
   if (!config.engine_mechanics) return false;
 
   // Map slug to config key (e.g., 'action-points' -> 'action_points')
@@ -914,6 +904,26 @@ export function isMechanicEnabled(config: GameConfig, slug: string): boolean {
   // trading is enabled by trade config
   if (slug === 'trading') {
     return config.engine_mechanics.trade !== undefined;
+  }
+
+  return false;
+}
+
+/**
+ * Check if a mechanic is enabled in the game config.
+ * A mechanic is enabled if:
+ * 1. It has explicit config in engine_mechanics, OR
+ * 2. It is required by another enabled mechanic (dependency resolution)
+ */
+export function isMechanicEnabled(config: GameConfig, slug: string): boolean {
+  // Check explicit config first
+  if (hasExplicitConfig(config, slug)) {
+    return true;
+  }
+
+  // Check if any enabled mechanic depends on this slug
+  if (_dependencyResolver) {
+    return _dependencyResolver(config, slug);
   }
 
   return false;

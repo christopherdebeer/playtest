@@ -41,11 +41,6 @@ import type {
   ContestState,
   AvailableAction,
   AvailableActionsResult,
-  BidAction,
-  SpendAction,
-  RollAction,
-  BankAction,
-  PlayerPower,
   GameAnalysis,
   KeyMoment
 } from '../types/game.js';
@@ -608,9 +603,6 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       score: startingScore,
       actionPoints,
       actionPointsUsed,
-      collectedSets: [],
-      rollAccumulator: 0,
-      rollCount: 0,
       powerId,
       personalDeck,
       personalDiscard
@@ -1606,46 +1598,6 @@ export function applyLocationEffects(
 /**
  * Place a card on a board state.
  */
-export function placeCard(
-  state: GameState,
-  playerId: string,
-  cardName: string,
-  targetState: string
-): PlacedCard | null {
-  const player = state.players[playerId];
-  if (!player) return null;
-
-  // Find and remove card from hand
-  const cardIndex = player.hand.findIndex(c => c.name === cardName);
-  if (cardIndex === -1) return null;
-
-  const [card] = player.hand.splice(cardIndex, 1);
-
-  // Verify card is placeable
-  if (!card.placeable) return null;
-
-  // Verify card has an effect to place
-  if (!card.effect) return null;
-
-  // Create placed card entry
-  const placedCard: PlacedCard = {
-    cardName: card.name,
-    placedBy: playerId,
-    state: targetState,
-    effect: card.effect,
-    targetMode: card.targetMode ?? 'opponents',
-    triggersRemaining: card.effect.duration  // Use duration as trigger count, undefined = unlimited
-  };
-
-  // Add to placed cards list
-  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
-  placedCards.push(placedCard);
-  state.shared.placedCards = placedCards;
-
-  saveState(state);
-  return placedCard;
-}
-
 // ============ Dynamic Action Discovery ============
 
 /**
@@ -1805,128 +1757,8 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'pass' }]
   });
 
-  // === TRADE_OFFER action (for trading games) ===
-  const tradeConfig = state.config.engine_mechanics?.trade as { enabled?: boolean; require_same_location?: boolean; item_types_only?: boolean; allow_gifts?: boolean } | undefined;
-  if (tradeConfig?.enabled) {
-    const tradeableCards = tradeConfig.item_types_only
-      ? hand.filter(c => c.type === 'item').map(c => c.name)
-      : hand.map(c => c.name);
-    const tradeEnabled = isYourTurn && !isBlocked && tradeableCards.length > 0;
-
-    // Find valid trade targets based on location constraints
-    let validTradeTargets = opponents;
-    if (tradeConfig.require_same_location) {
-      validTradeTargets = opponents.filter(pid => state.players[pid].state === player.state);
-    }
-
-    actions.push({
-      type: 'trade_offer',
-      description: tradeConfig.require_same_location
-        ? 'Offer a trade to a player at your location'
-        : 'Offer a trade to another player',
-      enabled: tradeEnabled && validTradeTargets.length > 0,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              tradeableCards.length === 0 ? 'No tradeable cards in hand' :
-              validTradeTargets.length === 0 ? 'No valid trade targets at your location' :
-              undefined,
-      required: {
-        target: `Player to trade with (${validTradeTargets.join(', ')})`,
-        offer: 'Array of card names you are offering',
-        request: 'Array of card names you want in return (empty array for gifts)'
-      },
-      optional: { reasoning: 'Why you want this trade' },
-      examples: validTradeTargets.slice(0, 1).flatMap(target => {
-        const targetCards = state.players[target].hand
-          .filter(c => !tradeConfig.item_types_only || c.type === 'item')
-          .map(c => c.name);
-        return [{
-          type: 'trade_offer' as const,
-          target,
-          offer: tradeableCards.slice(0, 1),
-          request: targetCards.slice(0, 1)
-        }];
-      }),
-      cards: tradeableCards,
-      targets: validTradeTargets
-    });
-  }
-
-  // === TRADE_RESPOND action (for pending trades) ===
-  const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
-  const myPendingTrades = pendingTrades.filter(t => t.to === playerId);
-  if (myPendingTrades.length > 0) {
-    for (const trade of myPendingTrades) {
-      actions.push({
-        type: 'trade_respond',
-        description: `Respond to trade offer from ${trade.from}: offering [${trade.offer.join(', ')}] for [${trade.request.join(', ') || 'nothing (gift)'}]`,
-        enabled: true,  // Can respond anytime you have a pending trade
-        required: {
-          offerId: trade.id,
-          accept: 'true to accept, false to decline'
-        },
-        optional: { reasoning: 'Why you are accepting/declining' },
-        examples: [
-          { type: 'trade_respond' as const, offerId: trade.id, accept: true },
-          { type: 'trade_respond' as const, offerId: trade.id, accept: false }
-        ]
-      });
-    }
-  }
-
-  // === NEW MECHANICS: BID action (for auction games) ===
-  const auctionConfig = state.config.engine_mechanics?.auction;
-  if (auctionConfig && player.resources) {
-    const currency = auctionConfig.currency;
-    const available = player.resources[currency] ?? 0;
-    const currentHighBid = (state.shared.currentBid as number) ?? 0;
-    const minBid = auctionConfig.type === 'english'
-      ? currentHighBid + (auctionConfig.min_increment ?? 1)
-      : 1;
-    const canBid = isYourTurn && !isBlocked && available >= minBid;
-
-    actions.push({
-      type: 'bid',
-      description: `Place a bid using ${currency} (${auctionConfig.type} auction)`,
-      enabled: canBid,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              available < minBid ? `Not enough ${currency} (need ${minBid}, have ${available})` :
-              undefined,
-      required: { amount: `Bid amount in ${currency}` },
-      optional: { item: 'What you are bidding on' },
-      examples: [{ type: 'bid' as const, amount: minBid }]
-    });
-  }
-
-  // === NEW MECHANICS: SPEND action (for resource management) ===
-  if (player.resources) {
-    const resourceNames = Object.keys(player.resources);
-    const canSpend = isYourTurn && !isBlocked && resourceNames.some(r => (player.resources?.[r] ?? 0) > 0);
-
-    if (resourceNames.length > 0) {
-      actions.push({
-        type: 'spend',
-        description: 'Spend resources for effects or purchases',
-        enabled: canSpend,
-        reason: !isYourTurn ? 'Not your turn' :
-                isBlocked ? 'You are blocked this turn' :
-                !canSpend ? 'No resources to spend' :
-                undefined,
-        required: {
-          resource: `Resource type (${resourceNames.join(', ')})`,
-          amount: 'Amount to spend'
-        },
-        optional: { target: 'What to spend on' },
-        examples: resourceNames
-          .filter(r => (player.resources?.[r] ?? 0) > 0)
-          .slice(0, 2)
-          .map(r => ({ type: 'spend' as const, resource: r, amount: 1 }))
-      });
-    }
-  }
-
-  // collect_set, roll, bank, and draft actions are now provided by their respective mechanics
+  // trade_offer, trade_respond, bid, spend, collect_set, roll, bank, draft
+  // actions are now provided by their respective mechanics (getAvailableActions)
 
   // === RESIGN action (always available) ===
   actions.push({
@@ -1947,7 +1779,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     // Skip movement/pass/draw mechanics that duplicate base actions
     // Keep special categories like "victory" that add new functionality
     if (baseActionTypes.has(mechanicAction.action.type) &&
-        !['victory', 'trading', 'auction', 'programming'].includes(mechanicAction.category || '')) continue;
+        !['victory', 'programming'].includes(mechanicAction.category || '')) continue;
 
     const enabled = isYourTurn && !isBlocked;
     // Extract required fields from action (everything except 'type')
@@ -1979,32 +1811,11 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     activeEffects: player.effects
   };
 
-  // Add extended info for new mechanics
-  if (player.resources) {
-    (result as any).resources = player.resources;
-  }
-  if (player.actionPoints !== undefined) {
-    (result as any).actionPoints = player.actionPoints;
-    (result as any).actionPointsUsed = player.actionPointsUsed ?? 0;
-  }
-  if (player.collectedSets && player.collectedSets.length > 0) {
-    (result as any).collectedSets = player.collectedSets;
-  }
-
-  // Let mechanics contribute to player view (e.g., push-your-luck's rollAccumulator)
-  // This removes the need for game.ts to know about mechanic-specific player properties
+  // Let mechanics contribute to player view
+  // resources (resources-mechanic), actionPoints (action-points), collectedSets (set-collection),
+  // power (variable-player-powers), rollAccumulator (push-your-luck), draftDisplay (open-drafting)
   const mechanicView = mechanicRegistry.getPlayerView(state, playerId);
   Object.assign(result, mechanicView);
-
-  // draftDisplay now provided by open-drafting mechanic (getPlayerView)
-
-  // Player power
-  if (player.powerId && state.config.engine_mechanics?.variable_powers) {
-    const power = state.config.engine_mechanics.variable_powers.powers.find(p => p.id === player.powerId);
-    if (power) {
-      (result as any).power = { id: power.id, name: power.name, description: power.description };
-    }
-  }
 
   return result;
 }
@@ -2166,21 +1977,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     };
   }
 
-  // ============ NEW: Resource spending validation ============
-  if (action.type === 'spend') {
-    const spendAction = action as SpendAction;
-    const available = player.resources?.[spendAction.resource] ?? 0;
-    if (spendAction.amount > available) {
-      return {
-        valid: false,
-        errors: [`Not enough ${spendAction.resource}. You have ${available}, trying to spend ${spendAction.amount}.`]
-      };
-    }
-  }
-
-  // Note: Bid validation moved to auction-english mechanic
-  // Note: Set collection validation moved to set-collection mechanic
-  // Note: Push your luck validation moved to push-your-luck mechanic
+  // spend, bid, set collection, push-your-luck validation all handled by their respective mechanics
   // Note: Draft validation moved to open-drafting mechanic
 
   // Action-specific validation
@@ -2233,15 +2030,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       // Validation handled by place-card mechanic (preValidateAction)
       break;
 
-    case 'trade_offer': {
-      // Note: trade_offer validation moved to trading mechanic
-      break;
-    }
-
-    case 'trade_respond': {
-      // Note: trade_respond validation moved to trading mechanic
-      break;
-    }
+    // trade_offer, trade_respond, bid, spend validated by their respective mechanics
   }
 
   return {
@@ -2473,8 +2262,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           data: { type: 'pass', declareVictory: passAction.declareVictory, victoryReason: passAction.victoryReason }
         });
 
-        // Pass always advances turn
-        maybeAdvanceTurn(state, playerId, action);
+        // Pass always advances turn (bypass AP check)
+        advanceTurn(state);
 
         return {
           success: true,
@@ -2608,270 +2397,10 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
       // place_card and place_location now handled by place-card mechanic (onExecuteAction)
 
-      case 'trade_offer': {
-        const tradeAction = action as { target: string; offer: string[]; request: string[] };
-
-        // Generate unique trade ID
-        const tradeId = `trade-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        // Initialize pending trades array if needed
-        if (!state.shared.pendingTrades) {
-          state.shared.pendingTrades = [];
-        }
-
-        const pendingTrade = {
-          id: tradeId,
-          from: playerId,
-          to: tradeAction.target,
-          offer: tradeAction.offer,
-          request: tradeAction.request,
-          timestamp: new Date().toISOString(),
-          expiresAtTurn: state.turnNumber + 8  // Expires in 2 full rounds (4 players * 2)
-        };
-
-        (state.shared.pendingTrades as Array<typeof pendingTrade>).push(pendingTrade);
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-          turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              tradeId,
-              target: tradeAction.target,
-              offer: tradeAction.offer,
-              request: tradeAction.request
-            }
-          }
-        });
-
-        logEvent(state, {
-          event: 'trade_offered',
-          round: state.round,
-          turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            tradeId,
-            target: tradeAction.target,
-            offer: tradeAction.offer,
-            request: tradeAction.request
-          }
-        });
-
-        // Don't advance turn - player may have more actions
-        // advanceTurn(state);
-
-        return {
-          success: true,
-          effect: {
-            type: 'trade_offer',
-            details: {
-              tradeId,
-              target: tradeAction.target,
-              offer: tradeAction.offer,
-              request: tradeAction.request
-            }
-          }
-        };
-      }
-
-      case 'trade_respond': {
-        const respondAction = action as { offerId: string; accept: boolean };
-        const pendingTrades = (state.shared.pendingTrades as Array<{ id: string; from: string; to: string; offer: string[]; request: string[] }>) || [];
-        const tradeIndex = pendingTrades.findIndex(t => t.id === respondAction.offerId);
-
-        if (tradeIndex === -1) {
-          return { success: false, error: `Trade offer "${respondAction.offerId}" not found` };
-        }
-
-        const trade = pendingTrades[tradeIndex];
-        const fromPlayer = state.players[trade.from];
-
-        // Remove the trade from pending
-        pendingTrades.splice(tradeIndex, 1);
-
-        if (respondAction.accept) {
-          // Execute the trade - swap cards between players using core services
-          // Remove offered cards from offerer and add to responder
-          const offeredCards = removeCardsFromHand(state, trade.from, trade.offer);
-          addToHand(state, playerId, offeredCards);
-
-          // Remove requested cards from responder and add to offerer
-          const requestedCards = removeCardsFromHand(state, playerId, trade.request);
-          addToHand(state, trade.from, requestedCards);
-
-          // Track completed trades for objectives
-          if (!player.completedTrades) player.completedTrades = 0;
-          if (!fromPlayer.completedTrades) fromPlayer.completedTrades = 0;
-          player.completedTrades++;
-          fromPlayer.completedTrades++;
-
-          logEvent(state, {
-            event: 'trade_completed',
-            round: state.round,
-            turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              tradeId: trade.id,
-              from: trade.from,
-              to: trade.to,
-              offer: trade.offer,
-              request: trade.request
-            }
-          });
-        } else {
-          logEvent(state, {
-            event: 'trade_declined',
-            round: state.round,
-            turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              tradeId: trade.id,
-              from: trade.from
-            }
-          });
-        }
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-          turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              tradeId: trade.id,
-              accepted: respondAction.accept,
-              from: trade.from
-            }
-          }
-        });
-
-        return {
-          success: true,
-          effect: {
-            type: 'trade_respond',
-            details: {
-              tradeId: trade.id,
-              accepted: respondAction.accept,
-              from: trade.from,
-              handSize: player.hand.length
-            }
-          }
-        };
-      }
-
-      // === NEW MECHANIC ACTIONS ===
-
-      case 'bid': {
-        const bidAction = action as BidAction;
-        const auctionConfig = state.config.engine_mechanics?.auction;
-        if (!auctionConfig) {
-          return { success: false, error: 'Auction not configured for this game' };
-        }
-
-        const currency = auctionConfig.currency;
-        const previousHighBid = (state.shared.currentBid as number) ?? 0;
-        const previousHighBidder = state.shared.highBidder as string | undefined;
-
-        // Update current bid
-        state.shared.currentBid = bidAction.amount;
-        state.shared.highBidder = playerId;
-        player.currentBid = bidAction.amount;
-
-        // For sealed bids, don't reveal until all bids are in
-        if (auctionConfig.type !== 'sealed') {
-          logEvent(state, {
-            event: 'bid_placed',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              amount: bidAction.amount,
-              item: bidAction.item,
-              previousBid: previousHighBid,
-              previousBidder: previousHighBidder
-            }
-          });
-        }
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: { success: true, details: { amount: bidAction.amount } }
-        });
-
-        // For once-around auctions, advance turn; for English, player can bid again
-        if (auctionConfig.type === 'once-around' || auctionConfig.type === 'sealed') {
-          maybeAdvanceTurn(state, playerId, action);
-        } else {
-          saveState(state);
-        }
-
-        return {
-          success: true,
-          effect: {
-            type: 'bid',
-            details: { amount: bidAction.amount, isHighBid: true }
-          }
-        };
-      }
-
-      case 'spend': {
-        const spendAction = action as SpendAction;
-        if (!player.resources) {
-          return { success: false, error: 'Resources not configured for this game' };
-        }
-
-        // Deduct resource
-        player.resources[spendAction.resource] -= spendAction.amount;
-
-        logEvent(state, {
-          event: 'resource_spent',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            resource: spendAction.resource,
-            amount: spendAction.amount,
-            target: spendAction.target,
-            remaining: player.resources[spendAction.resource]
-          }
-        });
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: { success: true, details: { spent: spendAction.amount } }
-        });
-
-        // Spending doesn't end your turn (allows multi-action turns with action points)
-        saveState(state);
-
-        return {
-          success: true,
-          effect: {
-            type: 'spend',
-            details: {
-              resource: spendAction.resource,
-              amount: spendAction.amount,
-              remaining: player.resources[spendAction.resource]
-            }
-          }
-        };
-      }
-
-      // collect_set, roll, bank, and draft now handled by their respective mechanics (onExecuteAction)
+      // trade_offer, trade_respond handled by trading mechanic (onExecuteAction)
+      // bid handled by auction-english mechanic (onExecuteAction)
+      // spend handled by resources mechanic (onExecuteAction)
+      // collect_set, roll, bank, draft handled by their respective mechanics (onExecuteAction)
 
       default:
         return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };

@@ -14,6 +14,7 @@ import { MechanicHooks, PlayerInitResult, PlayerInitContext, HookContext, isMech
 interface Power {
   id: string;
   name: string;
+  description?: string;
 }
 
 interface VariablePowersConfig {
@@ -88,7 +89,8 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
 
     return {
       powerId,
-      powerName: power?.name ?? powerId
+      powerName: power?.name ?? powerId,
+      power: power ? { id: power.id, name: power.name, description: power.description } : undefined
     };
   }
 };

@@ -33,7 +33,9 @@ import {
   EffectApplicationContext,
   EffectApplicationResult,
   ActionSchema,
-  isMechanicEnabled
+  isMechanicEnabled,
+  hasExplicitConfig,
+  setDependencyResolver
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card, Effect } from '../types/game.js';
 import { logEvent } from '../core/game.js';
@@ -85,6 +87,24 @@ class MechanicRegistry {
       throw new Error(`Mechanic '${mechanic.slug}' is already registered`);
     }
     this.mechanics.set(mechanic.slug, mechanic);
+  }
+
+  /**
+   * Install the dependency resolver so isMechanicEnabled can resolve
+   * mechanics enabled via dependency (e.g., 'cards' is enabled because
+   * 'card-matching' requires it and card-matching has explicit config).
+   */
+  installDependencyResolver(): void {
+    setDependencyResolver((config: GameConfig, slug: string) => {
+      // Check if any explicitly-enabled mechanic requires this slug
+      for (const mechanic of this.mechanics.values()) {
+        const requires = getMechanicRequires(mechanic);
+        if (requires.includes(slug) && hasExplicitConfig(config, mechanic.slug)) {
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   /**
@@ -1012,6 +1032,10 @@ export function getRegisteredMechanicsMetadata(): MechanicMetadata[] {
 
 // Singleton registry instance
 export const mechanicRegistry = new MechanicRegistry();
+
+// Install dependency resolver so isMechanicEnabled can resolve mechanics
+// enabled via dependency chains (e.g., cards enabled because card-matching requires it)
+mechanicRegistry.installDependencyResolver();
 
 /**
  * Apply state changes to game state (mutates state)

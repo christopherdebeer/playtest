@@ -1185,11 +1185,17 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Phase 8 | Auctions (5 hooks) | Planned |
 
 **Agnosticism Hooks (Complete):**
-- `initSharedState` - Used by open-drafting, card-matching, freeplay, deck-building, trading, auction-english, trick-taking, worker-placement, auction-dutch, simultaneous-action-selection, market, action-programming, cooperative-actions
-- `getPlayerView` - Used by push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions
+- `initSharedState` - Used by 14 mechanics
+- `getPlayerView` - Used by 13 mechanics (added open-drafting, set-collection, resources)
+- `initPlayerState` - Used by 5 mechanics (set-collection, push-your-luck, action-points, variable-player-powers, deck-building)
 - `isPlayerBlocked` - Used by lose-a-turn
 - `canPlayerActNow` - Used by freeplay, simultaneous-action-selection, action-programming (enables parallel play)
 - `applyEffect` - Used by location-effects, placed-card-effects
+
+**Phase 10 - Mechanic Migration (Complete):**
+- Migrated 8 action types from game.ts to mechanics: place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend
+- Removed `ALWAYS_ENABLED_MECHANICS` - mechanics enabled via explicit config or dependency resolution
+- ~900 lines removed from game.ts
 - `getActionSchema` - Defined, ready for mechanic implementations
 
 ### Outstanding Hook Implementations
@@ -1247,21 +1253,43 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Pass action | ~~Hardcoded~~ | `core/pass.ts` mechanic | **Done** |
 | Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
 | Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (14 mechanics) |
-| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (10 mechanics) |
+| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (13 mechanics) |
+| Player init | ~~Hardcoded fields~~ | `initPlayerState` hook | **Done** (set-collection, push-your-luck, action-points, variable-player-powers, deck-building) |
 | Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
 | Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
 | Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
 | Play card action | ~~Fallback switch~~ | Cards mechanic `onExecuteAction` | **Done** |
+| Place card/location | ~~Hardcoded~~ | `place-card` mechanic | **Done** |
+| Collect set | ~~Hardcoded~~ | `set-collection` mechanic | **Done** |
+| Roll/Bank | ~~Hardcoded~~ | `push-your-luck` mechanic | **Done** |
+| Draft | ~~Hardcoded~~ | `open-drafting` mechanic | **Done** |
+| Trade offer/respond | ~~Hardcoded~~ | `trading` mechanic | **Done** |
+| Bid/Auction pass | ~~Hardcoded~~ | `auction-english` mechanic | **Done** |
+| Spend resource | ~~Hardcoded~~ | `resources` mechanic | **Done** |
+| Always-enabled mechanics | ~~Hardcoded list~~ | Dependency resolution | **Done** |
 
-#### Completed Migrations:
+#### Phase 10 Migrations (Completed):
+- **Place card/location**: `place-card` mechanic handles both action types via `onExecuteAction`
+- **Collect set**: `set-collection` mechanic handles via `onExecuteAction`, `initPlayerState`, `getPlayerView`
+- **Roll/Bank**: `push-your-luck` mechanic handles via `onExecuteAction`, `initPlayerState`, `getPlayerView`
+- **Draft**: `open-drafting` mechanic handles via `onExecuteAction`, `getPlayerView`
+- **Trade offer/respond**: `trading` mechanic handles via `onExecuteAction`, `getAvailableActions`
+- **Bid/Auction pass**: `auction-english` mechanic handles via `onExecuteAction`, `getAvailableActions`
+- **Spend resource**: `resources` mechanic handles via `onExecuteAction`, `getAvailableActions`, `getPlayerView`
+- **Player view**: Resources, actionPoints, collectedSets, power, rollAccumulator, draftDisplay all from mechanic `getPlayerView`
+- **Player init fields**: `collectedSets`, `rollAccumulator`, `rollCount` removed from game.ts, provided by mechanic `initPlayerState`
+- **Always-enabled removed**: `ALWAYS_ENABLED_MECHANICS` list removed; mechanics now enabled via explicit config or dependency resolution (`isMechanicEnabled` checks config + `requires` chains)
+- **~900 lines removed from game.ts** across getAvailableActions, executeAction, playerView, validation
+
+#### Earlier Completed Migrations:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
 - **Play card action**: `src/mechanics/core/cards.ts` handles play_card via `onExecuteAction`
 - **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
-- **Shared state init**: 14 mechanics implement `initSharedState` (open-drafting, deck-building, trading, auction-english, trick-taking, card-matching, freeplay, worker-placement, auction-dutch, simultaneous-action-selection, market, action-programming, cooperative-actions, different-worker-types)
-- **Player view**: 10 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions)
+- **Shared state init**: 14 mechanics implement `initSharedState`
+- **Player view**: 13 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions, open-drafting, set-collection, resources)
 - **Effect types**: `location-effects` and `placed-card-effects` implement `applyEffect` hook
-- **Combat hooks**: `src/mechanics/core/combat-mechanic.ts` defines 6 combat hooks (onBeforeCombat, onCombatStarted, onAttackModifier, onDefenseModifier, onCombatResolved, onCasualtiesApplied)
-- **Worker hooks**: `src/mechanics/core/workers-mechanic.ts` defines 5 worker hooks (onBeforeWorkerPlace, onWorkerPlaced, onBeforeWorkerRetrieve, onWorkersRetrieved, onSpaceActivated)
+- **Combat hooks**: `src/mechanics/core/combat-mechanic.ts` defines 6 combat hooks
+- **Worker hooks**: `src/mechanics/core/workers-mechanic.ts` defines 5 worker hooks
 
 ---
 
@@ -1348,8 +1376,11 @@ All Phase 1-5 mechanics have been implemented. Remaining work is hook completene
 | Phase 7 | Worker Placement | 5 worker hooks | **Done** - Core mechanic + 2 leaf mechanics |
 | Phase 8 | Advanced Auctions | 5 auction hooks | Planned |
 | Phase 9 | Multi-Category Expansion | - | **Done** - 7 new mechanics across 6 categories |
+| Phase 10 | Mechanic Migration | - | **Done** - 8 action types migrated, ~900 lines removed |
 
 **Phase 9 details:** Added auction-dutch (Auction), simultaneous-action-selection + action-programming (Action), market (Economic), cooperative-actions (Cooperative), tableau-building (Building), different-worker-types (Worker Placement).
+
+**Phase 10 details:** Migrated place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend from hardcoded game.ts to mechanic hooks. Removed `ALWAYS_ENABLED_MECHANICS` - mechanics now enabled via explicit config or dependency resolution. Added `initPlayerState` to set-collection and push-your-luck. Added `getPlayerView` to resources, open-drafting, set-collection, variable-player-powers (enhanced with full power object).
 
 ### Long-Term: Refactoring
 
