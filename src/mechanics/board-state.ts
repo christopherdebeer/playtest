@@ -20,8 +20,7 @@ import {
   AvailableAction,
   ActionDescription
 } from './types.js';
-import { GameAction, MoveAction, EdgeConfig } from '../types/game.js';
-import { applyPlacedCardEffects } from '../core/game.js';
+import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard } from '../types/game.js';
 
 interface BoardConfig {
   states: string[];
@@ -46,6 +45,97 @@ function getValidMoveTargets(config: BoardConfig, currentState: string): string[
 
   // Remove duplicates
   return [...new Set(targets)];
+}
+
+/**
+ * Get all cards placed on a specific state.
+ */
+function getPlacedCardsOnState(state: GameState, targetState: string): PlacedCard[] {
+  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
+  return placedCards.filter(pc => pc.state === targetState);
+}
+
+/**
+ * Apply effects from placed cards when a player enters a state.
+ * Returns the net probability modifier and any effects applied.
+ */
+function applyPlacedCardEffects(
+  state: GameState,
+  playerId: string,
+  targetState: string
+): { probabilityModifier: number; effectsApplied: string[] } {
+  const placedCards = getPlacedCardsOnState(state, targetState);
+  let probabilityModifier = 0;
+  const effectsApplied: string[] = [];
+
+  for (const pc of placedCards) {
+    // Determine if this card affects this player
+    let affectsPlayer = false;
+    switch (pc.targetMode) {
+      case 'owner':
+        affectsPlayer = pc.placedBy === playerId;
+        break;
+      case 'opponents':
+        affectsPlayer = pc.placedBy !== playerId;
+        break;
+      case 'all':
+        affectsPlayer = true;
+        break;
+    }
+
+    if (!affectsPlayer) continue;
+
+    // Apply effect based on type
+    switch (pc.effect.type) {
+      case 'probability_boost':
+        probabilityModifier += pc.effect.value ?? 0;
+        effectsApplied.push(`${pc.cardName}: +${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
+        break;
+
+      case 'probability_penalty':
+        probabilityModifier += pc.effect.value ?? 0;  // value should be negative
+        effectsApplied.push(`${pc.cardName}: ${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
+        break;
+
+      case 'force_discard':
+        // Force player to discard cards
+        const discardCount = Math.abs(pc.effect.value ?? 1);
+        const player = state.players[playerId];
+        for (let i = 0; i < discardCount && player.hand.length > 0; i++) {
+          const discardedCard = player.hand.pop();
+          if (discardedCard) {
+            state.discardPile.push(discardedCard);
+            effectsApplied.push(`${pc.cardName}: Forced discard of ${discardedCard.name} (placed by ${pc.placedBy})`);
+          }
+        }
+        break;
+
+      default:
+        // Add effect to player's effect list for other effect types
+        const player2 = state.players[playerId];
+        player2.effects.push({
+          type: pc.effect.type,
+          value: pc.effect.value,
+          duration: pc.effect.duration ?? 1,
+          source: pc.placedBy
+        });
+        effectsApplied.push(`${pc.cardName}: Applied ${pc.effect.type} effect (placed by ${pc.placedBy})`);
+        break;
+    }
+
+    // Decrement triggers remaining if applicable
+    if (pc.triggersRemaining !== undefined) {
+      pc.triggersRemaining--;
+    }
+  }
+
+  // Remove placed cards with no triggers remaining
+  const allPlacedCards = (state.shared.placedCards || []) as PlacedCard[];
+  state.shared.placedCards = allPlacedCards.filter(
+    pc => pc.triggersRemaining === undefined || pc.triggersRemaining > 0
+  );
+
+  return { probabilityModifier, effectsApplied };
 }
 
 export const boardStateMechanic: MechanicHooks = {

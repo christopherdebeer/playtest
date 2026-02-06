@@ -1261,6 +1261,10 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 | Hand limit enforcement | ~~Hardcoded in draw~~ | `postExecuteAction` hook | **Done** (hand-management) |
 | Deck-building init draw | ~~Hardcoded init~~ | `onTurnStart` hook | **Done** (deck-building) |
 | Location effects | ~~Dead code~~ | `applyEffect` hook | **Done** (removed ~90 lines) |
+| Placed card effects | ~~Hardcoded in game.ts~~ | `board-state` mechanic | **Done** (moved to board-state.ts) |
+| Move execution | ~~Hardcoded case~~ | `board-state`/`grid-movement` `onExecuteAction` | **Done** (removed ~95 lines) |
+| Move targets | ~~Hardcoded edge traversal~~ | Derived from mechanic `getAvailableActions` | **Done** |
+| AP validation | ~~Config check only~~ | `action-points` `preValidateAction` | **Done** |
 | Play card action | ~~Fallback switch~~ | Cards mechanic `onExecuteAction` | **Done** |
 | Place card/location | ~~Hardcoded~~ | `place-card` mechanic | **Done** |
 | Collect set | ~~Hardcoded~~ | `set-collection` mechanic | **Done** |
@@ -1290,6 +1294,14 @@ Mechanics that should implement each agnosticism hook to fully decouple game.ts:
 - **Player init generalized**: Removed named extraction of `actionPoints`, `actionPointsUsed`, `powerId`, `personalDeck`, `personalDiscard` — all mechanic state now applied via generic merge loop
 - **Dead code removed**: `applyLocationEffects` function (~90 lines) was defined but never called — removed entirely
 - **~140 additional lines removed from game.ts**
+
+#### Phase 12 Migrations (Completed):
+- **Placed card effects**: `applyPlacedCardEffects` and `getPlacedCardsOnState` moved from game.ts into `board-state` mechanic as local helpers
+- **Move execution**: Removed entire `case 'move'` from game.ts executeAction (~95 lines) — `board-state` and `grid-movement` mechanics handle via `onExecuteAction`
+- **Move targets**: Removed hardcoded board edge traversal and grid navigation from `getAvailableActions` — move targets now derived from mechanic-provided actions
+- **AP validation**: Added `preValidateAction` to `action-points` mechanic for AP exhaustion and cost checks
+- **Unused imports cleaned**: Removed `MoveAction`, `PassAction`, `removeFromHandByName`, `removeCardsFromHand`
+- **~224 additional lines removed from game.ts** (2593 → 2369)
 
 #### Earlier Completed Migrations:
 - **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
@@ -1388,12 +1400,15 @@ All Phase 1-5 mechanics have been implemented. Remaining work is hook completene
 | Phase 9 | Multi-Category Expansion | - | **Done** - 7 new mechanics across 6 categories |
 | Phase 10 | Mechanic Migration | - | **Done** - 8 action types migrated, ~900 lines removed |
 | Phase 11 | Deep Cleanup | postExecuteAction, onTurnStart | **Done** - hand limit, deck-building init, player init generalized, dead code removed |
+| Phase 12 | Movement & Effects | preValidateAction, onExecuteAction | **Done** - placed card effects, move execution/targets to mechanics, AP validation |
 
 **Phase 9 details:** Added auction-dutch (Auction), simultaneous-action-selection + action-programming (Action), market (Economic), cooperative-actions (Cooperative), tableau-building (Building), different-worker-types (Worker Placement).
 
 **Phase 10 details:** Migrated place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend from hardcoded game.ts to mechanic hooks. Removed `ALWAYS_ENABLED_MECHANICS` - mechanics now enabled via explicit config or dependency resolution. Added `initPlayerState` to set-collection and push-your-luck. Added `getPlayerView` to resources, open-drafting, set-collection, variable-player-powers (enhanced with full power object).
 
 **Phase 11 details:** Deep cleanup of game.ts. Added `postExecuteAction` to hand-management (discard_oldest/discard_choice enforcement after draw). Added `onTurnStart` to deck-building (personal deck initial draws). Generalized player init to use generic merge loop for all mechanic state. Removed dead `applyLocationEffects` function. ~140 additional lines removed from game.ts.
+
+**Phase 12 details:** Moved `applyPlacedCardEffects` and `getPlacedCardsOnState` into board-state mechanic as local helpers. Removed entire `case 'move'` from game.ts executeAction (board-state/grid-movement handle via onExecuteAction). Refactored getAvailableActions to derive move targets from mechanic-provided actions instead of hardcoded board edge traversal and grid navigation. Added `preValidateAction` to action-points mechanic for AP exhaustion/cost validation. ~224 additional lines removed from game.ts (2593→2369).
 
 ### Long-Term: Refactoring
 

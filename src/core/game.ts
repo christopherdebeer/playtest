@@ -27,8 +27,6 @@ import type {
   GameAction,
   PlayCardAction,
   DrawAction,
-  PassAction,
-  MoveAction,
   ResignAction,
   PlacedCard,
   ActionValidationResult,
@@ -55,9 +53,7 @@ import {
   addToDiscard,
   playCard,
   addToHand,
-  removeFromHandByIndex,
-  removeFromHandByName,
-  removeCardsFromHand
+  removeFromHandByIndex
 } from '../mechanics/core/index.js';
 
 // Find project root (parent of src directory)
@@ -1376,98 +1372,7 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
   return result.card;
 }
 
-// ============ State Cards (Placed Card Effects) ============
-
-/**
- * Get all cards placed on a specific state.
- */
-export function getPlacedCardsOnState(state: GameState, targetState: string): PlacedCard[] {
-  const placedCards = (state.shared.placedCards || []) as PlacedCard[];
-  return placedCards.filter(pc => pc.state === targetState);
-}
-
-/**
- * Apply effects from placed cards when a player enters a state.
- * Returns the net probability modifier and any effects applied.
- */
-export function applyPlacedCardEffects(
-  state: GameState,
-  playerId: string,
-  targetState: string
-): { probabilityModifier: number; effectsApplied: string[] } {
-  const placedCards = getPlacedCardsOnState(state, targetState);
-  let probabilityModifier = 0;
-  const effectsApplied: string[] = [];
-
-  for (const pc of placedCards) {
-    // Determine if this card affects this player
-    let affectsPlayer = false;
-    switch (pc.targetMode) {
-      case 'owner':
-        affectsPlayer = pc.placedBy === playerId;
-        break;
-      case 'opponents':
-        affectsPlayer = pc.placedBy !== playerId;
-        break;
-      case 'all':
-        affectsPlayer = true;
-        break;
-    }
-
-    if (!affectsPlayer) continue;
-
-    // Apply effect based on type
-    switch (pc.effect.type) {
-      case 'probability_boost':
-        probabilityModifier += pc.effect.value ?? 0;
-        effectsApplied.push(`${pc.cardName}: +${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
-        break;
-
-      case 'probability_penalty':
-        probabilityModifier += pc.effect.value ?? 0;  // value should be negative
-        effectsApplied.push(`${pc.cardName}: ${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
-        break;
-
-      case 'force_discard':
-        // Force player to discard cards
-        const discardCount = Math.abs(pc.effect.value ?? 1);
-        const player = state.players[playerId];
-        for (let i = 0; i < discardCount && player.hand.length > 0; i++) {
-          const discardedCard = player.hand.pop();
-          if (discardedCard) {
-            state.discardPile.push(discardedCard);
-            effectsApplied.push(`${pc.cardName}: Forced discard of ${discardedCard.name} (placed by ${pc.placedBy})`);
-          }
-        }
-        break;
-
-      default:
-        // Add effect to player's effect list for other effect types
-        const player2 = state.players[playerId];
-        player2.effects.push({
-          type: pc.effect.type,
-          value: pc.effect.value,
-          duration: pc.effect.duration ?? 1,
-          source: pc.placedBy
-        });
-        effectsApplied.push(`${pc.cardName}: Applied ${pc.effect.type} effect (placed by ${pc.placedBy})`);
-        break;
-    }
-
-    // Decrement triggers remaining if applicable
-    if (pc.triggersRemaining !== undefined) {
-      pc.triggersRemaining--;
-    }
-  }
-
-  // Remove placed cards with no triggers remaining
-  const allPlacedCards = (state.shared.placedCards || []) as PlacedCard[];
-  state.shared.placedCards = allPlacedCards.filter(
-    pc => pc.triggersRemaining === undefined || pc.triggersRemaining > 0
-  );
-
-  return { probabilityModifier, effectsApplied };
-}
+// getPlacedCardsOnState and applyPlacedCardEffects moved to board-state mechanic
 
 // applyLocationEffects removed - location-effects mechanic handles via applyEffect hook
 
@@ -1488,62 +1393,31 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   }
 
   const isYourTurn = state.currentPlayer === playerId;
-  const hasBoard = !!state.config.board;
-  const gridConfig = state.config.engine_mechanics?.grid as { type?: string; starting_tile?: string; adjacency?: string } | undefined;
-  const hasGrid = !!gridConfig;
   const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
   const hand = player.hand || [];
   const handCards = hand.map(c => c.name);
-  const placeableCards = hand.filter(c => c.placeable).map(c => c.name);
-  const locationCards = hand.filter(c => c.type === 'location').map(c => c.name);
   const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
   const filteredPlayable = mechanicRegistry.filterPlayableCards(state, playerId, basePlayable);
   const playableCards = filteredPlayable.map(c => c.name);
-  const boardStates = state.config.board?.states || [];
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
-  const placedLocations = (state.shared.placedLocations as string[]) || [];
-  const startingTile = gridConfig?.starting_tile || 'origin';
 
   // Check for blocking effects using mechanic registry
-  // This allows mechanics to define what blocks a player (lose-a-turn implements this)
   const isBlocked = mechanicRegistry.isPlayerBlocked(state, playerId);
 
-  // Get valid move targets from current state
-  const getValidMoveTargets = (): string[] => {
-    // For board games - use edges
-    if (state.config.board) {
-      const currentState = player.state;
-      const targets: string[] = [];
+  // Collect all mechanic-provided actions early (used for move targets and merger)
+  const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
 
-      for (const edge of state.config.board.edges) {
-        const fromStates = Array.isArray(edge.from) ? edge.from : [edge.from];
-        const toStates = Array.isArray(edge.to) ? edge.to : [edge.to];
-
-        if (fromStates.includes(currentState)) {
-          targets.push(...toStates);
-        }
-      }
-
-      return [...new Set(targets)]; // Remove duplicates
-    }
-
-    // For grid games - all placed locations are valid targets
-    if (gridConfig) {
-      const validLocations = [startingTile, ...placedLocations];
-      // Could filter by adjacency here, but for simplicity allow moving to any placed location
-      return validLocations.filter(loc => loc !== player.state);
-    }
-
-    return [];
-  };
-
-  const moveTargets = getValidMoveTargets();
+  // Derive move targets from mechanic-provided move actions (board-state, grid-movement)
+  const moveTargets = mechanicActions
+    .filter(a => a.action.type === 'move')
+    .map(a => (a.action as { target: string }).target);
   const opponents = state.turnOrder.filter(pid => pid !== playerId);
 
   const actions: AvailableAction[] = [];
 
-  // === MOVE action (for board or grid games) ===
-  if (hasBoard || hasGrid) {
+  // === MOVE action (targets provided by board-state/grid-movement mechanics) ===
+  if (moveTargets.length > 0 || state.config.board || state.config.engine_mechanics?.grid) {
+    const hasGrid = !!state.config.engine_mechanics?.grid;
     const moveEnabled = isYourTurn && !isBlocked && moveTargets.length > 0;
     const description = hasGrid
       ? 'Move to a placed location on the grid'
@@ -1554,7 +1428,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       enabled: moveEnabled,
       reason: !isYourTurn ? 'Not your turn' :
               isBlocked ? 'You are blocked this turn' :
-              moveTargets.length === 0 ? (hasGrid ? 'No other locations to move to' : 'No valid move targets from current state') :
+              moveTargets.length === 0 ? 'No valid move targets from current position' :
               undefined,
       required: { target: hasGrid ? 'The location to move to' : 'The state to move to' },
       optional: { reasoning: 'Explanation of your move choice' },
@@ -1569,9 +1443,9 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   // === PLAY_CARD action (for regular cards) ===
   if (playableCards.length > 0) {
     const playEnabled = isYourTurn && !isBlocked;
-    const interferenceCards = hand.filter(c =>
-      c.type === 'interference' ||
-      ['block_turn', 'probability_penalty', 'force_discard', 'skip'].includes(c.effect?.type || '')
+    // Identify cards that need a target (interference/take-that cards)
+    const targetingCards = hand.filter(c =>
+      c.type === 'interference' || c.effect?.type === 'block_turn' || c.effect?.type === 'skip'
     ).map(c => c.name);
 
     actions.push({
@@ -1584,18 +1458,17 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       required: { card: 'The exact name of the card to play' },
       optional: Object.fromEntries(
         Object.entries({
-          target: interferenceCards.length > 0 && opponents.length > 1 ?
-                  `Target player for interference cards (${interferenceCards.join(', ')}). Options: ${opponents.join(', ')}` :
+          target: targetingCards.length > 0 && opponents.length > 1 ?
+                  `Target player for attack cards (${targetingCards.join(', ')}). Options: ${opponents.join(', ')}` :
                   undefined,
           declaredColor: 'For wild cards: Red, Blue, Green, or Yellow',
           reasoning: 'Explanation of your play'
         }).filter(([_, v]) => v !== undefined)
       ) as Record<string, string>,
       examples: playableCards.slice(0, 2).map(card => {
-        const c = hand.find(h => h.name === card)!;
-        const isInterference = interferenceCards.includes(card);
+        const isTargeting = targetingCards.includes(card);
         const example: PlayCardAction = { type: 'play_card', card };
-        if (isInterference && opponents.length > 0) {
+        if (isTargeting && opponents.length > 0) {
           example.target = opponents[0];
         }
         return example;
@@ -1646,11 +1519,10 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
 
-  // === MECHANIC HOOKS: Collect actions from all enabled mechanics ===
+  // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
   // Skip mechanic actions that duplicate base actions (move, play_card, draw, pass, etc.)
   // But keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
   const baseActionTypes = new Set(actions.map(a => a.type));
-  const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
   for (const mechanicAction of mechanicActions) {
     // Skip movement/pass/draw mechanics that duplicate base actions
     // Keep special categories like "victory" that add new functionality
@@ -2140,104 +2012,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         };
       }
 
-      case 'move': {
-        // Board game movement (non-grid) - grid moves are handled by grid-movement mechanic
-        const moveAction = action as { target: string; useCard?: string };
-
-        // Apply effects from placed cards at the destination state (board games)
-        const placedCardEffects = applyPlacedCardEffects(state, playerId, moveAction.target);
-
-        // Log placed card effects if any were applied
-        if (placedCardEffects.effectsApplied.length > 0) {
-          logEvent(state, {
-            event: 'placed_card_triggered',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              targetState: moveAction.target,
-              effects: placedCardEffects.effectsApplied,
-              probabilityModifier: placedCardEffects.probabilityModifier
-            }
-          });
-        }
-
-        player.state = moveAction.target;
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: {
-              newState: moveAction.target,
-              placedCardEffects: placedCardEffects.effectsApplied
-            }
-          }
-        });
-
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: {
-            type: 'move',
-            target: moveAction.target,
-            placedCardEffects: placedCardEffects.effectsApplied
-          }
-        });
-
-        // Check win condition BEFORE advancing turn (critical for board games!)
-        const winCheck = checkAllWinConditions(state);
-        if (winCheck) {
-          // Auto-end the game
-          state.status = 'pending_analysis';
-          state.shared.winner = winCheck.winner;
-          state.shared.endReason = winCheck.reason;
-          saveState(state);
-          logEvent(state, {
-            event: 'game_end',
-            round: state.round,
-        turnNumber: state.turnNumber,
-            data: { winner: winCheck.winner, reason: winCheck.reason, autoDetected: true }
-          });
-          return {
-            success: true,
-            gameOver: true,
-            winner: winCheck.winner,
-            effect: {
-              type: 'move',
-              details: {
-                newState: player.state,
-                gameEnded: true,
-                winner: winCheck.winner,
-                placedCardEffects: placedCardEffects.effectsApplied
-              }
-            }
-          };
-        }
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'move',
-            details: {
-              newState: player.state,
-              placedCardEffects: placedCardEffects.effectsApplied,
-              turnAdvanced
-            }
-          }
-        };
-      }
-
-      // place_card and place_location now handled by place-card mechanic (onExecuteAction)
+      // move handled by board-state/grid-movement mechanics (onExecuteAction)
+      // place_card and place_location handled by place-card mechanic (onExecuteAction)
 
       // trade_offer, trade_respond handled by trading mechanic (onExecuteAction)
       // bid handled by auction-english mechanic (onExecuteAction)

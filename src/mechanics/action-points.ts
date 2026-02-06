@@ -56,10 +56,23 @@ export const actionPointsMechanic: MechanicHooks = {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return null;
 
-    // Skip validation for pass (end turn)
+    // Pass actions should always be allowed (let engine handle)
     if (action.type === 'pass') return null;
 
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
+    const remainingAP = ctx.player.actionPoints ?? 0;
+    const usedAP = ctx.player.actionPointsUsed ?? 0;
+    const pointsPerTurn = apConfig.points_per_turn;
+
+    // Check if player has exhausted their AP for this turn
+    if (remainingAP <= 0) {
+      return {
+        valid: false,
+        error: `No action points remaining (${usedAP}/${pointsPerTurn} used this turn)`
+      };
+    }
+
+    // Determine the cost of this specific action
+    const baseCost = apConfig.action_costs?.[action.type] ?? 1;
     let actionCost = baseCost;
 
     // For draw actions, cost is per card drawn
@@ -69,8 +82,7 @@ export const actionPointsMechanic: MechanicHooks = {
       actionCost = baseCost * count;
     }
 
-    const remainingAP = ctx.player.actionPoints ?? 0;
-
+    // Check if the action costs more AP than the player has remaining
     if (actionCost > remainingAP) {
       const costExplanation = action.type === 'draw' && (action as DrawAction).count && (action as DrawAction).count! > 1
         ? ` (${(action as DrawAction).count} cards × ${baseCost} AP each)`
@@ -92,7 +104,7 @@ export const actionPointsMechanic: MechanicHooks = {
     // Skip for pass (end turn)
     if (action.type === 'pass') return null;
 
-    const baseCost = apConfig.action_costs[action.type] ?? 1;
+    const baseCost = apConfig.action_costs?.[action.type] ?? 1;
     let cost = baseCost;
 
     // For draw actions, cost is per card drawn
