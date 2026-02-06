@@ -18,7 +18,10 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  SharedStateInitContext,
+  SharedStateInitResult,
+  isMechanicEnabled
 } from './types.js';
 import { GameAction, PlaceCardAction, PlacedCard, Card } from '../types/game.js';
 
@@ -26,6 +29,11 @@ export const placeCardMechanic: MechanicHooks = {
   slug: 'place-card',
   name: 'Place Card',
   requires: ['cards'],
+
+  initSharedState(_ctx: SharedStateInitContext): SharedStateInitResult | null {
+    // Initialize placedCards array for tracking cards placed on board states
+    return { placedCards: [] };
+  },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate place_card actions

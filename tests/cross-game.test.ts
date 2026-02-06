@@ -56,6 +56,19 @@ describe('treasure-hunters integration', () => {
     expect(harness.state.players['player-1'].actionPoints).toBe(startAP - 1);
   });
 
+  it('no card_matching: allows playing any card regardless of color', () => {
+    harness = GameTestHarness.create('treasure-hunters', 2, { seed: 1 });
+    harness.start();
+
+    // Treasure Hunters doesn't use card_matching, so any card should be playable
+    const hand = harness.state.players['player-1'].hand;
+    const anyCard = hand.find(c => !c.placeable && c.type !== 'location');
+    if (anyCard) {
+      const result = harness.step('player-1', { type: 'play_card', card: anyCard.name });
+      expect(result.success).toBe(true);
+    }
+  });
+
   it('pass ends turn and advances to next player', () => {
     harness = GameTestHarness.create('treasure-hunters', 2, { seed: 1 });
     harness.start();
@@ -351,6 +364,37 @@ describe('uno', () => {
       const result = harness.step('player-1', { type: 'play_card', card: colorCard.name });
       expect(result.success).toBe(true);
       expect(harness.state.shared.currentColor).toBe(colorCard.effect!.color);
+    }
+  });
+
+  it('card-matching: allows value match even when color differs', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 42 });
+    harness.start();
+
+    // Set currentColor to Red, topCard to Red 5
+    harness.state.shared.currentColor = 'Red';
+    harness.state.shared.topCard = { name: 'Red 5', type: 'number', effect: { type: 'none', color: 'Red', value: 5 } };
+
+    // Inject a Blue 5 into player's hand (matches value but not color)
+    const blue5: any = { name: 'Blue 5', type: 'number', effect: { type: 'none', color: 'Blue', value: 5 } };
+    harness.state.players['player-1'].hand.push(blue5);
+
+    // Blue 5 should be playable (value match)
+    const result = harness.step('player-1', { type: 'play_card', card: 'Blue 5' });
+    expect(result.success).toBe(true);
+    // After playing Blue 5, currentColor should be Blue
+    expect(harness.state.shared.currentColor).toBe('Blue');
+  });
+
+  it('card-matching: initializes currentColor from flipped top card', () => {
+    harness = GameTestHarness.create('uno', 2, { seed: 1 });
+    harness.start();
+
+    const topCard = harness.state.shared.topCard as any;
+    const currentColor = harness.state.shared.currentColor;
+    // If the top card has a color, currentColor should match it
+    if (topCard?.effect?.color) {
+      expect(currentColor).toBe(topCard.effect.color);
     }
   });
 
