@@ -293,7 +293,10 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   const location = 'config.engine_mechanics';
 
   // action_points
-  if (mechanics.action_points !== undefined) {
+  // Helper: skip validation for empty/no-config mechanic enablement (e.g., hand_management: true → {})
+  const hasConfig = (m: unknown) => m !== undefined && typeof m === 'object' && m !== null && Object.keys(m as object).length > 0;
+
+  if (mechanics.action_points && hasConfig(mechanics.action_points)) {
     const ap = mechanics.action_points;
     if (typeof ap.points_per_turn !== 'number' || ap.points_per_turn < 1) {
       issues.push(error('INVALID_ACTION_POINTS', 'action_points.points_per_turn must be a positive number', `${location}.action_points.points_per_turn`));
@@ -304,7 +307,7 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   }
 
   // grid
-  if (mechanics.grid !== undefined) {
+  if (mechanics.grid && hasConfig(mechanics.grid)) {
     const grid = mechanics.grid;
     if (!VALID_GRID_TYPES.includes(grid.type)) {
       issues.push(error('INVALID_GRID_TYPE', `grid.type must be one of: ${VALID_GRID_TYPES.join(', ')}`, `${location}.grid.type`));
@@ -343,31 +346,32 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   }
 
   // income
-  if (mechanics.income !== undefined) {
+  if (mechanics.income && hasConfig(mechanics.income)) {
     if (!mechanics.income.per_turn || typeof mechanics.income.per_turn !== 'object') {
       issues.push(error('MISSING_INCOME_PER_TURN', 'income.per_turn is required', `${location}.income.per_turn`));
     }
   }
 
   // auction
-  if (mechanics.auction !== undefined) {
-    if (!VALID_AUCTION_TYPES.includes(mechanics.auction.type)) {
+  if (mechanics.auction && hasConfig(mechanics.auction)) {
+    const auc = mechanics.auction;
+    if (!VALID_AUCTION_TYPES.includes(auc.type)) {
       issues.push(error('INVALID_AUCTION_TYPE', `auction.type must be one of: ${VALID_AUCTION_TYPES.join(', ')}`, `${location}.auction.type`));
     }
-    if (!mechanics.auction.currency || typeof mechanics.auction.currency !== 'string') {
+    if (!auc.currency || typeof auc.currency !== 'string') {
       issues.push(error('MISSING_AUCTION_CURRENCY', 'auction.currency is required', `${location}.auction.currency`));
     }
   }
 
   // turn_order
-  if (mechanics.turn_order !== undefined) {
+  if (mechanics.turn_order && hasConfig(mechanics.turn_order)) {
     if (!VALID_TURN_ORDER_TYPES.includes(mechanics.turn_order.type)) {
       issues.push(error('INVALID_TURN_ORDER', `turn_order.type must be one of: ${VALID_TURN_ORDER_TYPES.join(', ')}`, `${location}.turn_order.type`));
     }
   }
 
-  // set_collection
-  if (mechanics.set_collection !== undefined) {
+  // set_collection (skip validation for empty/no-config enablement)
+  if (mechanics.set_collection !== undefined && Object.keys(mechanics.set_collection).length > 0) {
     if (!Array.isArray(mechanics.set_collection.sets) || mechanics.set_collection.sets.length === 0) {
       issues.push(error('MISSING_SETS', 'set_collection.sets must be a non-empty array', `${location}.set_collection.sets`));
     }
@@ -377,7 +381,7 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   }
 
   // push_your_luck
-  if (mechanics.push_your_luck !== undefined) {
+  if (mechanics.push_your_luck && hasConfig(mechanics.push_your_luck)) {
     const pyl = mechanics.push_your_luck;
     if (typeof pyl.dice_sides !== 'number' || pyl.dice_sides < 2) {
       issues.push(error('INVALID_DICE_SIDES', 'push_your_luck.dice_sides must be >= 2', `${location}.push_your_luck.dice_sides`));
@@ -391,11 +395,12 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   }
 
   // variable_powers
-  if (mechanics.variable_powers !== undefined) {
-    if (!Array.isArray(mechanics.variable_powers.powers) || mechanics.variable_powers.powers.length === 0) {
+  if (mechanics.variable_powers && hasConfig(mechanics.variable_powers)) {
+    const vp = mechanics.variable_powers;
+    if (!Array.isArray(vp.powers) || vp.powers.length === 0) {
       issues.push(error('MISSING_POWERS', 'variable_powers.powers must be a non-empty array', `${location}.variable_powers.powers`));
     }
-    if (!VALID_POWER_ASSIGNMENTS.includes(mechanics.variable_powers.assignment)) {
+    if (!VALID_POWER_ASSIGNMENTS.includes(vp.assignment)) {
       issues.push(error('INVALID_POWER_ASSIGNMENT', `variable_powers.assignment must be one of: ${VALID_POWER_ASSIGNMENTS.join(', ')}`, `${location}.variable_powers.assignment`));
     }
   }
@@ -415,17 +420,18 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
   }
 
   // timeout_winner
-  if (mechanics.timeout_winner !== undefined) {
-    if (!VALID_TIMEOUT_WINNER_TYPES.includes(mechanics.timeout_winner.type)) {
+  if (mechanics.timeout_winner && hasConfig(mechanics.timeout_winner)) {
+    const tw = mechanics.timeout_winner;
+    if (!VALID_TIMEOUT_WINNER_TYPES.includes(tw.type)) {
       issues.push(error('INVALID_TIMEOUT_WINNER', `timeout_winner.type must be one of: ${VALID_TIMEOUT_WINNER_TYPES.join(', ')}`, `${location}.timeout_winner.type`));
     }
-    if (mechanics.timeout_winner.type === 'role' && !mechanics.timeout_winner.role && !mechanics.timeout_winner.role_name) {
+    if (tw.type === 'role' && !tw.role && !tw.role_name) {
       issues.push(error('MISSING_TIMEOUT_ROLE', 'timeout_winner requires "role" or "role_name" when type is "role"', `${location}.timeout_winner`));
     }
   }
 
   // trade
-  if (mechanics.trade !== undefined) {
+  if (mechanics.trade && hasConfig(mechanics.trade)) {
     if (typeof mechanics.trade.enabled !== 'boolean') {
       issues.push(error('MISSING_TRADE_ENABLED', 'trade.enabled is required and must be boolean', `${location}.trade.enabled`));
     }
@@ -586,6 +592,37 @@ export function validateRules(rulesPath: string, options: { extractSections?: bo
       warnings: [],
       markdown,
     };
+  }
+
+  // Normalize unified format before validation
+  // Unified format has mechanics as object (not array) - convert to internal format
+  const cfg = config as Record<string, unknown>;
+  if (cfg.mechanics && typeof cfg.mechanics === 'object' && !Array.isArray(cfg.mechanics)) {
+    const mechanicsObj = cfg.mechanics as Record<string, unknown>;
+    const engineMechanics: Record<string, unknown> = {};
+    const mechanicsList: string[] = [];
+
+    for (const [key, value] of Object.entries(mechanicsObj)) {
+      if (key === 'cards') {
+        const cardsConfig = value as Record<string, unknown>;
+        if (cardsConfig.deck) cfg.deck = cardsConfig.deck;
+        if (cardsConfig.starting_hand !== undefined) cfg.starting_cards = cardsConfig.starting_hand;
+        continue;
+      }
+      if (key === 'board') {
+        cfg.board = value;
+        continue;
+      }
+      mechanicsList.push(key.replace(/_/g, '-'));
+      const configKey = key.replace(/-/g, '_');
+      if (value === true || value === null || (typeof value === 'object' && !Array.isArray(value) && Object.keys(value as object).length === 0)) {
+        engineMechanics[configKey] = {};
+      } else {
+        engineMechanics[configKey] = value;
+      }
+    }
+    cfg.mechanics = mechanicsList;
+    cfg.engine_mechanics = engineMechanics;
   }
 
   // Validate config
