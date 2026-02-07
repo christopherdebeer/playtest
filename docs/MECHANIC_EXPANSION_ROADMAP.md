@@ -10,7 +10,7 @@
 
 ## Current State
 
-**Implemented: 84 of 202 plannable mechanics (42%)** — 96 registered total (incl. core domains + extras)
+**Implemented: 110 of 202 plannable mechanics (54%)** — 122 registered total (incl. core domains + extras)
 
 > **Note**: Counts updated 2026-02-07. See [MECHANICS.md](./MECHANICS.md) for canonical status.
 
