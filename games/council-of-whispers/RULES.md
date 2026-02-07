@@ -66,7 +66,7 @@ mechanics:
     limits:
       private_per_round: 3
       public_per_round: 5
-    target_restrictions: {}
+    target_restrictions: []
 
   # Semi-cooperative: shared treasury must be maintained
   semi_cooperative_game:

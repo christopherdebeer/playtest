@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-07T22:51:11.553Z","event":"game_init","data":{"gameId":"rondel-express-1770504671542","playerCount":2,"config":"Rondel Express"}}
+{"timestamp":"2026-02-07T23:01:21.048Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T23:08:13.917Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Fuel Tank","effect":{"type":"gain_resource","resource":"fuel","value":2},"handSize":2,"newTopCard":"Fuel Tank"}}
+{"timestamp":"2026-02-07T23:10:50.039Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Fuel Tank","effect":{"type":"gain_resource","resource":"fuel","value":2},"handSize":1,"newTopCard":"Fuel Tank"}}

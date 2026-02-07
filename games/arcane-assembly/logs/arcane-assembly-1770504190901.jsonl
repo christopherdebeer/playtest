@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-07T22:43:10.920Z","event":"game_init","data":{"gameId":"arcane-assembly-1770504190901","playerCount":2,"config":"Arcane Assembly"}}
+{"timestamp":"2026-02-07T22:43:56.912Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T22:45:43.859Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"program_action"}}
+{"timestamp":"2026-02-07T22:47:28.349Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"program_action"}}
+{"timestamp":"2026-02-07T22:50:32.495Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
