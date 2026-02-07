@@ -10,27 +10,29 @@
 
 ## Current State
 
-**Implemented: 74 of 192 mechanics (38%)**
+**Implemented: 84 of 202 plannable mechanics (42%)** — 96 registered total (incl. core domains + extras)
+
+> **Note**: Counts updated 2026-02-07. See [MECHANICS.md](./MECHANICS.md) for canonical status.
 
 | Category | Implemented | Total | Coverage |
 |----------|-------------|-------|----------|
-| Action | 1 | 7 | 14% |
-| Auction | 3 | 12 | 25% |
-| Building | 1 | 11 | 9% |
-| Cards | 10 | 15 | 67% |
-| Conflict | 8 | 8 | 100% |
-| Cooperative | 0 | 10 | 0% |
-| Dice | 6 | 6 | 100% |
-| Economic | 2 | 9 | 22% |
-| Ending | 1 | 4 | 25% |
-| Information | 9 | 8 | 113% |
-| Movement | 4 | 22 | 18% |
-| Other | 10 | 40 | 25% |
-| Physical | 0 | 8 | 0% |
-| Social | 6 | 11 | 55% |
+| Action | 1 | 6 | 17% |
+| Auction | 4 | 11 | 36% |
+| Building | 1 | 9 | 11% |
+| Cards | 12 | 18 | 67% |
+| Conflict | 7 | 7 | 100% |
+| Cooperative | 1 | 5 | 20% |
+| Dice | 3 | 3 | 100% |
+| Economic | 4 | 10 | 40% |
+| Ending | 1 | 6 | 17% |
+| Information | 5 | 8 | 63% |
+| Movement | 8 | 23 | 35% |
+| Other | 14 | 63 | 22% |
+| Physical | 0 | 7 | N/A |
+| Social | 5 | 10 | 50% |
 | Turn Order | 8 | 8 | 100% |
-| Victory | 6 | 5 | 120% |
-| Worker Placement | 0 | 7 | 0% |
+| Victory | 8 | 12 | 67% |
+| Worker Placement | 2 | 3 | 67% |
 
 ### Recently Implemented (Phase 1)
 
