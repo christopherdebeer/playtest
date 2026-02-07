@@ -143,6 +143,13 @@ export interface PlayerState {
   // Route building state
   claimedRoutes?: string[];          // IDs of claimed routes
   routeCards?: string[];             // Held route objective cards
+
+  // Phase 15: Mechanic player state
+  character?: Record<string, unknown>;  // Role-playing character info
+  melds?: unknown[];                    // Melding and splaying: card melds
+  meldCount?: number;                   // Number of melds created
+  patternGrid?: unknown[][];            // Pattern building: personal grid
+  completedPatterns?: string[];         // Pattern building: completed patterns
 }
 
 /**
@@ -401,6 +408,60 @@ export interface EngineMechanics {
   random_production?: RandomProductionConfig;         // Random resource generation
   follow?: FollowConfig;                              // Follow the leader mechanic
   storytelling?: StorytellingConfig;                  // Storytelling mechanic
+
+  // Phase 15: Category completers
+  semi_cooperative_game?: Record<string, unknown>;    // Shared + individual goals
+  action_queue?: Record<string, unknown>;              // Queue actions for sequential execution
+  action_timer?: Record<string, unknown>;              // Time-limited actions
+  worker_placement_with_dice_workers?: Record<string, unknown>;  // Dice as workers
+  role_playing?: Record<string, unknown>;              // Character personas
+  acting?: Record<string, unknown>;                    // Charades-style acting
+  prisoners_dilemma?: Record<string, unknown>;         // Cooperate/defect choices
+  induction?: Record<string, unknown>;                 // Discover secret rules
+  pattern_recognition?: Record<string, unknown>;       // Identify matching patterns
+  questions_and_answers?: Record<string, unknown>;     // Q&A deduction
+  elapsed_real_time_ending?: Record<string, unknown>;  // Turn-limited ending
+
+  // Phase 15: Economic
+  stock_holding?: Record<string, unknown>;             // Stock market trading
+  investment?: Record<string, unknown>;                // Future return investments
+  commodity_speculation?: Record<string, unknown>;     // Commodity price trading
+  ownership?: Record<string, unknown>;                 // Element ownership
+
+  // Phase 15: Building
+  pattern_building?: Record<string, unknown>;          // Grid pattern creation
+  connections?: Record<string, unknown>;               // Build links between nodes
+  enclosure?: Record<string, unknown>;                 // Surround areas to claim
+  map_addition?: Record<string, unknown>;              // Expand play area with tiles
+
+  // Phase 15: Auction
+  auction_compensation?: Record<string, unknown>;      // Losers receive compensation
+  auction_fixed_placement?: Record<string, unknown>;   // Bid on fixed slots
+  auction_multiple_lot?: Record<string, unknown>;      // Simultaneous multi-lot
+  auction_bidding?: Record<string, unknown>;           // Generic bidding
+  auction_dutch_priority?: Record<string, unknown>;    // Dutch with priority
+  auction_turn_order_until_pass?: Record<string, unknown>;  // Pass = exit
+
+  // Phase 15: Movement
+  hexagon_grid?: Record<string, unknown>;              // Hex grid movement
+  rondel?: Record<string, unknown>;                    // Circular action wheel
+  track_movement?: Record<string, unknown>;            // Linear track movement
+  square_grid?: Record<string, unknown>;               // Square grid movement
+  grid_coverage?: Record<string, unknown>;             // Cover grid spaces
+
+  // Phase 15: Cards
+  melding_and_splaying?: Record<string, unknown>;      // Card melds with splay
+  command_cards?: Record<string, unknown>;             // Command-issuing cards
+  deck_construction?: Record<string, unknown>;         // Pre-game deck building
+
+  // Phase 15: Other
+  pick_up_and_deliver?: Record<string, unknown>;       // Transport goods
+  modular_board?: Record<string, unknown>;             // Variable board layout
+  variable_phase_order?: Record<string, unknown>;      // Dynamic phase ordering
+  tug_of_war?: Record<string, unknown>;                // Bidirectional tug
+  matching?: Record<string, unknown>;                  // Pair matching
+  interrupts?: Record<string, unknown>;                // Out-of-turn reactions
+  score_and_reset_game?: Record<string, unknown>;      // Multi-round scoring
 }
 
 // Proposal 007: Grid configuration
@@ -1179,7 +1240,20 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass' | 'dutch_bid' | 'dutch_pass' | 'select_action' | 'buy_market' | 'sell_market' | 'add_to_tableau' | 'program_action' | 'execute_program' | 'contribute' | 'use_shared' | 'take_contract' | 'fulfill_contract' | 'take_loan' | 'repay_loan' | 'play_as_event' | 'retrieve_actions' | 'bet' | 'call_bluff' | 'propose_alliance' | 'accept_alliance' | 'reject_alliance' | 'break_alliance' | 'claim_route' | 'research' | 'place_influence' | 'follow_action' | 'use_advantage' | 'tell_story' | 'vote_story' | 'place_tile';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass' | 'dutch_bid' | 'dutch_pass' | 'select_action' | 'buy_market' | 'sell_market' | 'add_to_tableau' | 'program_action' | 'execute_program' | 'contribute' | 'use_shared' | 'take_contract' | 'fulfill_contract' | 'take_loan' | 'repay_loan' | 'play_as_event' | 'retrieve_actions' | 'bet' | 'call_bluff' | 'propose_alliance' | 'accept_alliance' | 'reject_alliance' | 'break_alliance' | 'claim_route' | 'research' | 'place_influence' | 'follow_action' | 'use_advantage' | 'tell_story' | 'vote_story' | 'place_tile' |
+  // Phase 15: New action types
+  'queue_action' | 'process_queue' | 'perform' | 'guess' | 'dilemma_choice' |
+  'set_rule' | 'test_example' | 'guess_rule' | 'validate_example' |
+  'identify_pattern' | 'ask_question' | 'answer_question' | 'final_answer' |
+  'buy_stock' | 'sell_stock' | 'invest' | 'buy_commodity' | 'sell_commodity' |
+  'claim_ownership' | 'transfer_ownership' | 'place_pattern_piece' |
+  'build_connection' | 'place_stone' | 'add_map_tile' |
+  'bid_compensated' | 'bid_on_slot' | 'bid_multi_lot' | 'auction_bid' |
+  'claim_at_price' | 'pass_price' | 'raise_bid' | 'pass_auction' |
+  'hex_move' | 'rondel_move' | 'advance_track' | 'grid_square_move' | 'cover_space' |
+  'create_meld' | 'add_to_meld' | 'splay' | 'play_command' | 'draft_to_deck' |
+  'pickup_cargo' | 'deliver_cargo' | 'select_phase' | 'tug_push' |
+  'reveal_match' | 'interrupt' | 'end_round' | 'place_dice_worker';
 
 export interface BaseAction {
   type: ActionType;
@@ -1669,7 +1743,24 @@ export interface PlaceTileAction extends BaseAction {
   rotation?: number;
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction | DutchBidAction | DutchPassAction | SelectActionAction | BuyMarketAction | SellMarketAction | AddToTableauAction | ProgramActionAction | ExecuteProgramAction | ContributeAction | UseSharedAction | TakeContractAction | FulfillContractAction | TakeLoanAction | RepayLoanAction | PlayAsEventAction | RetrieveActionsAction | BetAction | CallBluffAction | ProposeAllianceAction | AcceptAllianceAction | RejectAllianceAction | BreakAllianceAction | ClaimRouteAction | ResearchAction | PlaceInfluenceAction | FollowActionAction | UseAdvantageAction | TellStoryAction | VoteStoryAction | PlaceTileAction;
+// Phase 15: Generic action interface for new mechanic actions
+export interface Phase15Action extends BaseAction {
+  type: 'queue_action' | 'process_queue' | 'perform' | 'guess' | 'dilemma_choice' |
+    'set_rule' | 'test_example' | 'guess_rule' | 'validate_example' |
+    'identify_pattern' | 'ask_question' | 'answer_question' | 'final_answer' |
+    'buy_stock' | 'sell_stock' | 'invest' | 'buy_commodity' | 'sell_commodity' |
+    'claim_ownership' | 'transfer_ownership' | 'place_pattern_piece' |
+    'build_connection' | 'place_stone' | 'add_map_tile' |
+    'bid_compensated' | 'bid_on_slot' | 'bid_multi_lot' | 'auction_bid' |
+    'claim_at_price' | 'pass_price' | 'raise_bid' | 'pass_auction' |
+    'hex_move' | 'rondel_move' | 'advance_track' | 'grid_square_move' | 'cover_space' |
+    'create_meld' | 'add_to_meld' | 'splay' | 'play_command' | 'draft_to_deck' |
+    'pickup_cargo' | 'deliver_cargo' | 'select_phase' | 'tug_push' |
+    'reveal_match' | 'interrupt' | 'end_round' | 'place_dice_worker';
+  [key: string]: unknown;
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction | DutchBidAction | DutchPassAction | SelectActionAction | BuyMarketAction | SellMarketAction | AddToTableauAction | ProgramActionAction | ExecuteProgramAction | ContributeAction | UseSharedAction | TakeContractAction | FulfillContractAction | TakeLoanAction | RepayLoanAction | PlayAsEventAction | RetrieveActionsAction | BetAction | CallBluffAction | ProposeAllianceAction | AcceptAllianceAction | RejectAllianceAction | BreakAllianceAction | ClaimRouteAction | ResearchAction | PlaceInfluenceAction | FollowActionAction | UseAdvantageAction | TellStoryAction | VoteStoryAction | PlaceTileAction | Phase15Action;
 
 // Action validation result
 export interface ActionValidationResult {
