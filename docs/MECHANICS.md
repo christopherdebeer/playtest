@@ -1154,12 +1154,50 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ### Overview
 
-- **66 of 192** mechanics implemented (34%), 96 registered (incl core/win-conditions)
+- **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
+- **96** registered mechanics: **10** core domains + **7** win conditions + **79** leaf
+- **84 of 202** plannable reference mechanics have implementations (**42%**)
+- **12** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **11 games**, all using unified config format
 - **198 tests** passing, build clean
 - **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`
-- All 8 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers
+- All 10 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass
+
+### Coverage by Category
+
+| Category | Implemented | Total | Coverage | Key Gaps |
+|----------|-------------|-------|----------|----------|
+| **Action** | 1 | 6 | 17% | action-drafting, action-queue, action-retrieval |
+| **Auction** | 4 | 11 | 36% | compensation, fixed-placement, multiple-lot |
+| **Building** | 1 | 9 | 11% | tile-placement, network-building, tech-trees |
+| **Cards** | 12 | 18 | 67% | melding-and-splaying, command-cards, deck-construction |
+| **Conflict** | 7 | 7 | **100%** | — |
+| **Cooperative** | 1 | 5 | 20% | alliances, cooperative-game, team-based |
+| **Dice** | 3 | 3 | **100%** | — |
+| **Economic** | 4 | 10 | 40% | contracts, loans, stock-holding, investment |
+| **Ending** | 1 | 6 | 17% | finale-ending, single-loser-game |
+| **Information** | 5 | 8 | 63% | induction, pattern-recognition, Q&A |
+| **Movement** | 8 | 23 | 35% | hexagon-grid, rondel, programmed-movement |
+| **Other** | 14 | 63 | 22% | area-majority, pick-up-and-deliver, modular-board |
+| **Physical** | 0 | 7 | N/A | *Not plannable (require physical components)* |
+| **Social** | 5 | 10 | 50% | betting-and-bluffing, storytelling, role-playing |
+| **Turn Order** | 8 | 8 | **100%** | — |
+| **Victory** | 8 | 12 | 67% | end-game-bonuses, king-of-the-hill, VP-as-resource |
+| **Worker Placement** | 2 | 3 | 67% | worker-placement-with-dice-workers |
+| **Totals** | **84** | **202** | **42%** | **118 remaining** |
+
+#### Fully Complete Categories
+
+- **Conflict** (7/7): area-impulse, chit-pull-system, critical-hits, force-commitment, kill-steal, ratio-CRT, secret-unit-deployment
+- **Dice** (3/3): dice-rolling, push-your-luck, re-rolling-and-locking
+- **Turn Order** (8/8): random, stat-based, progressive, auction, claim-action, pass-order, time-track, role-order
+
+#### Additional Registered (Beyond BGG Reference)
+
+These mechanics are engine additions not in the BGG 209:
+- **Core domains** (10): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`
+- **Extras** (2): `action-programming`, `cooperative-actions`
 
 ### game.ts Agnosticism Progress
 
@@ -1180,7 +1218,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | Action schema | validateAction switch | LOW | Hardcoded action type validation. `getActionSchema` hook defined but not yet implemented by mechanics. |
 | checkWinCondition | Lines 1164-1218 | LOW | Legacy hardcoded win checks (reach state, empty hand, score threshold, elimination). Win-condition mechanics exist but aren't wired through this function yet. |
 
-### Outstanding Work
+### Outstanding Engine Work
 
 #### `getActionSchema` Hook (Pending)
 The `getActionSchema` hook is defined in `types.ts` but no mechanic implements it yet. Currently, `validateActionSchema` in game.ts uses hardcoded switch cases for action type validation. Each action-owning mechanic should implement `getActionSchema` to provide its own validation rules.
@@ -1199,68 +1237,180 @@ The `getActionSchema` hook is defined in `types.ts` but no mechanic implements i
 
 ---
 
+## Outstanding Mechanic Work (118 Remaining)
+
+The remaining 118 unimplemented reference mechanics organized by category with key exemplars and implementation feasibility. See `mechanics/` directory for detailed design specs for each mechanic.
+
+### Building (8 remaining) — Highest Priority Gap
+
+Currently only `place-location` implemented. This is the largest category gap for strategy games.
+
+| Mechanic | Exemplar Games | Hooks Needed | Complexity |
+|----------|---------------|--------------|------------|
+| **`tile-placement`** | Carcassonne, Azul, Patchwork | board hooks, new tile domain | High |
+| **`network-and-route-building`** | Ticket to Ride, Power Grid | board hooks, resources | High |
+| **`tech-trees-tech-tracks`** | Terra Mystica, Scythe | resources, prerequisites | Medium |
+| **`pattern-building`** | Azul, Sagrada | board hooks | Medium |
+| **`connections`** | Roads & Boats | board hooks | Medium |
+| `enclosure` | Go, Cathedral | board hooks | Medium |
+| `map-addition` | Carcassonne expansions | board hooks | Low |
+| `crayon-rail-system` | Empire Builder | board, resources | High |
+
+### Economic (6 remaining) — High Impact for Strategy Games
+
+| Mechanic | Exemplar Games | Hooks Needed | Complexity |
+|----------|---------------|--------------|------------|
+| **`contracts`** | Kanban, Great Western Trail | resources, cards | Medium |
+| **`loans`** | Brass, Arkwright | resources hooks | Medium |
+| **`stock-holding`** | Acquire, 18XX | resources, trading | High |
+| **`investment`** | Stockpile | resources | Medium |
+| `commodity-speculation` | Container, Panic on Wall Street | market hooks | High |
+| `ownership` | Monopoly, Acquire | board, resources | Medium |
+
+### Cooperative (4 remaining) — Enables New Game Types
+
+| Mechanic | Exemplar Games | Notes |
+|----------|---------------|-------|
+| **`alliances`** | Dune, Cosmic Encounter | Multi-player cooperation |
+| **`cooperative-game`** | Pandemic, Spirit Island | All-vs-game framework |
+| `semi-cooperative-game` | Dead of Winter, Archipelago | Cooperative with traitor potential |
+| `team-based-game` | Codenames, Captain Sonar | Fixed team structures |
+
+### Auction (7 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| **`auction-compensation`** | Keyflower | Medium |
+| **`auction-fixed-placement`** | Amun-Re | Medium |
+| **`auction-multiple-lot`** | For Sale | Medium |
+| `auction-bidding` | Generic bidding variant | Low |
+| `auction-dutch-priority` | Dutch with priority | Low |
+| `auction-turn-order-until-pass` | Turn-order bidding | Low |
+| `auction-dexterity` | Physical (not plannable) | N/A |
+
+### Cards (6 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| **`melding-and-splaying`** | Rummy, Innovation | Medium |
+| **`command-cards`** | Memoir '44, BattleLore | Medium |
+| `campaign-battle-card-driven` | Twilight Struggle | High |
+| `card-play-conflict-resolution` | War variants | Low |
+| `deck-construction` | Pre-built decks (subset of deck-building) | Low |
+| `deck-bag-and-pool-building` | Orleans, Altiplano (bags) | Medium |
+
+### Movement (15 remaining)
+
+8 of 23 implemented. Many remaining are niche variants.
+
+| Mechanic | Exemplar Games | Feasibility | Notes |
+|----------|---------------|-------------|-------|
+| **`hexagon-grid`** | Settlers of Catan, Twilight Imperium | Medium | Extends grid-movement with hex adjacency |
+| **`rondel`** | Navegador, Antike | Medium | Circular track movement, action selection |
+| **`programmed-movement`** | RoboRally, Colt Express | Medium | Pre-program movement sequence |
+| **`track-movement`** | Power Grid, Clank! | Low | Linear track advancement |
+| `square-grid` | Chess, Checkers | Low | Subset of grid-movement |
+| `grid-coverage` | Blokus, Patchwork | Medium | Cover grid cells with pieces |
+| `resource-to-move` | Concordia | Low | Spend resources for movement |
+| `impulse-movement` | Impulse | Medium | Card-driven movement |
+| `line-of-sight` | Warhammer, X-Wing | High | Geometric visibility checks |
+| `move-through-deck` | Mage Knight | Medium | Deck determines movement |
+| `pattern-movement` | Chess pieces | Medium | Fixed movement patterns |
+| `relative-movement` | Survive: Escape | Low | Move relative to other pieces |
+| `movement-template` | X-Wing, Armada | High | Physical template (adapt to digital) |
+| `measurement-movement` | Warhammer | High | Distance-based (adapt to grid) |
+| `three-dimensional-movement` | Space games | High | 3D coordinate system |
+
+### Action (5 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| **`action-drafting`** | Puerto Rico, Citadels | Medium |
+| `action-queue` | Shogun, Wallenstein | Medium |
+| `action-retrieval` | Concordia | Low |
+| `action-event` | Twilight Struggle | Low |
+| `action-timer` | Hourglass/time-pressure | Low |
+
+### Victory (4 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| **`end-game-bonuses`** | Terraforming Mars, Wingspan | Low |
+| **`king-of-the-hill`** | Area control victory | Medium |
+| `victory-points-as-a-resource` | Concordia | Low |
+| `highest-lowest-scoring` | Golf, Hearts | Low |
+
+### Social (5 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| **`betting-and-bluffing`** | Poker, Sheriff of Nottingham | Medium |
+| **`storytelling`** | Dixit, Once Upon a Time | Medium |
+| `role-playing` | D&D-style | High |
+| `acting` | Charades-style | Medium |
+| `prisoner's-dilemma` | Game theory mechanic | Low |
+
+### Information (3 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| `induction` | Zendo, Eleusis | Medium |
+| `pattern-recognition` | Set, Dobble | Low |
+| `questions-and-answers` | 20 Questions, Guess Who | Low |
+
+### Ending (5 remaining)
+
+| Mechanic | Notes |
+|----------|-------|
+| `finale-ending` | End-game scoring phase |
+| `single-loser-game` | Last player loses (vs winner) |
+| `player-elimination` | Players removed during play |
+| `race` | First to finish (overlaps win-race) |
+| `elapsed-real-time-ending` | Not plannable (real clock) |
+
+### Worker Placement (1 remaining)
+
+| Mechanic | Exemplar Games | Complexity |
+|----------|---------------|------------|
+| `worker-placement-with-dice-workers` | Alien Frontiers, Troyes | Medium |
+
+### Other (49 remaining) — Mixed Impact
+
+14 of 63 implemented. Many are cross-cutting concerns or niche mechanics.
+
+**High-Value Targets:**
+
+| Mechanic | Exemplar Games | Hooks Needed | Complexity |
+|----------|---------------|--------------|------------|
+| **`area-majority-influence`** | El Grande, Tigris & Euphrates | board, resources | High |
+| **`pick-up-and-deliver`** | Merchants & Marauders | board, resources | Medium |
+| **`modular-board`** | Settlers of Catan, Eclipse | board init hooks | Medium |
+| **`variable-set-up`** | Cosmic Encounter, Spirit Island | initSharedState | Low |
+| **`variable-phase-order`** | Puerto Rico, Race for the Galaxy | turn hooks | Medium |
+| **`follow`** | Glory to Rome, Innovation | cards hooks | Medium |
+| **`advantage-token`** | Many euros | resources | Low |
+
+**Medium-Value Targets:**
+
+| Mechanic | Exemplar Games | Notes |
+|----------|---------------|-------|
+| `tug-of-war` | Twilight Struggle | Bidirectional track mechanic |
+| `hot-potato` | Various party games | Forced card/item passing |
+| `matching` | Memory, Sequence | Pattern matching mechanic |
+| `interrupts` | MtG stack, Cosmic Encounter | Interrupt action flow |
+| `constrained-bidding` | Modern Art | Limited bid options |
+| `closed-economy-auction` | Modern Art | Money circulation |
+| `bids-as-wagers` | Skull, Perudo | Bids become commitments |
+| `random-production` | Settlers of Catan | Dice/random resource generation |
+| `score-and-reset-game` | Rummy variants | Multi-round scoring |
+| `passed-action-token` | Scythe | First-passer benefits |
+
+**Lower-Value/Niche (32):**
+`bias`, `bingo`, `delayed-purchase`, `drawing`, `increase-value-of-unchosen-resources`, `layering`, `legacy-game`, `line-drawing`, `mancala`, `map-deformation`, `map-reduction`, `minimap-resolution`, `moving-multiple-units`, `multiple-maps`, `narrative-choice-paragraph`, `neighbor-scope`, `order-counters`, `ordering`, `paper-and-pencil`, `pieces-as-map`, `predictive-bid`, `resource-queue`, `rock-paper-scissors`, `scenario-mission-campaign-game`, `selection-order-bid`, `simulation`, `slide-push`, `solo-solitaire-game`, `spelling`, `stat-check-resolution`, `static-capture`, `tags`
+
+---
+
 ## Roadmap
-
-### Completed: Pass Mechanic & Core Agnosticism
-
-1. **Created `src/mechanics/core/pass.ts`** ✅
-   - Handles pass action via `onExecuteAction`
-   - Calls `onPassPriority` for turn order mechanics
-   - Handles victory declarations via `pendingVictoryClaim`
-   - Exposes pass via `getAvailableActions`
-
-2. **Added Agnosticism Hooks to types.ts** ✅
-   - `initSharedState` - Mechanics initialize own shared state
-   - `getPlayerView` - Mechanics contribute to player view
-   - `applyEffect` - Mechanics handle own effect types
-   - `isPlayerBlocked` - Mechanics define blocking
-   - `getActionSchema` - Mechanics define action validation
-
-3. **Added Registry Methods** ✅
-   - All new hooks routed through `MechanicRegistry`
-
-4. **Migrated game.ts** ✅
-   - Removed hardcoded pass handling (uses mechanic)
-   - Uses `isPlayerBlocked` hook (lose-a-turn implements)
-   - Uses `initSharedState` hook (open-drafting implements)
-   - Uses `getPlayerView` hook (push-your-luck implements)
-
-### Next: Remaining Agnosticism Migrations
-
-| Migration | Mechanic(s) to Update | game.ts Lines to Remove | Status |
-|-----------|----------------------|------------------------|--------|
-| Effect type handling | location-effects, placed-card-effects | ~100 | **Done** |
-| Card type handling (wild) | card-matching (new) | ~80 | **Done** |
-| Action schema validation | All action-owning mechanics | ~150 | Pending |
-| Deck-building supply init | deck-building | ~5 | **Done** |
-| Trading shared state | trading | ~10 | **Done** |
-| Auction shared state | auction-english | ~10 | **Done** |
-
-#### Card Matching Mechanic Design
-
-**Purpose**: Extract UNO-style card matching logic from game.ts to a dedicated mechanic.
-
-**Why new mechanic (not extending card-type-rules)**:
-- `card-type-rules` handles "can this type be played at all" (items can't be played)
-- `card-matching` handles "does this card match current play state" (color/value matching)
-- Different games need different matching rules (UNO vs Hearts vs Bridge)
-
-**Hooks**:
-| Hook | Purpose |
-|------|---------|
-| `initSharedState` | Initialize `currentColor` from top card |
-| `preValidateAction` | Validate card matches color/value OR is wild with declaredColor |
-| `onCardPlayed` | Update `currentColor` after play (cards-defined hook) |
-| `onCardDrawn` | Track draws for forced-draw rule (cards-defined hook) |
-
-**Configuration**:
-```yaml
-engine_mechanics:
-  card_matching:
-    colors: [Red, Blue, Green, Yellow]
-    value_matching: true
-    action_matching: true
-```
 
 ### Completed Phases (1-13)
 
@@ -1274,7 +1424,7 @@ engine_mechanics:
 | 12 | Movement + effects | applyPlacedCardEffects, case 'move', move targets, ~224 lines |
 | 13 | Timeout + AP | determineTimeoutWinner removed, AP checks consolidated, board start, ~82 lines |
 
-### Next Steps
+### Next Steps: Engine
 
 | Priority | Task | Impact | Complexity |
 |----------|------|--------|------------|
@@ -1283,6 +1433,20 @@ engine_mechanics:
 | **3** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
 | **4** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
 | **5** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
+
+### Next Steps: New Mechanics (Priority Order)
+
+| Priority | Category | Target Mechanics | Unlocks |
+|----------|----------|-----------------|---------|
+| **1** | Building | tile-placement, network-and-route-building | Carcassonne, Ticket to Ride genre |
+| **2** | Economic | contracts, loans | Brass, heavy euro genre |
+| **3** | Cooperative | cooperative-game, alliances | Pandemic, Spirit Island genre |
+| **4** | Cards | melding-and-splaying, command-cards | Rummy, wargame card genre |
+| **5** | Victory | end-game-bonuses, king-of-the-hill | Standard euro endgame scoring |
+| **6** | Movement | hexagon-grid, rondel | Hex wargames, rondel euros |
+| **7** | Action | action-drafting | Puerto Rico, role selection genre |
+| **8** | Social | betting-and-bluffing | Poker, bluffing genre |
+| **9** | Other | area-majority-influence, pick-up-and-deliver | Area control, logistics genre |
 
 ### Long-Term Refactoring
 
