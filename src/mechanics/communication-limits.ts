@@ -344,7 +344,7 @@ function getValidCommunicationTargets(
       if (myTeam && theirTeam && myTeam !== theirTeam) continue;
     }
 
-    if (config.target_restrictions) {
+    if (Array.isArray(config.target_restrictions) && config.target_restrictions.length > 0) {
       let allowed = true;
       for (const restriction of config.target_restrictions) {
         const fromMatches = !restriction.from || restriction.from.includes(playerId);
