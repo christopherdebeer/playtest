@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-07T01:45:52.954Z",
+  "generated": "2026-02-07T10:15:04.183Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "action-drafting": {
