@@ -2554,9 +2554,9 @@ program
           const isMyTurn = playerId && state.currentPlayer === playerId;
 
           if (isMyTurn) {
-            message = `It is your turn (turn ${state.turnNumber}). Use './playtest wait ${instanceId} -p ${playerId}' to check your turn, then take your action with './playtest act'.`;
+            message = `It is your turn (turn ${state.turnNumber}). Use './playtest player:turn ${instanceId} -p ${playerId}' to get available actions, then take your action with './playtest player:act'.`;
           } else {
-            message = `Waiting for ${state.currentPlayer}'s turn (turn ${state.turnNumber}). Use './playtest wait ${instanceId} -p ${playerId}' to block until your turn.`;
+            message = `Waiting for ${state.currentPlayer}'s turn (turn ${state.turnNumber}). Use './playtest player:turn ${instanceId} -p ${playerId}' to block until your turn.`;
           }
         }
 
