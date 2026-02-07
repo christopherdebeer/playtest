@@ -74,12 +74,12 @@ A game engine where:
 │  - resources    │ │ - push-luck     │ │ - empty-hand    │
 │  - effects      │ │ - ladder-climb  │ │ - elimination   │
 │  - board        │ │ - trick-taking  │ │ - timeout       │
-│  - turns        │ │ - 55+ more      │ │ - race          │
+│  - turns        │ │ - 95+ more      │ │ - race          │
 │  - dice         │ │                 │ │ - sudden-death  │
-│  - visibility   │ │                 │ │                 │
-│  - social       │ │                 │ │                 │
-│  - combat (NEW) │ │                 │ │                 │
-│  - workers (NEW)│ │                 │ │                 │
+│  - visibility   │ │                 │ │ - end-game-bon  │
+│  - social       │ │                 │ │ - king-of-hill  │
+│  - combat       │ │                 │ │ - finale-ending │
+│  - workers      │ │                 │ │ - + 3 more      │
 │  - pass         │ │                 │ │                 │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
          │                   │                   │
@@ -112,16 +112,22 @@ src/mechanics/
 │   ├── dice.ts           # Dice rolling system
 │   ├── visibility.ts     # Information hiding
 │   ├── social.ts         # Voting and negotiation
-│   └── pass.ts           # Pass action handling (NEW)
-├── win-conditions/       # Pluggable win conditions
+│   └── pass.ts           # Pass action handling
+├── win-conditions/       # Pluggable win conditions (13)
 │   ├── reach-state.ts
 │   ├── score-threshold.ts
 │   ├── empty-hand.ts
 │   ├── elimination.ts
 │   ├── timeout-winner.ts
 │   ├── race.ts
-│   └── sudden-death.ts
-└── [50+ leaf mechanics]  # Individual mechanic implementations
+│   ├── sudden-death.ts
+│   ├── end-game-bonuses.ts
+│   ├── king-of-the-hill.ts
+│   ├── victory-points-as-resource.ts
+│   ├── highest-lowest-scoring.ts
+│   ├── finale-ending.ts
+│   └── single-loser-game.ts
+└── [98 leaf mechanics]   # Individual mechanic implementations
 ```
 
 ---
@@ -486,15 +492,6 @@ const myMechanic: MechanicHooks & CardsHooks = { ... };
 // TypeScript verifies onCardDrawn signature matches CardsHooks
 ```
 
-### Strangler Fig Migration
-
-The migration followed a phased approach to incrementally move from monolithic global hooks to mechanic-defined hooks:
-
-1. **Phase 1** ✅: Add `defines`, `requires`, `fire()` infrastructure
-2. **Phase 2** ✅: Core services fire BOTH global hooks AND mechanic-defined hooks (dual-fire)
-3. **Phase 3** ✅: Leaf mechanics migrate from global to mechanic-defined hooks (one at a time)
-4. **Phase 4** ✅: Remove deprecated global domain hooks — `MechanicHooks` slimmed to global-only hooks, ~400 lines of routing methods removed from registry, core services fire only mechanic-defined hooks
-
 ### Current State
 
 `MechanicHooks` now contains only engine-level global hooks:
@@ -535,104 +532,20 @@ interface MechanicHooks {
 Each domain's routing is a `fire()` call in the core service,
 replacing the hardcoded routing methods that were removed from the registry.
 
-### Progress
+### Migration Status: Complete
 
-- [x] Infrastructure: `defines` property on `MechanicHooks`, `fire()` on registry
-- [x] Infrastructure: `requires` replaces `dependencies` (legacy compat retained)
-- [x] Infrastructure: `HookDefinition` type with resolution strategies
-- [x] `cards` core mechanic: defines `onCardDrawn`, `onCardPlayed`, `onCardDiscarded`, `onBeforeCardDraw`, `onBeforeCardPlay`
-- [x] `cards` core mechanic: owns `play_card` action via `onExecuteAction` (removed from game.ts fallback)
-- [x] `card-piles.ts` fires cards-defined hooks (`onBeforeCardDraw`, `onCardDrawn`, `onCardDiscarded`)
-- [x] `card-piles.ts` `playCard()` function: removes from hand, discards, fires `onCardPlayed`
-- [x] `card-matching`: migrated to `requires: ['cards']`, implements `onCardDrawn` and `onCardPlayed` (currentColor); legacy `postExecuteAction` removed
-- [x] `hand-management`: migrated to `requires: ['cards']`, implements `onBeforeCardDraw`; legacy `onBeforeDraw` removed
-- [x] `take-that`: migrated to `requires: ['cards']`, implements `onCardPlayed` (applies `block_turn`/`skip` effects to target)
-- [x] `currentColor` tracking removed from core services (`addToDiscard`, `playCard`); now owned by `card-matching.onCardPlayed`
-- [x] All card leaf mechanics declare `requires: ['cards']`:
-  - `deck-building`, `trick-taking`, `card-type-rules`, `multi-use-cards`, `place-card`, `set-collection`, `open-drafting`, `closed-drafting`, `ladder-climbing`, `placed-card-effects`, `take-that`
-- [x] `resources` core mechanic: defines `onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`
-- [x] `resources.ts` fires resources-defined hooks (`onBeforeResourceGain`, `onBeforeResourceSpend`, `onResourceGained`, `onResourceSpent`)
-- [x] `catch-the-leader`: migrated to `requires: ['resources']`, implements `onBeforeResourceGain` (leader income reduction); legacy `onBeforeResourceChange` removed
+All 7 domain hook migrations finished (Phases 1-4):
 
-- [x] `trick-taking` and `ladder-climbing` fire `onCardPlayed` after removing cards from hand (target: 'trick' / 'ladder')
-- [x] Resource leaf mechanics declare `requires: ['resources']`:
-  - `catch-the-leader`, `income`, `automatic-resource-growth`, `chaining`, `once-per-game-abilities`, `multi-use-cards`, `deck-building`, `die-icon-resolution`, `point-to-point-movement`, `auction-english`, `auction-sealed-bid`, `auction-once-around`, `turn-order-auction`, `kill-steal`
-- [x] All resource-mutating mechanics refactored to use resource service (`addResource`/`spendResource`/`setResource`) for proper hook support:
-  - `income` → `addResource()` (enables catch-the-leader income reduction)
-  - `automatic-resource-growth` → `setResource()` (enables hooks on growth/decay)
-  - `auction-once-around` → `spendResource()` (deducts winning bid)
-  - `auction-sealed-bid` → `spendResource()` (deducts winning bid)
-  - `turn-order-auction` → `spendResource()` (deducts all bids; added `requires: ['resources']`)
-  - `die-icon-resolution` → `addResource()` (gains from icon effects)
-  - `point-to-point-movement` → `spendResource()` (route resource costs)
-  - `multi-use-cards` → `addResource()`/`spendResource()` (card use effects + currency)
-  - `kill-steal` → `addResource()` (bounty distribution; added `requires: ['resources']`)
-  - `events` → `addResource()`/`spendResource()` (event resource effects)
-- [x] `dice` core mechanic: defines `onBeforeDiceRoll`, `onDiceRolled`
-- [x] `dice.ts` fires dice-defined hooks (`onBeforeDiceRoll`, `onDiceRolled`)
-- [x] Dice leaf mechanics declare `requires: ['dice']`:
-  - `dice-rolling`, `different-dice-movement`, `re-rolling-and-locking`, `roll-spin-and-move`, `die-icon-resolution`
-- [x] `board` core mechanic: defines `onPlayerMoved`, `onBeforePlayerMove`
-- [x] `board.ts` fires board-defined hooks (`onBeforePlayerMove`, `onPlayerMoved`)
-- [x] Board leaf mechanics declare `requires: ['board']`:
-  - `area-movement`, `board-state`, `grid-movement`, `movement-points`, `roll-spin-and-move`, `hidden-movement`
-- [x] `effects` core mechanic: defines `onEffectAdded`, `onEffectRemoved`, `onBeforeEffectAdd`, `onBeforeEffectRemove`
-- [x] `effects.ts` fires effects-defined hooks (`onBeforeEffectAdd`, `onBeforeEffectRemove`, `onEffectAdded`, `onEffectRemoved`)
-- [x] Effects leaf mechanics declare `requires: ['effects']`:
-  - `lose-a-turn`, `take-that`
-- [x] `visibility` core mechanic: defines `onInfoRevealed`, `onBeforeReveal`
-- [x] `visibility.ts` fires visibility-defined hooks (`onBeforeReveal`, `onInfoRevealed`) in `revealInfo()`
-- [x] Visibility leaf mechanics declare `requires: ['visibility']`:
-  - `hidden-roles`, `hidden-objectives`, `hidden-victory-points`, `hidden-movement`, `deduction`, `roles-asymmetric-info`, `traitor-game`
-- [x] `social` core mechanic: defines `onVoteCompleted`, `onPlayerVoted`, `onBeforeVote`, `onVoteTally`
-- [x] `social.ts` fires social-defined hooks (`onBeforeVote`, `onPlayerVoted`, `onVoteTally`, `onVoteCompleted`) in `castVote()`
-- [x] Social leaf mechanics declare `requires: ['social']`:
-  - `voting`, `negotiation`, `communication-limits`, `player-judge`, `bribery`
-- [x] Generic `applyEffect` removed from cards `onExecuteAction`; card effects now handled by `onCardPlayed` responders:
-  - `placed-card-effects`: `probability_boost`, `probability_penalty`, `force_discard`
-  - `take-that`: `block_turn`, `skip`
-  - `card-matching`: `currentColor`
-
-**Phase 3: Leaf mechanics migrated from global to mechanic-defined hooks:**
-
-- [x] Missing `requires` added: `push-your-luck` → `['cards']`, `zone-of-control` → `['board']`, `memory` → `['visibility']`, `race` → `['board']`
-- [x] **Dice domain** (`onBeforeRoll`/`onAfterRoll` → `onBeforeDiceRoll`/`onDiceRolled`):
-  - `dice-rolling`: `onBeforeRoll` → `onBeforeDiceRoll`, `onAfterRoll` → `onDiceRolled`
-  - `die-icon-resolution`: `onAfterRoll` → `onDiceRolled`
-  - `roll-spin-and-move`: `onAfterRoll` → `onDiceRolled`
-  - `different-dice-movement`: `onAfterRoll` → `onDiceRolled`
-- [x] **Board domain** (`onBeforeMove`/`onAfterMove` → `onBeforePlayerMove`/`onPlayerMoved`):
-  - `zone-of-control`: `onBeforeMove` → `onBeforePlayerMove`, `onAfterMove` → `onPlayerMoved`
-  - `hidden-movement`: `onAfterMove` → `onPlayerMoved`
-  - `race` (win condition): `onAfterMove` → `onPlayerMoved`
-- [x] **Visibility domain** (`onReveal` → `onInfoRevealed`):
-  - `hidden-roles`: `onReveal` → `onInfoRevealed`
-  - `memory`: `onReveal` → `onInfoRevealed`
-  - `hidden-movement`: `onReveal` → `onInfoRevealed`
-- [x] **Social domain** (`onVoteCast` → `onBeforeVote`/`onPlayerVoted`):
-  - `bribery`: `onVoteCast` split into `onBeforeVote` (blocking check) + `onPlayerVoted` (obligation fulfillment)
-  - `bribery`: resource mutation refactored to use `spendResource()`/`addResource()`
-  - `voting`: no-op `onVoteCast` removed (was always returning null)
-
-**Phase 4: Global domain hooks deprecated and removed:**
-
-- [x] Added cards-defined hand hooks: `onBeforeAddToHand`, `onAfterAddToHand`, `onAfterRemoveFromHand`
-- [x] Migrated `hand-management` to cards-defined `onBeforeAddToHand` (hand limit enforcement)
-- [x] Migrated `push-your-luck` to cards-defined `onAfterAddToHand` (bust detection)
-- [x] `hand.ts` fires cards-defined hooks only (no global hook calls)
-- [x] Removed 18 deprecated domain hooks from `MechanicHooks` interface
-- [x] Removed ~400 lines of deprecated routing methods from registry (onBeforeDraw, onAfterDraw, onDiscard, onBeforeAddToHand, onAfterAddToHand, onAfterRemoveFromHand, onBeforeResourceChange, onAfterResourceChange, onBeforeAddEffect, onAfterAddEffect, onBeforeRemoveEffect, onEffectExpired, onBeforeMove, onAfterMove, onReveal, onBeforeRoll, onAfterRoll, onVoteCast)
-- [x] Removed global hook calls from all core services (card-piles, hand, resources, effects, board, dice, visibility, social)
-- [x] Cleaned up unused type imports in registry
-
-**Post-Phase 4 cleanup:**
-
-- [x] Added `onBeforeEffectRemove` to effects-defined hooks; `removeEffect()` now fires blocking pre-removal hook and `onEffectRemoved` after removal
-- [x] Migrated `onVoteTally` from dead global hook to social-defined hook (`first` resolution); `voting.ts` implements custom tally logic; `social.ts` fires it before falling back to internal tally
-- [x] Removed `VoteTallyContext`, `VoteTallyResult` from types.ts and `onVoteTally` routing method from registry
+- **Infrastructure**: `defines`/`requires`/`fire()` on registry, `HookDefinition` with resolution strategies
+- **All 7 core domains** define and fire mechanic-defined hooks: cards (8 hooks), resources (4), dice (2), board (2), effects (4), visibility (2), social (4)
+- **All leaf mechanics** migrated from deprecated global domain hooks to mechanic-defined hooks via `requires`
+- **18 deprecated domain hooks** removed from `MechanicHooks` interface
+- **~400 lines** of deprecated routing methods removed from registry
+- **All resource-mutating mechanics** use resource service (`addResource`/`spendResource`/`setResource`) for proper hook firing
+- Card effects handled by `onCardPlayed` responders (placed-card-effects, take-that, card-matching), not generic `applyEffect`
 
 **Hooks that remain global (by design):**
-- `canSeeInfo` — query hook, not event; polled by visibility service across all mechanics
+- `canSeeInfo` — query hook, polled by visibility service across all mechanics
 - `getVisibleState` — state filter hook; each mechanic redacts its own fields
 - `onDetermineTurnOrder`, `onPassPriority` — turn order hooks, engine-level concerns
 
@@ -913,17 +826,11 @@ const schemas = mechanicRegistry.getActionSchemas(action);
 const errors = validateAgainstSchemas(action, schemas);
 ```
 
-### Migration Priority
+### Migration Status
 
-| Priority | Refactoring | Lines Removed | Complexity |
-|----------|-------------|---------------|------------|
-| **1** | Pass mechanic extraction | ~50 | Low |
-| **2** | Effect type handling | ~100 | Medium |
-| **3** | Player view building | ~50 | Low |
-| **4** | Shared state initialization | ~40 | Low |
-| **5** | Card type handling | ~80 | Medium |
-| **6** | Block check | ~10 | Low |
-| **7** | Action schema validation | ~150 | High |
+Completed: pass extraction, effect type handling, player view building, shared state initialization, card type handling, block check (~330 lines removed from game.ts).
+
+**Remaining**: Action schema validation (`getActionSchema` hook) — ~150 lines removable, high complexity. See [Outstanding Engine Work](#outstanding-engine-work).
 
 ### Target: game.ts Responsibilities
 
@@ -1155,7 +1062,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 ### Overview
 
 - **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
-- **122** registered mechanics: **11** core domains + **9** win conditions + **102** leaf
+- **122** registered mechanics: **11** core domains + **13** win conditions + **98** leaf
 - **110 of 202** plannable reference mechanics have implementations (**54%**)
 - **12** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **11 games**, all using unified config format
@@ -1480,7 +1387,7 @@ engine_mechanics:
 
 - `initSharedState`: Initialize action tracking and pending interactions
 - `preValidateAction`: Override turn validation to allow any player
-- `canPlayerActNow`: **NEW** - Allows `waitForTurn` to return immediately for any player
+- `canPlayerActNow`: Allows `waitForTurn` to return immediately for any player
 - `onTurnEnd`: Track action counts, manage round advancement
 - `getAvailableActions`: Always allow actions regardless of turn
 
