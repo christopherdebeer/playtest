@@ -119,7 +119,7 @@ interface MechanicsIndexJson {
 
 interface GameConfig {
   name: string;
-  mechanics?: string[];
+  mechanics?: string[] | Record<string, unknown>;
 }
 
 interface Game {
@@ -201,7 +201,15 @@ async function loadGames(): Promise<Game[]> {
 
 function getGamesUsingMechanic(games: Game[], slug: string): GameReference[] {
   return games
-    .filter(g => g.config.mechanics?.includes(slug))
+    .filter(g => {
+      const mechs = g.config.mechanics;
+      if (!mechs) return false;
+      // mechanics can be an object (unified config) or an array (legacy)
+      if (Array.isArray(mechs)) return mechs.includes(slug);
+      // Unified format: keys are config_key (underscored), slug uses hyphens
+      const configKey = slug.replace(/-/g, '_');
+      return configKey in mechs || slug in mechs;
+    })
     .map(g => ({ id: g.id, name: g.config.name }));
 }
 
