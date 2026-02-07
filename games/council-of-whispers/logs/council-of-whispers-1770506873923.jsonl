@@ -1,0 +1,76 @@
+{"timestamp":"2026-02-07T23:27:53.937Z","event":"game_init","data":{"gameId":"council-of-whispers-1770506873923","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-07T23:28:58.587Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T23:29:35.681Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"select_action"}}
+{"timestamp":"2026-02-07T23:31:27.178Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"select_action"}}
+{"timestamp":"2026-02-07T23:31:36.172Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"select_action"}}
+{"timestamp":"2026-02-07T23:31:46.910Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"select_action"}}
+{"timestamp":"2026-02-07T23:33:04.160Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"dilemma_choice","player":"player-4","waiting":3}}
+{"timestamp":"2026-02-07T23:34:09.321Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":2}}
+{"timestamp":"2026-02-07T23:34:29.993Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":1}}
+{"timestamp":"2026-02-07T23:34:49.257Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"dilemma_choice","round":1,"choices":{"player-4":"cooperate","player-1":"defect","player-2":"cooperate","player-3":"defect"},"scores":{"player-4":3,"player-1":11,"player-2":3,"player-3":11},"gameOver":false}}
+{"timestamp":"2026-02-07T23:35:13.829Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"dilemma_choice","player":"player-4","waiting":3}}
+{"timestamp":"2026-02-07T23:35:23.427Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":2}}
+{"timestamp":"2026-02-07T23:35:24.554Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":1}}
+{"timestamp":"2026-02-07T23:35:25.770Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"dilemma_choice","round":2,"choices":{"player-4":"defect","player-1":"defect","player-2":"defect","player-3":"defect"},"scores":{"player-4":3,"player-1":3,"player-2":3,"player-3":3},"gameOver":false}}
+{"timestamp":"2026-02-07T23:36:17.637Z","event":"action_executed","round":5,"turnNumber":17,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:19.567Z","event":"action_executed","round":5,"turnNumber":19,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:21.568Z","event":"action_executed","round":6,"turnNumber":21,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:23.456Z","event":"action_executed","round":6,"turnNumber":23,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:25.347Z","event":"action_executed","round":7,"turnNumber":25,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:27.333Z","event":"action_executed","round":7,"turnNumber":27,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:29.568Z","event":"action_executed","round":8,"turnNumber":29,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:31.640Z","event":"action_executed","round":8,"turnNumber":31,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T23:36:32.233Z","event":"game_end","round":9,"turnNumber":33,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:34.074Z","event":"game_end","round":10,"turnNumber":34,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:35.876Z","event":"game_end","round":11,"turnNumber":35,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:37.585Z","event":"game_end","round":12,"turnNumber":36,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:39.388Z","event":"game_end","round":13,"turnNumber":37,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:41.444Z","event":"game_end","round":14,"turnNumber":38,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:43.545Z","event":"game_end","round":15,"turnNumber":39,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:45.484Z","event":"game_end","round":16,"turnNumber":40,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:47.481Z","event":"game_end","round":17,"turnNumber":41,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:49.911Z","event":"game_end","round":18,"turnNumber":42,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:52.678Z","event":"game_end","round":19,"turnNumber":43,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:55.019Z","event":"game_end","round":20,"turnNumber":44,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:57.012Z","event":"game_end","round":21,"turnNumber":45,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:36:58.942Z","event":"game_end","round":22,"turnNumber":46,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:00.796Z","event":"game_end","round":23,"turnNumber":47,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:02.547Z","event":"game_end","round":24,"turnNumber":48,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:04.594Z","event":"game_end","round":25,"turnNumber":49,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:06.940Z","event":"game_end","round":26,"turnNumber":50,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:09.583Z","event":"game_end","round":27,"turnNumber":51,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:11.920Z","event":"game_end","round":28,"turnNumber":52,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:13.800Z","event":"game_end","round":29,"turnNumber":53,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:15.528Z","event":"game_end","round":30,"turnNumber":54,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:17.288Z","event":"game_end","round":31,"turnNumber":55,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:19.491Z","event":"game_end","round":32,"turnNumber":56,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:21.591Z","event":"game_end","round":33,"turnNumber":57,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:23.440Z","event":"game_end","round":34,"turnNumber":58,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:25.351Z","event":"game_end","round":35,"turnNumber":59,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:27.323Z","event":"game_end","round":36,"turnNumber":60,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:29.438Z","event":"game_end","round":37,"turnNumber":61,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:31.398Z","event":"game_end","round":38,"turnNumber":62,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:33.149Z","event":"game_end","round":39,"turnNumber":63,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:35.028Z","event":"game_end","round":40,"turnNumber":64,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:36.779Z","event":"game_end","round":41,"turnNumber":65,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:38.494Z","event":"game_end","round":42,"turnNumber":66,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:40.439Z","event":"game_end","round":43,"turnNumber":67,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:42.605Z","event":"game_end","round":44,"turnNumber":68,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:44.991Z","event":"game_end","round":45,"turnNumber":69,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:47.104Z","event":"game_end","round":46,"turnNumber":70,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:48.958Z","event":"game_end","round":47,"turnNumber":71,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:50.849Z","event":"game_end","round":48,"turnNumber":72,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:52.861Z","event":"game_end","round":49,"turnNumber":73,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:54.935Z","event":"game_end","round":50,"turnNumber":74,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:56.904Z","event":"game_end","round":51,"turnNumber":75,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:37:58.860Z","event":"game_end","round":52,"turnNumber":76,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:00.695Z","event":"game_end","round":53,"turnNumber":77,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:02.559Z","event":"game_end","round":54,"turnNumber":78,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:04.665Z","event":"game_end","round":55,"turnNumber":79,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:06.850Z","event":"game_end","round":56,"turnNumber":80,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:08.838Z","event":"game_end","round":57,"turnNumber":81,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:08.898Z","event":"analysis_submitted","round":57,"turnNumber":81,"data":{"file":"playtest-analysis-v1.0-1770506873923.md","version":"v1.0"}}
+{"timestamp":"2026-02-07T23:38:10.741Z","event":"game_end","round":58,"turnNumber":82,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:12.605Z","event":"game_end","round":59,"turnNumber":83,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:14.756Z","event":"game_end","round":60,"turnNumber":84,"data":{"winner":"player-1","reason":"Game ended. player-1 wins! player-2 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-07T23:38:17.625Z","event":"analysis_submitted","round":60,"turnNumber":84,"data":{"file":"playtest-analysis-v1.0-1770506873923.md","version":"v1.0"}}
