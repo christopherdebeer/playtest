@@ -111,7 +111,13 @@ import {
   eliminationWinMechanic,
   timeoutWinnerMechanic,
   raceWinMechanic,
-  suddenDeathMechanic
+  suddenDeathMechanic,
+  endGameBonusesMechanic,
+  kingOfTheHillMechanic,
+  victoryPointsAsResourceMechanic,
+  highestLowestScoringMechanic,
+  finaleEndingMechanic,
+  singleLoserGameMechanic
 } from './win-conditions/index.js';
 
 // Core mechanics (always available)
@@ -143,6 +149,32 @@ import { marketMechanic } from './market.js';
 import { tableauBuildingMechanic } from './tableau-building.js';
 import { actionProgrammingMechanic } from './action-programming.js';
 import { cooperativeActionsMechanic } from './cooperative-actions.js';
+
+// Economic mechanics
+import { contractsMechanic } from './contracts.js';
+import { loansMechanic } from './loans.js';
+
+// Player elimination process mechanic
+import { playerEliminationProcessMechanic } from './player-elimination-process.js';
+
+// Phase 8: New mechanics expansion
+import { buildingMechanic } from './core/building-mechanic.js';
+import { actionDraftingMechanic } from './action-drafting.js';
+import { actionEventMechanic } from './action-event.js';
+import { actionRetrievalMechanic } from './action-retrieval.js';
+import { bettingAndBluffingMechanic } from './betting-and-bluffing.js';
+import { cooperativeGameMechanic } from './cooperative-game.js';
+import { alliancesMechanic } from './alliances.js';
+import { networkAndRouteBuildingMechanic } from './network-and-route-building.js';
+import { techTreesMechanic } from './tech-trees.js';
+import { areaMajorityInfluenceMechanic } from './area-majority-influence.js';
+import { teamBasedGameMechanic } from './team-based-game.js';
+import { variableSetUpMechanic } from './variable-set-up.js';
+import { advantageTokenMechanic } from './advantage-token.js';
+import { randomProductionMechanic } from './random-production.js';
+import { followMechanic } from './follow.js';
+import { storytellingMechanic } from './storytelling.js';
+import { tilePlacementMechanic } from './tile-placement.js';
 
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
@@ -253,6 +285,12 @@ mechanicRegistry.register(eliminationWinMechanic);
 mechanicRegistry.register(timeoutWinnerMechanic);
 mechanicRegistry.register(raceWinMechanic);
 mechanicRegistry.register(suddenDeathMechanic);
+mechanicRegistry.register(endGameBonusesMechanic);
+mechanicRegistry.register(kingOfTheHillMechanic);
+mechanicRegistry.register(victoryPointsAsResourceMechanic);
+mechanicRegistry.register(highestLowestScoringMechanic);
+mechanicRegistry.register(finaleEndingMechanic);
+mechanicRegistry.register(singleLoserGameMechanic);
 
 // Register core mechanics (always available)
 mechanicRegistry.register(cardsMechanic);
@@ -283,6 +321,32 @@ mechanicRegistry.register(marketMechanic);
 mechanicRegistry.register(tableauBuildingMechanic);
 mechanicRegistry.register(actionProgrammingMechanic);
 mechanicRegistry.register(cooperativeActionsMechanic);
+
+// Register economic mechanics
+mechanicRegistry.register(contractsMechanic);
+mechanicRegistry.register(loansMechanic);
+
+// Register player elimination process mechanic
+mechanicRegistry.register(playerEliminationProcessMechanic);
+
+// Register Phase 8: New mechanics expansion
+mechanicRegistry.register(buildingMechanic);
+mechanicRegistry.register(actionDraftingMechanic);
+mechanicRegistry.register(actionEventMechanic);
+mechanicRegistry.register(actionRetrievalMechanic);
+mechanicRegistry.register(bettingAndBluffingMechanic);
+mechanicRegistry.register(cooperativeGameMechanic);
+mechanicRegistry.register(alliancesMechanic);
+mechanicRegistry.register(networkAndRouteBuildingMechanic);
+mechanicRegistry.register(techTreesMechanic);
+mechanicRegistry.register(areaMajorityInfluenceMechanic);
+mechanicRegistry.register(teamBasedGameMechanic);
+mechanicRegistry.register(variableSetUpMechanic);
+mechanicRegistry.register(advantageTokenMechanic);
+mechanicRegistry.register(randomProductionMechanic);
+mechanicRegistry.register(followMechanic);
+mechanicRegistry.register(storytellingMechanic);
+mechanicRegistry.register(tilePlacementMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);

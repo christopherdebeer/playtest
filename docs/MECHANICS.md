@@ -1155,48 +1155,49 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 ### Overview
 
 - **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
-- **96** registered mechanics: **10** core domains + **7** win conditions + **79** leaf
-- **84 of 202** plannable reference mechanics have implementations (**42%**)
+- **122** registered mechanics: **11** core domains + **9** win conditions + **102** leaf
+- **110 of 202** plannable reference mechanics have implementations (**54%**)
 - **12** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **11 games**, all using unified config format
 - **198 tests** passing, build clean
 - **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`
-- All 10 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass
+- All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
 ### Coverage by Category
 
 | Category | Implemented | Total | Coverage | Key Gaps |
 |----------|-------------|-------|----------|----------|
-| **Action** | 1 | 6 | 17% | action-drafting, action-queue, action-retrieval |
+| **Action** | 4 | 6 | 67% | action-queue, action-timer |
 | **Auction** | 4 | 11 | 36% | compensation, fixed-placement, multiple-lot |
-| **Building** | 1 | 9 | 11% | tile-placement, network-building, tech-trees |
+| **Building** | 4 | 9 | 44% | pattern-building, connections, enclosure |
 | **Cards** | 12 | 18 | 67% | melding-and-splaying, command-cards, deck-construction |
 | **Conflict** | 7 | 7 | **100%** | — |
-| **Cooperative** | 1 | 5 | 20% | alliances, cooperative-game, team-based |
+| **Cooperative** | 4 | 5 | 80% | semi-cooperative-game |
 | **Dice** | 3 | 3 | **100%** | — |
-| **Economic** | 4 | 10 | 40% | contracts, loans, stock-holding, investment |
-| **Ending** | 1 | 6 | 17% | finale-ending, single-loser-game |
+| **Economic** | 6 | 10 | 60% | stock-holding, investment, commodity-speculation |
+| **Ending** | 4 | 6 | 67% | race (overlaps win-race), elapsed-real-time |
 | **Information** | 5 | 8 | 63% | induction, pattern-recognition, Q&A |
 | **Movement** | 8 | 23 | 35% | hexagon-grid, rondel, programmed-movement |
-| **Other** | 14 | 63 | 22% | area-majority, pick-up-and-deliver, modular-board |
+| **Other** | 20 | 63 | 32% | pick-up-and-deliver, modular-board, variable-phase-order |
 | **Physical** | 0 | 7 | N/A | *Not plannable (require physical components)* |
-| **Social** | 5 | 10 | 50% | betting-and-bluffing, storytelling, role-playing |
+| **Social** | 7 | 10 | 70% | role-playing, acting, prisoner's-dilemma |
 | **Turn Order** | 8 | 8 | **100%** | — |
-| **Victory** | 8 | 12 | 67% | end-game-bonuses, king-of-the-hill, VP-as-resource |
+| **Victory** | 12 | 12 | **100%** | — |
 | **Worker Placement** | 2 | 3 | 67% | worker-placement-with-dice-workers |
-| **Totals** | **84** | **202** | **42%** | **118 remaining** |
+| **Totals** | **110** | **202** | **54%** | **92 remaining** |
 
 #### Fully Complete Categories
 
 - **Conflict** (7/7): area-impulse, chit-pull-system, critical-hits, force-commitment, kill-steal, ratio-CRT, secret-unit-deployment
 - **Dice** (3/3): dice-rolling, push-your-luck, re-rolling-and-locking
 - **Turn Order** (8/8): random, stat-based, progressive, auction, claim-action, pass-order, time-track, role-order
+- **Victory** (12/12): end-game-bonuses, highest-lowest-scoring, king-of-the-hill, victory-points-as-resource, reach-state, score-threshold, empty-hand, elimination, timeout, race, sudden-death, finale-ending
 
 #### Additional Registered (Beyond BGG Reference)
 
 These mechanics are engine additions not in the BGG 209:
-- **Core domains** (10): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`
+- **Core domains** (11): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `building`
 - **Extras** (2): `action-programming`, `cooperative-actions`
 
 ### game.ts Agnosticism Progress
@@ -1237,44 +1238,40 @@ The `getActionSchema` hook is defined in `types.ts` but no mechanic implements i
 
 ---
 
-## Outstanding Mechanic Work (118 Remaining)
+## Outstanding Mechanic Work (92 Remaining)
 
-The remaining 118 unimplemented reference mechanics organized by category with key exemplars and implementation feasibility. See `mechanics/` directory for detailed design specs for each mechanic.
+The remaining 92 unimplemented reference mechanics organized by category with key exemplars and implementation feasibility. See `mechanics/` directory for detailed design specs for each mechanic.
 
-### Building (8 remaining) — Highest Priority Gap
+### Building (5 remaining)
 
-Currently only `place-location` implemented. This is the largest category gap for strategy games.
-
-| Mechanic | Exemplar Games | Hooks Needed | Complexity |
-|----------|---------------|--------------|------------|
-| **`tile-placement`** | Carcassonne, Azul, Patchwork | board hooks, new tile domain | High |
-| **`network-and-route-building`** | Ticket to Ride, Power Grid | board hooks, resources | High |
-| **`tech-trees-tech-tracks`** | Terra Mystica, Scythe | resources, prerequisites | Medium |
-| **`pattern-building`** | Azul, Sagrada | board hooks | Medium |
-| **`connections`** | Roads & Boats | board hooks | Medium |
-| `enclosure` | Go, Cathedral | board hooks | Medium |
-| `map-addition` | Carcassonne expansions | board hooks | Low |
-| `crayon-rail-system` | Empire Builder | board, resources | High |
-
-### Economic (6 remaining) — High Impact for Strategy Games
+4 of 9 implemented (place-location, tile-placement, network-and-route-building, tech-trees-tech-tracks).
 
 | Mechanic | Exemplar Games | Hooks Needed | Complexity |
 |----------|---------------|--------------|------------|
-| **`contracts`** | Kanban, Great Western Trail | resources, cards | Medium |
-| **`loans`** | Brass, Arkwright | resources hooks | Medium |
+| **`pattern-building`** | Azul, Sagrada | building hooks | Medium |
+| **`connections`** | Roads & Boats | building hooks | Medium |
+| `enclosure` | Go, Cathedral | building hooks | Medium |
+| `map-addition` | Carcassonne expansions | building hooks | Low |
+| `crayon-rail-system` | Empire Builder | building, resources | High |
+
+### Economic (4 remaining)
+
+6 of 10 implemented (income, market, trading, automatic-resource-growth, contracts, loans).
+
+| Mechanic | Exemplar Games | Hooks Needed | Complexity |
+|----------|---------------|--------------|------------|
 | **`stock-holding`** | Acquire, 18XX | resources, trading | High |
 | **`investment`** | Stockpile | resources | Medium |
 | `commodity-speculation` | Container, Panic on Wall Street | market hooks | High |
 | `ownership` | Monopoly, Acquire | board, resources | Medium |
 
-### Cooperative (4 remaining) — Enables New Game Types
+### Cooperative (1 remaining)
+
+4 of 5 implemented (cooperative-actions, cooperative-game, alliances, team-based-game).
 
 | Mechanic | Exemplar Games | Notes |
 |----------|---------------|-------|
-| **`alliances`** | Dune, Cosmic Encounter | Multi-player cooperation |
-| **`cooperative-game`** | Pandemic, Spirit Island | All-vs-game framework |
 | `semi-cooperative-game` | Dead of Winter, Archipelago | Cooperative with traitor potential |
-| `team-based-game` | Codenames, Captain Sonar | Fixed team structures |
 
 ### Auction (7 remaining)
 
@@ -1321,31 +1318,21 @@ Currently only `place-location` implemented. This is the largest category gap fo
 | `measurement-movement` | Warhammer | High | Distance-based (adapt to grid) |
 | `three-dimensional-movement` | Space games | High | 3D coordinate system |
 
-### Action (5 remaining)
+### Action (2 remaining)
+
+4 of 6 implemented (action-points, action-drafting, action-event, action-retrieval).
 
 | Mechanic | Exemplar Games | Complexity |
 |----------|---------------|------------|
-| **`action-drafting`** | Puerto Rico, Citadels | Medium |
 | `action-queue` | Shogun, Wallenstein | Medium |
-| `action-retrieval` | Concordia | Low |
-| `action-event` | Twilight Struggle | Low |
 | `action-timer` | Hourglass/time-pressure | Low |
 
-### Victory (4 remaining)
+### Social (3 remaining)
+
+7 of 10 implemented (voting, negotiation, communication-limits, bribery, betting-and-bluffing, storytelling, player-judge).
 
 | Mechanic | Exemplar Games | Complexity |
 |----------|---------------|------------|
-| **`end-game-bonuses`** | Terraforming Mars, Wingspan | Low |
-| **`king-of-the-hill`** | Area control victory | Medium |
-| `victory-points-as-a-resource` | Concordia | Low |
-| `highest-lowest-scoring` | Golf, Hearts | Low |
-
-### Social (5 remaining)
-
-| Mechanic | Exemplar Games | Complexity |
-|----------|---------------|------------|
-| **`betting-and-bluffing`** | Poker, Sheriff of Nottingham | Medium |
-| **`storytelling`** | Dixit, Once Upon a Time | Medium |
 | `role-playing` | D&D-style | High |
 | `acting` | Charades-style | Medium |
 | `prisoner's-dilemma` | Game theory mechanic | Low |
@@ -1358,14 +1345,13 @@ Currently only `place-location` implemented. This is the largest category gap fo
 | `pattern-recognition` | Set, Dobble | Low |
 | `questions-and-answers` | 20 Questions, Guess Who | Low |
 
-### Ending (5 remaining)
+### Ending (2 remaining)
+
+4 of 6 implemented (finale-ending, single-loser-game, player-elimination, sudden-death).
 
 | Mechanic | Notes |
 |----------|-------|
-| `finale-ending` | End-game scoring phase |
-| `single-loser-game` | Last player loses (vs winner) |
-| `player-elimination` | Players removed during play |
-| `race` | First to finish (overlaps win-race) |
+| `race` | First to finish (overlaps win-race, may be partial) |
 | `elapsed-real-time-ending` | Not plannable (real clock) |
 
 ### Worker Placement (1 remaining)
@@ -1374,21 +1360,17 @@ Currently only `place-location` implemented. This is the largest category gap fo
 |----------|---------------|------------|
 | `worker-placement-with-dice-workers` | Alien Frontiers, Troyes | Medium |
 
-### Other (49 remaining) — Mixed Impact
+### Other (43 remaining) — Mixed Impact
 
-14 of 63 implemented. Many are cross-cutting concerns or niche mechanics.
+20 of 63 implemented. Many are cross-cutting concerns or niche mechanics.
 
 **High-Value Targets:**
 
 | Mechanic | Exemplar Games | Hooks Needed | Complexity |
 |----------|---------------|--------------|------------|
-| **`area-majority-influence`** | El Grande, Tigris & Euphrates | board, resources | High |
 | **`pick-up-and-deliver`** | Merchants & Marauders | board, resources | Medium |
 | **`modular-board`** | Settlers of Catan, Eclipse | board init hooks | Medium |
-| **`variable-set-up`** | Cosmic Encounter, Spirit Island | initSharedState | Low |
 | **`variable-phase-order`** | Puerto Rico, Race for the Galaxy | turn hooks | Medium |
-| **`follow`** | Glory to Rome, Innovation | cards hooks | Medium |
-| **`advantage-token`** | Many euros | resources | Low |
 
 **Medium-Value Targets:**
 
@@ -1401,7 +1383,6 @@ Currently only `place-location` implemented. This is the largest category gap fo
 | `constrained-bidding` | Modern Art | Limited bid options |
 | `closed-economy-auction` | Modern Art | Money circulation |
 | `bids-as-wagers` | Skull, Perudo | Bids become commitments |
-| `random-production` | Settlers of Catan | Dice/random resource generation |
 | `score-and-reset-game` | Rummy variants | Multi-round scoring |
 | `passed-action-token` | Scythe | First-passer benefits |
 
@@ -1412,7 +1393,7 @@ Currently only `place-location` implemented. This is the largest category gap fo
 
 ## Roadmap
 
-### Completed Phases (1-13)
+### Completed Phases (1-14)
 
 | Phase | Focus | Key Results |
 |-------|-------|-------------|
@@ -1423,6 +1404,7 @@ Currently only `place-location` implemented. This is the largest category gap fo
 | 11 | Deep cleanup | Hand limit, deck-building, player init generalized, ~140 lines |
 | 12 | Movement + effects | applyPlacedCardEffects, case 'move', move targets, ~224 lines |
 | 13 | Timeout + AP | determineTimeoutWinner removed, AP checks consolidated, board start, ~82 lines |
+| 14 | Mass expansion | Building core domain, 26 new mechanics across 10 categories, 122 registered (54%) |
 
 ### Next Steps: Engine
 
@@ -1438,15 +1420,13 @@ Currently only `place-location` implemented. This is the largest category gap fo
 
 | Priority | Category | Target Mechanics | Unlocks |
 |----------|----------|-----------------|---------|
-| **1** | Building | tile-placement, network-and-route-building | Carcassonne, Ticket to Ride genre |
-| **2** | Economic | contracts, loans | Brass, heavy euro genre |
-| **3** | Cooperative | cooperative-game, alliances | Pandemic, Spirit Island genre |
-| **4** | Cards | melding-and-splaying, command-cards | Rummy, wargame card genre |
-| **5** | Victory | end-game-bonuses, king-of-the-hill | Standard euro endgame scoring |
-| **6** | Movement | hexagon-grid, rondel | Hex wargames, rondel euros |
-| **7** | Action | action-drafting | Puerto Rico, role selection genre |
-| **8** | Social | betting-and-bluffing | Poker, bluffing genre |
-| **9** | Other | area-majority-influence, pick-up-and-deliver | Area control, logistics genre |
+| **1** | Cards | melding-and-splaying, command-cards | Rummy, wargame card genre |
+| **2** | Movement | hexagon-grid, rondel, programmed-movement | Hex wargames, rondel euros |
+| **3** | Building | pattern-building, connections | Azul, pattern-matching genre |
+| **4** | Economic | stock-holding, investment | 18XX, financial genre |
+| **5** | Auction | auction-compensation, auction-fixed-placement | Advanced auction games |
+| **6** | Other | pick-up-and-deliver, modular-board | Logistics, variable setup |
+| **7** | Information | pattern-recognition, induction | Logic/deduction genre |
 
 ### Long-Term Refactoring
 

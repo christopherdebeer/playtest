@@ -122,6 +122,37 @@ export interface PlayerState {
   // Multi-category expansion state
   tableau?: Card[];                  // Tableau building: cards in personal tableau
   programmedActions?: unknown[];     // Action programming: programmed action sequence
+
+  // Economic mechanic state
+  active_contracts?: string[];       // IDs of active contracts the player holds
+  active_loans?: LoanInstance[];     // Active loans the player has taken
+
+  // Action mechanics state
+  selectedActions?: string[];         // Action drafting: selected actions this round
+  playedCards?: string[];             // Action retrieval: cards played (retrievable)
+
+  // Betting and bluffing state
+  currentBet?: number;               // Current bet amount in betting round
+  pot?: number;                       // Player's stake in the pot
+  folded?: boolean;                   // Has player folded this round
+
+  // Tech trees state
+  researchedTechs?: string[];        // IDs of researched technologies
+  techBonuses?: Record<string, number>;  // Permanent bonuses from tech
+
+  // Route building state
+  claimedRoutes?: string[];          // IDs of claimed routes
+  routeCards?: string[];             // Held route objective cards
+}
+
+/**
+ * Loan instance for the loans mechanic.
+ */
+export interface LoanInstance {
+  amount: number;           // Original loan amount
+  repayment: number;        // Total amount to repay (amount + interest)
+  taken_on_turn: number;    // Turn number when loan was taken
+  deadline_turn?: number;   // Turn by which loan must be repaid (0 = end of game)
 }
 
 /**
@@ -242,6 +273,10 @@ export interface EngineMechanics {
   win_empty_hand?: boolean;                   // Win by emptying hand
   win_elimination?: boolean;                  // Win by being last player standing
   win_timeout?: WinTimeoutConfig;             // Winner determination on timeout
+  win_end_game_bonuses?: WinEndGameBonusesConfig;  // End-game bonus scoring
+  win_king_of_the_hill?: WinKingOfTheHillConfig;   // Win by controlling a location
+  win_victory_points_as_resource?: WinVPAsResourceConfig;  // VP as spendable resource
+  win_highest_lowest_scoring?: WinHighestLowestScoringConfig;  // Highest or lowest score wins
 
   // New mechanics (Phase 1 expansion)
   closed_drafting?: ClosedDraftingConfig;     // Simultaneous card drafting with passing
@@ -333,6 +368,39 @@ export interface EngineMechanics {
   tableau_building?: TableauBuildingConfig;        // Personal tableau of cards
   action_programming?: ActionProgrammingConfig;   // Program action sequences
   cooperative?: CooperativeConfig;                // Cooperative play mechanics
+
+  // Economic mechanics
+  contracts?: ContractsConfig;                    // Contract fulfillment system
+  loans?: LoansConfig;                            // Loan/debt system
+
+  // Ending/elimination mechanics
+  win_finale_ending?: FinaleEndingConfig;         // End-game scoring phase
+  win_single_loser?: SingleLoserConfig;           // Last player standing loses
+  player_elimination?: PlayerEliminationProcessConfig;  // Elimination process during play
+
+  // Action mechanics
+  action_drafting?: ActionDraftingConfig;           // Select actions from shared pool
+  action_event?: ActionEventConfig;                 // Cards as actions or events
+  action_retrieval?: ActionRetrievalConfig;         // Retrieve played cards
+
+  // Social/Cooperative mechanics
+  betting_and_bluffing?: BettingAndBluffingConfig;  // Betting with bluff calling
+  cooperative_game?: CooperativeGameConfig;          // All-vs-game framework
+  alliances?: AlliancesConfig;                       // Player alliances
+
+  // Building mechanics
+  network_and_route_building?: NetworkAndRouteBuildingConfig;  // Route claiming
+  tech_trees_tech_tracks?: TechTreesConfig;          // Tech research trees
+
+  // Other mechanics
+  area_majority_influence?: AreaMajorityInfluenceConfig;  // Area control scoring
+  team_based_game?: TeamBasedGameConfig;              // Team play
+  tile_placement?: TilePlacementConfig;               // Tile placement
+  variable_set_up?: VariableSetUpConfig;              // Variable game setup
+  advantage_token?: AdvantageTokenConfig;             // First player / advantage token
+  random_production?: RandomProductionConfig;         // Random resource generation
+  follow?: FollowConfig;                              // Follow the leader mechanic
+  storytelling?: StorytellingConfig;                  // Storytelling mechanic
 }
 
 // Proposal 007: Grid configuration
@@ -399,6 +467,33 @@ export interface WinTimeoutConfig {
   player_condition?: string;  // For type "specific_player": condition to evaluate
   reveal_role?: boolean;   // Whether to reveal the winner's hidden role
   reason?: string;         // Custom reason message (for "no_winner")
+}
+
+export interface WinEndGameBonusesConfig {
+  bonuses: Array<{
+    type: 'set_count' | 'majority' | 'per_resource' | 'per_card' | 'flat';
+    name: string;
+    points: number;
+    resource?: string;
+    card_type?: string;
+    set_type?: string;
+  }>;
+}
+
+export interface WinKingOfTheHillConfig {
+  target_state?: string;
+  target_position?: string;
+  turns_required?: number;
+}
+
+export interface WinVPAsResourceConfig {
+  vp_resource: string;
+  threshold: number;
+  spendable?: boolean;
+}
+
+export interface WinHighestLowestScoringConfig {
+  mode: 'highest' | 'lowest';
 }
 
 export interface TimeoutResult {
@@ -1084,7 +1179,7 @@ export interface LogEvent {
 // ============ Contest-Based Adjudication Types ============
 
 // Action schemas for validation
-export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass' | 'dutch_bid' | 'dutch_pass' | 'select_action' | 'buy_market' | 'sell_market' | 'add_to_tableau' | 'program_action' | 'execute_program' | 'contribute' | 'use_shared';
+export type ActionType = 'play_card' | 'draw' | 'pass' | 'move' | 'place_card' | 'place_location' | 'trade_offer' | 'trade_respond' | 'resign' | 'bid' | 'spend' | 'collect_set' | 'roll' | 'bank' | 'draft' | 'draft_select' | 'use_ability' | 'acquire' | 'buy' | 'trash' | 'draw_deck' | 'use_card' | 'travel' | 'vote' | 'lock_dice' | 'unlock_dice' | 'sealed_bid' | 'once_around_bid' | 'once_around_pass' | 'icon_roll' | 'turn_order_bid' | 'claim_turn_position' | 'investigate' | 'accuse' | 'give_clue' | 'submit_for_judging' | 'judge_select' | 'divide_items' | 'choose_group' | 'offer_bribe' | 'respond_to_bribe' | 'commit_forces' | 'activate_units' | 'deploy_secret' | 'reveal_unit' | 'place_worker' | 'retrieve_workers' | 'auction_pass' | 'dutch_bid' | 'dutch_pass' | 'select_action' | 'buy_market' | 'sell_market' | 'add_to_tableau' | 'program_action' | 'execute_program' | 'contribute' | 'use_shared' | 'take_contract' | 'fulfill_contract' | 'take_loan' | 'repay_loan' | 'play_as_event' | 'retrieve_actions' | 'bet' | 'call_bluff' | 'propose_alliance' | 'accept_alliance' | 'reject_alliance' | 'break_alliance' | 'claim_route' | 'research' | 'place_influence' | 'follow_action' | 'use_advantage' | 'tell_story' | 'vote_story' | 'place_tile';
 
 export interface BaseAction {
   type: ActionType;
@@ -1465,7 +1560,116 @@ export interface UseSharedAction extends BaseAction {
   amount: number;
 }
 
-export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction | DutchBidAction | DutchPassAction | SelectActionAction | BuyMarketAction | SellMarketAction | AddToTableauAction | ProgramActionAction | ExecuteProgramAction | ContributeAction | UseSharedAction;
+export interface TakeContractAction extends BaseAction {
+  type: 'take_contract';
+  contract_id: string;
+}
+
+export interface FulfillContractAction extends BaseAction {
+  type: 'fulfill_contract';
+  contract_id: string;
+}
+
+export interface TakeLoanAction extends BaseAction {
+  type: 'take_loan';
+}
+
+export interface RepayLoanAction extends BaseAction {
+  type: 'repay_loan';
+  loan_index: number;  // Which loan to repay (index in active_loans array)
+}
+
+// Action Event mechanic
+export interface PlayAsEventAction extends BaseAction {
+  type: 'play_as_event';
+  card: string;
+}
+
+// Action Retrieval mechanic
+export interface RetrieveActionsAction extends BaseAction {
+  type: 'retrieve_actions';
+}
+
+// Betting and Bluffing mechanic
+export interface BetAction extends BaseAction {
+  type: 'bet';
+  amount: number;
+  action?: 'raise' | 'call' | 'fold' | 'check';
+}
+
+export interface CallBluffAction extends BaseAction {
+  type: 'call_bluff';
+  targetPlayerId: string;
+}
+
+// Alliance mechanic
+export interface ProposeAllianceAction extends BaseAction {
+  type: 'propose_alliance';
+  targetPlayerId: string;
+}
+
+export interface AcceptAllianceAction extends BaseAction {
+  type: 'accept_alliance';
+  proposalId: string;
+}
+
+export interface RejectAllianceAction extends BaseAction {
+  type: 'reject_alliance';
+  proposalId: string;
+}
+
+export interface BreakAllianceAction extends BaseAction {
+  type: 'break_alliance';
+  allianceId: string;
+}
+
+// Network and Route Building mechanic
+export interface ClaimRouteAction extends BaseAction {
+  type: 'claim_route';
+  routeId: string;
+}
+
+// Tech Trees mechanic
+export interface ResearchAction extends BaseAction {
+  type: 'research';
+  techId: string;
+}
+
+// Subagent-created action types
+export interface PlaceInfluenceAction extends BaseAction {
+  type: 'place_influence';
+  areaId: string;
+  amount?: number;
+}
+
+export interface FollowActionAction extends BaseAction {
+  type: 'follow_action';
+  leadAction?: string;
+}
+
+export interface UseAdvantageAction extends BaseAction {
+  type: 'use_advantage';
+}
+
+export interface TellStoryAction extends BaseAction {
+  type: 'tell_story';
+  promptId?: string;
+  story?: string;
+}
+
+export interface VoteStoryAction extends BaseAction {
+  type: 'vote_story';
+  targetPlayerId: string;
+}
+
+export interface PlaceTileAction extends BaseAction {
+  type: 'place_tile';
+  tileId: string;
+  position: string;
+  rotation?: number;
+}
+
+export type GameAction = PlayCardAction | DrawAction | PassAction | MoveAction | PlaceCardAction | PlaceLocationAction | TradeOfferAction | TradeRespondAction | ResignAction | BidAction | SpendAction | CollectSetAction | RollAction | BankAction | DraftAction | DraftSelectAction | UseAbilityAction | AcquireAction | BuyAction | TrashAction | DrawDeckAction | UseCardAction | TravelAction | VoteAction | LockDiceAction | UnlockDiceAction | SealedBidAction | OnceAroundBidAction | OnceAroundPassAction | IconRollAction | TurnOrderBidAction | ClaimTurnPositionAction | InvestigateAction | AccuseAction | GiveClueAction | SubmitForJudgingAction | JudgeSelectAction | DivideItemsAction | ChooseGroupAction | OfferBribeAction | RespondToBribeAction | CommitForcesAction | ActivateUnitsAction | DeploySecretAction | RevealUnitAction | PlaceWorkerAction | RetrieveWorkersAction | AuctionPassAction | DutchBidAction | DutchPassAction | SelectActionAction | BuyMarketAction | SellMarketAction | AddToTableauAction | ProgramActionAction | ExecuteProgramAction | ContributeAction | UseSharedAction | TakeContractAction | FulfillContractAction | TakeLoanAction | RepayLoanAction | PlayAsEventAction | RetrieveActionsAction | BetAction | CallBluffAction | ProposeAllianceAction | AcceptAllianceAction | RejectAllianceAction | BreakAllianceAction | ClaimRouteAction | ResearchAction | PlaceInfluenceAction | FollowActionAction | UseAdvantageAction | TellStoryAction | VoteStoryAction | PlaceTileAction;
 
 // Action validation result
 export interface ActionValidationResult {
@@ -2177,4 +2381,235 @@ export interface CooperativeConfig {
   max_threat?: number;
   cooperative_actions?: string[];
   loss_message?: string;
+}
+
+// Economic mechanic configs
+export interface ContractsConfig {
+  contracts: ContractDef[];
+  max_active?: number;
+  available_count?: number;
+  refill?: boolean;
+}
+
+export interface ContractDef {
+  id: string;
+  name: string;
+  requirements: Record<string, number>;
+  rewards: Record<string, number>;
+  points?: number;
+}
+
+export interface LoansConfig {
+  max_loans?: number;
+  loan_amount: number;
+  interest_rate: number;
+  resource: string;
+  repayment_deadline?: number;
+  penalty?: number;
+}
+
+// Ending/elimination mechanic configs
+export interface FinaleEndingConfig {
+  scoring_categories?: Array<{
+    name: string;
+    source: 'score' | 'resources' | 'hand_size' | 'effects';
+    resource?: string;
+    multiplier?: number;
+  }>;
+}
+
+export interface SingleLoserConfig {
+  loser_condition: 'lowest_score' | 'last_remaining' | 'bankrupt';
+  resource?: string;
+}
+
+export interface PlayerEliminationProcessConfig {
+  condition: 'zero_score' | 'zero_resource' | 'no_cards';
+  resource?: string;
+  remove_from_turn_order?: boolean;
+}
+
+// Action Drafting mechanic (slug: action-drafting)
+export interface ActionDraftingConfig {
+  actions: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    effect?: Record<string, unknown>;
+    exclusive?: boolean;
+  }>;
+  selection_per_round?: number;
+  refill?: 'always' | 'per_round';
+}
+
+// Action Event mechanic (slug: action-event)
+export interface ActionEventConfig {
+  event_cards?: string[];  // Card types that can be played as events
+  event_cost?: Record<string, number>;  // Cost to play as event
+  discard_after_event?: boolean;  // Discard card after playing as event
+}
+
+// Action Retrieval mechanic (slug: action-retrieval)
+export interface ActionRetrievalConfig {
+  max_retrievable?: number;  // Max cards to retrieve at once (0 = all)
+  cost?: Record<string, number>;  // Cost to retrieve
+  cooldown?: number;  // Turns between retrieval
+  retrieve_from?: 'discard' | 'played' | 'both';
+}
+
+// Betting and Bluffing mechanic (slug: betting-and-bluffing)
+export interface BettingAndBluffingConfig {
+  currency: string;  // Resource used for betting
+  min_bet?: number;
+  max_bet?: number;
+  rounds?: number;  // Betting rounds per hand
+  allow_bluff?: boolean;
+  bluff_penalty?: number;  // Penalty for failed bluff call
+  bluff_reward?: number;  // Reward for catching a bluff
+}
+
+// Cooperative Game mechanic (slug: cooperative-game)
+export interface CooperativeGameConfig {
+  threat_level?: number;  // Starting threat
+  threat_escalation?: number;  // Threat increase per turn
+  max_threat?: number;  // Game over threshold
+  shared_objectives?: Array<{
+    id: string;
+    name: string;
+    condition: string;
+    points?: number;
+  }>;
+  lives?: number;  // Shared team lives
+}
+
+// Alliances mechanic (slug: alliances)
+export interface AlliancesConfig {
+  max_alliance_size?: number;
+  max_alliances?: number;
+  binding?: boolean;
+  duration?: number;
+  shared_victory?: boolean;
+  shared_resources?: string[];
+}
+
+// Network and Route Building mechanic (slug: network-and-route-building)
+export interface NetworkAndRouteBuildingConfig {
+  routes: Array<{
+    id: string;
+    from: string;
+    to: string;
+    cost: Record<string, number>;
+    points?: number;
+    length?: number;
+  }>;
+  route_cards?: Array<{
+    id: string;
+    from: string;
+    to: string;
+    bonus_points: number;
+  }>;
+  max_routes_per_player?: number;
+}
+
+// Tech Trees mechanic (slug: tech-trees-tech-tracks)
+export interface TechTreesConfig {
+  techs: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    cost: Record<string, number>;
+    prerequisites?: string[];
+    bonuses?: Record<string, number>;
+    points?: number;
+    unlocks?: string[];
+  }>;
+  tracks?: Array<{
+    id: string;
+    name: string;
+    techs: string[];
+  }>;
+  max_researched?: number;
+}
+
+// Area Majority / Influence mechanic (slug: area-majority-influence)
+export interface AreaMajorityInfluenceConfig {
+  areas: Array<{
+    id: string;
+    name: string;
+    points?: number;
+    max_influence?: number;
+  }>;
+  influence_cost?: Record<string, number>;
+  scoring?: 'majority_only' | 'proportional' | 'top_two';
+}
+
+// Team-Based Game mechanic (slug: team-based-game)
+export interface TeamBasedGameConfig {
+  teams: Array<{
+    id: string;
+    name: string;
+    size?: number;
+  }>;
+  assignment?: 'random' | 'draft' | 'fixed';
+  shared_score?: boolean;
+  team_communication?: boolean;
+}
+
+// Tile Placement mechanic (slug: tile-placement)
+export interface TilePlacementConfig {
+  tiles?: Array<{
+    id: string;
+    name: string;
+    edges?: string[];
+    points?: number;
+  }>;
+  placement_rules?: 'adjacent' | 'matching_edges' | 'free';
+  scoring?: 'per_tile' | 'pattern' | 'area';
+}
+
+// Variable Set Up mechanic (slug: variable-set-up)
+export interface VariableSetUpConfig {
+  setup_options?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    changes: Record<string, unknown>;
+  }>;
+  random_setup?: boolean;
+  modules?: string[];
+}
+
+// Advantage Token mechanic (slug: advantage-token)
+export interface AdvantageTokenConfig {
+  token_name?: string;
+  initial_holder?: 'random' | 'first_player';
+  pass_condition?: 'lowest_score' | 'last_place' | 'round_end';
+  bonus?: Record<string, unknown>;
+}
+
+// Random Production mechanic (slug: random-production)
+export interface RandomProductionConfig {
+  productions: Array<{
+    resource: string;
+    dice?: number;
+    sides?: number;
+    min?: number;
+    max?: number;
+  }>;
+  timing?: 'turn_start' | 'round_start';
+}
+
+// Follow mechanic (slug: follow)
+export interface FollowConfig {
+  allow_follow?: boolean;
+  follow_bonus?: Record<string, number>;
+  lead_bonus?: Record<string, number>;
+}
+
+// Storytelling mechanic (slug: storytelling)
+export interface StorytellingConfig {
+  prompt_deck?: boolean;
+  voting?: boolean;
+  points_for_story?: number;
+  points_for_vote?: number;
 }

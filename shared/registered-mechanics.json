@@ -1,9 +1,43 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-07T01:04:50.181Z",
+  "generated": "2026-02-07T01:45:52.954Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
+    "action-drafting": {
+      "config_key": "action_drafting",
+      "since": "3.0.0",
+      "description": "Draft actions/roles from a shared pool each round",
+      "config_schema": {
+        "actions": "array",
+        "reset_each_round": "boolean",
+        "exclusive": "boolean",
+        "unchosen_bonus": "string"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "action-event": {
+      "config_key": "action_event",
+      "since": "3.0.0",
+      "description": "Cards serve dual purpose as actions or events",
+      "config_schema": {
+        "event_field": "string",
+        "action_field": "string",
+        "mandatory_events": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onExecuteAction",
+        "getAvailableActions"
+      ]
+    },
     "action-points": {
       "config_key": "action_points",
       "since": "3.0.0",
@@ -43,6 +77,56 @@
         "canPlayerActNow"
       ]
     },
+    "action-retrieval": {
+      "config_key": "action_retrieval",
+      "since": "3.0.0",
+      "description": "Retrieve previously played cards/actions back to hand",
+      "config_schema": {
+        "source": "played | discard",
+        "retrieve_all": "boolean",
+        "max_retrieve": "number",
+        "costs_action": "boolean"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
+    "advantage-token": {
+      "config_key": "advantage_token",
+      "since": "3.0.0",
+      "description": "One-time advantage tokens that can be passed between players",
+      "config_schema": {
+        "tokens": "array",
+        "pass_on_use": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "alliances": {
+      "config_key": "alliances",
+      "since": "3.0.0",
+      "description": "Form and break alliances between players",
+      "config_schema": {
+        "max_alliance_size": "number",
+        "max_alliances": "number",
+        "binding": "boolean",
+        "duration": "number",
+        "shared_victory": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "area-impulse": {
       "config_key": "area_impulse",
       "since": "3.0.0",
@@ -58,6 +142,21 @@
         "onTurnEnd",
         "onExecuteAction",
         "getAvailableActions"
+      ]
+    },
+    "area-majority-influence": {
+      "config_key": "area_majority_influence",
+      "since": "3.0.0",
+      "description": "Compete for majority control in areas for points",
+      "config_schema": {
+        "areas": "array",
+        "influence_resource": "string"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "area-movement": {
@@ -157,6 +256,26 @@
         "onTurnStart"
       ]
     },
+    "betting-and-bluffing": {
+      "config_key": "betting_and_bluffing",
+      "since": "3.0.0",
+      "description": "Betting rounds with optional bluff calling",
+      "config_schema": {
+        "resource": "string",
+        "min_bet": "number",
+        "max_bet": "number",
+        "allow_bluff": "boolean",
+        "bluff_penalty": "number",
+        "bluff_reward": "number",
+        "ante": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "board": {
       "config_key": "board",
       "since": "3.0.0",
@@ -188,6 +307,11 @@
         "onExecuteAction",
         "getAvailableActions"
       ]
+    },
+    "building": {
+      "config_key": "building",
+      "since": "3.0.0",
+      "hooks": []
     },
     "card-matching": {
       "config_key": "card_matching",
@@ -299,6 +423,26 @@
         "describeAction"
       ]
     },
+    "contracts": {
+      "config_key": "contracts",
+      "since": "3.0.0",
+      "description": "Contract fulfillment system for resource trading",
+      "config_schema": {
+        "contracts": "array",
+        "max_active": "number",
+        "available_count": "number",
+        "refill": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "cooperative-actions": {
       "config_key": "cooperative_actions",
       "since": "3.0.0",
@@ -318,6 +462,24 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "cooperative-game": {
+      "config_key": "cooperative_game",
+      "since": "3.0.0",
+      "description": "All players cooperate against the game system",
+      "config_schema": {
+        "threat_name": "string",
+        "max_threat": "number",
+        "threat_per_round": "number",
+        "objectives": "array",
+        "objectives_required": "number"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onCheckWin",
         "initSharedState",
         "getPlayerView"
       ]
@@ -440,6 +602,22 @@
       },
       "hooks": [
         "onTurnStart"
+      ]
+    },
+    "follow": {
+      "config_key": "follow",
+      "since": "3.0.0",
+      "description": "Non-active players may follow the active player's action at reduced strength",
+      "config_schema": {
+        "followable_actions": "array",
+        "follow_bonus_reduction": "number"
+      },
+      "hooks": [
+        "postExecuteAction",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "canPlayerActNow"
       ]
     },
     "force-commitment": {
@@ -613,6 +791,28 @@
         "describeAction"
       ]
     },
+    "loans": {
+      "config_key": "loans",
+      "since": "3.0.0",
+      "description": "Loan/debt system with interest and repayment",
+      "config_schema": {
+        "max_loans": "number",
+        "loan_amount": "number",
+        "interest_rate": "number",
+        "resource": "string",
+        "repayment_deadline": "number",
+        "penalty": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "initPlayerState",
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "describeAction",
+        "getPlayerView"
+      ]
+    },
     "location-effects": {
       "config_key": "location_effects",
       "since": "3.0.0",
@@ -711,6 +911,25 @@
         "describeAction"
       ]
     },
+    "network-and-route-building": {
+      "config_key": "network_and_route_building",
+      "since": "3.0.0",
+      "description": "Build connections between points to form networks",
+      "config_schema": {
+        "segments": "array",
+        "route_cards": "array",
+        "starting_route_cards": "number",
+        "longest_network_bonus": "number",
+        "resource": "string"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "once-per-game-abilities": {
       "config_key": "once_per_game_abilities",
       "since": "3.0.0",
@@ -782,6 +1001,19 @@
         "applyEffect"
       ]
     },
+    "player-elimination": {
+      "config_key": "player_elimination",
+      "since": "3.0.0",
+      "description": "Eliminates players when they meet criteria during play",
+      "config_schema": {
+        "condition": "zero_score | zero_resource | no_cards",
+        "resource": "string",
+        "remove_from_turn_order": "boolean"
+      },
+      "hooks": [
+        "postExecuteAction"
+      ]
+    },
     "player-judge": {
       "config_key": "player_judge",
       "since": "3.0.0",
@@ -840,6 +1072,20 @@
         "getAvailableActions",
         "describeAction",
         "getPlayerView"
+      ]
+    },
+    "random-production": {
+      "config_key": "random_production",
+      "since": "3.0.0",
+      "description": "Dice-based resource production (like Catan)",
+      "config_schema": {
+        "dice_count": "number",
+        "dice_sides": "number",
+        "production_table": "object",
+        "per_player": "boolean"
+      },
+      "hooks": [
+        "onTurnStart"
       ]
     },
     "ratio-combat-results-table": {
@@ -960,6 +1206,22 @@
       "since": "3.0.0",
       "hooks": []
     },
+    "storytelling": {
+      "config_key": "storytelling",
+      "since": "3.0.0",
+      "description": "Players tell stories or give creative descriptions, others vote/judge",
+      "config_schema": {
+        "prompt_deck": "boolean",
+        "voting": "all | judge",
+        "points_correct": "number",
+        "points_fooled": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState"
+      ]
+    },
     "sudden-death-ending": {
       "config_key": "sudden_death_ending",
       "since": "3.0.0",
@@ -1016,6 +1278,58 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions"
+      ]
+    },
+    "team-based-game": {
+      "config_key": "team_based_game",
+      "since": "3.0.0",
+      "description": "Fixed team structures where players win/lose together",
+      "config_schema": {
+        "teams": "array",
+        "assignment": "sequential | random",
+        "team_victory": "shared_score | team_objective"
+      },
+      "hooks": [
+        "onCheckWin",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "tech-trees-tech-tracks": {
+      "config_key": "tech_trees_tech_tracks",
+      "since": "3.0.0",
+      "description": "Research technologies with prerequisites and bonuses",
+      "config_schema": {
+        "techs": "array",
+        "tracks": "array",
+        "max_researched": "number"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "tile-placement": {
+      "config_key": "tile_placement",
+      "since": "3.0.0",
+      "description": "Place tiles on a board to build the game map",
+      "config_schema": {
+        "tiles": "array",
+        "supply_count": "number",
+        "hand_size": "number",
+        "adjacency_required": "boolean",
+        "edge_matching": "boolean",
+        "grid_type": "square | hex"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "trading": {
@@ -1194,6 +1508,20 @@
         "getPlayerView"
       ]
     },
+    "variable-set-up": {
+      "config_key": "variable_set_up",
+      "since": "3.0.0",
+      "description": "Randomize game setup elements each game",
+      "config_schema": {
+        "modules": "array",
+        "select_count": "number",
+        "randomize_player_order": "boolean"
+      },
+      "hooks": [
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "visibility": {
       "config_key": "visibility",
       "since": "3.0.0",
@@ -1224,6 +1552,52 @@
       "description": "Win by emptying your hand",
       "config_schema": {
         "enabled": "boolean"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-end-game-bonuses": {
+      "config_key": "win_end_game_bonuses",
+      "since": "3.0.0",
+      "description": "End-game bonus scoring with configurable criteria",
+      "config_schema": {
+        "bonuses": "array"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-finale-ending": {
+      "config_key": "win_finale_ending",
+      "since": "3.0.0",
+      "description": "End-game scoring phase with multiple scoring categories",
+      "config_schema": {
+        "scoring_categories": "array"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-highest-lowest-scoring": {
+      "config_key": "win_highest_lowest_scoring",
+      "since": "3.0.0",
+      "description": "Win by having the highest or lowest score at game end",
+      "config_schema": {
+        "mode": "highest | lowest"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-king-of-the-hill": {
+      "config_key": "win_king_of_the_hill",
+      "since": "3.0.0",
+      "description": "Win by controlling a specific location/area",
+      "config_schema": {
+        "target_state": "string",
+        "target_position": "string",
+        "turns_required": "number"
       },
       "hooks": [
         "onCheckWin"
@@ -1266,6 +1640,18 @@
         "onCheckWin"
       ]
     },
+    "win-single-loser": {
+      "config_key": "win_single_loser",
+      "since": "3.0.0",
+      "description": "Last player standing loses, everyone else wins",
+      "config_schema": {
+        "loser_condition": "lowest_score | last_remaining | bankrupt",
+        "resource": "string"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
     "win-timeout": {
       "config_key": "win_timeout",
       "since": "3.0.0",
@@ -1277,6 +1663,19 @@
         "reveal_role": "boolean",
         "player_condition": "string",
         "reason": "string"
+      },
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "win-victory-points-as-resource": {
+      "config_key": "win_victory_points_as_resource",
+      "since": "3.0.0",
+      "description": "Victory points tracked as a spendable resource",
+      "config_schema": {
+        "vp_resource": "string",
+        "threshold": "number",
+        "spendable": "boolean"
       },
       "hooks": [
         "onCheckWin"
