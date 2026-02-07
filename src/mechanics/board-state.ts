@@ -18,7 +18,9 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  PlayerInitContext,
+  PlayerInitResult
 } from './types.js';
 import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard } from '../types/game.js';
 
@@ -142,6 +144,12 @@ export const boardStateMechanic: MechanicHooks = {
   slug: 'board-state',
   name: 'Board State',
   requires: ['board'],
+
+  initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
+    if (!ctx.config.board) return null;
+    const boardConfig = ctx.config.board as BoardConfig;
+    return { state: boardConfig.start ?? 'start' };
+  },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate move actions
