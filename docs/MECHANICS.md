@@ -1152,166 +1152,50 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ## Current Status
 
-### Implemented Mechanics: 66 of 192 (34%)
+### Overview
 
-| Category | Implemented | Total | Coverage |
-|----------|-------------|-------|----------|
-| Action | 3 | 7 | 43% |
-| Auction | 4 | 12 | 33% |
-| Building | 2 | 11 | 18% |
-| Cards | 10 | 15 | 67% |
-| Conflict | 8 | 8 | 100% |
-| Cooperative | 1 | 10 | 10% |
-| Dice | 5 | 6 | 83% |
-| Economic | 3 | 9 | 33% |
-| Ending | 1 | 4 | 25% |
-| Information | 5 | 8 | 63% |
-| Movement | 4 | 22 | 18% |
-| Other | 10 | 40 | 25% |
-| Physical | 0 | 8 | 0% |
-| Social | 3 | 11 | 27% |
-| Turn Order | 4 | 8 | 50% |
-| Victory | 7 | 5 | 140% |
-| Worker Placement | 2 | 7 | 29% |
+- **66 of 192** mechanics implemented (34%), 96 registered (incl core/win-conditions)
+- **11 games**, all using unified config format
+- **198 tests** passing, build clean
+- **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
+- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`
+- All 8 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers
 
-### Hook Infrastructure Status
+### game.ts Agnosticism Progress
 
-| Phase | Hooks | Status |
-|-------|-------|--------|
-| Phase 1-5 | 33 core hooks | Complete |
-| Agnosticism | 6 new hooks | **Complete** |
-| Phase 6 | Combat (6 hooks) | **Complete** |
-| Phase 7 | Workers (5 hooks) | **Complete** |
-| Phase 8 | Auctions (5 hooks) | Planned |
+**Completed migrations (Phases 10-13):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, and AP consolidation all extracted from game.ts.
 
-**Agnosticism Hooks (Complete):**
-- `initSharedState` - Used by 14 mechanics
-- `getPlayerView` - Used by 13 mechanics (added open-drafting, set-collection, resources)
-- `initPlayerState` - Used by 5 mechanics (set-collection, push-your-luck, action-points, variable-player-powers, deck-building)
-- `isPlayerBlocked` - Used by lose-a-turn
-- `canPlayerActNow` - Used by freeplay, simultaneous-action-selection, action-programming (enables parallel play)
-- `applyEffect` - Used by location-effects, placed-card-effects
+**game.ts executeAction fallback switch now handles only:** `draw`, `pass`, `resign` — all other actions delegated to mechanics via `onExecuteAction`.
 
-**Phase 10 - Mechanic Migration (Complete):**
-- Migrated 8 action types from game.ts to mechanics: place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend
-- Removed `ALWAYS_ENABLED_MECHANICS` - mechanics enabled via explicit config or dependency resolution
-- ~900 lines removed from game.ts
-- `getActionSchema` - Defined, ready for mechanic implementations
+### Remaining game.ts Leaks
 
-### Outstanding Hook Implementations
+| Area | Location | Severity | Description |
+|------|----------|----------|-------------|
+| Resources legacy init | Lines 572-576 | MEDIUM | `engine_mechanics?.resources` legacy format fallback for resource init. Modern format uses `starting_state.resources`. |
+| Card type filters | Line 1399 | MEDIUM | `basePlayable = hand.filter(c => !c.placeable && c.type !== 'location')` — card property checks for play_card filtering. Data-driven but could use mechanic hook. |
+| Interference detection | Lines 1448-1450 | MEDIUM | `c.type === 'interference' \|\| c.effect?.type === 'block_turn'` — identifies cards needing targets. Could be extracted to take-that `getAvailableActions`. |
+| topCard init | Line 623 | LOW | `shared.topCard = topCard` — engine sets top card during init. Core card concept, acceptable. |
+| currentColor restore | Lines 2230-2232 | LOW | In `reverseAction`: restores `currentColor` only if previously set. Guarded, contest-only path. |
+| placedCards read | Line 1402 | LOW | `state.shared.placedCards` cast in getAvailableActions for player view. Read-only, could move to `getPlayerView`. |
+| Action schema | validateAction switch | LOW | Hardcoded action type validation. `getActionSchema` hook defined but not yet implemented by mechanics. |
+| checkWinCondition | Lines 1164-1218 | LOW | Legacy hardcoded win checks (reach state, empty hand, score threshold, elimination). Win-condition mechanics exist but aren't wired through this function yet. |
 
-Mechanics that should implement each agnosticism hook to fully decouple game.ts:
+### Outstanding Work
 
-#### `initSharedState` - Mechanics with shared state
-| Mechanic | Shared Property | Status |
-|----------|-----------------|--------|
-| open-drafting | `draftDisplay` | **Done** |
-| deck-building | `supply` | **Done** |
-| trading | `pendingTrades` | **Done** |
-| auction-english | `currentBid`, `highBidder`, `auctionActive` | **Done** |
-| trick-taking | `currentTrick`, `leadSuit`, `trickLeader` | **Done** |
-| worker-placement | `workerSpaces` | **Done** |
-| auction-dutch | `dutchAuction` | **Done** |
-| simultaneous-action-selection | `simultaneousSelection` | **Done** |
-| market | `market` (prices, supply, demand) | **Done** |
-| action-programming | `actionProgramming` | **Done** |
-| cooperative-actions | `cooperative` (sharedPool, threat) | **Done** |
-| different-worker-types | `workerTypeDefinitions`, `workerTypeRestrictions` | **Done** |
+#### `getActionSchema` Hook (Pending)
+The `getActionSchema` hook is defined in `types.ts` but no mechanic implements it yet. Currently, `validateActionSchema` in game.ts uses hardcoded switch cases for action type validation. Each action-owning mechanic should implement `getActionSchema` to provide its own validation rules.
 
-#### `getPlayerView` - Mechanics with player-specific view data
-| Mechanic | Properties | Status |
-|----------|------------|--------|
-| push-your-luck | `rollAccumulator`, `rollCount` | **Done** |
-| action-points | `actionPoints`, `actionPointsUsed`, `actionPointsPerTurn` | **Done** |
-| variable-player-powers | `powerId`, `powerName` | **Done** |
-| worker-placement | `workersAvailable`, `workersPlaced`, `workerPlacements` | **Done** |
-| different-worker-types | `workersByType`, `workerTypeRestrictions` | **Done** |
-| simultaneous-action-selection | `simultaneousPhase`, `hasSelected`, `revealedActions` | **Done** |
-| market | `marketPrices`, `marketSupply` | **Done** |
-| tableau-building | `tableau`, `tableauSize`, `tableauMaxSize` | **Done** |
-| action-programming | `programmingPhase`, `myProgram`, `allPrograms` | **Done** |
-| cooperative-actions | `sharedPool`, `threatLevel`, `maxThreat` | **Done** |
-| resources (if mechanic) | resource amounts | Pending |
+**Impact**: ~150 lines removable from game.ts `validateAction`
+**Mechanics to update**: cards, place-card, trading, auction-english, resources, set-collection, push-your-luck, open-drafting, board-state, grid-movement
 
-#### `applyEffect` - Effect type handlers
-| Mechanic | Effect Types | Status |
-|----------|--------------|--------|
-| location-effects | `draw_on_enter`, `heal_on_enter`, `damage_on_enter` | **Done** |
-| placed-card-effects | `probability_boost`, `probability_penalty`, `force_discard` | **Done** |
-| lose-a-turn | `block_turn`, `block`, `skip` | Uses `isPlayerBlocked` |
-| take-that | `block_turn`, `skip` | **Done** (via `onCardPlayed` + `addEffect`) |
+#### Win Condition Consolidation (Planned)
+`checkWinCondition()` in game.ts hardcodes 4 win conditions (reach state, empty hand, score threshold, elimination). These should be handled by the existing win-condition mechanics via `onCheckWin` hooks, with game.ts delegating entirely to `mechanicRegistry.checkAllWinConditions()`.
 
-#### `getActionSchema` - Action validation schemas
-| Mechanic | Actions | Status |
-|----------|---------|--------|
-| All action-owning | Their respective actions | Pending |
+**Impact**: ~55 lines removable from game.ts
+**Mechanics**: reach-state, empty-hand, score-threshold, elimination already registered but not wired to the legacy `checkWinCondition` call path
 
-### game.ts Agnosticism Status
-
-| Area | Current State | Target | Status |
-|------|---------------|--------|--------|
-| Pass action | ~~Hardcoded~~ | `core/pass.ts` mechanic | **Done** |
-| Block check | ~~Hardcoded types~~ | `isPlayerBlocked` hook | **Done** |
-| Shared init | ~~Mechanic-aware~~ | `initSharedState` hook | **Done** (14 mechanics) |
-| Player view | ~~Mechanic-aware~~ | `getPlayerView` hook | **Done** (13 mechanics) |
-| Player init | ~~Hardcoded fields~~ | `initPlayerState` hook | **Done** (all fields via generic merge loop) |
-| Effect types | ~~Hardcoded switch~~ | `applyEffect` hook | **Done** (location-effects, placed-card-effects) |
-| Action schema | Hardcoded cases | `getActionSchema` hook | Pending |
-| Card types | Hardcoded (wild, etc) | Mechanic-owned | **Done** (cards core) |
-| Hand limit enforcement | ~~Hardcoded in draw~~ | `postExecuteAction` hook | **Done** (hand-management) |
-| Deck-building init draw | ~~Hardcoded init~~ | `onTurnStart` hook | **Done** (deck-building) |
-| Location effects | ~~Dead code~~ | `applyEffect` hook | **Done** (removed ~90 lines) |
-| Placed card effects | ~~Hardcoded in game.ts~~ | `board-state` mechanic | **Done** (moved to board-state.ts) |
-| Move execution | ~~Hardcoded case~~ | `board-state`/`grid-movement` `onExecuteAction` | **Done** (removed ~95 lines) |
-| Move targets | ~~Hardcoded edge traversal~~ | Derived from mechanic `getAvailableActions` | **Done** |
-| AP validation | ~~Config check only~~ | `action-points` `preValidateAction` | **Done** |
-| Play card action | ~~Fallback switch~~ | Cards mechanic `onExecuteAction` | **Done** |
-| Place card/location | ~~Hardcoded~~ | `place-card` mechanic | **Done** |
-| Collect set | ~~Hardcoded~~ | `set-collection` mechanic | **Done** |
-| Roll/Bank | ~~Hardcoded~~ | `push-your-luck` mechanic | **Done** |
-| Draft | ~~Hardcoded~~ | `open-drafting` mechanic | **Done** |
-| Trade offer/respond | ~~Hardcoded~~ | `trading` mechanic | **Done** |
-| Bid/Auction pass | ~~Hardcoded~~ | `auction-english` mechanic | **Done** |
-| Spend resource | ~~Hardcoded~~ | `resources` mechanic | **Done** |
-| Always-enabled mechanics | ~~Hardcoded list~~ | Dependency resolution | **Done** |
-
-#### Phase 10 Migrations (Completed):
-- **Place card/location**: `place-card` mechanic handles both action types via `onExecuteAction`
-- **Collect set**: `set-collection` mechanic handles via `onExecuteAction`, `initPlayerState`, `getPlayerView`
-- **Roll/Bank**: `push-your-luck` mechanic handles via `onExecuteAction`, `initPlayerState`, `getPlayerView`
-- **Draft**: `open-drafting` mechanic handles via `onExecuteAction`, `getPlayerView`
-- **Trade offer/respond**: `trading` mechanic handles via `onExecuteAction`, `getAvailableActions`
-- **Bid/Auction pass**: `auction-english` mechanic handles via `onExecuteAction`, `getAvailableActions`
-- **Spend resource**: `resources` mechanic handles via `onExecuteAction`, `getAvailableActions`, `getPlayerView`
-- **Player view**: Resources, actionPoints, collectedSets, power, rollAccumulator, draftDisplay all from mechanic `getPlayerView`
-- **Player init fields**: `collectedSets`, `rollAccumulator`, `rollCount` removed from game.ts, provided by mechanic `initPlayerState`
-- **Always-enabled removed**: `ALWAYS_ENABLED_MECHANICS` list removed; mechanics now enabled via explicit config or dependency resolution (`isMechanicEnabled` checks config + `requires` chains)
-- **~900 lines removed from game.ts** across getAvailableActions, executeAction, playerView, validation
-
-#### Phase 11 Migrations (Completed):
-- **Hand limit enforcement**: `hand-management` mechanic now handles `discard_oldest` and `discard_choice` policies via `postExecuteAction` hook (removed ~35 lines from game.ts draw case)
-- **Deck-building init draw**: `deck-building` mechanic now handles personal deck initial draws via `onTurnStart` hook (removed ~15 lines from game.ts init)
-- **Player init generalized**: Removed named extraction of `actionPoints`, `actionPointsUsed`, `powerId`, `personalDeck`, `personalDiscard` — all mechanic state now applied via generic merge loop
-- **Dead code removed**: `applyLocationEffects` function (~90 lines) was defined but never called — removed entirely
-- **~140 additional lines removed from game.ts**
-
-#### Phase 12 Migrations (Completed):
-- **Placed card effects**: `applyPlacedCardEffects` and `getPlacedCardsOnState` moved from game.ts into `board-state` mechanic as local helpers
-- **Move execution**: Removed entire `case 'move'` from game.ts executeAction (~95 lines) — `board-state` and `grid-movement` mechanics handle via `onExecuteAction`
-- **Move targets**: Removed hardcoded board edge traversal and grid navigation from `getAvailableActions` — move targets now derived from mechanic-provided actions
-- **AP validation**: Added `preValidateAction` to `action-points` mechanic for AP exhaustion and cost checks
-- **Unused imports cleaned**: Removed `MoveAction`, `PassAction`, `removeFromHandByName`, `removeCardsFromHand`
-- **~224 additional lines removed from game.ts** (2593 → 2369)
-
-#### Earlier Completed Migrations:
-- **Pass mechanic**: `src/mechanics/core/pass.ts` handles pass via `onExecuteAction`
-- **Play card action**: `src/mechanics/core/cards.ts` handles play_card via `onExecuteAction`
-- **Block check**: `lose-a-turn` implements `isPlayerBlocked` hook
-- **Shared state init**: 14 mechanics implement `initSharedState`
-- **Player view**: 13 mechanics implement `getPlayerView` (push-your-luck, action-points, variable-player-powers, worker-placement, different-worker-types, simultaneous-action-selection, market, tableau-building, action-programming, cooperative-actions, open-drafting, set-collection, resources)
-- **Effect types**: `location-effects` and `placed-card-effects` implement `applyEffect` hook
-- **Combat hooks**: `src/mechanics/core/combat-mechanic.ts` defines 6 combat hooks
-- **Worker hooks**: `src/mechanics/core/workers-mechanic.ts` defines 5 worker hooks
+#### Phase 8: Advanced Auction Hooks (Planned)
+5 new auction-domain hooks for advanced auction mechanics. Currently only `auction-english` has full hook support.
 
 ---
 
@@ -1378,45 +1262,34 @@ engine_mechanics:
     action_matching: true
 ```
 
-### Short-Term: Remaining Phase 1-5 Mechanics
+### Completed Phases (1-13)
 
-All Phase 1-5 mechanics have been implemented. Remaining work is hook completeness:
+| Phase | Focus | Key Results |
+|-------|-------|-------------|
+| 1-5 | Core hooks + registration | 33 hooks, 66 mechanics implemented, 96 registered |
+| 6-7 | Combat + Workers | 11 domain hooks, 10 leaf mechanics |
+| 9 | Multi-category expansion | 7 new mechanics across 6 categories |
+| 10 | Action migration | 8 action types → mechanics, ALWAYS_ENABLED removed, ~900 lines |
+| 11 | Deep cleanup | Hand limit, deck-building, player init generalized, ~140 lines |
+| 12 | Movement + effects | applyPlacedCardEffects, case 'move', move targets, ~224 lines |
+| 13 | Timeout + AP | determineTimeoutWinner removed, AP checks consolidated, board start, ~82 lines |
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 1 | **Complete** | `closed-drafting`, `auction-sealed-bid`, `auction-once-around` all registered |
-| Phase 2 | **Complete** | `different-dice-movement`, `die-icon-resolution` registered |
-| Phase 3 | **Complete** | `turn-order-auction`, `turn-order-claim`, `turn-order-time-track`, `turn-order-role` registered |
-| Phase 4 | **Complete** | `deduction`, `memory`, `targeted-clues`, `roles-asymmetric-info` registered |
-| Phase 5 | **Complete** | `player-judge`, `i-cut-you-choose`, `bribery` registered |
+### Next Steps
 
-### Medium-Term: Phase 6-9
+| Priority | Task | Impact | Complexity |
+|----------|------|--------|------------|
+| **1** | `getActionSchema` hook implementations | ~150 lines from game.ts | Medium |
+| **2** | Win condition consolidation (wire mechanic `onCheckWin` to main check path) | ~55 lines from game.ts | Medium |
+| **3** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
+| **4** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
+| **5** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
 
-| Phase | Focus | New Hooks | Status |
-|-------|-------|-----------|--------|
-| Phase 6 | Combat System | 6 combat hooks | **Done** - Core mechanic + 8 leaf mechanics |
-| Phase 7 | Worker Placement | 5 worker hooks | **Done** - Core mechanic + 2 leaf mechanics |
-| Phase 8 | Advanced Auctions | 5 auction hooks | Planned |
-| Phase 9 | Multi-Category Expansion | - | **Done** - 7 new mechanics across 6 categories |
-| Phase 10 | Mechanic Migration | - | **Done** - 8 action types migrated, ~900 lines removed |
-| Phase 11 | Deep Cleanup | postExecuteAction, onTurnStart | **Done** - hand limit, deck-building init, player init generalized, dead code removed |
-| Phase 12 | Movement & Effects | preValidateAction, onExecuteAction | **Done** - placed card effects, move execution/targets to mechanics, AP validation |
-
-**Phase 9 details:** Added auction-dutch (Auction), simultaneous-action-selection + action-programming (Action), market (Economic), cooperative-actions (Cooperative), tableau-building (Building), different-worker-types (Worker Placement).
-
-**Phase 10 details:** Migrated place_card, place_location, collect_set, roll, bank, draft, trade_offer/respond, bid, spend from hardcoded game.ts to mechanic hooks. Removed `ALWAYS_ENABLED_MECHANICS` - mechanics now enabled via explicit config or dependency resolution. Added `initPlayerState` to set-collection and push-your-luck. Added `getPlayerView` to resources, open-drafting, set-collection, variable-player-powers (enhanced with full power object).
-
-**Phase 11 details:** Deep cleanup of game.ts. Added `postExecuteAction` to hand-management (discard_oldest/discard_choice enforcement after draw). Added `onTurnStart` to deck-building (personal deck initial draws). Generalized player init to use generic merge loop for all mechanic state. Removed dead `applyLocationEffects` function. ~140 additional lines removed from game.ts.
-
-**Phase 12 details:** Moved `applyPlacedCardEffects` and `getPlacedCardsOnState` into board-state mechanic as local helpers. Removed entire `case 'move'` from game.ts executeAction (board-state/grid-movement handle via onExecuteAction). Refactored getAvailableActions to derive move targets from mechanic-provided actions instead of hardcoded board edge traversal and grid navigation. Added `preValidateAction` to action-points mechanic for AP exhaustion/cost validation. ~224 additional lines removed from game.ts (2593→2369).
-
-### Long-Term: Refactoring
+### Long-Term Refactoring
 
 | Refactoring | Impact |
 |-------------|--------|
 | Movement System Unification | 4 mechanics share patterns |
 | Point Economy Extraction | action-points + movement-points |
-| Win Condition Consolidation | 7 mechanics doing similar checks |
 | Drafting Base Class | open + closed drafting |
 | State Property Standardization | Position in 3+ properties |
 

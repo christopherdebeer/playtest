@@ -586,7 +586,7 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     const startingScore = startingState?.score ?? 0;
 
     players[playerId] = {
-      state: config.board?.start ?? 'start',
+      state: 'start',
       hand: [],
       effects: [],
       persona,
@@ -594,9 +594,11 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       score: startingScore
     };
 
-    // Apply all mechanic-provided state (actionPoints, powerId, personalDeck, currentNode, etc.)
+    // Apply all mechanic-provided state (actionPoints, powerId, personalDeck, currentNode, state, etc.)
+    // Mechanics can override defaults like 'state' (board-state sets config.board.start)
+    const protectedKeys = new Set(['hand', 'effects', 'persona', 'score']);
     for (const [key, value] of Object.entries(mechanicState)) {
-      if (value !== undefined && !(key in players[playerId])) {
+      if (value !== undefined && !protectedKeys.has(key)) {
         (players[playerId] as unknown as Record<string, unknown>)[key] = value;
       }
     }
@@ -882,6 +884,50 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
   };
 }
 
+/**
+ * End game when timeout is reached (max_turns or max_rounds).
+ * Delegates winner determination to mechanic hooks (timeout-winner),
+ * falls back to highest score if no mechanic handles it.
+ */
+function endGameOnTimeout(state: GameState, endType: string): void {
+  // Let mechanics determine timeout winner (timeout-winner mechanic handles role/condition logic)
+  const mechanicResult = mechanicRegistry.checkAllWinConditions(state, 'timeout');
+
+  let winner: string | null;
+  let reason: string;
+
+  if (mechanicResult) {
+    winner = mechanicResult.playerId;
+    reason = mechanicResult.reason;
+  } else {
+    // Fallback: highest score
+    let highestScore = -Infinity;
+    winner = 'none';
+    for (const [playerId, player] of Object.entries(state.players)) {
+      const score = player.score ?? 0;
+      if (score > highestScore) {
+        highestScore = score;
+        winner = playerId;
+      }
+    }
+    const limit = endType === 'turn_limit' ? `Max turns (${state.config.max_turns})` : `Max rounds (${state.config.max_rounds})`;
+    reason = `${limit} reached. ${winner} wins with ${highestScore} points.`;
+  }
+
+  state.status = 'pending_analysis';
+  state.shared.winner = winner;
+  state.shared.endReason = reason;
+
+  logEvent(state, {
+    event: 'game_end',
+    round: state.round,
+    turnNumber: state.turnNumber,
+    data: { winner, reason, endType }
+  });
+
+  saveState(state);
+}
+
 export function advanceTurn(state: GameState): void {
   const previousPlayer = state.currentPlayer!;
   const currentIndex = state.turnOrder.indexOf(previousPlayer);
@@ -894,26 +940,7 @@ export function advanceTurn(state: GameState): void {
   // Proposal 012: Check max_turns limit (takes precedence over max_rounds)
   const maxTurns = state.config.max_turns as number | undefined;
   if (maxTurns && state.turnNumber > maxTurns) {
-    // Use configurable timeout winner
-    const result = determineTimeoutWinner(state);
-
-    state.status = 'pending_analysis';
-    state.shared.winner = result.winner;
-    state.shared.endReason = result.reason;
-
-    logEvent(state, {
-      event: 'game_end',
-      round: state.round,
-      turnNumber: state.turnNumber,
-      data: {
-        winner: result.winner,
-        reason: result.reason,
-        endType: 'turn_limit',
-        revealedRole: result.revealRole
-      }
-    });
-
-    saveState(state);
+    endGameOnTimeout(state, 'turn_limit');
     return;
   }
 
@@ -923,26 +950,7 @@ export function advanceTurn(state: GameState): void {
 
     // Check max_rounds limit (legacy - use max_turns for turn-based limits)
     if (state.config.max_rounds && state.round > state.config.max_rounds) {
-      // Proposal 010: Use configurable timeout winner
-      const result = determineTimeoutWinner(state);
-
-      state.status = 'pending_analysis';
-      state.shared.winner = result.winner;
-      state.shared.endReason = result.reason;
-
-      logEvent(state, {
-        event: 'game_end',
-        round: state.round,
-        turnNumber: state.turnNumber,
-        data: {
-          winner: result.winner,
-          reason: result.reason,
-          endType: 'timeout',
-          revealedRole: result.revealRole
-        }
-      });
-
-      saveState(state);
+      endGameOnTimeout(state, 'timeout');
       return;
     }
   }
@@ -1004,6 +1012,14 @@ export function cancelGame(gameName: string, reason: string): GameState {
 }
 
 /**
+ * Check if multi-action per round is allowed (e.g., action-points mechanic is enabled).
+ * Without this, engine enforces single action per round.
+ */
+function isMultiActionAllowed(state: GameState): boolean {
+  return !!state.config.engine_mechanics?.action_points;
+}
+
+/**
  * Conditionally advance turn based on action type and mechanic hooks.
  * For games with action points, only advances when AP is depleted.
  * For games without action points, always advances (each action = one turn).
@@ -1025,12 +1041,9 @@ export function maybeAdvanceTurn(state: GameState, playerId: string, action: Gam
     return true;
   }
 
-  // Auto-advance if the player has no more actions this round.
-  // Without action_points, lastActionRound blocks further actions,
-  // so don't leave the player stuck — advance automatically.
+  // Auto-advance if single-action-per-round and player already acted
   const player = state.players[playerId];
-  const apConfig = state.config.engine_mechanics?.action_points;
-  if (!apConfig && player && player.lastActionRound === state.round) {
+  if (!isMultiActionAllowed(state) && player && player.lastActionRound === state.round) {
     advanceTurn(state);
     return true;
   }
@@ -1231,97 +1244,8 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
   return null;
 }
 
-/**
- * Proposal 010: Determine winner when game times out (max_rounds reached).
- * Uses configurable timeout_winner rules, falling back to highest score.
- */
-export function determineTimeoutWinner(state: GameState): { winner: string | null; reason: string; revealRole: boolean } {
-  const config = state.config.engine_mechanics?.timeout_winner;
-  const maxRounds = state.config.max_rounds;
-
-  // Default fallback: highest score
-  const defaultWinner = (): { winner: string | null; reason: string; revealRole: boolean } => {
-    let highestScore = -Infinity;
-    let winner: string | null = 'none';
-
-    for (const [playerId, player] of Object.entries(state.players)) {
-      const score = player.score ?? 0;
-      if (score > highestScore) {
-        highestScore = score;
-        winner = playerId;
-      }
-    }
-
-    return {
-      winner,
-      reason: `Max rounds (${maxRounds}) reached. ${winner} wins with ${highestScore} points.`,
-      revealRole: false
-    };
-  };
-
-  if (!config) {
-    return defaultWinner();
-  }
-
-  switch (config.type) {
-    case 'role': {
-      // Find player with specified role/objective
-      const targetRole = config.role;
-      const targetRoleName = config.role_name;
-
-      for (const [playerId, player] of Object.entries(state.players)) {
-        const objective = player.objective as { name?: string; type?: string } | undefined;
-
-        if (objective) {
-          const matchesRole = targetRole && objective.type === targetRole;
-          const matchesName = targetRoleName && objective.name === targetRoleName;
-
-          if (matchesRole || matchesName) {
-            const roleName = objective.name || targetRole || 'The Enemy';
-            return {
-              winner: playerId,
-              reason: `Time limit reached. ${roleName} wins by default.`,
-              revealRole: config.reveal_role ?? true
-            };
-          }
-        }
-      }
-      // No player with matching role found - fall back to default
-      return defaultWinner();
-    }
-
-    case 'specific_player': {
-      // Simple condition evaluation (could be extended)
-      // For now, support "has_objective:Name" format
-      const condition = config.player_condition;
-      if (condition?.startsWith('has_objective:')) {
-        const objName = condition.replace('has_objective:', '');
-        for (const [playerId, player] of Object.entries(state.players)) {
-          const objective = player.objective as { name?: string } | undefined;
-          if (objective?.name === objName) {
-            return {
-              winner: playerId,
-              reason: `Time limit reached. Player with "${objName}" wins by condition.`,
-              revealRole: config.reveal_role ?? false
-            };
-          }
-        }
-      }
-      return defaultWinner();
-    }
-
-    case 'no_winner':
-      return {
-        winner: null,
-        reason: config.reason || 'Game ended in a draw.',
-        revealRole: false
-      };
-
-    case 'highest_score':
-    default:
-      return defaultWinner();
-  }
-}
+// determineTimeoutWinner logic moved to timeout-winner mechanic (onCheckWin with trigger='timeout')
+// Engine fallback (highest score) is in endGameOnTimeout() above
 
 export function drawCards(state: GameState, playerId: string, count: number): Card[] {
   const player = state.players[playerId];
@@ -1704,11 +1628,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
   // Note: Blocking effects check moved to lose-a-turn mechanic
 
-  // ============ NEW: Check for multiple actions per round ============
-  // Prevent players from submitting multiple actions in the same round
-  // UNLESS action_points is enabled (which allows multiple actions per round)
-  const apConfig = state.config.engine_mechanics?.action_points;
-  if (!apConfig && player.lastActionRound === state.round && action.type !== 'pass') {
+  // Prevent multiple actions per round unless multi-action is allowed (e.g., action-points)
+  if (!isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
     return {
       valid: false,
       errors: ['You have already acted this round. Wait for your next turn.']
@@ -1864,11 +1785,8 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       if (shouldEnd) {
         advanceTurn(state);
       } else {
-        // Auto-advance if the player has no more actions this round.
-        // Without action_points, lastActionRound blocks further actions,
-        // so don't leave the player stuck — advance automatically.
-        const apConfig = state.config.engine_mechanics?.action_points;
-        if (!apConfig && player.lastActionRound === state.round) {
+        // Auto-advance if single-action-per-round and player already acted
+        if (!isMultiActionAllowed(state) && player.lastActionRound === state.round) {
           advanceTurn(state);
         } else {
           saveState(state);
