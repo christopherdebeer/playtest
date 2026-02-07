@@ -1,9 +1,25 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-07T15:43:07.517Z",
+  "generated": "2026-02-07T16:21:27.641Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
+    "acting": {
+      "config_key": "acting",
+      "since": "3.0.0",
+      "description": "Charades-style acting with guessing",
+      "config_schema": {
+        "points_actor": "number",
+        "points_guesser": "number",
+        "max_guesses": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "action-drafting": {
       "config_key": "action_drafting",
       "since": "3.0.0",
@@ -77,6 +93,21 @@
         "canPlayerActNow"
       ]
     },
+    "action-queue": {
+      "config_key": "action_queue",
+      "since": "3.0.0",
+      "description": "Players queue actions for sequential execution",
+      "config_schema": {
+        "max_queue_size": "number",
+        "auto_process": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "action-retrieval": {
       "config_key": "action_retrieval",
       "since": "3.0.0",
@@ -91,6 +122,23 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
+    "action-timer": {
+      "config_key": "action_timer",
+      "since": "3.0.0",
+      "description": "Time-limited actions with budgets per player",
+      "config_schema": {
+        "time_per_player": "number",
+        "time_per_turn": "number",
+        "overtime_penalty": "number"
+      },
+      "hooks": [
+        "preValidateAction",
+        "postExecuteAction",
+        "onTurnStart",
+        "initSharedState",
         "getPlayerView"
       ]
     },
@@ -179,6 +227,37 @@
         "getAvailableActions"
       ]
     },
+    "auction-bidding": {
+      "config_key": "auction_bidding",
+      "since": "3.0.0",
+      "description": "Generic bidding auction mechanic",
+      "config_schema": {
+        "min_increment": "number",
+        "reserve_price": "number",
+        "items_per_round": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "auction-compensation": {
+      "config_key": "auction_compensation",
+      "since": "3.0.0",
+      "description": "Auction where losers receive compensation",
+      "config_schema": {
+        "compensation_rate": "number",
+        "min_bid": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "auction-dutch": {
       "config_key": "auction_dutch",
       "since": "3.0.0",
@@ -197,6 +276,22 @@
         "initSharedState"
       ]
     },
+    "auction-dutch-priority": {
+      "config_key": "auction_dutch_priority",
+      "since": "3.0.0",
+      "description": "Dutch auction with priority claiming",
+      "config_schema": {
+        "start_price": "number",
+        "price_decrement": "number",
+        "min_price": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "auction-english": {
       "config_key": "auction_english",
       "since": "3.0.0",
@@ -213,6 +308,35 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ]
+    },
+    "auction-fixed-placement": {
+      "config_key": "auction_fixed_placement",
+      "since": "3.0.0",
+      "description": "Bid on fixed position slots",
+      "config_schema": {
+        "slots": "array"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "auction-multiple-lot": {
+      "config_key": "auction_multiple_lot",
+      "since": "3.0.0",
+      "description": "Multiple items auctioned simultaneously",
+      "config_schema": {
+        "lots": "array",
+        "bid_budget": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "auction-once-around": {
@@ -243,6 +367,21 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ]
+    },
+    "auction-turn-order-until-pass": {
+      "config_key": "auction_turn_order_until_pass",
+      "since": "3.0.0",
+      "description": "Bid in turn order; passed players exit",
+      "config_schema": {
+        "min_raise": "number",
+        "starting_bid": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "automatic-resource-growth": {
@@ -411,6 +550,35 @@
       "since": "3.0.0",
       "hooks": []
     },
+    "command-cards": {
+      "config_key": "command_cards",
+      "since": "3.0.0",
+      "description": "Cards that issue commands to game elements",
+      "config_schema": {
+        "commands": "object"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
+    "commodity-speculation": {
+      "config_key": "commodity_speculation",
+      "since": "3.0.0",
+      "description": "Trade commodities with fluctuating prices",
+      "config_schema": {
+        "commodities": "array",
+        "starting_cash": "number"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "communication-limits": {
       "config_key": "communication_limits",
       "since": "3.0.0",
@@ -421,6 +589,22 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "connections": {
+      "config_key": "connections",
+      "since": "3.0.0",
+      "description": "Build links between board points",
+      "config_schema": {
+        "connection_cost": "number",
+        "points_per_connection": "number",
+        "max_connections": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "contracts": {
@@ -520,6 +704,22 @@
         "initSharedState"
       ]
     },
+    "deck-construction": {
+      "config_key": "deck_construction",
+      "since": "3.0.0",
+      "description": "Pre-game deck building from card pool",
+      "config_schema": {
+        "pool_size": "number",
+        "deck_size": "number",
+        "cards_per_pick": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "deduction": {
       "config_key": "deduction",
       "since": "3.0.0",
@@ -589,6 +789,35 @@
       "since": "3.0.0",
       "hooks": []
     },
+    "elapsed-real-time-ending": {
+      "config_key": "elapsed_real_time_ending",
+      "since": "3.0.0",
+      "description": "Game ends after set number of turns",
+      "config_schema": {
+        "max_turns": "number",
+        "warning_at": "number"
+      },
+      "hooks": [
+        "onTurnStart",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "enclosure": {
+      "config_key": "enclosure",
+      "since": "3.0.0",
+      "description": "Surround areas to claim them",
+      "config_schema": {
+        "points_per_cell": "number",
+        "board_size": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "events": {
       "config_key": "events",
       "since": "3.0.0",
@@ -653,6 +882,22 @@
         "canPlayerActNow"
       ]
     },
+    "grid-coverage": {
+      "config_key": "grid_coverage",
+      "since": "3.0.0",
+      "description": "Cover grid spaces to control territory",
+      "config_schema": {
+        "grid_size": "number",
+        "points_per_cell": "number",
+        "pieces_per_player": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "grid-movement": {
       "config_key": "grid_movement",
       "since": "3.0.0",
@@ -673,6 +918,21 @@
       },
       "hooks": [
         "postExecuteAction"
+      ]
+    },
+    "hexagon-grid": {
+      "config_key": "hexagon_grid",
+      "since": "3.0.0",
+      "description": "Hexagonal grid movement and positioning",
+      "config_schema": {
+        "radius": "number",
+        "movement_range": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "hidden-movement": {
@@ -757,6 +1017,55 @@
         "onTurnStart"
       ]
     },
+    "induction": {
+      "config_key": "induction",
+      "since": "3.0.0",
+      "description": "Discover secret rules by testing examples",
+      "config_schema": {
+        "points_correct_guess": "number",
+        "points_per_test": "number",
+        "max_tests": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "interrupts": {
+      "config_key": "interrupts",
+      "since": "3.0.0",
+      "description": "Out-of-turn reactive actions",
+      "config_schema": {
+        "interrupt_cost": "number",
+        "max_interrupts_per_turn": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView",
+        "canPlayerActNow"
+      ]
+    },
+    "investment": {
+      "config_key": "investment",
+      "since": "3.0.0",
+      "description": "Spend resources now for multiplied future returns",
+      "config_schema": {
+        "maturity_rounds": "number",
+        "return_multiplier": "number",
+        "max_investments": "number"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "kill-steal": {
       "config_key": "kill_steal",
       "since": "3.0.0",
@@ -828,6 +1137,22 @@
         "isPlayerBlocked"
       ]
     },
+    "map-addition": {
+      "config_key": "map_addition",
+      "since": "3.0.0",
+      "description": "Expand play area with new tiles",
+      "config_schema": {
+        "tile_types": "array",
+        "tiles_per_player": "number",
+        "points_per_tile": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "market": {
       "config_key": "market",
       "since": "3.0.0",
@@ -848,6 +1173,37 @@
         "getPlayerView"
       ]
     },
+    "matching": {
+      "config_key": "matching",
+      "since": "3.0.0",
+      "description": "Find matching pairs among hidden elements",
+      "config_schema": {
+        "pairs": "number",
+        "points_per_match": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "melding-and-splaying": {
+      "config_key": "melding_and_splaying",
+      "since": "3.0.0",
+      "description": "Create card melds and splay for bonuses",
+      "config_schema": {
+        "min_meld_size": "number",
+        "points_per_meld": "number",
+        "splay_directions": "array"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
     "memory": {
       "config_key": "memory",
       "since": "3.0.0",
@@ -861,6 +1217,19 @@
         "initPlayerState",
         "onTurnStart",
         "canSeeInfo"
+      ]
+    },
+    "modular-board": {
+      "config_key": "modular_board",
+      "since": "3.0.0",
+      "description": "Variable board layout from modular tiles",
+      "config_schema": {
+        "modules": "array",
+        "randomize": "boolean"
+      },
+      "hooks": [
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "movement-points": {
@@ -964,6 +1333,22 @@
         "getPlayerView"
       ]
     },
+    "ownership": {
+      "config_key": "ownership",
+      "since": "3.0.0",
+      "description": "Claim and manage ownership of game elements",
+      "config_schema": {
+        "claimable_elements": "array",
+        "claim_cost": "number",
+        "income_per_owned": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "pass": {
       "config_key": "pass",
       "since": "3.0.0",
@@ -971,6 +1356,53 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ]
+    },
+    "pattern-building": {
+      "config_key": "pattern_building",
+      "since": "3.0.0",
+      "description": "Create specific arrangements on personal grids",
+      "config_schema": {
+        "grid_size": "number",
+        "patterns": "array",
+        "points_per_placement": "number"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
+    "pattern-recognition": {
+      "config_key": "pattern_recognition",
+      "since": "3.0.0",
+      "description": "Identify matching patterns among visible elements",
+      "config_schema": {
+        "points_per_match": "number",
+        "penalty_wrong": "number",
+        "pattern_size": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "pick-up-and-deliver": {
+      "config_key": "pick_up_and_deliver",
+      "since": "3.0.0",
+      "description": "Transport goods between locations for rewards",
+      "config_schema": {
+        "contracts": "array",
+        "cargo_capacity": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "place-card": {
@@ -1055,6 +1487,22 @@
         "applyEffect"
       ]
     },
+    "prisoners-dilemma": {
+      "config_key": "prisoners_dilemma",
+      "since": "3.0.0",
+      "description": "Simultaneous cooperate/defect choices with payoff matrix",
+      "config_schema": {
+        "payoff": "object",
+        "rounds": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView",
+        "canPlayerActNow"
+      ]
+    },
     "push-your-luck": {
       "config_key": "push_your_luck",
       "since": "3.0.0",
@@ -1071,6 +1519,21 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
+        "getPlayerView"
+      ]
+    },
+    "questions-and-answers": {
+      "config_key": "questions_and_answers",
+      "since": "3.0.0",
+      "description": "Ask yes/no questions to deduce hidden information",
+      "config_schema": {
+        "max_questions": "number",
+        "points_correct_answer": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
         "getPlayerView"
       ]
     },
@@ -1125,6 +1588,21 @@
         "getPlayerView"
       ]
     },
+    "role-playing": {
+      "config_key": "role_playing",
+      "since": "3.0.0",
+      "description": "Players adopt character personas with traits and abilities",
+      "config_schema": {
+        "characters": "array",
+        "random_assignment": "boolean"
+      },
+      "hooks": [
+        "initPlayerState",
+        "onExecuteAction",
+        "getAvailableActions",
+        "getPlayerView"
+      ]
+    },
     "roles-with-asymmetric-information": {
       "config_key": "roles_with_asymmetric_information",
       "since": "3.0.0",
@@ -1148,6 +1626,37 @@
         "describeAction"
       ]
     },
+    "rondel": {
+      "config_key": "rondel",
+      "since": "3.0.0",
+      "description": "Circular action wheel with distance-based cost",
+      "config_schema": {
+        "segments": "array",
+        "free_steps": "number",
+        "cost_per_extra_step": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "score-and-reset-game": {
+      "config_key": "score_and_reset_game",
+      "since": "3.0.0",
+      "description": "Multi-round play with scoring between rounds",
+      "config_schema": {
+        "total_rounds": "number",
+        "bonus_per_round_win": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "secret-unit-deployment": {
       "config_key": "secret_unit_deployment",
       "since": "3.0.0",
@@ -1162,6 +1671,22 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ]
+    },
+    "semi-cooperative-game": {
+      "config_key": "semi_cooperative_game",
+      "since": "3.0.0",
+      "description": "Players share collective goal but compete individually",
+      "config_schema": {
+        "collective_goal": "number",
+        "failure_threshold": "number",
+        "contribution_cost": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "set-collection": {
@@ -1205,6 +1730,38 @@
       "config_key": "social",
       "since": "3.0.0",
       "hooks": []
+    },
+    "square-grid": {
+      "config_key": "square_grid",
+      "since": "3.0.0",
+      "description": "Cartesian grid movement (4 or 8 directions)",
+      "config_schema": {
+        "width": "number",
+        "height": "number",
+        "allow_diagonal": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "stock-holding": {
+      "config_key": "stock_holding",
+      "since": "3.0.0",
+      "description": "Buy/sell company shares, earn dividends",
+      "config_schema": {
+        "companies": "array",
+        "starting_cash": "number"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
     },
     "storytelling": {
       "config_key": "storytelling",
@@ -1332,6 +1889,22 @@
         "getPlayerView"
       ]
     },
+    "track-movement": {
+      "config_key": "track_movement",
+      "since": "3.0.0",
+      "description": "Movement along fixed linear tracks",
+      "config_schema": {
+        "track_length": "number",
+        "points_per_space": "number",
+        "loop": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
     "trading": {
       "config_key": "trading",
       "since": "3.0.0",
@@ -1390,6 +1963,21 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ]
+    },
+    "tug-of-war": {
+      "config_key": "tug_of_war",
+      "since": "3.0.0",
+      "description": "Bidirectional marker pushed by opposing forces",
+      "config_schema": {
+        "track_length": "number",
+        "push_strength": "number"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "turn-order-auction": {
@@ -1493,6 +2081,21 @@
         "initPlayerState",
         "getAvailableActions",
         "onDetermineTurnOrder"
+      ]
+    },
+    "variable-phase-order": {
+      "config_key": "variable_phase_order",
+      "since": "3.0.0",
+      "description": "Dynamic phase sequencing each round",
+      "config_schema": {
+        "phases": "array",
+        "player_selected": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "variable-player-powers": {
@@ -1714,6 +2317,23 @@
       "hooks": [
         "preValidateAction",
         "postExecuteAction",
+        "initSharedState",
+        "getPlayerView"
+      ]
+    },
+    "worker-placement-with-dice-workers": {
+      "config_key": "worker_placement_with_dice_workers",
+      "since": "3.0.0",
+      "description": "Dice serve as workers with face values determining valid placements",
+      "config_schema": {
+        "dice_per_player": "number",
+        "die_sides": "number",
+        "min_value_required": "boolean"
+      },
+      "hooks": [
+        "onTurnStart",
+        "onExecuteAction",
+        "getAvailableActions",
         "initSharedState",
         "getPlayerView"
       ]

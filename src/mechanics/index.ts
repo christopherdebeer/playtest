@@ -179,6 +179,60 @@ import { tilePlacementMechanic } from './tile-placement.js';
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
 
+// Phase 15: Category completers
+import { semiCooperativeGameMechanic } from './semi-cooperative-game.js';
+import { actionQueueMechanic } from './action-queue.js';
+import { actionTimerMechanic } from './action-timer.js';
+import { workerPlacementDiceWorkersMechanic } from './worker-placement-dice-workers.js';
+import { rolePlayingMechanic } from './role-playing.js';
+import { actingMechanic } from './acting.js';
+import { prisonersDilemmaMechanic } from './prisoners-dilemma.js';
+import { inductionMechanic } from './induction.js';
+import { patternRecognitionMechanic } from './pattern-recognition.js';
+import { questionsAndAnswersMechanic } from './questions-and-answers.js';
+import { elapsedRealTimeEndingMechanic } from './elapsed-real-time-ending.js';
+
+// Phase 15: Economic mechanics
+import { stockHoldingMechanic } from './stock-holding.js';
+import { investmentMechanic } from './investment.js';
+import { commoditySpeculationMechanic } from './commodity-speculation.js';
+import { ownershipMechanic } from './ownership.js';
+
+// Phase 15: Building mechanics
+import { patternBuildingMechanic } from './pattern-building.js';
+import { connectionsMechanic } from './connections.js';
+import { enclosureMechanic } from './enclosure.js';
+import { mapAdditionMechanic } from './map-addition.js';
+
+// Phase 15: Auction mechanics
+import { auctionCompensationMechanic } from './auction-compensation.js';
+import { auctionFixedPlacementMechanic } from './auction-fixed-placement.js';
+import { auctionMultipleLotMechanic } from './auction-multiple-lot.js';
+import { auctionBiddingMechanic } from './auction-bidding.js';
+import { auctionDutchPriorityMechanic } from './auction-dutch-priority.js';
+import { auctionTurnOrderUntilPassMechanic } from './auction-turn-order-until-pass.js';
+
+// Phase 15: Movement mechanics
+import { hexagonGridMechanic } from './hexagon-grid.js';
+import { rondelMechanic } from './rondel.js';
+import { trackMovementMechanic } from './track-movement.js';
+import { squareGridMechanic } from './square-grid.js';
+import { gridCoverageMechanic } from './grid-coverage.js';
+
+// Phase 15: Cards mechanics
+import { meldingAndSplayingMechanic } from './melding-and-splaying.js';
+import { commandCardsMechanic } from './command-cards.js';
+import { deckConstructionMechanic } from './deck-construction.js';
+
+// Phase 15: Other mechanics
+import { pickUpAndDeliverMechanic } from './pick-up-and-deliver.js';
+import { modularBoardMechanic } from './modular-board.js';
+import { variablePhaseOrderMechanic } from './variable-phase-order.js';
+import { tugOfWarMechanic } from './tug-of-war.js';
+import { matchingMechanic } from './matching.js';
+import { interruptsMechanic } from './interrupts.js';
+import { scoreAndResetMechanic } from './score-and-reset.js';
+
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
 mechanicRegistry.register(incomeMechanic);
@@ -350,6 +404,60 @@ mechanicRegistry.register(tilePlacementMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);
+
+// Register Phase 15: Category completers
+mechanicRegistry.register(semiCooperativeGameMechanic);
+mechanicRegistry.register(actionQueueMechanic);
+mechanicRegistry.register(actionTimerMechanic);
+mechanicRegistry.register(workerPlacementDiceWorkersMechanic);
+mechanicRegistry.register(rolePlayingMechanic);
+mechanicRegistry.register(actingMechanic);
+mechanicRegistry.register(prisonersDilemmaMechanic);
+mechanicRegistry.register(inductionMechanic);
+mechanicRegistry.register(patternRecognitionMechanic);
+mechanicRegistry.register(questionsAndAnswersMechanic);
+mechanicRegistry.register(elapsedRealTimeEndingMechanic);
+
+// Register Phase 15: Economic mechanics
+mechanicRegistry.register(stockHoldingMechanic);
+mechanicRegistry.register(investmentMechanic);
+mechanicRegistry.register(commoditySpeculationMechanic);
+mechanicRegistry.register(ownershipMechanic);
+
+// Register Phase 15: Building mechanics
+mechanicRegistry.register(patternBuildingMechanic);
+mechanicRegistry.register(connectionsMechanic);
+mechanicRegistry.register(enclosureMechanic);
+mechanicRegistry.register(mapAdditionMechanic);
+
+// Register Phase 15: Auction mechanics
+mechanicRegistry.register(auctionCompensationMechanic);
+mechanicRegistry.register(auctionFixedPlacementMechanic);
+mechanicRegistry.register(auctionMultipleLotMechanic);
+mechanicRegistry.register(auctionBiddingMechanic);
+mechanicRegistry.register(auctionDutchPriorityMechanic);
+mechanicRegistry.register(auctionTurnOrderUntilPassMechanic);
+
+// Register Phase 15: Movement mechanics
+mechanicRegistry.register(hexagonGridMechanic);
+mechanicRegistry.register(rondelMechanic);
+mechanicRegistry.register(trackMovementMechanic);
+mechanicRegistry.register(squareGridMechanic);
+mechanicRegistry.register(gridCoverageMechanic);
+
+// Register Phase 15: Cards mechanics
+mechanicRegistry.register(meldingAndSplayingMechanic);
+mechanicRegistry.register(commandCardsMechanic);
+mechanicRegistry.register(deckConstructionMechanic);
+
+// Register Phase 15: Other mechanics
+mechanicRegistry.register(pickUpAndDeliverMechanic);
+mechanicRegistry.register(modularBoardMechanic);
+mechanicRegistry.register(variablePhaseOrderMechanic);
+mechanicRegistry.register(tugOfWarMechanic);
+mechanicRegistry.register(matchingMechanic);
+mechanicRegistry.register(interruptsMechanic);
+mechanicRegistry.register(scoreAndResetMechanic);
 
 // Re-export for convenience
 export { mechanicRegistry, applyStateChanges, getRegisteredMechanicsMetadata, getMechanicRequires } from './registry.js';

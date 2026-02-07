@@ -74,7 +74,7 @@ A game engine where:
 │  - resources    │ │ - push-luck     │ │ - empty-hand    │
 │  - effects      │ │ - ladder-climb  │ │ - elimination   │
 │  - board        │ │ - trick-taking  │ │ - timeout       │
-│  - turns        │ │ - 95+ more      │ │ - race          │
+│  - turns        │ │ - 135+ more     │ │ - race          │
 │  - dice         │ │                 │ │ - sudden-death  │
 │  - visibility   │ │                 │ │ - end-game-bon  │
 │  - social       │ │                 │ │ - king-of-hill  │
@@ -127,7 +127,7 @@ src/mechanics/
 │   ├── highest-lowest-scoring.ts
 │   ├── finale-ending.ts
 │   └── single-loser-game.ts
-└── [98 leaf mechanics]   # Individual mechanic implementations
+└── [138 leaf mechanics]  # Individual mechanic implementations
 ```
 
 ---
@@ -1062,8 +1062,8 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 ### Overview
 
 - **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
-- **122** registered mechanics: **11** core domains + **13** win conditions + **98** leaf
-- **110 of 202** plannable reference mechanics have implementations (**54%**)
+- **162** registered mechanics: **11** core domains + **13** win conditions + **138** leaf
+- **150 of 202** plannable reference mechanics have implementations (**74%**)
 - **12** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **11 games**, all using unified config format
 - **198 tests** passing, build clean
@@ -1075,31 +1075,37 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 | Category | Implemented | Total | Coverage | Key Gaps |
 |----------|-------------|-------|----------|----------|
-| **Action** | 4 | 6 | 67% | action-queue, action-timer |
-| **Auction** | 4 | 11 | 36% | compensation, fixed-placement, multiple-lot |
-| **Building** | 4 | 9 | 44% | pattern-building, connections, enclosure |
-| **Cards** | 12 | 18 | 67% | melding-and-splaying, command-cards, deck-construction |
+| **Action** | 6 | 6 | **100%** | — |
+| **Auction** | 10 | 11 | 91% | auction-dexterity (physical) |
+| **Building** | 8 | 9 | 89% | crayon-rail-system |
+| **Cards** | 15 | 18 | 83% | campaign-battle-card-driven, deck-bag-and-pool-building |
 | **Conflict** | 7 | 7 | **100%** | — |
-| **Cooperative** | 4 | 5 | 80% | semi-cooperative-game |
+| **Cooperative** | 5 | 5 | **100%** | — |
 | **Dice** | 3 | 3 | **100%** | — |
-| **Economic** | 6 | 10 | 60% | stock-holding, investment, commodity-speculation |
-| **Ending** | 4 | 6 | 67% | race (overlaps win-race), elapsed-real-time |
-| **Information** | 5 | 8 | 63% | induction, pattern-recognition, Q&A |
-| **Movement** | 8 | 23 | 35% | hexagon-grid, rondel, programmed-movement |
-| **Other** | 20 | 63 | 32% | pick-up-and-deliver, modular-board, variable-phase-order |
+| **Economic** | 10 | 10 | **100%** | — |
+| **Ending** | 5 | 6 | 83% | race (overlaps win-race) |
+| **Information** | 8 | 8 | **100%** | — |
+| **Movement** | 13 | 23 | 57% | programmed-movement, line-of-sight, pattern-movement |
+| **Other** | 27 | 63 | 43% | hot-potato, constrained-bidding, closed-economy-auction |
 | **Physical** | 0 | 7 | N/A | *Not plannable (require physical components)* |
-| **Social** | 7 | 10 | 70% | role-playing, acting, prisoner's-dilemma |
+| **Social** | 10 | 10 | **100%** | — |
 | **Turn Order** | 8 | 8 | **100%** | — |
 | **Victory** | 12 | 12 | **100%** | — |
-| **Worker Placement** | 2 | 3 | 67% | worker-placement-with-dice-workers |
-| **Totals** | **110** | **202** | **54%** | **92 remaining** |
+| **Worker Placement** | 3 | 3 | **100%** | — |
+| **Totals** | **150** | **202** | **74%** | **52 remaining** |
 
-#### Fully Complete Categories
+#### Fully Complete Categories (11)
 
+- **Action** (6/6): action-points, action-drafting, action-event, action-retrieval, action-queue, action-timer
 - **Conflict** (7/7): area-impulse, chit-pull-system, critical-hits, force-commitment, kill-steal, ratio-CRT, secret-unit-deployment
+- **Cooperative** (5/5): cooperative-actions, cooperative-game, alliances, team-based-game, semi-cooperative-game
 - **Dice** (3/3): dice-rolling, push-your-luck, re-rolling-and-locking
+- **Economic** (10/10): income, market, trading, automatic-resource-growth, contracts, loans, stock-holding, investment, commodity-speculation, ownership
+- **Information** (8/8): deduction, hidden-objectives, hidden-roles, hidden-victory-points, roles-asymmetric-info, induction, pattern-recognition, questions-and-answers
+- **Social** (10/10): voting, negotiation, communication-limits, bribery, betting-and-bluffing, storytelling, player-judge, role-playing, acting, prisoner's-dilemma
 - **Turn Order** (8/8): random, stat-based, progressive, auction, claim-action, pass-order, time-track, role-order
 - **Victory** (12/12): end-game-bonuses, highest-lowest-scoring, king-of-the-hill, victory-points-as-resource, reach-state, score-threshold, empty-hand, elimination, timeout, race, sudden-death, finale-ending
+- **Worker Placement** (3/3): worker-placement, worker-placement-different-worker-types, worker-placement-with-dice-workers
 
 #### Additional Registered (Beyond BGG Reference)
 
@@ -1145,76 +1151,43 @@ The `getActionSchema` hook is defined in `types.ts` but no mechanic implements i
 
 ---
 
-## Outstanding Mechanic Work (92 Remaining)
+## Outstanding Mechanic Work (52 Remaining)
 
-The remaining 92 unimplemented reference mechanics organized by category with key exemplars and implementation feasibility. See `mechanics/` directory for detailed design specs for each mechanic.
+The remaining 52 unimplemented reference mechanics organized by category with key exemplars and implementation feasibility. See `mechanics/` directory for detailed design specs for each mechanic.
 
-### Building (5 remaining)
+### Building (1 remaining)
 
-4 of 9 implemented (place-location, tile-placement, network-and-route-building, tech-trees-tech-tracks).
+8 of 9 implemented. Only one high-complexity mechanic remains.
 
 | Mechanic | Exemplar Games | Hooks Needed | Complexity |
 |----------|---------------|--------------|------------|
-| **`pattern-building`** | Azul, Sagrada | building hooks | Medium |
-| **`connections`** | Roads & Boats | building hooks | Medium |
-| `enclosure` | Go, Cathedral | building hooks | Medium |
-| `map-addition` | Carcassonne expansions | building hooks | Low |
 | `crayon-rail-system` | Empire Builder | building, resources | High |
 
-### Economic (4 remaining)
+### Auction (1 remaining)
 
-6 of 10 implemented (income, market, trading, automatic-resource-growth, contracts, loans).
-
-| Mechanic | Exemplar Games | Hooks Needed | Complexity |
-|----------|---------------|--------------|------------|
-| **`stock-holding`** | Acquire, 18XX | resources, trading | High |
-| **`investment`** | Stockpile | resources | Medium |
-| `commodity-speculation` | Container, Panic on Wall Street | market hooks | High |
-| `ownership` | Monopoly, Acquire | board, resources | Medium |
-
-### Cooperative (1 remaining)
-
-4 of 5 implemented (cooperative-actions, cooperative-game, alliances, team-based-game).
-
-| Mechanic | Exemplar Games | Notes |
-|----------|---------------|-------|
-| `semi-cooperative-game` | Dead of Winter, Archipelago | Cooperative with traitor potential |
-
-### Auction (7 remaining)
+10 of 11 implemented. Only the physical auction mechanic remains (not plannable).
 
 | Mechanic | Exemplar Games | Complexity |
 |----------|---------------|------------|
-| **`auction-compensation`** | Keyflower | Medium |
-| **`auction-fixed-placement`** | Amun-Re | Medium |
-| **`auction-multiple-lot`** | For Sale | Medium |
-| `auction-bidding` | Generic bidding variant | Low |
-| `auction-dutch-priority` | Dutch with priority | Low |
-| `auction-turn-order-until-pass` | Turn-order bidding | Low |
 | `auction-dexterity` | Physical (not plannable) | N/A |
 
-### Cards (6 remaining)
+### Cards (3 remaining)
+
+15 of 18 implemented.
 
 | Mechanic | Exemplar Games | Complexity |
 |----------|---------------|------------|
-| **`melding-and-splaying`** | Rummy, Innovation | Medium |
-| **`command-cards`** | Memoir '44, BattleLore | Medium |
 | `campaign-battle-card-driven` | Twilight Struggle | High |
 | `card-play-conflict-resolution` | War variants | Low |
-| `deck-construction` | Pre-built decks (subset of deck-building) | Low |
 | `deck-bag-and-pool-building` | Orleans, Altiplano (bags) | Medium |
 
-### Movement (15 remaining)
+### Movement (10 remaining)
 
-8 of 23 implemented. Many remaining are niche variants.
+13 of 23 implemented. Many remaining are niche or high-complexity variants.
 
 | Mechanic | Exemplar Games | Feasibility | Notes |
 |----------|---------------|-------------|-------|
-| **`hexagon-grid`** | Settlers of Catan, Twilight Imperium | Medium | Extends grid-movement with hex adjacency |
-| **`rondel`** | Navegador, Antike | Medium | Circular track movement, action selection |
 | **`programmed-movement`** | RoboRally, Colt Express | Medium | Pre-program movement sequence |
-| **`track-movement`** | Power Grid, Clank! | Low | Linear track advancement |
-| `square-grid` | Chess, Checkers | Low | Subset of grid-movement |
-| `grid-coverage` | Blokus, Patchwork | Medium | Cover grid cells with pieces |
 | `resource-to-move` | Concordia | Low | Spend resources for movement |
 | `impulse-movement` | Impulse | Medium | Card-driven movement |
 | `line-of-sight` | Warhammer, X-Wing | High | Geometric visibility checks |
@@ -1225,76 +1198,30 @@ The remaining 92 unimplemented reference mechanics organized by category with ke
 | `measurement-movement` | Warhammer | High | Distance-based (adapt to grid) |
 | `three-dimensional-movement` | Space games | High | 3D coordinate system |
 
-### Action (2 remaining)
+### Ending (1 remaining)
 
-4 of 6 implemented (action-points, action-drafting, action-event, action-retrieval).
-
-| Mechanic | Exemplar Games | Complexity |
-|----------|---------------|------------|
-| `action-queue` | Shogun, Wallenstein | Medium |
-| `action-timer` | Hourglass/time-pressure | Low |
-
-### Social (3 remaining)
-
-7 of 10 implemented (voting, negotiation, communication-limits, bribery, betting-and-bluffing, storytelling, player-judge).
-
-| Mechanic | Exemplar Games | Complexity |
-|----------|---------------|------------|
-| `role-playing` | D&D-style | High |
-| `acting` | Charades-style | Medium |
-| `prisoner's-dilemma` | Game theory mechanic | Low |
-
-### Information (3 remaining)
-
-| Mechanic | Exemplar Games | Complexity |
-|----------|---------------|------------|
-| `induction` | Zendo, Eleusis | Medium |
-| `pattern-recognition` | Set, Dobble | Low |
-| `questions-and-answers` | 20 Questions, Guess Who | Low |
-
-### Ending (2 remaining)
-
-4 of 6 implemented (finale-ending, single-loser-game, player-elimination, sudden-death).
+5 of 6 implemented.
 
 | Mechanic | Notes |
 |----------|-------|
 | `race` | First to finish (overlaps win-race, may be partial) |
-| `elapsed-real-time-ending` | Not plannable (real clock) |
 
-### Worker Placement (1 remaining)
+### Other (36 remaining) — Mixed Impact
 
-| Mechanic | Exemplar Games | Complexity |
-|----------|---------------|------------|
-| `worker-placement-with-dice-workers` | Alien Frontiers, Troyes | Medium |
-
-### Other (43 remaining) — Mixed Impact
-
-20 of 63 implemented. Many are cross-cutting concerns or niche mechanics.
-
-**High-Value Targets:**
-
-| Mechanic | Exemplar Games | Hooks Needed | Complexity |
-|----------|---------------|--------------|------------|
-| **`pick-up-and-deliver`** | Merchants & Marauders | board, resources | Medium |
-| **`modular-board`** | Settlers of Catan, Eclipse | board init hooks | Medium |
-| **`variable-phase-order`** | Puerto Rico, Race for the Galaxy | turn hooks | Medium |
+27 of 63 implemented. Many are cross-cutting concerns or niche mechanics.
 
 **Medium-Value Targets:**
 
 | Mechanic | Exemplar Games | Notes |
 |----------|---------------|-------|
-| `tug-of-war` | Twilight Struggle | Bidirectional track mechanic |
 | `hot-potato` | Various party games | Forced card/item passing |
-| `matching` | Memory, Sequence | Pattern matching mechanic |
-| `interrupts` | MtG stack, Cosmic Encounter | Interrupt action flow |
 | `constrained-bidding` | Modern Art | Limited bid options |
 | `closed-economy-auction` | Modern Art | Money circulation |
 | `bids-as-wagers` | Skull, Perudo | Bids become commitments |
-| `score-and-reset-game` | Rummy variants | Multi-round scoring |
 | `passed-action-token` | Scythe | First-passer benefits |
 
-**Lower-Value/Niche (32):**
-`bias`, `bingo`, `delayed-purchase`, `drawing`, `increase-value-of-unchosen-resources`, `layering`, `legacy-game`, `line-drawing`, `mancala`, `map-deformation`, `map-reduction`, `minimap-resolution`, `moving-multiple-units`, `multiple-maps`, `narrative-choice-paragraph`, `neighbor-scope`, `order-counters`, `ordering`, `paper-and-pencil`, `pieces-as-map`, `predictive-bid`, `resource-queue`, `rock-paper-scissors`, `scenario-mission-campaign-game`, `selection-order-bid`, `simulation`, `slide-push`, `solo-solitaire-game`, `spelling`, `stat-check-resolution`, `static-capture`, `tags`
+**Lower-Value/Niche (31):**
+`bias`, `bingo`, `delayed-purchase`, `drawing`, `increase-value-of-unchosen-resources`, `layering`, `legacy-game`, `line-drawing`, `mancala`, `map-deformation`, `map-reduction`, `minimap-resolution`, `moving-multiple-units`, `multiple-maps`, `narrative-choice-paragraph`, `neighbor-scope`, `order-counters`, `ordering`, `paper-and-pencil`, `pieces-as-map`, `predictive-bid`, `resource-queue`, `rock-paper-scissors`, `scenario-mission-campaign-game`, `selection-order-bid`, `simulation`, `slide-push`, `solo-solitaire-game`, `spelling`, `stat-check-resolution`, `static-capture`
 
 ---
 
@@ -1312,6 +1239,7 @@ The remaining 92 unimplemented reference mechanics organized by category with ke
 | 12 | Movement + effects | applyPlacedCardEffects, case 'move', move targets, ~224 lines |
 | 13 | Timeout + AP | determineTimeoutWinner removed, AP checks consolidated, board start, ~82 lines |
 | 14 | Mass expansion | Building core domain, 26 new mechanics across 10 categories, 122 registered (54%) |
+| 15 | Category completers | 40 new mechanics, 11 categories completed, 162 registered (74%) |
 
 ### Next Steps: Engine
 
@@ -1327,13 +1255,11 @@ The remaining 92 unimplemented reference mechanics organized by category with ke
 
 | Priority | Category | Target Mechanics | Unlocks |
 |----------|----------|-----------------|---------|
-| **1** | Cards | melding-and-splaying, command-cards | Rummy, wargame card genre |
-| **2** | Movement | hexagon-grid, rondel, programmed-movement | Hex wargames, rondel euros |
-| **3** | Building | pattern-building, connections | Azul, pattern-matching genre |
-| **4** | Economic | stock-holding, investment | 18XX, financial genre |
-| **5** | Auction | auction-compensation, auction-fixed-placement | Advanced auction games |
-| **6** | Other | pick-up-and-deliver, modular-board | Logistics, variable setup |
-| **7** | Information | pattern-recognition, induction | Logic/deduction genre |
+| **1** | Movement | programmed-movement | RoboRally, Colt Express genre |
+| **2** | Cards | campaign-battle-card-driven, deck-bag-and-pool-building | Twilight Struggle, Orleans |
+| **3** | Other | hot-potato, constrained-bidding, passed-action-token | Party games, auction variants |
+| **4** | Building | crayon-rail-system | Empire Builder genre |
+| **5** | Ending | race | First-to-finish genre |
 
 ### Long-Term Refactoring
 
