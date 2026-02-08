@@ -1,0 +1,5 @@
+# Draft Duel — Poster Prompt
+
+## Image Generation Prompt
+
+A dynamic, fast-paced board game poster with an anime-influenced card game art style. Four players sit at a neon-lit table, each simultaneously slamming a card face-down in a moment of frozen action. Fans of colorful element cards arc through the air between players mid-pass — fire cards trailing embers, ice cards leaving frost trails, lightning cards crackling with energy. In the center, revealed cards from previous picks form growing tableaux of matched sets glowing with combo energy. A dramatic speed-line background radiates outward. Wild cards shimmer with rainbow holographic effects. A scoreboard floats above showing a tight three-way race. The color palette is electric blue, hot pink, neon green, and vivid orange against a dark background. The title "Draft Duel" is rendered in sharp, angular futuristic lettering with a metallic sheen. Tagline: "Pick. Pass. Prevail." Fast-paced card game poster art, energetic and competitive.

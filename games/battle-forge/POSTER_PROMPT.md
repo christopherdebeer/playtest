@@ -1,0 +1,5 @@
+# Battle Forge — Poster Prompt
+
+## Image Generation Prompt
+
+An industrial fantasy board game poster with a fiery, molten color palette. A massive underground forge dominates the center — an enormous anvil surrounded by four worker stations: a dark mine shaft with glinting ore veins, a bustling market with hanging price boards showing fluctuating values, a roaring forge with sparks flying from hammered metal, and a fortified barracks with armored soldiers standing at attention. Four workers in leather aprons and goggles are each positioned at different stations, competing for resources. Gold coins and raw ore spill across the scene. A volatile price chart etched into a brass plate floats in the background, its line graph spiking and crashing. The atmosphere is hot, competitive, and industrious. The color palette is molten orange, iron grey, burnished gold, and coal black. The title "Battle Forge" is stamped in heavy industrial block lettering as if branded into hot metal. Tagline: "Mine. Trade. Forge. Conquer." Industrial fantasy board game poster, bold and energetic.
