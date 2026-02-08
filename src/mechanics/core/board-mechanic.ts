@@ -48,6 +48,14 @@ export const boardMechanic: MechanicHooks = {
   slug: 'board',
   name: 'Board Core',
 
+  getHighlight(config: unknown): { label: string; value: string } | null {
+    if (!config || typeof config !== 'object') return null;
+    const cfg = config as Record<string, unknown>;
+    const states = cfg.states;
+    if (!Array.isArray(states) || states.length === 0) return null;
+    return { label: 'Locations', value: String(states.length) };
+  },
+
   defines: {
     onBeforePlayerMove: {
       description: 'Before a player moves. Can modify target or block.',
