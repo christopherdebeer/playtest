@@ -186,19 +186,51 @@ export function checkAndAutoAdjudicateResignation(state: GameState): boolean {
   if (elapsed >= AUTO_ADJUDICATION_TIMEOUT_MS) {
     // Auto-adjudicate: accept the resignation
     const resignation = contestState.pendingResignation;
+    const rulingReason = `[AUTO-ADJUDICATED] Gamemaster did not respond within ${AUTO_ADJUDICATION_TIMEOUT_MS / 1000}s. Resignation accepted by default.`;
 
     // Record in history
     contestState.resignations.push({
       player: resignation.player,
       reason: resignation.reason,
       accepted: true,
-      rulingReason: `[AUTO-ADJUDICATED] Gamemaster did not respond within ${AUTO_ADJUDICATION_TIMEOUT_MS / 1000}s. Resignation accepted by default.`,
+      rulingReason,
       timestamp: new Date().toISOString()
+    });
+
+    // End game - the resigning player loses (same as manual adjudication)
+    const otherPlayers = state.turnOrder.filter(p => p !== resignation.player);
+    const winner = otherPlayers.length === 1 ? otherPlayers[0] : 'none';
+
+    state.status = 'pending_analysis';
+    state.shared.winner = winner;
+    state.shared.endReason = `${resignation.player} resigned: ${resignation.reason}`;
+
+    logEvent(state, {
+      event: 'game_end',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      data: {
+        winner,
+        reason: `Resignation auto-accepted: ${resignation.reason}`,
+        resignedPlayer: resignation.player
+      }
     });
 
     // Clear pending resignation
     delete contestState.pendingResignation;
     saveState(state);
+
+    logEvent(state, {
+      event: 'resignation_adjudicated',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      data: {
+        player: resignation.player,
+        accepted: true,
+        rulingReason,
+        autoAdjudicated: true
+      }
+    });
 
     debug(`[AUTO-ADJUDICATION] Resignation timed out after ${elapsed}ms. Resignation accepted.`);
     return true;
