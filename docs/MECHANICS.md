@@ -217,6 +217,9 @@ interface MechanicHooks {
   /** Config schema for YAML validation */
   configSchema?: MechanicConfigSchema;
 
+  /** Return a highlight stat for game cards/pages (build-time only, display-only) */
+  getHighlight?(config: unknown): { label: string; value: string } | null;
+
   // ... global hooks, plus any methods from required mechanics' defines
 }
 ```
@@ -525,6 +528,9 @@ interface MechanicHooks {
   onDetermineTurnOrder?(...): TurnOrderResult | null;
   onPassPriority?(...): PassPriorityResult | null;
 
+  // Build-time display (not a runtime hook)
+  getHighlight?(config: unknown): { label: string; value: string } | null;
+
   // Domain hooks live on defining mechanics, implemented via [key: string]
 }
 ```
@@ -665,6 +671,69 @@ Mechanic only — handles the pass action via `onExecuteAction`:
 - Calls `onPassPriority` for turn order mechanics
 - Handles victory declarations via `pendingVictoryClaim`
 - Returns `advanceTurn: true` by default
+
+### Core Services as Mechanics
+
+The vision is that core services (`cards`, `board`, `resources`, etc.) are not a separate
+tier — they're just more powerful mechanics that happen to define hooks. The architecture
+diagram labels them "Trunk" but the long-term goal is that they are first-class mechanics
+participating in the same systems as leaf mechanics.
+
+#### Where we are
+
+Core services already participate as registered mechanics in most respects:
+
+| Capability | Status | Notes |
+|-----------|--------|-------|
+| Registered with slugs | **Done** | `cards`, `resources`, `board`, `dice`, `effects`, `visibility`, `social`, etc. |
+| Define hooks via `defines` | **Done** | All 7 domains fire mechanic-defined hooks |
+| Leaf mechanics depend via `requires` | **Done** | e.g. `deck-building` requires `cards` |
+| Own their actions via `onExecuteAction` | **Partial** | Cards owns `play_card`, resources owns `spend`. But deck init, board init still in game.ts |
+| Own their config namespace | **Not yet** | `cards` and `board` are "pseudo-keys" in RULES.md — decomposed to top-level by `normalizeUnifiedConfig` |
+| Participate in `getHighlight` | **Not yet** | Cards/board highlights are special-cased in generate-games.ts |
+
+#### The Pseudo-Key Problem
+
+In the unified RULES.md format, `cards` and `board` are treated specially:
+
+```yaml
+mechanics:
+  action_points: { per_turn: 3 }   # ← Normal mechanic, config stays in engine_mechanics
+  cards:                             # ← Pseudo-key, decomposed to config.deck + config.starting_cards
+    starting_hand: 5
+    deck: [...]
+  board:                             # ← Pseudo-key, decomposed to config.board
+    states: [...]
+```
+
+`normalizeUnifiedConfig()` extracts `cards` and `board` to top-level config
+properties that game.ts reads directly. This means:
+
+1. game.ts has hardcoded knowledge of deck building, hand dealing, board setup
+2. The generate script needs special pseudo-key handling for cards/board highlights
+3. Cards and board can't fully participate as normal mechanics (their config
+   doesn't live in `engine_mechanics` like every other mechanic's does)
+
+#### What's Left
+
+To complete the core-services-as-mechanics vision:
+
+| Step | What Changes | Impact |
+|------|-------------|--------|
+| **Cards owns init** | `initSharedState` builds deck, `initPlayerState` deals hands | Remove deck/hand init from game.ts (~40 lines) |
+| **Board owns init** | `initSharedState` sets up states, edges, starting positions | Remove board init from game.ts (~20 lines) |
+| **Eliminate pseudo-key decomposition** | Config stays in `engine_mechanics.cards` / `engine_mechanics.board` | Simplify `normalizeUnifiedConfig`, remove special cases |
+| **Cards/board getHighlight** | These mechanics define `getHighlight` like any other | Remove pseudo-key handling from generate-games.ts |
+| **Resources owns init** | Resources mechanic already partially does this, complete the migration | Remove resources init from game.ts |
+
+Once complete, `normalizeUnifiedConfig` would treat every key in `mechanics:` uniformly —
+no pseudo-keys, no special extraction. game.ts would delegate all domain init to
+`mechanicRegistry.initSharedState()` / `initPlayerState()`. And highlights would flow
+through the registry for all mechanics including cards and board.
+
+This is the natural next step after the game.ts agnosticism work (Phases 10-13) and
+aligns with the strangler fig approach — the pseudo-key decomposition is the last
+piece of the old model being wrapped.
 
 ---
 
@@ -932,6 +1001,36 @@ export const myMechanic: MechanicHooks = {
 };
 ```
 
+### Highlights (Optional, Build-Time Only)
+
+Mechanics that define a game's *identity* can implement `getHighlight` to surface a stat
+on game cards and pages. This is not a runtime hook — it's called during site generation
+(`generate-games.ts`) to produce a `{ label, value }` pair from the mechanic's config.
+
+```typescript
+  // Only implement if this mechanic is identity-defining.
+  // Receives the raw config value from RULES.md (may be `true` for boolean mechanics).
+  getHighlight(config: unknown): { label: string; value: string } | null {
+    if (!config || typeof config !== 'object') return null;
+    const cfg = config as Record<string, unknown>;
+    const ppt = cfg.points_per_turn;
+    if (typeof ppt !== 'number') return null;
+    return { label: 'AP/turn', value: String(ppt) };
+  }
+```
+
+Design intent:
+- **Sparse**: Only ~9 of 162 mechanics implement it. Most mechanics are not identity-defining.
+- **Freeform**: Each mechanic speaks in its own idiom — "3d6", "Co-op", "4 Locations".
+- **Opt-in**: New mechanics can add highlights without changing any central mapping.
+- **Max 4** highlights per game (capped in `generate-games.ts`).
+
+Currently implemented by: `dice-rolling`, `action-points`, `hidden-roles`,
+`variable-player-powers`, `push-your-luck`, `team-based-game`, `cooperative-game`,
+`resources`, `worker-placement`. The `cards` and `board` pseudo-key highlights
+("N Cards", "N Locations") are handled directly in the generation script since
+they are not yet full mechanics (see [Core Services as Mechanics](#core-services-as-mechanics)).
+
 ### Registration
 
 ```typescript
@@ -1065,7 +1164,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **162** registered mechanics: **11** core domains + **13** win conditions + **138** leaf
 - **150 of 202** plannable reference mechanics have implementations (**74%**)
 - **12** additional registered mechanics beyond the BGG reference (core domains, extras)
-- **11 games**, all using unified config format
+- **18 games**, all using unified config format
 - **198 tests** passing, build clean
 - **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`
@@ -1247,9 +1346,10 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 |----------|------|--------|------------|
 | **1** | `getActionSchema` hook implementations | ~150 lines from game.ts | Medium |
 | **2** | Win condition consolidation (wire mechanic `onCheckWin` to main check path) | ~55 lines from game.ts | Medium |
-| **3** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
-| **4** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
-| **5** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
+| **3** | Core services own init: cards builds deck/deals hands, board sets up states/edges via `initSharedState`/`initPlayerState` | ~60 lines from game.ts, eliminates pseudo-key decomposition | Medium |
+| **4** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
+| **5** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
+| **6** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
 
 ### Next Steps: New Mechanics (Priority Order)
 
