@@ -53,7 +53,8 @@ import {
   addToDiscard,
   playCard,
   addToHand,
-  removeFromHandByIndex
+  removeFromHandByIndex,
+  applyDynamicTurnOrder
 } from '../mechanics/core/index.js';
 
 // Find project root (parent of src directory)
@@ -953,6 +954,11 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
  * falls back to highest score if no mechanic handles it.
  */
 function endGameOnTimeout(state: GameState, endType: string): void {
+  // Guard against duplicate end calls
+  if (state.status === 'pending_analysis' || state.status === 'completed' || state.status === 'cancelled') {
+    return;
+  }
+
   // Let mechanics determine timeout winner (timeout-winner mechanic handles role/condition logic)
   const mechanicResult = mechanicRegistry.checkAllWinConditions(state, 'timeout');
 
@@ -1018,6 +1024,11 @@ export function advanceTurn(state: GameState): void {
     }
   }
 
+  // At round start, let mechanics reorder turn order (e.g., turn-order-role, turn-order-stat-based)
+  if (isNewRound) {
+    applyDynamicTurnOrder(state, 'round_start');
+  }
+
   state.currentPlayer = state.turnOrder[nextIndex];
   const nextPlayer = state.players[state.currentPlayer];
 
@@ -1042,6 +1053,11 @@ export function advanceTurn(state: GameState): void {
 export function endGame(gameName: string, winner: string, reason: string): GameState {
   const state = loadState(gameName);
 
+  // Guard against duplicate end calls — game can only end once
+  if (state.status === 'pending_analysis' || state.status === 'completed' || state.status === 'cancelled') {
+    return state;
+  }
+
   state.status = 'pending_analysis';
   state.shared.winner = winner;
   state.shared.endReason = reason;
@@ -1050,7 +1066,7 @@ export function endGame(gameName: string, winner: string, reason: string): GameS
   logEvent(state, {
     event: 'game_end',
     round: state.round,
-        turnNumber: state.turnNumber,
+    turnNumber: state.turnNumber,
     data: { winner, reason }
   });
 
@@ -1379,7 +1395,9 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     throw new Error(`Player ${playerId} not found`);
   }
 
-  const isYourTurn = state.currentPlayer === playerId;
+  const isCurrentPlayer = state.currentPlayer === playerId;
+  const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
+  const isYourTurn = isCurrentPlayer || canActNow;
   const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
   const hasCards = (state.config.starting_cards ?? 0) > 0 || state.deck.length > 0 || state.discardPile.length > 0;
   const hand = player.hand || [];
@@ -1497,12 +1515,11 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   // trade_offer, trade_respond, bid, spend, collect_set, roll, bank, draft
   // actions are now provided by their respective mechanics (getAvailableActions)
 
-  // === RESIGN action (always available) ===
+  // === RESIGN action (always available regardless of turn) ===
   actions.push({
     type: 'resign',
     description: 'Forfeit the game (requires gamemaster approval)',
-    enabled: isYourTurn,
-    reason: !isYourTurn ? 'Not your turn' : undefined,
+    enabled: true,
     required: { reason: 'Explanation for why you are resigning' },
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
@@ -1655,9 +1672,14 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     return { valid: false, errors: [`Player ${playerId} not found`] };
   }
 
-  // Check if it's the player's turn
-  if (state.currentPlayer !== playerId) {
-    return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
+  // Check if it's the player's turn (or a mechanic grants out-of-turn access)
+  // Resign is always allowed regardless of turn order
+  const isOutOfTurnAction = state.currentPlayer !== playerId;
+  if (isOutOfTurnAction && action.type !== 'resign') {
+    const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
+    if (!canActNow) {
+      return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
+    }
   }
 
   // Check game status
@@ -1693,7 +1715,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   // Note: Blocking effects check moved to lose-a-turn mechanic
 
   // Prevent multiple actions per round unless multi-action is allowed (e.g., action-points)
-  if (!isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
+  // Out-of-turn actions (granted by canPlayerActNow) bypass this — mechanics track their own submission state
+  if (!isOutOfTurnAction && !isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
     return {
       valid: false,
       errors: ['You have already acted this round. Wait for your next turn.']
