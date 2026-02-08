@@ -1502,12 +1502,13 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   }
 
   // === PASS action (only for currentPlayer) ===
-  // Out-of-turn players cannot pass — pass advances the turn, and allowing it
-  // out-of-turn would let a single player monopolize round advancement.
+  // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
+  // those are deduplicated against this base entry.
+  // Validation is handled by the pass mechanic's preValidateAction hook.
   actions.push({
     type: 'pass',
     description: 'Skip your turn without taking an action',
-    enabled: isCurrentPlayer,  // Only currentPlayer can pass, not out-of-turn players
+    enabled: isCurrentPlayer,
     reason: !isCurrentPlayer ? 'Not your turn' : undefined,
     required: {},
     optional: { reasoning: 'Why you are passing' },
@@ -1527,8 +1528,8 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   });
 
   // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (move, play_card, draw, pass, etc.)
-  // But keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
+  // Skip mechanic actions that duplicate base actions (move, play_card, draw, pass, resign, etc.)
+  // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
   const baseActionTypes = new Set(actions.map(a => a.type));
   for (const mechanicAction of mechanicActions) {
     // Skip movement/pass/draw mechanics that duplicate base actions
@@ -1536,7 +1537,13 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     if (baseActionTypes.has(mechanicAction.action.type) &&
         !['victory', 'programming'].includes(mechanicAction.category || '')) continue;
 
-    const enabled = isYourTurn && !isBlocked;
+    // Let mechanics override enabled/reason; default to isYourTurn && !isBlocked
+    const defaultEnabled = isYourTurn && !isBlocked;
+    const enabled = mechanicAction.enabled !== undefined ? mechanicAction.enabled : defaultEnabled;
+    const reason = mechanicAction.reason !== undefined ? mechanicAction.reason :
+                   (!isYourTurn ? 'Not your turn' :
+                    isBlocked ? 'You are blocked this turn' :
+                    undefined);
     // Extract required fields from action (everything except 'type')
     const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
     const required: Record<string, string> = {};
@@ -1547,9 +1554,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       type: mechanicAction.action.type,
       description: `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
       enabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
+      reason: !enabled ? reason : undefined,
       required,
       examples: [mechanicAction.action]
     });
@@ -1676,13 +1681,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
   // Check if it's the player's turn (or a mechanic grants out-of-turn access)
   // Resign is always allowed regardless of turn order
-  // Pass is restricted to currentPlayer — out-of-turn access is granted for
-  // specific actions (e.g., simultaneous submissions), not for passing
   const isOutOfTurnAction = state.currentPlayer !== playerId;
   if (isOutOfTurnAction && action.type !== 'resign') {
-    if (action.type === 'pass') {
-      return { valid: false, errors: ['Only the current player may pass.'] };
-    }
     const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
     if (!canActNow) {
       return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };

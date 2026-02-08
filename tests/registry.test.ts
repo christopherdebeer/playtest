@@ -271,8 +271,9 @@ describe('registry global hooks', () => {
     const state = makeState();
     const actions = mechanicRegistry.getAvailableActions(state, 'player-1');
 
-    // Pass is only available when explicitly enabled in config
-    // With no engine_mechanics.pass, pass should NOT appear
+    // Base pass is provided by game.ts (not the mechanic registry).
+    // The pass mechanic only contributes victory declaration when configured.
+    // Without victory_declaration config, no pass action from registry.
     const passAction = actions.find(a => a.action.type === 'pass');
     expect(passAction).toBeUndefined();
   });
@@ -463,11 +464,12 @@ describe('registry dependency validation', () => {
     const enabled = mechanicRegistry.getEnabledMechanics(config);
     const slugs = enabled.map(m => m.slug);
 
-    // Without config, no mechanics should be enabled
+    // Without config, no mechanics should be enabled (except alwaysEnabled ones like pass)
     expect(slugs).not.toContain('cards');
     expect(slugs).not.toContain('resources');
     expect(slugs).not.toContain('dice');
-    expect(slugs).not.toContain('pass');
+    // Pass is alwaysEnabled (core mechanic), so it IS present
+    expect(slugs).toContain('pass');
   });
 
   it('getEnabledMechanics enables dependencies of configured mechanics', () => {

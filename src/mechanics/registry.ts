@@ -119,7 +119,7 @@ class MechanicRegistry {
    */
   getEnabledMechanics(config: GameConfig): MechanicHooks[] {
     return Array.from(this.mechanics.values())
-      .filter(m => isMechanicEnabled(config, m.slug));
+      .filter(m => m.alwaysEnabled || isMechanicEnabled(config, m.slug));
   }
 
   /**
