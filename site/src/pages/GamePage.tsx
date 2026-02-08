@@ -14,6 +14,11 @@ interface CardDef {
   effect: Record<string, unknown>
 }
 
+interface Highlight {
+  label: string
+  value: string
+}
+
 interface GameConfig {
   name: string
   players: string
@@ -26,6 +31,7 @@ interface GameConfig {
     start: string
   }
   mechanics?: string[] | Record<string, unknown>
+  highlights?: Highlight[]
 }
 
 interface Game {
@@ -89,16 +95,16 @@ function GamePage() {
             <span className="meta-label">Win Condition</span>
             <span className="meta-value">{game.config.winCondition}</span>
           </div>
-          {game.config.startingCards && (
-            <div className="meta-item">
-              <span className="meta-label">Starting Cards</span>
-              <span className="meta-value">{game.config.startingCards}</span>
-            </div>
-          )}
           <div className="meta-item">
             <span className="meta-label">Max Rounds</span>
             <span className="meta-value">{game.config.maxRounds}</span>
           </div>
+          {game.config.highlights && game.config.highlights.map((h: Highlight) => (
+            <div className="meta-item" key={h.label}>
+              <span className="meta-label">{h.label}</span>
+              <span className="meta-value">{h.value}</span>
+            </div>
+          ))}
         </div>
 
         {game.config.mechanics && (() => {

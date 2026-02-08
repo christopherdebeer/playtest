@@ -228,5 +228,13 @@ export const diceRollingMechanic: MechanicHooks & DiceHooks = {
         default: true
       }
     }
+  },
+
+  getHighlight(config: unknown): { label: string; value: string } | null {
+    if (!config || typeof config !== 'object') return null;
+    const cfg = config as Record<string, unknown>;
+    const count = cfg.dice_count ?? 1;
+    const sides = cfg.dice_sides ?? 6;
+    return { label: 'Dice', value: `${count}d${sides}` };
   }
 };

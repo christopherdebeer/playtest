@@ -553,5 +553,13 @@ export const workerPlacementMechanic: MechanicHooks = {
       workersPlaced: placed.length,
       workerPlacements: placed.map(w => ({ id: w.id, type: w.type, space: w.placedAt }))
     };
+  },
+
+  getHighlight(config: unknown): { label: string; value: string } | null {
+    if (!config || typeof config !== 'object') return null;
+    const cfg = config as Record<string, unknown>;
+    const spaces = cfg.spaces;
+    if (!Array.isArray(spaces)) return null;
+    return { label: 'Locations', value: String(spaces.length) };
   }
 };

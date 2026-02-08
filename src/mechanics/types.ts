@@ -841,6 +841,14 @@ export interface MechanicHooks {
   configSchema?: MechanicConfigSchema;
 
   /**
+   * Return a highlight stat for display on game cards and pages.
+   * Receives this mechanic's config from the game's RULES.md.
+   * Return { label, value } or null if nothing worth highlighting.
+   * Only implement on mechanics that define a game's identity.
+   */
+  getHighlight?(config: unknown): { label: string; value: string } | null;
+
+  /**
    * Allow arbitrary methods for mechanic-defined hook implementations.
    * When a mechanic declares `requires: ['cards']`, it can implement
    * methods like `onCardDrawn()` that the cards mechanic defines.

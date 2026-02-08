@@ -67,6 +67,7 @@ export interface MechanicMetadata {
   conflicts?: string[];
   defines?: Record<string, HookDefinition>;
   hooks: string[];
+  hasHighlight?: boolean;
 }
 
 /**
@@ -120,6 +121,16 @@ class MechanicRegistry {
   getEnabledMechanics(config: GameConfig): MechanicHooks[] {
     return Array.from(this.mechanics.values())
       .filter(m => m.alwaysEnabled || isMechanicEnabled(config, m.slug));
+  }
+
+  /**
+   * Get highlight for a mechanic given its config from RULES.md.
+   * Returns { label, value } or null.
+   */
+  getHighlight(slug: string, config: unknown): { label: string; value: string } | null {
+    const mechanic = this.mechanics.get(slug);
+    if (!mechanic?.getHighlight) return null;
+    return mechanic.getHighlight(config);
   }
 
   /**
@@ -207,7 +218,8 @@ class MechanicRegistry {
         requires: requires.length > 0 ? requires : undefined,
         conflicts: mechanic.conflicts,
         defines: mechanic.defines,
-        hooks
+        hooks,
+        hasHighlight: typeof mechanic.getHighlight === 'function' ? true : undefined,
       });
     }
 
