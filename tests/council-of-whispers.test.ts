@@ -399,6 +399,71 @@ describe('available actions with canPlayerActNow', () => {
   });
 });
 
+// ============ Pass Restrictions ============
+
+describe('pass spam prevention', () => {
+  it('rejects pass from out-of-turn player during PD phase', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // Complete action selection
+    harness.step('player-1', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-2', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-3', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-4', { type: 'select_action', selectedAction: 'Scheme' } as any);
+
+    // PD is now active. Player-3 (not currentPlayer) tries to pass instead of submitting dilemma_choice
+    expect(harness.state.currentPlayer).not.toBe('player-3');
+    const result = harness.step('player-3', { type: 'pass' });
+    expect(result.success).toBe(false);
+  });
+
+  it('allows pass from currentPlayer during PD phase', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // Complete action selection
+    harness.step('player-1', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-2', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-3', { type: 'select_action', selectedAction: 'Scheme' } as any);
+    harness.step('player-4', { type: 'select_action', selectedAction: 'Scheme' } as any);
+
+    // currentPlayer CAN pass (it's their turn)
+    const currentPlayer = harness.state.currentPlayer;
+    const result = harness.step(currentPlayer, { type: 'pass' });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects pass from out-of-turn player during SAS phase', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // SAS is in "selecting" phase, player-3 should select_action, not pass
+    expect(harness.state.currentPlayer).not.toBe('player-3');
+    const result = harness.step('player-3', { type: 'pass' });
+    expect(result.success).toBe(false);
+  });
+
+  it('shows pass as disabled for out-of-turn players in available actions', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    expect(harness.state.currentPlayer).toBe('player-1');
+
+    // Player-3 (out-of-turn) should see pass as disabled
+    const actions = harness.getActions('player-3');
+    const passAction = actions.actions.find(a => a.type === 'pass');
+    expect(passAction).toBeDefined();
+    expect(passAction!.enabled).toBe(false);
+
+    // But player-1 (currentPlayer) should see pass as enabled
+    const p1Actions = harness.getActions('player-1');
+    const p1Pass = p1Actions.actions.find(a => a.type === 'pass');
+    expect(p1Pass).toBeDefined();
+    expect(p1Pass!.enabled).toBe(true);
+  });
+});
+
 // ============ Full Round Flow ============
 
 describe('full round flow', () => {

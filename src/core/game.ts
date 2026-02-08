@@ -1501,12 +1501,15 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     });
   }
 
-  // === PASS action (always available on your turn) ===
+  // === PASS action (only for currentPlayer) ===
+  // Out-of-turn players (granted by canPlayerActNow) must use the mechanic-specific
+  // action, not pass. This prevents pass spam where a player rapidly passes on
+  // every turn via out-of-turn access, monopolizing round advancement.
   actions.push({
     type: 'pass',
     description: 'Skip your turn without taking an action',
-    enabled: isYourTurn,  // Pass is always allowed, even when blocked
-    reason: !isYourTurn ? 'Not your turn' : undefined,
+    enabled: isCurrentPlayer,  // Only currentPlayer can pass, not out-of-turn players
+    reason: !isCurrentPlayer ? 'Not your turn' : undefined,
     required: {},
     optional: { reasoning: 'Why you are passing' },
     examples: [{ type: 'pass' }]
@@ -1674,8 +1677,13 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
   // Check if it's the player's turn (or a mechanic grants out-of-turn access)
   // Resign is always allowed regardless of turn order
+  // Pass is only allowed for the currentPlayer — out-of-turn players must use
+  // the mechanic-specific action that granted them canPlayerActNow access
   const isOutOfTurnAction = state.currentPlayer !== playerId;
   if (isOutOfTurnAction && action.type !== 'resign') {
+    if (action.type === 'pass') {
+      return { valid: false, errors: ['Cannot pass out of turn. Use the available mechanic action instead.'] };
+    }
     const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
     if (!canActNow) {
       return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
