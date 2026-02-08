@@ -81,9 +81,14 @@ export const semiCooperativeGameMechanic: MechanicHooks = {
       contributions[pid] = 0;
     }
 
+    // Initialize treasury with starting amount from config, default 20
+    const initialProgress = (config as Record<string, unknown>).initial_progress as number
+      ?? (config as Record<string, unknown>).starting_amount as number
+      ?? 20;
+
     return {
       semiCooperative: {
-        collectiveProgress: 0,
+        collectiveProgress: initialProgress,
         contributions,
         collectiveFailed: false
       } as SemiCoopState

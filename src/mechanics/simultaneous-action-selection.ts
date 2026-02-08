@@ -141,6 +141,51 @@ export const simultaneousActionSelectionMechanic: MechanicHooks = {
       } else {
         selState.phase = 'resolving';
       }
+
+      // Resolve action effects for all players
+      const resolvedMessages: string[] = [];
+      for (const [pid, selectedAction] of Object.entries(selState.selections)) {
+        const actionName = String(selectedAction).toLowerCase();
+        const player = ctx.state.players[pid];
+        if (!player || !player.resources) continue;
+
+        const resources = player.resources;
+        const goldMax = (ctx.config.engine_mechanics?.resources as unknown as Array<{name: string; max: number}>)
+          ?.find((r: {name: string}) => r.name === 'gold')?.max ?? 30;
+        const influenceMax = (ctx.config.engine_mechanics?.resources as unknown as Array<{name: string; max: number}>)
+          ?.find((r: {name: string}) => r.name === 'influence')?.max ?? 15;
+
+        switch (actionName) {
+          case 'scheme':
+            resources.gold = Math.min((resources.gold || 0) + 2, goldMax);
+            resolvedMessages.push(`${pid}: Scheme (+2 gold)`);
+            break;
+          case 'fortify':
+            resources.influence = Math.min((resources.influence || 0) + 2, influenceMax);
+            resolvedMessages.push(`${pid}: Fortify (+2 influence)`);
+            break;
+          case 'subvert': {
+            const coopState = ctx.state.shared.semiCooperative as { collectiveProgress: number } | undefined;
+            if (coopState && coopState.collectiveProgress >= 2) {
+              coopState.collectiveProgress -= 2;
+              resources.gold = Math.min((resources.gold || 0) + 2, goldMax);
+              resolvedMessages.push(`${pid}: Subvert (stole 2 gold from treasury)`);
+            } else {
+              resolvedMessages.push(`${pid}: Subvert (treasury too low, failed)`);
+            }
+            break;
+          }
+          case 'investigate':
+            resolvedMessages.push(`${pid}: Investigate`);
+            break;
+          default:
+            resolvedMessages.push(`${pid}: ${selectedAction}`);
+            break;
+        }
+      }
+
+      // Transition to idle after resolution
+      selState.phase = 'idle';
     }
 
     return {
@@ -148,7 +193,7 @@ export const simultaneousActionSelectionMechanic: MechanicHooks = {
       stateChanges: {
         sharedStateChanges: { simultaneousSelection: selState }
       },
-      advanceTurn: !allSelected, // Advance turn if waiting for others; if all selected, stay for resolution
+      advanceTurn: true, // Always advance turn after selection (resolution happens inline)
       checkWin: false,
       logMessage: allSelected
         ? `All players have selected their actions. ${config.reveal_before_resolve !== false ? 'Revealing...' : 'Resolving...'}`
