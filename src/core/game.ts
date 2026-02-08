@@ -1314,12 +1314,33 @@ export function checkWinCondition(state: GameState, playerId: string): { won: bo
  * Returns winner info if someone won, null otherwise.
  */
 export function checkAllWinConditions(state: GameState): { winner: string; reason: string } | null {
+  // Per-player win conditions (reach state, empty hand, score threshold, last standing)
   for (const playerId of state.turnOrder) {
     const result = checkWinCondition(state, playerId);
     if (result.won) {
       return { winner: playerId, reason: result.reason! };
     }
   }
+
+  // Aggregate win conditions (require comparing all players)
+  const condition = state.config.win_condition?.toLowerCase() || '';
+
+  // Pattern: "highest_score" / "highest score" - winner is player with highest score
+  if (condition.includes('highest_score') || condition.includes('highest score')) {
+    let highestScore = -Infinity;
+    let winner = 'none';
+    for (const [pid, player] of Object.entries(state.players)) {
+      const score = player.score ?? 0;
+      if (score > highestScore) {
+        highestScore = score;
+        winner = pid;
+      }
+    }
+    if (winner !== 'none') {
+      return { winner, reason: `${winner} wins with highest score (${highestScore})` };
+    }
+  }
+
   return null;
 }
 
@@ -1853,7 +1874,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
     });
 
-    // Check win condition if requested
+    // Check win condition if requested by a mechanic
     if (mechanicResult.checkWin) {
       const winCheck = checkAllWinConditions(state);
       if (winCheck) {

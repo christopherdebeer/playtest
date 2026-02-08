@@ -12,7 +12,7 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import { GameTestHarness } from './harness.js';
-import { endGame } from '../src/core/game.js';
+import { endGame, checkAllWinConditions } from '../src/core/game.js';
 
 let harness: GameTestHarness | null = null;
 
@@ -501,5 +501,92 @@ describe('full round flow', () => {
     // Total actions: 4 (select) + 4 (dilemma) = 8, no passes needed
     const successfulActions = harness.history.filter(h => h.result.success);
     expect(successfulActions).toHaveLength(8);
+  });
+});
+
+// ============ Highest Score Win Condition ============
+
+describe('highest_score win condition', () => {
+  it('checkAllWinConditions finds highest scorer for highest_score_or_single_loser', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // Manually set different scores
+    harness.state.players['player-1'].score = 10;
+    harness.state.players['player-2'].score = 25;
+    harness.state.players['player-3'].score = 15;
+    harness.state.players['player-4'].score = 5;
+
+    const result = checkAllWinConditions(harness.state);
+    expect(result).not.toBeNull();
+    expect(result!.winner).toBe('player-2');
+    expect(result!.reason).toContain('highest score');
+    expect(result!.reason).toContain('25');
+  });
+
+  it('PD game-over triggers game end via highest_score win condition', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // Play through 3 rounds of PD (maxRounds=3 for council-of-whispers)
+    // First: SAS selections (round 1)
+    harness.step('player-1', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-2', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-3', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-4', { type: 'select_action', action: 'scheme' } as any);
+
+    // PD Round 1
+    harness.step('player-1', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    harness.step('player-2', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-3', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-4', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    // Now advance turns so SAS can run again
+    harness.step('player-1', { type: 'pass' }); // p1 is currentPlayer
+    harness.step('player-2', { type: 'pass' });
+    harness.step('player-3', { type: 'pass' });
+    harness.step('player-4', { type: 'pass' });
+
+    // PD Round 2
+    harness.step('player-1', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-2', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-3', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    harness.step('player-4', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-1', { type: 'pass' });
+    harness.step('player-2', { type: 'pass' });
+    harness.step('player-3', { type: 'pass' });
+    harness.step('player-4', { type: 'pass' });
+
+    // PD Round 3 (final - should trigger gameOver)
+    harness.step('player-1', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    harness.step('player-2', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    harness.step('player-3', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    // Last choice resolves the round and triggers checkWin
+    const lastChoice = harness.step('player-4', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+
+    // Game should end after PD max rounds
+    expect(lastChoice.gameOver).toBe(true);
+    expect(lastChoice.winner).toBeDefined();
+    expect(harness.state.status).toBe('pending_analysis');
+  });
+
+  it('game does not end prematurely before PD completes all rounds', () => {
+    harness = GameTestHarness.create('council-of-whispers', 4, { seed: 1 });
+    harness.start();
+
+    // SAS selections
+    harness.step('player-1', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-2', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-3', { type: 'select_action', action: 'scheme' } as any);
+    harness.step('player-4', { type: 'select_action', action: 'scheme' } as any);
+
+    // PD Round 1 only
+    harness.step('player-1', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+    harness.step('player-2', { type: 'dilemma_choice', choice: 'defect' } as any);
+    harness.step('player-3', { type: 'dilemma_choice', choice: 'defect' } as any);
+    const r1Result = harness.step('player-4', { type: 'dilemma_choice', choice: 'cooperate' } as any);
+
+    // Game should NOT be over after round 1 (maxRounds=3)
+    expect(r1Result.gameOver).toBeFalsy();
+    expect(harness.state.status).toBe('in_progress');
   });
 });
