@@ -8,6 +8,7 @@ import { join } from 'path';
 import {
   initGame,
   loadState,
+  loadStateReadOnly,
   saveState,
   registerAgent,
   startGame,
@@ -265,7 +266,7 @@ program
         process.exit(1);
       }
 
-      const state = loadState(game);
+      const state = loadStateReadOnly(game);
       console.log(JSON.stringify({
         success: true,
         instanceId: state.gameId,
@@ -425,7 +426,7 @@ program
         const instances = listGameInstances(gameName);
         for (const instanceId of instances) {
           try {
-            const state = loadState(instanceId);
+            const state = loadStateReadOnly(instanceId);
             const lastUpdated = getLastUpdate(gameName, instanceId);
             const created = getCreationTime(state, instanceId);
             const now = Date.now();
@@ -724,7 +725,7 @@ program
 
       // If it's our turn, also include available actions to save a round-trip
       if (result.status === 'your_turn') {
-        state = loadState(game); // Reload to get latest state
+        state = loadStateReadOnly(game); // Reload to get latest state
         const actionsResult = getAvailableActions(state, options.player);
         console.log(JSON.stringify({
           ...result,
@@ -907,9 +908,9 @@ program
         const pollInterval = 500;
         const startTime = Date.now();
 
-        // Poll for adjudication result
+        // Poll for adjudication result (lock-free read since we're only checking)
         while (Date.now() - startTime < timeout) {
-          const currentState = loadState(game);
+          const currentState = loadStateReadOnly(game);
           const contestState = ensureContestState(currentState);
 
           // Check if resignation has been adjudicated (accepted or rejected)
@@ -1204,9 +1205,10 @@ program
       const pollInterval = 100; // Reduced from 500ms for faster response
 
       // Poll for pending action, contest, or resignation
+      // Uses lock-free reads for polling; only acquires lock for legacy pendingAction writes
       // timeout=0 means infinite wait
       while (timeout === 0 || Date.now() - startTime < timeout) {
-        const state = loadState(game);
+        const state = loadStateReadOnly(game);
 
         if (state.status === 'completed') {
           console.log(JSON.stringify({
@@ -1271,21 +1273,24 @@ program
           return;
         }
 
-        // Check for pending action (legacy mode)
+        // Check for pending action (legacy mode) - needs lock since it writes
         if (state.shared.pendingAction) {
-          const pending = state.shared.pendingAction as PendingAction;
-          // Clear the pending action
-          delete state.shared.pendingAction;
-          saveState(state);
+          const lockedState = loadState(game);
+          if (lockedState.shared.pendingAction) {
+            const pending = lockedState.shared.pendingAction as PendingAction;
+            // Clear the pending action
+            delete lockedState.shared.pendingAction;
+            saveState(lockedState);
 
-          console.log(JSON.stringify({
-            status: 'action_received',
-            player: pending.player,
-            round: pending.round,
-            action: pending.action,
-            submittedAt: pending.submittedAt
-          }));
-          return;
+            console.log(JSON.stringify({
+              status: 'action_received',
+              player: pending.player,
+              round: pending.round,
+              action: pending.action,
+              submittedAt: pending.submittedAt
+            }));
+            return;
+          }
         }
 
         // Wait before polling again

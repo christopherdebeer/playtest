@@ -1,7 +1,7 @@
 // Turn management - handles blocking waits for player turns
 
 import { watch, existsSync, type FSWatcher } from 'fs';
-import { loadState, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
+import { loadState, loadStateReadOnly, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
 import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from '../types/game.js';
 import { mechanicRegistry } from '../mechanics/index.js';
 
@@ -110,10 +110,10 @@ export async function waitForTurn(
       clearInterval(pollInterval);
     }
 
-    // Check current state
+    // Check current state (lock-free read since we're only polling)
     function checkState() {
       try {
-        const state = loadState(instanceId || gameName);
+        const state = loadStateReadOnly(instanceId || gameName);
 
         // Game completed or pending analysis
         if (state.status === 'completed' || state.status === 'pending_analysis') {

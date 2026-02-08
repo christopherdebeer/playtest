@@ -315,9 +315,27 @@ export function stateExists(gameNameOrInstanceId: string): boolean {
   return existsSync(getStateFile(gameNameOrInstanceId));
 }
 
+// Cache for resolveGameInstance to avoid repeated statSync calls during polling.
+// Keyed by game name/instance ID, cached for 2 seconds (long enough to help
+// with 100ms polling, short enough to pick up new instances promptly).
+const instanceCache = new Map<string, { result: { gameName: string; instanceId: string } | null; expiry: number }>();
+const INSTANCE_CACHE_TTL_MS = 2000;
+
 // Resolve a game name or instance ID to {gameName, instanceId}
 // Returns null if cannot be resolved
 export function resolveGameInstance(gameNameOrInstanceId: string): { gameName: string; instanceId: string } | null {
+  // Check cache first
+  const cached = instanceCache.get(gameNameOrInstanceId);
+  if (cached && Date.now() < cached.expiry) {
+    return cached.result;
+  }
+
+  const result = resolveGameInstanceUncached(gameNameOrInstanceId);
+  instanceCache.set(gameNameOrInstanceId, { result, expiry: Date.now() + INSTANCE_CACHE_TTL_MS });
+  return result;
+}
+
+function resolveGameInstanceUncached(gameNameOrInstanceId: string): { gameName: string; instanceId: string } | null {
   // Check if it's an instance ID (format: gameName-timestamp)
   const match = gameNameOrInstanceId.match(/^(.+)-(\d{13,})$/);
   if (match) {
@@ -338,10 +356,10 @@ export function resolveGameInstance(gameNameOrInstanceId: string): { gameName: s
         .filter((e: string) => e.match(/^.+-\d{13,}$/))
         .filter((e: string) => existsSync(join(statePath, e, 'game.json')))
         .sort((a: string, b: string) => {
-          // Sort by modification time, most recent first
-          const aStat = statSync(join(statePath, a, 'game.json'));
-          const bStat = statSync(join(statePath, b, 'game.json'));
-          return bStat.mtime.getTime() - aStat.mtime.getTime();
+          // Sort by timestamp in the directory name (avoids statSync calls)
+          const aTs = a.match(/-(\d{13,})$/)?.[1] || '0';
+          const bTs = b.match(/-(\d{13,})$/)?.[1] || '0';
+          return bTs.localeCompare(aTs);
         });
 
       if (instances.length > 0) {
@@ -506,6 +524,19 @@ export function loadState(gameNameOrInstanceId: string): GameState {
     // Always release lock
     releaseLock(gameName, instanceId);
   }
+}
+
+// Lock-free read for status checks and polling operations.
+// Skips lock acquisition since read-only JSON parsing is safe against
+// concurrent writes (writeFileSync is atomic enough on Linux for small files;
+// worst case JSON.parse fails and we retry on next poll cycle).
+export function loadStateReadOnly(gameNameOrInstanceId: string): GameState {
+  const resolved = resolveGameInstance(gameNameOrInstanceId);
+  if (!resolved) {
+    throw new Error(`No active game found for ${gameNameOrInstanceId}`);
+  }
+  const { gameName, instanceId } = resolved;
+  return loadStateUnsafe(gameName, instanceId);
 }
 
 export function saveState(state: GameState): void {
