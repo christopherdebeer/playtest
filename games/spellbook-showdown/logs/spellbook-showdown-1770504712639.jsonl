@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-07T22:51:52.648Z","event":"game_init","data":{"gameId":"spellbook-showdown-1770504712639","playerCount":2,"config":"Spellbook Showdown"}}
+{"timestamp":"2026-02-07T23:05:49.010Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T23:12:34.114Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Fireball","effect":{"type":"damage","amount":3},"handSize":5,"newTopCard":"Fireball"}}
+{"timestamp":"2026-02-07T23:14:54.875Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Mana Crystal","effect":{"type":"gain_resource","resource":"mana","amount":3},"handSize":4,"newTopCard":"Mana Crystal"}}

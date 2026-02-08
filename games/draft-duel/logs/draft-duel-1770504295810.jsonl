@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-07T22:44:55.822Z","event":"game_init","data":{"gameId":"draft-duel-1770504295810","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-07T22:47:17.596Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T22:49:13.542Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draft_select","player":"player-1","waitingFor":["player-2"]}}
+{"timestamp":"2026-02-07T22:58:20.679Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draft_select","round":1,"direction":"left","selections":{"player-1":"Power","player-2":"Air"}}}
+{"timestamp":"2026-02-07T23:10:24.687Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draft_select","player":"player-1","waitingFor":["player-2"]}}

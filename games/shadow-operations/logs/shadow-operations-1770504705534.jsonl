@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-07T22:51:45.546Z","event":"game_init","data":{"gameId":"shadow-operations-1770504705534","playerCount":2,"config":"Shadow Operations"}}
+{"timestamp":"2026-02-07T23:02:51.003Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T23:12:55.731Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","from":"HQ","to":"port","areaName":"Port District"}}
+{"timestamp":"2026-02-07T23:15:16.405Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_influence","player":"player-1","area":"port","areaName":"Port District","amount":1}}

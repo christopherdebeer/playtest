@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-07T22:42:12.716Z","event":"game_init","data":{"gameId":"aaote-1770504132704","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-07T22:42:33.936Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-07T22:43:12.394Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"},"actionTarget":"player-2","handSize":4,"newTopCard":"Spy"}}
+{"timestamp":"2026-02-07T22:44:44.188Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-07T22:45:05.772Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-07T22:51:10.657Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Hidden Path","effect":{"type":"secret_move","description":"Move without revealing destination"},"handSize":4,"newTopCard":"Hidden Path"}}
+{"timestamp":"2026-02-07T22:52:26.698Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-07T23:12:27.556Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":2}}
+{"timestamp":"2026-02-07T23:14:47.946Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"pass"}}
