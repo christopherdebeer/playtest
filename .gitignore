@@ -50,10 +50,6 @@ shared/dist/
 site/src/data/*.json
 site/public/data/
 
-# Generated registry data (build-time artifacts)
-mechanics/index.json
-shared/registered-mechanics.json
-
 # ===========================================
 # DEPENDENCIES
 # ===========================================
