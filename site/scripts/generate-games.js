@@ -17,6 +17,44 @@ marked.setOptions({
   breaks: true,
 })
 
+/**
+ * Extract deck, board, and starting_cards from unified mechanics config.
+ * In unified format, `cards` and `board` are pseudo-keys inside `mechanics:`.
+ */
+function extractFromMechanics(config) {
+  const mechanics = config.mechanics
+  const isUnified = mechanics && typeof mechanics === 'object' && !Array.isArray(mechanics)
+
+  if (!isUnified) {
+    // Legacy flat format
+    return {
+      startingCards: config.starting_cards,
+      deck: config.deck,
+      board: config.board,
+      mechanics: config.mechanics || [],
+    }
+  }
+
+  // Unified format: extract pseudo-keys and mechanic slugs
+  let startingCards = undefined
+  let deck = undefined
+  let board = undefined
+  const mechanicSlugs = []
+
+  for (const [key, value] of Object.entries(mechanics)) {
+    if (key === 'cards') {
+      startingCards = value?.starting_hand
+      deck = value?.deck
+    } else if (key === 'board') {
+      board = value
+    } else {
+      mechanicSlugs.push(key.replace(/_/g, '-'))
+    }
+  }
+
+  return { startingCards, deck, board, mechanics: mechanicSlugs }
+}
+
 async function parseRulesFile(content) {
   // Extract YAML frontmatter
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
@@ -28,6 +66,7 @@ async function parseRulesFile(content) {
   const markdownContent = match[2].trim()
 
   const config = parseYaml(yamlContent)
+  const extracted = extractFromMechanics(config)
 
   // Convert markdown to HTML at build time
   const rulesHtml = await marked.parse(markdownContent)
@@ -38,12 +77,12 @@ async function parseRulesFile(content) {
       players: config.players,
       winCondition: config.win_condition,
       maxRounds: config.max_rounds,
-      startingCards: config.starting_cards,
-      deck: config.deck,
-      board: config.board,
-      mechanics: config.mechanics || [],  // Include mechanics references
-      deckSize: config.deck?.reduce((acc, c) => acc + c.count, 0),
-      boardStates: config.board?.states,
+      startingCards: extracted.startingCards,
+      deck: extracted.deck,
+      board: extracted.board,
+      mechanics: extracted.mechanics,
+      deckSize: extracted.deck?.reduce((acc, c) => acc + c.count, 0),
+      boardStates: extracted.board?.states,
     },
     rulesMarkdown: markdownContent,
     rulesHtml: rulesHtml,
