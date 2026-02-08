@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
-  "generated": "2026-02-08T10:28:13.227Z",
+  "generated": "2026-02-08T11:54:47.319Z",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
   "mechanics": {
     "acting": {
@@ -1353,6 +1353,7 @@
       "config_key": "pass",
       "since": "3.0.0",
       "hooks": [
+        "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
