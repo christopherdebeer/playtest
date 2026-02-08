@@ -1350,6 +1350,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   const isYourTurn = state.currentPlayer === playerId;
   const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
+  const hasCards = (state.config.starting_cards ?? 0) > 0 || state.deck.length > 0 || state.discardPile.length > 0;
   const hand = player.hand || [];
   const handCards = hand.map(c => c.name);
   const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
@@ -1436,7 +1437,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   // place_card and place_location actions are now provided by the place-card mechanic
 
   // === DRAW action (for card games) ===
-  if (hasDeck) {
+  if (hasCards) {
     const drawEnabled = isYourTurn && !isBlocked;
     actions.push({
       type: 'draw',
