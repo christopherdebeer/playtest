@@ -1,0 +1,5 @@
+# AAOTE: An Agent of the Enemy — Poster Prompt
+
+## Image Generation Prompt
+
+A dark fantasy board game poster in a painted illustration style. Five cloaked figures stand in a circle around an ancient stone table in a torchlit chamber, each holding a different artifact — a scroll, a dagger, a chalice, a compass, and a glowing amulet. One figure's face is obscured in deeper shadow than the others, hinting at hidden betrayal. Behind them, an expanding grid of mysterious locations radiates outward: a crumbling Forbidden Temple with violet light spilling from its entrance, a stone Watchtower overlooking misty hills, and a bustling Village Square. Scattered across the table are face-down objective cards with wax seals. The color palette is deep emerald greens, burnt amber, and shadow purple. The title "AAOTE: An Agent of the Enemy" is rendered in weathered gold serif lettering across the top, with the tagline "Trust No One. Complete Your Mission." in smaller text below. Board game poster art, dramatic lighting, richly detailed fantasy illustration.

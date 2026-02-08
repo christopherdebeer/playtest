@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, mkdir } from 'fs/promises'
+import { readdir, readFile, writeFile, mkdir, copyFile } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const GAMES_DIR = join(__dirname, '..', '..', 'games')
 const OUTPUT_DIR = join(__dirname, '..', 'src', 'data')
 const OUTPUT_FILE = join(OUTPUT_DIR, 'games.json')
+const POSTERS_DIR = join(__dirname, '..', 'public', 'data', 'posters')
 
 // Configure marked for safe HTML output
 marked.setOptions({
@@ -53,9 +54,12 @@ async function parseRulesFile(content) {
 async function main() {
   console.log('Generating games data...')
 
-  // Ensure output directory exists
+  // Ensure output directories exist
   if (!existsSync(OUTPUT_DIR)) {
     await mkdir(OUTPUT_DIR, { recursive: true })
+  }
+  if (!existsSync(POSTERS_DIR)) {
+    await mkdir(POSTERS_DIR, { recursive: true })
   }
 
   // Read games directory
@@ -77,12 +81,20 @@ async function main() {
       const content = await readFile(rulesPath, 'utf-8')
       const parsed = await parseRulesFile(content)
 
+      // Check for poster image and copy to public directory
+      const posterPath = join(GAMES_DIR, gameDir, 'POSTER.png')
+      const hasPoster = existsSync(posterPath)
+      if (hasPoster) {
+        await copyFile(posterPath, join(POSTERS_DIR, `${gameDir}.png`))
+      }
+
       games.push({
         id: gameDir,
+        hasPoster,
         ...parsed,
       })
 
-      console.log(`  Parsed: ${gameDir}`)
+      console.log(`  Parsed: ${gameDir}${hasPoster ? ' (with poster)' : ''}`)
     } catch (err) {
       console.warn(`  Skipped: ${gameDir} (${err.message})`)
     }

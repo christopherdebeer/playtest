@@ -24,6 +24,46 @@
   color: var(--text-primary);
 }
 
+.game-card.has-poster {
+  padding-top: 0;
+  overflow: hidden;
+}
+
+.game-card.has-poster .game-header,
+.game-card.has-poster .game-objective,
+.game-card.has-poster .game-mechanics,
+.game-card.has-poster .game-stats,
+.game-card.has-poster .game-preview {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.game-card.has-poster .game-header {
+  padding-top: 1rem;
+}
+
+.game-card.has-poster .game-preview {
+  padding-bottom: 1.5rem;
+}
+
+.game-poster {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.game-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.game-card:hover .game-poster img {
+  transform: scale(1.03);
+}
+
 .game-card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);

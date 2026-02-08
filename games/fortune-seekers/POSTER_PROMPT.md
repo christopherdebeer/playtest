@@ -1,0 +1,5 @@
+# Fortune Seekers — Poster Prompt
+
+## Image Generation Prompt
+
+A swashbuckling adventure board game poster with a golden treasure theme. A daring treasure hunter stands at the edge of a crumbling temple ledge, one hand reaching for a glittering Crown Jewel on a pedestal while the other grips a rope over a bottomless pit — the ultimate push-your-luck moment. Below, a single die tumbles through the air, its faces showing numbers 1 through 6, with the dreaded 1 face glowing ominous red. Treasure cards cascade around the scene: Gold Coins catching the light, Silver Bars stacked in neat rows, a brilliant Diamond refracting rainbows, and the legendary Crown Jewel radiating golden light. A display of five face-up draft cards sits on an ancient stone altar in the foreground. Lucky Dice and Double Down modifier cards float like magical totems. The color palette is treasure gold, ruby red, sapphire blue, and ancient stone grey. The title "Fortune Seekers" is rendered in adventurous hand-drawn lettering with gold leaf accents. Tagline: "Risk Everything. Claim the Fortune." Adventure board game poster art, exciting and treasure-filled.

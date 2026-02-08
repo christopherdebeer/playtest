@@ -1,0 +1,5 @@
+# Arcane Assembly — Poster Prompt
+
+## Image Generation Prompt
+
+A majestic fantasy board game poster depicting a sprawling magical academy under construction. A grand aerial view shows a 5x5 grid campus where crystalline Wizard Towers, ornate Great Halls, and luminous Arcane Gardens are being assembled by robed apprentices and journeyman mages. Glowing ley lines connect sacred sites across the campus in a network of shimmering blue and gold energy. Three branching tech trees — Construction (stone blocks), Arcane (swirling purple runes), and Earth (green vines) — spiral upward along the poster's edges like illuminated manuscript borders. In the foreground, a master wizard places a glowing stone tile onto the grid while mana crystals and rough-cut stone float around their hands. The color palette is royal purple, crystalline blue, warm sandstone, and emerald green. The title "Arcane Assembly" is rendered in elegant arcane script with glowing rune accents. Tagline: "Design Your Academy. Master the Arts." Fantasy strategy board game art, detailed and enchanting.

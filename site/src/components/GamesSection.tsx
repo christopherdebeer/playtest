@@ -16,6 +16,7 @@ interface GameConfig {
 
 interface Game {
   id: string
+  hasPoster?: boolean
   config: GameConfig
   rulesPreview: string
 }
@@ -34,7 +35,12 @@ function GamesSection() {
 
         <div className="games-grid">
           {games.map((game) => (
-            <Link to={`/games/${game.id}`} key={game.id} className="game-card">
+            <Link to={`/games/${game.id}`} key={game.id} className={`game-card${game.hasPoster ? ' has-poster' : ''}`}>
+              {game.hasPoster && (
+                <div className="game-poster">
+                  <img src={`/data/posters/${game.id}.png`} alt={`${game.config.name} poster`} loading="lazy" />
+                </div>
+              )}
               <div className="game-header">
                 <h3>{game.config.name}</h3>
                 <span className="player-count">{game.config.players} players</span>

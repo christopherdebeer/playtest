@@ -1,0 +1,5 @@
+# Dice Dynasties — Poster Prompt
+
+## Image Generation Prompt
+
+A lavish merchant dynasty board game poster in a rich, opulent art style. Three oversized golden dice tumble through the center of the composition, their faces showing custom icons — a gold coin, a raw ore chunk, a faceted gem, and a victory star. Behind the dice, a grand trading house interior stretches out with shelves of silk bolts, jars of exotic spices, and jade figurines. A commodity price board on the wall shows rising and falling market lines for Silk, Spice, and Jade. A wealthy merchant dynasty patriarch in fine robes examines investment scrolls while stacks of gold coins tower on the counting table. In the background, rival merchant houses are visible through arched windows, their banners competing across a prosperous harbor city. The color palette is rich gold, jade green, spice red, and royal purple. The title "Dice Dynasties" is rendered in ornate golden lettering with dice pips integrated into the letterforms. Tagline: "Roll Your Fortune. Build Your Legacy." Luxurious board game poster art, vibrant and wealthy.

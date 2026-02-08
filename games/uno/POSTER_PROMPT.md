@@ -1,0 +1,5 @@
+# UNO — Poster Prompt
+
+## Image Generation Prompt
+
+A bold, iconic card game poster in a flat graphic design style with maximum visual impact. A single hand slams down the final card onto a discard pile — the moment of victory. The card fan explodes outward from the center in a spiral of all four UNO colors: red, blue, green, and yellow. Number cards (0-9), Skip cards (circle-slash), Reverse cards (cycling arrows), and Draw Two cards (+2) radiate outward in their respective color quadrants. At the very center, a Wild card and Wild Draw Four shimmer with all four colors combined in a rainbow effect. The background is split into four bold color quadrants. One player's hand is shown with a single remaining card, their mouth open shouting "UNO!" rendered as a speech bubble. The composition is clean, graphic, and instantly recognizable. The color palette is pure UNO: vivid red, bright blue, sunshine yellow, and kelly green on a jet black background. The title "UNO" is rendered in the classic bold rounded style, oversized and unmistakable. Tagline: "One Card Left. Say It Loud." Classic card game poster art, bold and graphic.

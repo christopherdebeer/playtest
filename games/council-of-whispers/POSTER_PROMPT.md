@@ -1,0 +1,5 @@
+# Council of Whispers — Poster Prompt
+
+## Image Generation Prompt
+
+A moody political intrigue board game poster set in a Renaissance-era council chamber. Six figures in elaborate robes sit around a circular marble table, their faces half-lit by candlelight — some lean in whispering conspiratorially, others eye each other with suspicion. Three hidden role cards are fanned in the foreground: a Loyalist bearing a golden crown, a Conspirator with a shadowed dagger, and an Opportunist holding a balanced scale. Gold coins are being slid under the table between hands. A central treasury chest sits open, its contents visibly dwindling. Voting tokens — green for aye, red for nay — are scattered across the table. Shadowy alcoves line the walls where private negotiations happen in darkness. The color palette is deep burgundy, candlelight gold, midnight blue, and shadow black. The title "Council of Whispers" is written in thin, elegant calligraphy that seems to dissolve into smoke at the edges. Tagline: "Allegiance Is a Currency. Spend It Wisely." Dark political board game art, atmospheric and tense.
