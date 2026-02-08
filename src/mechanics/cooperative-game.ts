@@ -169,4 +169,8 @@ export const cooperativeGameMechanic: MechanicHooks = {
       roundsElapsed: coopState.roundsElapsed,
     };
   },
+
+  getHighlight(_config: unknown): { label: string; value: string } | null {
+    return { label: 'Mode', value: 'Co-op' };
+  },
 };

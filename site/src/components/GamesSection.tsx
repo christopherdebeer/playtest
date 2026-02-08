@@ -3,15 +3,18 @@ import gamesData from '../data/games.json'
 import MechanicBadge from './MechanicBadge'
 import './GamesSection.css'
 
+interface Highlight {
+  label: string
+  value: string
+}
+
 interface GameConfig {
   name: string
   players: string
   winCondition: string
   maxRounds: number
-  startingCards?: number
-  deckSize?: number
-  boardStates?: string[]
   mechanics?: string[] | Record<string, unknown>
+  highlights?: Highlight[]
 }
 
 interface Game {
@@ -64,32 +67,16 @@ function GamesSection() {
                 );
               })()}
 
-              <div className="game-stats">
-                {game.config.startingCards != null && game.config.startingCards > 0 && (
-                  <div className="stat">
-                    <span className="stat-value">{game.config.startingCards}</span>
-                    <span className="stat-label">starting cards</span>
-                  </div>
-                )}
-                {game.config.deckSize != null && game.config.deckSize > 0 && (
-                  <div className="stat">
-                    <span className="stat-value">{game.config.deckSize}</span>
-                    <span className="stat-label">deck size</span>
-                  </div>
-                )}
-                {game.config.boardStates && game.config.boardStates.length > 0 && (
-                  <div className="stat">
-                    <span className="stat-value">{game.config.boardStates.length}</span>
-                    <span className="stat-label">board states</span>
-                  </div>
-                )}
-                {game.config.maxRounds != null && game.config.maxRounds > 0 && (
-                  <div className="stat">
-                    <span className="stat-value">{game.config.maxRounds}</span>
-                    <span className="stat-label">max rounds</span>
-                  </div>
-                )}
-              </div>
+              {game.config.highlights && game.config.highlights.length > 0 && (
+                <div className="game-stats">
+                  {game.config.highlights.map((h: Highlight) => (
+                    <div className="stat" key={h.label}>
+                      <span className="stat-value">{h.value}</span>
+                      <span className="stat-label">{h.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="game-preview">
                 <code className="preview-cmd">/playtest {game.id} {game.config.players.split('-')[0]}</code>

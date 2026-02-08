@@ -28,7 +28,7 @@
     "dev:site": "npm run generate && vite",
     "generate": "npm run generate:registry && npm run generate:games && npm run generate:mechanics-index && npm run generate:mechanics && npm run generate:logs && npm run generate:docs",
     "generate:registry": "npx tsx scripts/generate-mechanics-registry.ts",
-    "generate:games": "node site/scripts/generate-games.js",
+    "generate:games": "npx tsx site/scripts/generate-games.ts",
     "generate:mechanics-index": "npx tsx scripts/generate-mechanics-index.ts",
     "generate:mechanics": "npx tsx site/scripts/generate-mechanics-data.ts",
     "generate:logs": "node site/scripts/generate-logs.js",
