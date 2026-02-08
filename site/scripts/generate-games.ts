@@ -76,49 +76,25 @@ function extractFromMechanics(config: Record<string, unknown>): ExtractedConfig 
 
 /**
  * Extract highlights from a game's mechanics config.
- * Calls getHighlight on each mechanic that defines it, plus handles
- * the cards and board pseudo-keys directly.
+ * Calls getHighlight on each registered mechanic that defines it.
+ * Cards and board participate through the registry like any other mechanic.
  */
-function extractHighlights(config: Record<string, unknown>, extracted: ExtractedConfig): Highlight[] {
+function extractHighlights(config: Record<string, unknown>): Highlight[] {
   const highlights: Highlight[] = []
   const mechanics = config.mechanics
 
   if (!mechanics || typeof mechanics !== 'object' || Array.isArray(mechanics)) {
-    // Legacy format — fall back to basic stats
-    if (extracted.deck) {
-      const deckSize = extracted.deck.reduce((acc, c) => acc + c.count, 0)
-      if (deckSize > 0) highlights.push({ label: 'Cards', value: String(deckSize) })
-    }
-    if (extracted.board?.states) {
-      highlights.push({ label: 'Locations', value: String(extracted.board.states.length) })
-    }
-    return highlights.slice(0, MAX_HIGHLIGHTS)
+    return []
   }
 
   const mechanicsObj = mechanics as Record<string, unknown>
 
-  // Query registered mechanics for highlights
   for (const [key, value] of Object.entries(mechanicsObj)) {
-    if (key === 'cards' || key === 'board') continue
-
     const slug = key.replace(/_/g, '-')
     const highlight = mechanicRegistry.getHighlight(slug, value)
     if (highlight) {
       highlights.push(highlight)
     }
-  }
-
-  // Handle pseudo-keys: cards deck size
-  if (extracted.deck) {
-    const deckSize = extracted.deck.reduce((acc, c) => acc + c.count, 0)
-    if (deckSize > 0) {
-      highlights.push({ label: 'Cards', value: String(deckSize) })
-    }
-  }
-
-  // Handle pseudo-keys: board locations
-  if (extracted.board?.states) {
-    highlights.push({ label: 'Locations', value: String(extracted.board.states.length) })
   }
 
   return highlights.slice(0, MAX_HIGHLIGHTS)
@@ -136,7 +112,7 @@ async function parseRulesFile(content: string) {
 
   const config = parseYaml(yamlContent) as Record<string, unknown>
   const extracted = extractFromMechanics(config)
-  const highlights = extractHighlights(config, extracted)
+  const highlights = extractHighlights(config)
 
   // Convert markdown to HTML at build time
   const rulesHtml = await marked.parse(markdownContent)
