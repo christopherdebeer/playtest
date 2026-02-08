@@ -147,6 +147,9 @@ export const prisonersDilemmaMechanic: MechanicHooks = {
     const allChosen = allPlayers.every(p => updatedChoices[p] !== undefined);
 
     if (!allChosen) {
+      // Advance turn only when the currentPlayer submits (moves to next player).
+      // Out-of-turn submissions (via canPlayerActNow) don't disturb turn order.
+      const isCurrentPlayer = ctx.playerId === ctx.state.currentPlayer;
       return {
         handled: true,
         stateChanges: {
@@ -154,7 +157,7 @@ export const prisonersDilemmaMechanic: MechanicHooks = {
             prisonersDilemma: { ...dState, choices: updatedChoices }
           }
         },
-        advanceTurn: false,
+        advanceTurn: isCurrentPlayer,
         checkWin: false,
         logMessage: `${ctx.playerId} has made their choice.`,
         logData: { player: ctx.playerId, waiting: allPlayers.filter(p => !updatedChoices[p]).length }

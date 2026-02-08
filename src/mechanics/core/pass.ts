@@ -23,7 +23,8 @@ import {
   HookContext,
   AvailableAction,
   ActionDescription,
-  PassPriorityResult
+  PassPriorityResult,
+  ValidationResult
 } from '../types.js';
 import { GameAction, GameState } from '../../types/game.js';
 import { mechanicRegistry } from '../registry.js';
@@ -53,6 +54,22 @@ interface ContestState {
 export const passMechanic: MechanicHooks = {
   slug: 'pass',
   name: 'Pass Action',
+  alwaysEnabled: true,
+
+  /**
+   * Only the current player may pass. Out-of-turn access (via canPlayerActNow)
+   * is granted for specific actions like simultaneous submissions — pass would
+   * let a player monopolize round advancement by advancing turns without acting.
+   */
+  preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
+    if (action.type !== 'pass') return null;
+
+    if (ctx.state.currentPlayer !== ctx.playerId) {
+      return { valid: false, error: 'Only the current player may pass.' };
+    }
+
+    return null;
+  },
 
   /**
    * Handle pass action execution.
@@ -141,9 +158,9 @@ export const passMechanic: MechanicHooks = {
   },
 
   /**
-   * Expose pass only when the game explicitly enables it.
-   * Victory declarations are always shown when victory_declaration is enabled.
-   * Pass is NOT shown as a default fallback — turns auto-advance after actions.
+   * Expose victory declaration variant of pass when enabled.
+   * The base pass action is provided by the engine (game.ts getAvailableActions)
+   * which serves as the dedup anchor for other mechanics' pass-typed actions.
    */
   getAvailableActions(ctx: HookContext): AvailableAction[] {
     const actions: AvailableAction[] = [];
@@ -154,15 +171,6 @@ export const passMechanic: MechanicHooks = {
         action: { type: 'pass', declareVictory: true, victoryReason: '' } as unknown as GameAction,
         priority: 100,
         category: 'victory'
-      });
-    }
-
-    // Only show plain pass if the game explicitly enables it
-    if (ctx.config.engine_mechanics?.pass) {
-      actions.push({
-        action: { type: 'pass' } as GameAction,
-        priority: 5,
-        category: 'turn'
       });
     }
 

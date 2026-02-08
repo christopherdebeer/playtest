@@ -94,6 +94,10 @@ export interface AvailableAction {
   priority?: number;
   /** Category for grouping in UI */
   category?: string;
+  /** If provided, overrides the default isYourTurn && !isBlocked enablement */
+  enabled?: boolean;
+  /** Reason the action is disabled (shown to player when enabled is false) */
+  reason?: string;
 }
 
 /**
@@ -617,6 +621,9 @@ export interface MechanicHooks {
 
   /** Human-readable name */
   name: string;
+
+  /** If true, this mechanic's hooks are always active regardless of game config */
+  alwaysEnabled?: boolean;
 
   /**
    * Called before action validation in core.

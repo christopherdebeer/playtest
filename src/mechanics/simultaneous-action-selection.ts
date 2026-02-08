@@ -145,7 +145,16 @@ export const simultaneousActionSelectionMechanic: MechanicHooks = {
       // Resolve action effects for all players
       const resolvedMessages: string[] = [];
       for (const [pid, selectedAction] of Object.entries(selState.selections)) {
-        const actionName = String(selectedAction).toLowerCase();
+        // Normalize action name from various formats: "Scheme", {type: "Scheme"}, {action: "Scheme"}
+        const actionName = ((): string => {
+          if (typeof selectedAction === 'string') return selectedAction.toLowerCase();
+          if (typeof selectedAction === 'object' && selectedAction !== null) {
+            const obj = selectedAction as Record<string, unknown>;
+            if (typeof obj.type === 'string') return obj.type.toLowerCase();
+            if (typeof obj.action === 'string') return obj.action.toLowerCase();
+          }
+          return String(selectedAction).toLowerCase();
+        })();
         const player = ctx.state.players[pid];
         if (!player || !player.resources) continue;
 
