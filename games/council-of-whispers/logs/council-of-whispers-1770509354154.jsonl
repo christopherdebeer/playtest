@@ -1,0 +1,14 @@
+{"timestamp":"2026-02-08T00:09:14.166Z","event":"game_init","data":{"gameId":"council-of-whispers-1770509354154","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-08T00:09:42.006Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-08T00:10:10.027Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"select_action"}}
+{"timestamp":"2026-02-08T00:10:40.937Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"select_action"}}
+{"timestamp":"2026-02-08T00:11:09.146Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-08T00:11:33.743Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"select_action"}}
+{"timestamp":"2026-02-08T00:11:48.748Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"propose_alliance"}}
+{"timestamp":"2026-02-08T00:12:25.423Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"offer_bribe"}}
+{"timestamp":"2026-02-08T00:13:09.185Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"respond_to_bribe"}}
+{"timestamp":"2026-02-08T00:13:32.044Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":3}}
+{"timestamp":"2026-02-08T00:14:49.724Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-08T00:18:08.123Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"draw","count":0}}
+{"timestamp":"2026-02-08T00:18:38.177Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"select_action"}}
+{"timestamp":"2026-02-08T00:19:04.462Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"dilemma_choice","player":"player-3","waiting":2}}
