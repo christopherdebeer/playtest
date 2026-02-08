@@ -30,6 +30,7 @@ interface GameConfig {
 
 interface Game {
   id: string
+  hasPoster?: boolean
   config: GameConfig
   rulesMarkdown: string
   rulesHtml: string
@@ -71,6 +72,12 @@ function GamePage() {
     <div className="game-page">
       <div className="container">
         <BackLink to="/">Back to games</BackLink>
+
+        {game.hasPoster && (
+          <div className="game-page-poster">
+            <img src={`/data/posters/${game.id}.png`} alt={`${game.config.name} poster`} />
+          </div>
+        )}
 
         <div className="game-page-header">
           <h1>{game.config.name}</h1>

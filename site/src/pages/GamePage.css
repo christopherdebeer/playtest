@@ -3,6 +3,22 @@
   min-height: 100vh;
 }
 
+.game-page-poster {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.game-page-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .game-page-header {
   display: flex;
   align-items: center;
