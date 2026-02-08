@@ -39,3 +39,4 @@
 {"timestamp":"2026-02-08T10:41:21.803Z","event":"action_executed","round":8,"turnNumber":31,"player":"player-1","data":{"type":"pass"}}
 {"timestamp":"2026-02-08T10:41:23.144Z","event":"action_executed","round":8,"turnNumber":32,"player":"player-1","data":{"type":"pass"}}
 {"timestamp":"2026-02-08T10:41:23.146Z","event":"game_end","round":9,"turnNumber":33,"data":{"winner":"player-2","reason":"Game ended. player-2 wins! player-1 is the loser (lowest_score).","endType":"timeout"}}
+{"timestamp":"2026-02-08T10:43:10.606Z","event":"analysis_submitted","round":9,"turnNumber":33,"data":{"file":"playtest-analysis-v1.0-1770546831175.md","version":"v1.0"}}
