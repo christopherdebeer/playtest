@@ -112,7 +112,7 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
       const newRollCount = (player.rollCount ?? 0) + 1;
 
       if (isBust) {
-        // Bust! Lose all accumulated points
+        // Bust! Lose all accumulated points and end push-your-luck sequence
         const lostPoints = player.rollAccumulator ?? 0;
 
         return {
@@ -125,7 +125,7 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
               }
             }
           },
-          advanceTurn: false, // Use maybeAdvanceTurn semantics (respects action points)
+          advanceTurn: true, // Bust ends the turn (AP fix ensures multi-action still works with AP)
           checkWin: false,
           logMessage: 'push_your_luck_bust',
           logData: { roll: rollValue, lostPoints }
@@ -167,7 +167,7 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
             }
           }
         },
-        advanceTurn: false, // Use maybeAdvanceTurn semantics (respects action points)
+        advanceTurn: true, // Banking ends the turn (AP fix ensures multi-action still works with AP)
         checkWin: true, // Check win after banking
         logMessage: 'push_your_luck_bank',
         logData: { bankedPoints, totalScore: newScore }

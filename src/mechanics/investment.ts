@@ -88,7 +88,8 @@ export const investmentMechanic: MechanicHooks = {
 
     const config = getConfig(ctx.config);
     const multiplier = config?.return_multiplier ?? 2;
-    const newRound = invState.currentRound + 1;
+    // Use game round for consistency, falling back to internal tracking
+    const newRound = ctx.state.round ?? (invState.currentRound + 1);
 
     // Find matured investments
     const maturedInvestments = invState.investments.filter(
@@ -154,18 +155,25 @@ export const investmentMechanic: MechanicHooks = {
     const invState = getInvestState(ctx.state.shared);
     if (!invState) return null;
 
-    const investAction = ctx.action as unknown as { type: 'invest'; amount: number };
+    const investAction = ctx.action as unknown as { type: 'invest'; amount: number; resource?: string };
     const amount = investAction.amount ?? 1;
     const maturityRounds = config.maturity_rounds ?? 3;
+    const currentRound = ctx.state.round ?? invState.currentRound;
 
     const newInvestment: Investment = {
       id: `inv-${invState.nextId}`,
       playerId: ctx.playerId,
       amount,
-      roundPlaced: invState.currentRound,
-      maturesAt: invState.currentRound + maturityRounds,
+      roundPlaced: currentRound,
+      maturesAt: currentRound + maturityRounds,
       returned: false
     };
+
+    // Deduct cost from resources (not score)
+    const resourceKey = investAction.resource || 'coins';
+    const currentResources = { ...(ctx.player.resources || {}) };
+    const currentAmount = currentResources[resourceKey] ?? 0;
+    currentResources[resourceKey] = currentAmount - amount;
 
     return {
       handled: true,
@@ -174,11 +182,12 @@ export const investmentMechanic: MechanicHooks = {
           investments: {
             ...invState,
             investments: [...invState.investments, newInvestment],
-            nextId: invState.nextId + 1
+            nextId: invState.nextId + 1,
+            currentRound
           }
         },
         playerStateChanges: {
-          [ctx.playerId]: { score: (ctx.player.score ?? 0) - amount }
+          [ctx.playerId]: { resources: currentResources }
         }
       },
       advanceTurn: false,

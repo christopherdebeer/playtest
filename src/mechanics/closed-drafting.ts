@@ -96,32 +96,14 @@ export const closedDraftingMechanic: MechanicHooks = {
   },
 
   /**
-   * Initialize draft pools from the deck at game creation.
-   * Pools are stored in shared state temporarily until distributed to players.
+   * Initialize draft state flags. Actual pool creation is deferred to onTurnStart
+   * because the cards mechanic (which builds the deck) may not have run yet.
    */
   initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
     const draftConfig = ctx.config.engine_mechanics?.closed_drafting as ClosedDraftingConfig | undefined;
     if (!draftConfig) return null;
 
-    const poolSize = draftConfig.pool_size;
-    const playerCount = ctx.playerIds.length;
-    const totalCardsNeeded = poolSize * playerCount;
-
-    // Check if we have enough cards
-    if (ctx.deck.length < totalCardsNeeded) {
-      console.warn(`[closed-drafting] Not enough cards in deck for ${playerCount} players with pool_size=${poolSize}. ` +
-        `Need ${totalCardsNeeded}, have ${ctx.deck.length}. Adjusting pool sizes.`);
-    }
-
-    // Deal cards from deck to create pools for each player
-    const pools: Record<string, Card[]> = {};
-    for (const playerId of ctx.playerIds) {
-      const cardsForPlayer = Math.min(poolSize, Math.floor(ctx.deck.length / (ctx.playerIds.indexOf(playerId) === ctx.playerIds.length - 1 ? 1 : 2)));
-      pools[playerId] = ctx.deck.splice(0, Math.min(poolSize, ctx.deck.length));
-    }
-
     return {
-      closedDraftPools: pools,
       closedDraftPoolsDistributed: false,
       draftRound: 1
     };
@@ -139,8 +121,9 @@ export const closedDraftingMechanic: MechanicHooks = {
   },
 
   /**
-   * Distribute draft pools to players on first turn.
-   * This moves pools from shared state to player state.
+   * On first turn: create draft pools from the game deck and distribute to players.
+   * Pool creation is deferred from initSharedState because the cards mechanic
+   * (which builds the deck) registers later and may not have run yet during init.
    */
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     const draftConfig = ctx.config.engine_mechanics?.closed_drafting as ClosedDraftingConfig | undefined;
@@ -148,24 +131,50 @@ export const closedDraftingMechanic: MechanicHooks = {
 
     const sharedState = ctx.state.shared as ClosedDraftPoolsShared;
 
-    // Only distribute pools if they haven't been distributed yet
-    if (sharedState.closedDraftPoolsDistributed || !sharedState.closedDraftPools) {
-      return null;
+    // Already distributed
+    if (sharedState.closedDraftPoolsDistributed) return null;
+
+    // If pools exist in shared state (from initSharedState), distribute them
+    if (sharedState.closedDraftPools) {
+      const playerStateChanges: Record<string, Partial<{ draftPool: Card[] }>> = {};
+      for (const [playerId, pool] of Object.entries(sharedState.closedDraftPools)) {
+        playerStateChanges[playerId] = { draftPool: pool };
+      }
+      return {
+        playerStateChanges,
+        sharedStateChanges: {
+          closedDraftPoolsDistributed: true,
+          closedDraftPools: undefined
+        }
+      };
     }
 
-    // Distribute pools to all players
+    // Pools don't exist yet — create them from the game deck
+    const deck = ctx.state.shared.deck as Card[] | undefined;
+    if (!deck || deck.length === 0) return null;
+
+    const poolSize = draftConfig.pool_size;
+    const playerIds = ctx.state.turnOrder;
+    const totalCardsNeeded = poolSize * playerIds.length;
+
+    if (deck.length < totalCardsNeeded) {
+      console.warn(`[closed-drafting] Not enough cards in deck for ${playerIds.length} players with pool_size=${poolSize}. ` +
+        `Need ${totalCardsNeeded}, have ${deck.length}. Adjusting pool sizes.`);
+    }
+
+    // Deal cards from deck to create pools
     const playerStateChanges: Record<string, Partial<{ draftPool: Card[] }>> = {};
-    for (const [playerId, pool] of Object.entries(sharedState.closedDraftPools)) {
-      playerStateChanges[playerId] = {
-        draftPool: pool
-      };
+    const newDeck = [...deck];
+    for (const playerId of playerIds) {
+      const cardsToTake = Math.min(poolSize, newDeck.length);
+      playerStateChanges[playerId] = { draftPool: newDeck.splice(0, cardsToTake) };
     }
 
     return {
       playerStateChanges,
       sharedStateChanges: {
         closedDraftPoolsDistributed: true,
-        closedDraftPools: undefined // Clear temporary storage
+        deck: newDeck
       }
     };
   },

@@ -444,24 +444,32 @@ export const workerPlacementMechanic: MechanicHooks = {
     const wpConfig = getWorkerConfig(ctx.config);
     if (!wpConfig || wpConfig.retrieval !== 'round_start') return null;
 
-    // Auto-retrieve all workers at round start
-    const playerWorkers = getPlayerWorkers(ctx.player);
-    const hasPlacedWorkers = playerWorkers.some(w => w.placedAt !== null);
-    if (!hasPlacedWorkers) return null;
+    // Auto-retrieve ALL players' workers at round start (not just current player)
+    const playerStateChanges: Record<string, { workers: WorkerState[] }> = {};
+    let anyRetrieved = false;
 
-    const updatedWorkers = playerWorkers.map(w => ({ ...w, placedAt: null }));
+    for (const [pid, player] of Object.entries(ctx.state.players)) {
+      const playerWorkers = getPlayerWorkers(player);
+      const hasPlacedWorkers = playerWorkers.some(w => w.placedAt !== null);
+      if (hasPlacedWorkers) {
+        playerStateChanges[pid] = {
+          workers: playerWorkers.map(w => ({ ...w, placedAt: null }))
+        };
+        anyRetrieved = true;
+      }
+    }
 
-    // Clear this player's workers from spaces
+    if (!anyRetrieved) return null;
+
+    // Clear all workers from all spaces
     const occupancy = getSpaceOccupancy(ctx.state);
     const updatedSpaces = occupancy.map(s => ({
       ...s,
-      workers: s.workers.filter(w => w.playerId !== ctx.playerId)
+      workers: []
     }));
 
     return {
-      playerStateChanges: {
-        [ctx.playerId]: { workers: updatedWorkers }
-      },
+      playerStateChanges,
       sharedStateChanges: {
         workerSpaces: updatedSpaces
       }

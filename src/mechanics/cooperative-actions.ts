@@ -33,7 +33,7 @@ interface CooperativeState {
 }
 
 function getConfig(config: GameConfig): CooperativeConfig | undefined {
-  return config.engine_mechanics?.cooperative as CooperativeConfig | undefined;
+  return config.engine_mechanics?.cooperative_actions as CooperativeConfig | undefined;
 }
 
 export const cooperativeActionsMechanic: MechanicHooks = {
@@ -163,7 +163,8 @@ export const cooperativeActionsMechanic: MechanicHooks = {
       coopState.cooperativeActions++;
 
       // Contributing reduces threat slightly
-      coopState.threatLevel = Math.max(0, coopState.threatLevel - 0.5);
+      const threatReduction = contributeAction.amount / 2;
+      coopState.threatLevel = Math.max(0, coopState.threatLevel - threatReduction);
 
       return {
         handled: true,

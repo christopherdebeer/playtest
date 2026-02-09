@@ -416,6 +416,12 @@ class MechanicRegistry {
               };
             }
           }
+          if (changes.sharedStateChanges) {
+            mergedChanges.sharedStateChanges = {
+              ...mergedChanges.sharedStateChanges,
+              ...changes.sharedStateChanges
+            };
+          }
         }
       }
     }

@@ -233,6 +233,12 @@ export const deckBuildingMechanic: MechanicHooks = {
     let personalDeck = [...((ctx.player.personalDeck as Card[]) || [])];
     let personalDiscard = [...((ctx.player.personalDiscard as Card[]) || [])];
 
+    // Discard remaining hand cards to personal discard pile before drawing
+    const currentHand = (ctx.player.hand || []) as Card[];
+    if (currentHand.length > 0) {
+      personalDiscard = [...personalDiscard, ...currentHand];
+    }
+
     // If no cards in deck or discard, nothing to do
     if (personalDeck.length === 0 && personalDiscard.length === 0) return null;
 
