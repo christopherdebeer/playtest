@@ -94,7 +94,7 @@ export const tableauBuildingMechanic: MechanicHooks = {
     }
 
     // Check hand
-    const hasCard = ctx.player.hand.some(c => c.name === tableauAction.card);
+    const hasCard = (ctx.player.hand ?? []).some(c => c.name === tableauAction.card);
     if (!hasCard) {
       return { valid: false, error: `Card '${tableauAction.card}' not in hand.` };
     }
@@ -129,11 +129,12 @@ export const tableauBuildingMechanic: MechanicHooks = {
     const tableauAction = ctx.action as unknown as { type: 'add_to_tableau'; card: string };
 
     // Find card in hand
-    const cardIndex = ctx.state.players[ctx.playerId].hand.findIndex(c => c.name === tableauAction.card);
+    const playerHand = ctx.state.players[ctx.playerId].hand ?? [];
+    const cardIndex = playerHand.findIndex(c => c.name === tableauAction.card);
     if (cardIndex === -1) return null;
 
-    const card = ctx.state.players[ctx.playerId].hand[cardIndex];
-    const newHand = [...ctx.state.players[ctx.playerId].hand];
+    const card = playerHand[cardIndex];
+    const newHand = [...playerHand];
     newHand.splice(cardIndex, 1);
 
     // Add to tableau
@@ -218,7 +219,7 @@ export const tableauBuildingMechanic: MechanicHooks = {
     const tableau = getPlayerTableau(ctx.player);
     const maxSize = config.max_size ?? 10;
     if (tableau.length >= maxSize) return [];
-    if (ctx.player.hand.length === 0) return [];
+    if ((ctx.player.hand ?? []).length === 0) return [];
 
     // Check if player can afford placement
     if (config.placement_cost) {

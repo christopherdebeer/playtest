@@ -25,6 +25,7 @@ import {
   isMechanicEnabled
 } from './types.js';
 import { GameAction, PlaceCardAction, PlaceLocationAction, PlacedCard, Card } from '../types/game.js';
+import { getBoardConfigFromConfig } from './core/board.js';
 
 export const placeCardMechanic: MechanicHooks = {
   slug: 'place-card',
@@ -59,7 +60,8 @@ export const placeCardMechanic: MechanicHooks = {
       }
 
       // Check if board config exists
-      if (!ctx.config.board) {
+      const boardConfig = getBoardConfigFromConfig(ctx.config);
+      if (!boardConfig) {
         return {
           valid: false,
           error: 'place_card action requires a game with board states defined.'
@@ -67,7 +69,7 @@ export const placeCardMechanic: MechanicHooks = {
       }
 
       // Check if target state is valid
-      const validStates = ctx.config.board.states || [];
+      const validStates = boardConfig.states || [];
       if (!validStates.includes(placeAction.targetState)) {
         return {
           valid: false,
@@ -257,8 +259,9 @@ export const placeCardMechanic: MechanicHooks = {
     const actions: AvailableAction[] = [];
 
     // === PLACE_CARD actions (for placeable cards on board games) ===
-    if (ctx.config.board) {
-      const boardStates = ctx.config.board.states || [];
+    const boardConfigForActions = getBoardConfigFromConfig(ctx.config);
+    if (boardConfigForActions) {
+      const boardStates = boardConfigForActions.states || [];
       if (boardStates.length > 0) {
         const placeableCards = hand.filter((c: Card) => c.placeable);
 

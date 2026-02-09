@@ -58,7 +58,7 @@ interface CatchTheLeaderConfig {
 }
 
 function getPlayerMetricValue(
-  player: { score?: number; resources?: Record<string, number>; hand: unknown[]; state: string },
+  player: { score?: number; resources?: Record<string, number>; hand?: unknown[]; state: string },
   config: CatchTheLeaderConfig
 ): number {
   switch (config.leader_metric) {
@@ -67,7 +67,7 @@ function getPlayerMetricValue(
     case 'resources':
       return player.resources?.[config.resource ?? 'gold'] ?? 0;
     case 'hand_size':
-      return player.hand?.length ?? 0;
+      return (player.hand ?? []).length;
     case 'position':
       // Position-based would need board context
       return 0;
@@ -77,7 +77,7 @@ function getPlayerMetricValue(
 }
 
 function findLeader(
-  players: Record<string, { score?: number; resources?: Record<string, number>; hand: unknown[]; state: string }>,
+  players: Record<string, { score?: number; resources?: Record<string, number>; hand?: unknown[]; state: string }>,
   config: CatchTheLeaderConfig
 ): { leaderId: string; leaderValue: number; secondValue: number } | null {
   const entries = Object.entries(players);

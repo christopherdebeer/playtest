@@ -36,8 +36,9 @@ interface ExtractedConfig {
 }
 
 /**
- * Extract deck, board, and starting_cards from unified mechanics config.
- * In unified format, `cards` and `board` are pseudo-keys inside `mechanics:`.
+ * Extract display data from mechanics config.
+ * All mechanics (including cards and board) are treated uniformly.
+ * Cards and board data is extracted for display purposes (deck size, board states).
  */
 function extractFromMechanics(config: Record<string, unknown>): ExtractedConfig {
   const mechanics = config.mechanics
@@ -53,21 +54,25 @@ function extractFromMechanics(config: Record<string, unknown>): ExtractedConfig 
     }
   }
 
-  // Unified format: extract pseudo-keys and mechanic slugs
+  // Unified format: all mechanics are treated uniformly
   let startingCards: number | undefined
   let deck: ExtractedConfig['deck']
   let board: ExtractedConfig['board']
   const mechanicSlugs: string[] = []
 
   for (const [key, value] of Object.entries(mechanics as Record<string, unknown>)) {
+    // Add ALL mechanics to the slugs list (including cards and board)
+    mechanicSlugs.push(key.replace(/_/g, '-'))
+
+    // Extract display data from cards config
     if (key === 'cards') {
       const cardsConfig = value as Record<string, unknown>
       startingCards = cardsConfig?.starting_hand as number | undefined
       deck = cardsConfig?.deck as ExtractedConfig['deck']
-    } else if (key === 'board') {
+    }
+    // Extract display data from board config
+    else if (key === 'board') {
       board = value as ExtractedConfig['board']
-    } else {
-      mechanicSlugs.push(key.replace(/_/g, '-'))
     }
   }
 

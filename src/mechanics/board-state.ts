@@ -22,13 +22,9 @@ import {
   PlayerInitContext,
   PlayerInitResult
 } from './types.js';
-import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard } from '../types/game.js';
-
-interface BoardConfig {
-  states: string[];
-  start?: string;
-  edges: EdgeConfig[];
-}
+import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard, BoardConfig, GameConfig } from '../types/game.js';
+import { getCardsState } from './core/index.js';
+import { getBoardConfigFromConfig } from './core/board.js';
 
 /**
  * Get valid move targets from the player's current state
@@ -103,10 +99,12 @@ function applyPlacedCardEffects(
         // Force player to discard cards
         const discardCount = Math.abs(pc.effect.value ?? 1);
         const player = state.players[playerId];
-        for (let i = 0; i < discardCount && player.hand.length > 0; i++) {
-          const discardedCard = player.hand.pop();
+        const playerHand = player.hand ?? [];
+        const cardsState = getCardsState(state);
+        for (let i = 0; i < discardCount && playerHand.length > 0; i++) {
+          const discardedCard = playerHand.pop();
           if (discardedCard) {
-            state.discardPile.push(discardedCard);
+            cardsState.discardPile.push(discardedCard);
             effectsApplied.push(`${pc.cardName}: Forced discard of ${discardedCard.name} (placed by ${pc.placedBy})`);
           }
         }
@@ -146,8 +144,8 @@ export const boardStateMechanic: MechanicHooks = {
   requires: ['board'],
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
-    if (!ctx.config.board) return null;
-    const boardConfig = ctx.config.board as BoardConfig;
+    const boardConfig = getBoardConfigFromConfig(ctx.config);
+    if (!boardConfig) return null;
     return { state: boardConfig.start ?? 'start' };
   },
 
@@ -156,11 +154,11 @@ export const boardStateMechanic: MechanicHooks = {
     if (action.type !== 'move') return null;
 
     // Only for board games (not grid games)
-    if (!ctx.config.board) return null;
+    const boardConfig = getBoardConfigFromConfig(ctx.config);
+    if (!boardConfig) return null;
     if (ctx.config.engine_mechanics?.grid) return null; // Grid takes precedence
 
     const moveAction = action as MoveAction;
-    const boardConfig = ctx.config.board as BoardConfig;
     const validStates = boardConfig.states || [];
 
     // Check target is a valid state name
@@ -191,7 +189,8 @@ export const boardStateMechanic: MechanicHooks = {
     if (action.type !== 'move') return null;
 
     // Only for board games (not grid games)
-    if (!ctx.config.board) return null;
+    const boardConfig = getBoardConfigFromConfig(ctx.config);
+    if (!boardConfig) return null;
     if (ctx.config.engine_mechanics?.grid) return null;
 
     const moveAction = action as MoveAction;
@@ -224,10 +223,10 @@ export const boardStateMechanic: MechanicHooks = {
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
     // Only for board games (not grid games)
-    if (!ctx.config.board) return [];
+    const boardConfig = getBoardConfigFromConfig(ctx.config);
+    if (!boardConfig) return [];
     if (ctx.config.engine_mechanics?.grid) return [];
 
-    const boardConfig = ctx.config.board as BoardConfig;
     const currentState = ctx.player.state;
 
     // Get valid targets based on edges from current state

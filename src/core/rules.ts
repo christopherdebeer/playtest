@@ -17,7 +17,7 @@ export interface ParsedRules {
 /**
  * Convert unified RULES.md format (single `mechanics:` object) to internal GameConfig.
  * Unified format: root has only metadata; `mechanics:` maps slug → config.
- * Special pseudo-keys: `cards` (deck/starting_hand), `board` (board config).
+ * All mechanics (including cards and board) are stored uniformly in engine_mechanics.
  */
 function normalizeUnifiedConfig(raw: Record<string, unknown>): GameConfig {
   const mechanicsObj = raw.mechanics as Record<string, unknown>;
@@ -34,23 +34,7 @@ function normalizeUnifiedConfig(raw: Record<string, unknown>): GameConfig {
   };
 
   for (const [key, value] of Object.entries(mechanicsObj)) {
-    // Cards: extract to top-level for runtime access, also store full config in engine_mechanics
-    if (key === 'cards') {
-      const cardsConfig = value as Record<string, unknown>;
-      if (cardsConfig.deck) config.deck = cardsConfig.deck as DeckConfig[];
-      if (cardsConfig.starting_hand !== undefined) config.starting_cards = cardsConfig.starting_hand as number;
-      engineMechanics.cards = value;
-      continue;
-    }
-
-    // Board: extract to top-level for runtime access, also store full config in engine_mechanics
-    if (key === 'board') {
-      config.board = value as GameConfig['board'];
-      engineMechanics.board = value;
-      continue;
-    }
-
-    // Regular mechanic: add slug to mechanics list + config key to engine_mechanics
+    // All mechanics (including cards and board) are treated uniformly
     const slug = key.replace(/_/g, '-');
     mechanicsList.push(slug);
     const configKey = key.replace(/-/g, '_');
@@ -160,8 +144,11 @@ export function getPlayerCount(config: GameConfig): { min: number; max: number }
 
 // Look up card definition from config by name
 export function getCardDefinition(config: GameConfig, cardName: string): DeckConfig | null {
-  if (!config.deck) return null;
-  return config.deck.find(c => c.name === cardName) ?? null;
+  // Unified format: engine_mechanics.cards.deck, fallback to legacy config.deck
+  const cardsConfig = config.engine_mechanics?.cards as { deck?: DeckConfig[] } | undefined;
+  const deckConfig = cardsConfig?.deck ?? config.deck;
+  if (!deckConfig) return null;
+  return deckConfig.find(c => c.name === cardName) ?? null;
 }
 
 // ============ Mechanics Functions ============

@@ -87,7 +87,7 @@ function checkCondition(
 
     case 'max_hand':
       const maxHand = condition.value as number;
-      if (ctx.player.hand.length > maxHand) {
+      if ((ctx.player.hand ?? []).length > maxHand) {
         return { met: false, reason: `Hand must have ${maxHand} or fewer cards` };
       }
       break;

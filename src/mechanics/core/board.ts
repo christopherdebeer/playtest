@@ -9,8 +9,23 @@
  * - onPlayerMoved: Notified after player moved (merge)
  */
 
-import { GameState, BoardConfig, EdgeConfig } from '../../types/game.js';
+import { GameState, GameConfig, BoardConfig, EdgeConfig } from '../../types/game.js';
 import { mechanicRegistry, applyStateChanges } from '../registry.js';
+
+/**
+ * Get board config from either unified format (engine_mechanics.board) or legacy (config.board).
+ */
+export function getBoardConfigFromConfig(config: GameConfig): BoardConfig | null {
+  // Unified format: engine_mechanics.board
+  if (config.engine_mechanics?.board) {
+    return config.engine_mechanics.board;
+  }
+  // Legacy format: top-level config.board
+  if (config.board) {
+    return config.board;
+  }
+  return null;
+}
 
 /**
  * Result from move operation
@@ -91,33 +106,36 @@ export function setBoardState(
  * Get all valid board states from the config.
  */
 export function getBoardStates(state: GameState): string[] {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return [];
   }
 
-  return [...state.config.board.states];
+  return [...boardConfig.states];
 }
 
 /**
  * Get the starting state for the board.
  */
 export function getStartingState(state: GameState): string | null {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return null;
   }
 
-  return state.config.board.start ?? state.config.board.states[0] ?? null;
+  return boardConfig.start ?? boardConfig.states[0] ?? null;
 }
 
 /**
  * Check if a state is a valid board state.
  */
 export function isValidState(state: GameState, targetState: string): boolean {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return false;
   }
 
-  return state.config.board.states.includes(targetState);
+  return boardConfig.states.includes(targetState);
 }
 
 /**
@@ -125,11 +143,11 @@ export function isValidState(state: GameState, targetState: string): boolean {
  * If no edges are defined from the state, returns all states except current.
  */
 export function getValidMoveTargets(state: GameState, fromState: string): string[] {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return [];
   }
 
-  const boardConfig = state.config.board;
   const targets: string[] = [];
 
   for (const edge of boardConfig.edges || []) {
@@ -176,11 +194,12 @@ export function isValidMove(state: GameState, fromState: string, toState: string
  * Get the edge config between two states (if exists).
  */
 export function getEdge(state: GameState, fromState: string, toState: string): EdgeConfig | null {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return null;
   }
 
-  for (const edge of state.config.board.edges || []) {
+  for (const edge of boardConfig.edges || []) {
     const fromStates = Array.isArray(edge.from) ? edge.from : [edge.from];
     const toStates = Array.isArray(edge.to) ? edge.to : [edge.to];
 
@@ -214,16 +233,17 @@ export function getPlayersAtState(state: GameState, boardState: string): string[
  * Check if a board is configured for this game.
  */
 export function hasBoard(state: GameState): boolean {
-  return !!state.config.board;
+  return !!getBoardConfigFromConfig(state.config);
 }
 
 /**
  * Get all edges from the board config.
  */
 export function getEdges(state: GameState): EdgeConfig[] {
-  if (!state.config.board) {
+  const boardConfig = getBoardConfigFromConfig(state.config);
+  if (!boardConfig) {
     return [];
   }
 
-  return [...(state.config.board.edges || [])];
+  return [...(boardConfig.edges || [])];
 }

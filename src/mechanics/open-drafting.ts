@@ -26,6 +26,7 @@ import {
 import { GameAction, Card, DraftAction } from '../types/game.js';
 import { addToHand } from './core/hand.js';
 import { drawFromDeck } from './core/card-piles.js';
+import { getCardsState } from './core/index.js';
 
 interface OpenDraftingConfig {
   display_size: number;
@@ -129,7 +130,8 @@ export const openDraftingMechanic: MechanicHooks = {
 
     // Refill display if configured
     let newDisplay = [...display];
-    if (draftConfig.refill === 'immediate' && state.deck.length > 0) {
+    const cardsState = getCardsState(state);
+    if (draftConfig.refill === 'immediate' && cardsState.deck.length > 0) {
       const { cards: drawn } = drawFromDeck(state, 1);
       if (drawn.length > 0) {
         newDisplay.push(drawn[0]);

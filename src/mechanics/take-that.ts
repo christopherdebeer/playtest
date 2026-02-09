@@ -28,7 +28,7 @@ export const takeThatMechanic: MechanicHooks & CardsHooks = {
     if (action.type !== 'play_card') return null;
 
     const playAction = action as PlayCardAction;
-    const card = ctx.player.hand.find(c => c.name === playAction.card);
+    const card = (ctx.player.hand ?? []).find(c => c.name === playAction.card);
 
     // Card not found - let core validation handle this
     if (!card) return null;

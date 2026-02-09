@@ -93,7 +93,7 @@ function checkCondition(
 
   switch (condition.type) {
     case 'has_card':
-      return ctx.player.hand.some(c =>
+      return (ctx.player.hand ?? []).some(c =>
         c.name === condition.match || c.type === condition.match
       );
 
@@ -115,7 +115,7 @@ function checkCondition(
       return ctx.player.state === condition.value;
 
     case 'hand_size':
-      const handSize = ctx.player.hand.length;
+      const handSize = (ctx.player.hand ?? []).length;
       const targetSize = condition.value as number;
       const handComp = condition.comparison || '>=';
       switch (handComp) {
@@ -144,7 +144,7 @@ function checkTrigger(
     case 'card_type':
       if (action.type === 'play_card') {
         const cardName = (action as { card: string }).card;
-        const card = ctx.player.hand.find(c => c.name === cardName);
+        const card = (ctx.player.hand ?? []).find(c => c.name === cardName);
         return card?.type === trigger.match;
       }
       return false;

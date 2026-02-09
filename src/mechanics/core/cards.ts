@@ -21,10 +21,53 @@ import {
   HookContext,
   StateChanges,
   ActionExecutionContext,
-  ActionExecutionResult
+  ActionExecutionResult,
+  SharedStateInitContext,
+  SharedStateInitResult,
+  PlayerInitContext,
+  PlayerInitResult
 } from '../types.js';
-import { Card, PlayCardAction } from '../../types/game.js';
+import { Card, PlayCardAction, GameState, DeckConfig } from '../../types/game.js';
 import { playCard } from './card-piles.js';
+import { buildDeck, shuffleDeck } from '../../core/rules.js';
+
+// ============ Cards Shared State (mechanic-owned) ============
+
+/**
+ * Shared state owned by the cards mechanic.
+ * Stored in state.shared and accessed via getCardsState().
+ */
+export interface CardsSharedState {
+  deck: Card[];
+  discardPile: Card[];
+  topCard?: Card;
+  /** Temporary storage for starting hands during init (deleted after player init) */
+  _startingHands?: Record<string, Card[]>;
+}
+
+/**
+ * Get typed access to cards shared state.
+ * This is the ONLY way to access deck/discardPile - enforces mechanic boundaries.
+ */
+export function getCardsState(state: GameState): CardsSharedState {
+  // Initialize if not present (for games without cards)
+  if (!state.shared.deck) {
+    state.shared.deck = [];
+  }
+  if (!state.shared.discardPile) {
+    state.shared.discardPile = [];
+  }
+  return state.shared as unknown as CardsSharedState;
+}
+
+/**
+ * Get typed hand from player state.
+ * Returns empty array if player has no hand (for non-card games).
+ */
+export function getPlayerHand(state: GameState, playerId: string): Card[] {
+  const player = state.players[playerId];
+  return player?.hand ?? [];
+}
 
 // ============ Payload types for cards-defined hooks ============
 
@@ -163,6 +206,58 @@ export const cardsMechanic: MechanicHooks = {
   },
 
   /**
+   * Initialize shared state: build deck, shuffle, deal starting hands, create discard pile.
+   * This moves all card setup logic from game.ts into the cards mechanic.
+   */
+  initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
+    const { config, playerIds } = ctx;
+
+    // Get cards config (unified format: engine_mechanics.cards.deck)
+    const cardsConfig = config.engine_mechanics?.cards as { deck?: DeckConfig[]; starting_hand?: number } | undefined;
+    const deckConfig = cardsConfig?.deck ?? (config as { deck?: DeckConfig[] }).deck;  // Fall back to legacy top-level
+
+    // No deck configured - nothing to initialize
+    if (!deckConfig) return null;
+
+    // Build and shuffle deck
+    const deck = shuffleDeck(buildDeck(deckConfig));
+
+    // Get starting hand size
+    const startingCards = cardsConfig?.starting_hand ?? (config as { starting_cards?: number }).starting_cards ?? 0;
+
+    // Pre-deal hands (stored temporarily for initPlayerState)
+    const _startingHands: Record<string, Card[]> = {};
+    for (const playerId of playerIds) {
+      if (startingCards > 0 && deck.length >= startingCards) {
+        _startingHands[playerId] = deck.splice(0, startingCards);
+      } else {
+        _startingHands[playerId] = [];
+      }
+    }
+
+    // Create discard pile (flip top card if we have cards and dealt hands)
+    const discardPile: Card[] = [];
+    let topCard: Card | undefined;
+    if (deck.length > 0 && startingCards > 0) {
+      topCard = deck.shift()!;
+      discardPile.push(topCard);
+    }
+
+    return { deck, discardPile, topCard, _startingHands };
+  },
+
+  /**
+   * Initialize player state: set hand from pre-dealt cards.
+   */
+  initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
+    const startingHands = ctx.shared?._startingHands as Record<string, Card[]> | undefined;
+    if (!startingHands) return null;
+
+    const hand = startingHands[ctx.playerId] ?? [];
+    return { hand };
+  },
+
+  /**
    * Handle play_card action.
    * Core operation: remove from hand, discard, fire onCardPlayed.
    * Also applies card effects directly (to be extracted to proper
@@ -210,7 +305,7 @@ export const cardsMechanic: MechanicHooks = {
         effect: card.effect,
         declaredColor: playAction.declaredColor,
         actionTarget: playAction.target,
-        handSize: state.players[playerId]?.hand.length,
+        handSize: getPlayerHand(state, playerId).length,
         currentColor: state.shared.currentColor,
         newTopCard: (state.shared.topCard as Card)?.name
       }
