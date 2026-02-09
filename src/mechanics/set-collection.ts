@@ -120,8 +120,9 @@ export const setCollectionMechanic: MechanicHooks = {
     }
 
     // Verify player has all the cards
+    const playerHand = ctx.player.hand ?? [];
     for (const cardName of collectAction.cards) {
-      if (!ctx.player.hand.find(c => c.name === cardName)) {
+      if (!playerHand.find(c => c.name === cardName)) {
         return { valid: false, error: `Card "${cardName}" not in your hand.` };
       }
     }
@@ -155,7 +156,7 @@ export const setCollectionMechanic: MechanicHooks = {
     // Validate the set matches the definition
     if (!validateSet(collectedCards, setDef)) {
       // Put cards back (this shouldn't happen if preValidateAction worked correctly)
-      player.hand.push(...collectedCards);
+      (player.hand ?? []).push(...collectedCards);
       return {
         handled: true,
         stateChanges: {},

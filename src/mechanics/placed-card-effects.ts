@@ -18,6 +18,7 @@ import {
   EffectApplicationResult
 } from './types.js';
 import type { CardsHooks, CardPlayedPayload } from './core/cards.js';
+import { getCardsState } from './core/index.js';
 
 /**
  * Effect types handled by this mechanic (placed card effects)
@@ -65,10 +66,11 @@ export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
       }
 
       case 'force_discard': {
-        if (target.hand.length === 0) return null;
-        const discardIndex = Math.floor(Math.random() * target.hand.length);
-        const [discardedCard] = target.hand.splice(discardIndex, 1);
-        ctx.state.discardPile.push(discardedCard);
+        const targetHand = target.hand ?? [];
+        if (targetHand.length === 0) return null;
+        const discardIndex = Math.floor(Math.random() * targetHand.length);
+        const [discardedCard] = targetHand.splice(discardIndex, 1);
+        getCardsState(ctx.state).discardPile.push(discardedCard);
         return null;
       }
 
@@ -130,7 +132,8 @@ export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
 
       case 'force_discard': {
         // Force player to discard a card
-        if (player.hand.length === 0) {
+        const playerHand = player.hand ?? [];
+        if (playerHand.length === 0) {
           return {
             handled: true,
             logMessage: 'force_discard_no_cards',
@@ -139,16 +142,16 @@ export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
         }
 
         // Discard random card (or oldest if specified)
-        const discardIndex = Math.floor(Math.random() * player.hand.length);
-        const [discardedCard] = player.hand.splice(discardIndex, 1);
-        state.discardPile.push(discardedCard);
+        const discardIndex = Math.floor(Math.random() * playerHand.length);
+        const [discardedCard] = playerHand.splice(discardIndex, 1);
+        getCardsState(state).discardPile.push(discardedCard);
 
         return {
           handled: true,
           logMessage: 'force_discard',
           logData: {
             discardedCard: discardedCard.name,
-            remainingHandSize: player.hand.length
+            remainingHandSize: playerHand.length
           }
         };
       }

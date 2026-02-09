@@ -37,7 +37,7 @@ export const placeLocationMechanic: MechanicHooks = {
     const placeAction = action as PlaceLocationAction;
 
     // Check if card exists in hand
-    const card = ctx.player.hand.find(c => c.name === placeAction.card);
+    const card = (ctx.player.hand ?? []).find(c => c.name === placeAction.card);
     if (!card) {
       // Let core validation handle missing card
       return null;
@@ -83,7 +83,8 @@ export const placeLocationMechanic: MechanicHooks = {
     const placeAction = action as PlaceLocationAction;
 
     // Find and remove card from hand
-    const cardIndex = player.hand.findIndex(c => c.name === placeAction.card);
+    const playerHand = player.hand ?? [];
+    const cardIndex = playerHand.findIndex(c => c.name === placeAction.card);
     if (cardIndex === -1) {
       return {
         handled: true,
@@ -95,7 +96,7 @@ export const placeLocationMechanic: MechanicHooks = {
       };
     }
 
-    const card = player.hand[cardIndex];
+    const card = playerHand[cardIndex];
 
     // Verify card is a location type
     if (card.type !== 'location') {
@@ -110,7 +111,7 @@ export const placeLocationMechanic: MechanicHooks = {
     }
 
     // Remove card from hand
-    player.hand.splice(cardIndex, 1);
+    playerHand.splice(cardIndex, 1);
 
     // Add to placed locations
     const placedLocations = (state.shared.placedLocations as string[]) || [];
@@ -140,7 +141,7 @@ export const placeLocationMechanic: MechanicHooks = {
     if (!gridConfig) return [];
 
     // Get location cards from hand
-    const locationCards = ctx.player.hand.filter((c: Card) => c.type === 'location');
+    const locationCards = (ctx.player.hand ?? []).filter((c: Card) => c.type === 'location');
     if (locationCards.length === 0) return [];
 
     // Get valid adjacent targets

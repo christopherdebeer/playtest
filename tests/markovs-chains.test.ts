@@ -7,6 +7,7 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import { GameTestHarness } from './harness.js';
+import { getCardsState } from '../src/mechanics/core/cards.js';
 
 let harness: GameTestHarness | null = null;
 
@@ -196,20 +197,20 @@ describe('seeded randomness', () => {
     harness = GameTestHarness.create('markovs-chains', 2, { seed: 42 });
     harness.start();
     const hands1 = {
-      p1: harness.state.players['player-1'].hand.map(c => c.name),
-      p2: harness.state.players['player-2'].hand.map(c => c.name),
+      p1: (harness.state.players['player-1'].hand ?? []).map(c => c.name),
+      p2: (harness.state.players['player-2'].hand ?? []).map(c => c.name),
     };
-    const deck1 = harness.state.deck.map(c => c.name);
+    const deck1 = getCardsState(harness.state).deck.map(c => c.name);
     harness.cleanup();
 
     // Run 2 — same seed
     harness = GameTestHarness.create('markovs-chains', 2, { seed: 42 });
     harness.start();
     const hands2 = {
-      p1: harness.state.players['player-1'].hand.map(c => c.name),
-      p2: harness.state.players['player-2'].hand.map(c => c.name),
+      p1: (harness.state.players['player-1'].hand ?? []).map(c => c.name),
+      p2: (harness.state.players['player-2'].hand ?? []).map(c => c.name),
     };
-    const deck2 = harness.state.deck.map(c => c.name);
+    const deck2 = getCardsState(harness.state).deck.map(c => c.name);
 
     expect(hands1.p1).toEqual(hands2.p1);
     expect(hands1.p2).toEqual(hands2.p2);

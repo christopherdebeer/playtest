@@ -37,7 +37,7 @@ export const emptyHandWinMechanic: MechanicHooks = {
     if (!winConfig) return null;
 
     // Check if player has emptied their hand
-    if (ctx.player.hand.length === 0) {
+    if ((ctx.player.hand ?? []).length === 0) {
       return {
         won: true,
         reason: `${ctx.playerId} emptied their hand`

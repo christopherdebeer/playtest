@@ -436,6 +436,119 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
       issues.push(error('MISSING_TRADE_ENABLED', 'trade.enabled is required and must be boolean', `${location}.trade.enabled`));
     }
   }
+
+  // cards (unified format: deck and starting_hand in engine_mechanics.cards)
+  const cardsConfig = (mechanics as unknown as Record<string, unknown>).cards as { deck?: unknown[]; starting_hand?: number } | undefined;
+  if (cardsConfig && hasConfig(cardsConfig)) {
+    if (cardsConfig.deck !== undefined) {
+      if (!Array.isArray(cardsConfig.deck)) {
+        issues.push(error('INVALID_DECK', 'cards.deck must be an array', `${location}.cards.deck`));
+      } else {
+        validateDeckInMechanics(cardsConfig.deck, issues, `${location}.cards`);
+      }
+    }
+    if (cardsConfig.starting_hand !== undefined && (typeof cardsConfig.starting_hand !== 'number' || cardsConfig.starting_hand < 0)) {
+      issues.push(error('INVALID_STARTING_HAND', 'cards.starting_hand must be a non-negative number', `${location}.cards.starting_hand`));
+    }
+  }
+
+  // board (unified format: in engine_mechanics.board)
+  const boardConfig = (mechanics as unknown as Record<string, unknown>).board;
+  if (boardConfig && hasConfig(boardConfig)) {
+    validateBoardInMechanics(boardConfig as BoardConfig, issues, `${location}.board`);
+  }
+}
+
+/**
+ * Validate deck configuration within engine_mechanics.cards.
+ */
+function validateDeckInMechanics(deck: unknown[], issues: ValidationIssue[], prefix: string): void {
+  deck.forEach((card, index) => {
+    const location = `${prefix}.deck[${index}]`;
+
+    if (!card || typeof card !== 'object') {
+      issues.push(error('INVALID_DECK_ITEM', `Deck item at index ${index} must be an object`, location));
+      return;
+    }
+
+    const c = card as Record<string, unknown>;
+
+    if (!c.name || typeof c.name !== 'string') {
+      issues.push(error('MISSING_CARD_NAME', `Card at index ${index} is missing "name"`, `${location}.name`));
+    }
+
+    if (c.count === undefined || typeof c.count !== 'number' || c.count < 1) {
+      issues.push(error('INVALID_CARD_COUNT', `Card "${c.name || index}" has invalid count`, `${location}.count`));
+    }
+
+    if (c.type !== undefined && typeof c.type !== 'string') {
+      issues.push(error('INVALID_CARD_TYPE', `Card "${c.name || index}" has invalid type`, `${location}.type`));
+    }
+
+    if (c.effect !== undefined) {
+      const effect = c.effect as Record<string, unknown>;
+      if (!effect.type || typeof effect.type !== 'string') {
+        issues.push(error('MISSING_EFFECT_TYPE', `Card "${c.name || index}" effect is missing "type"`, `${location}.effect.type`));
+      } else if (!VALID_EFFECT_TYPES.includes(effect.type as string)) {
+        issues.push(warning('UNKNOWN_EFFECT_TYPE', `Card "${c.name || index}" has unknown effect type "${effect.type}"`, `${location}.effect.type`));
+      }
+    }
+
+    if (c.placeable !== undefined && typeof c.placeable !== 'boolean') {
+      issues.push(error('INVALID_PLACEABLE', `Card "${c.name || index}" placeable must be boolean`, `${location}.placeable`));
+    }
+
+    if (c.targetMode !== undefined && !VALID_TARGET_MODES.includes(c.targetMode as string)) {
+      issues.push(error('INVALID_TARGET_MODE', `Card "${c.name || index}" has invalid targetMode`, `${location}.targetMode`));
+    }
+  });
+}
+
+/**
+ * Validate board configuration within engine_mechanics.board.
+ */
+function validateBoardInMechanics(board: unknown, issues: ValidationIssue[], prefix: string): void {
+  if (!board || typeof board !== 'object') {
+    issues.push(error('INVALID_BOARD', 'board must be an object', prefix));
+    return;
+  }
+
+  const b = board as Record<string, unknown>;
+
+  if (!Array.isArray(b.states) || b.states.length === 0) {
+    issues.push(error('MISSING_BOARD_STATES', 'board.states must be a non-empty array', `${prefix}.states`));
+    return;
+  }
+
+  const states = new Set(b.states as string[]);
+
+  if (b.start !== undefined && !states.has(b.start as string)) {
+    issues.push(error('INVALID_START_STATE', `board.start "${b.start}" is not in states array`, `${prefix}.start`));
+  }
+
+  if (!Array.isArray(b.edges)) {
+    issues.push(error('MISSING_BOARD_EDGES', 'board.edges must be an array', `${prefix}.edges`));
+    return;
+  }
+
+  b.edges.forEach((edge, index) => {
+    const location = `${prefix}.edges[${index}]`;
+    const e = edge as Record<string, unknown>;
+
+    const froms = Array.isArray(e.from) ? e.from : [e.from];
+    froms.forEach((from: string) => {
+      if (!states.has(from)) {
+        issues.push(error('INVALID_EDGE_FROM', `Edge ${index} "from" state "${from}" not in states`, location));
+      }
+    });
+
+    const tos = Array.isArray(e.to) ? e.to : [e.to];
+    tos.forEach((to: string) => {
+      if (!states.has(to)) {
+        issues.push(error('INVALID_EDGE_TO', `Edge ${index} "to" state "${to}" not in states`, location));
+      }
+    });
+  });
 }
 
 /**

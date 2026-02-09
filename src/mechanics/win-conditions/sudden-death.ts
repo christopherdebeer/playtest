@@ -22,6 +22,7 @@ import {
   WinCheckContext,
   WinCheckResult
 } from '../types.js';
+import { getCardsState } from '../core/index.js';
 
 interface SuddenDeathCondition {
   /** Type of sudden death condition */
@@ -91,7 +92,7 @@ function checkCondition(
     }
 
     case 'deck_exhausted': {
-      const deck = state.deck || [];
+      const deck = getCardsState(state).deck;
       if (deck.length === 0) {
         const message = condition.message || 'The deck is exhausted!';
         // Determine winner based on configured method or highest score

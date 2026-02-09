@@ -15,6 +15,7 @@ import {
 } from './types.js';
 import { drawFromDeck } from './core/card-piles.js';
 import { addToHand } from './core/hand.js';
+import { getCardsState } from './core/index.js';
 
 /**
  * Effect types handled by this mechanic
@@ -47,7 +48,8 @@ export const locationEffectsMechanic: MechanicHooks = {
         const handLimit = config.engine_mechanics?.hand_limit ?? Infinity;
 
         // Check if player can draw (hand limit)
-        if (player.hand.length >= handLimit) {
+        const playerHand = player.hand ?? [];
+        if (playerHand.length >= handLimit) {
           return {
             handled: true,
             logMessage: 'draw_on_enter_blocked',
@@ -55,8 +57,9 @@ export const locationEffectsMechanic: MechanicHooks = {
           };
         }
 
-        const actualDrawCount = Math.min(drawCount, handLimit - player.hand.length);
-        if (actualDrawCount > 0 && state.deck.length > 0) {
+        const actualDrawCount = Math.min(drawCount, handLimit - playerHand.length);
+        const cardsState = getCardsState(state);
+        if (actualDrawCount > 0 && cardsState.deck.length > 0) {
           const { cards: drawnCards } = drawFromDeck(state, actualDrawCount, playerId);
           addToHand(state, playerId, drawnCards);
 

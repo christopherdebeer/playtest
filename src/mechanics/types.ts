@@ -146,6 +146,8 @@ export interface PlayerInitContext {
   playerIndex: number;
   /** Players initialized so far (for cross-player coordination) */
   existingPlayers: Record<string, Partial<PlayerState>>;
+  /** Shared state initialized by mechanics (e.g., cards mechanic pre-dealt hands) */
+  shared?: Record<string, unknown>;
 }
 
 /**

@@ -362,12 +362,14 @@ class MechanicRegistry {
   /**
    * Collect player state from all enabled mechanics during registration.
    * Passes existing players for cross-player coordination (e.g., unique power assignment).
+   * Passes shared state for cross-mechanic coordination (e.g., cards mechanic pre-dealt hands).
    */
   initPlayerState(
     config: GameConfig,
     playerId: string,
     playerIndex: number,
-    existingPlayers: Record<string, Partial<PlayerState>>
+    existingPlayers: Record<string, Partial<PlayerState>>,
+    shared?: Record<string, unknown>
   ): PlayerInitResult {
     const enabledMechanics = this.getEnabledMechanics(config);
     const merged: PlayerInitResult = {};
@@ -376,7 +378,8 @@ class MechanicRegistry {
       config,
       playerId,
       playerIndex,
-      existingPlayers
+      existingPlayers,
+      shared
     };
 
     for (const mechanic of enabledMechanics) {

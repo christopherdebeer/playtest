@@ -19,6 +19,7 @@ import { shuffleDeck } from '../../core/rules.js';
 import { mechanicRegistry } from '../registry.js';
 import { applyStateChanges } from '../registry.js';
 import { removeFromHandByName } from './hand.js';
+import { getCardsState, CardsSharedState } from './cards.js';
 
 /**
  * Draw context for hooks (re-exported from types)
@@ -41,37 +42,38 @@ export interface DrawResult {
  * Used by drawFromDeck and for cases where hooks shouldn't fire.
  */
 function drawFromDeckInternal(state: GameState, count: number): { cards: Card[]; reshuffled: boolean } {
+  const cardsState = getCardsState(state);
   const drawn: Card[] = [];
   let reshuffled = false;
 
   for (let i = 0; i < count; i++) {
-    if (state.deck.length === 0) {
+    if (cardsState.deck.length === 0) {
       // Reshuffle discard pile (keep top card if tracking)
-      if (state.discardPile.length === 0) {
+      if (cardsState.discardPile.length === 0) {
         break; // No cards left anywhere
       }
 
       // If tracking top card, keep it in discard
-      const topCard = state.shared.topCard as Card | undefined;
-      let cardsToShuffle = state.discardPile;
+      const topCard = cardsState.topCard;
+      let cardsToShuffle = cardsState.discardPile;
 
       if (topCard) {
         // Keep top card, shuffle the rest
-        cardsToShuffle = state.discardPile.filter(c => c !== topCard);
-        state.discardPile = [topCard];
+        cardsToShuffle = cardsState.discardPile.filter(c => c !== topCard);
+        cardsState.discardPile = [topCard];
       } else {
-        state.discardPile = [];
+        cardsState.discardPile = [];
       }
 
       if (cardsToShuffle.length > 0) {
-        state.deck = shuffleDeck(cardsToShuffle);
+        cardsState.deck = shuffleDeck(cardsToShuffle);
         reshuffled = true;
       } else {
         break; // Only top card left, can't draw
       }
     }
 
-    const card = state.deck.shift();
+    const card = cardsState.deck.shift();
     if (card) {
       drawn.push(card);
     }
@@ -128,11 +130,13 @@ export function drawFromDeck(state: GameState, count: number, playerId?: string)
  * @param playerId - Optional player discarding (for hook context)
  */
 export function addToDiscard(state: GameState, cards: Card[], playerId?: string): void {
+  const cardsState = getCardsState(state);
+
   for (const card of cards) {
-    state.discardPile.push(card);
+    cardsState.discardPile.push(card);
 
     // Update top card tracking (currentColor is set by card-matching's onCardPlayed)
-    state.shared.topCard = card;
+    cardsState.topCard = card;
   }
 
   // Fire cards-defined onCardDiscarded hook (merge)
@@ -185,27 +189,29 @@ export function playCard(
  * Peek at top of discard pile without removing.
  */
 export function peekDiscard(state: GameState): Card | undefined {
-  if (state.discardPile.length === 0) return undefined;
-  return state.discardPile[state.discardPile.length - 1];
+  const cardsState = getCardsState(state);
+  if (cardsState.discardPile.length === 0) return undefined;
+  return cardsState.discardPile[cardsState.discardPile.length - 1];
 }
 
 /**
  * Check if deck has cards available (including potential reshuffle).
  */
 export function hasCardsAvailable(state: GameState): boolean {
-  return state.deck.length > 0 || state.discardPile.length > 1;
+  const cardsState = getCardsState(state);
+  return cardsState.deck.length > 0 || cardsState.discardPile.length > 1;
 }
 
 /**
  * Get count of cards in deck.
  */
 export function getDeckSize(state: GameState): number {
-  return state.deck.length;
+  return getCardsState(state).deck.length;
 }
 
 /**
  * Get count of cards in discard pile.
  */
 export function getDiscardSize(state: GameState): number {
-  return state.discardPile.length;
+  return getCardsState(state).discardPile.length;
 }

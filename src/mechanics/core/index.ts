@@ -19,6 +19,13 @@ export {
   type PlayCardResult
 } from './card-piles.js';
 
+// Cards shared state access
+export {
+  getCardsState,
+  getPlayerHand,
+  type CardsSharedState
+} from './cards.js';
+
 // Hand operations
 export {
   addToHand,

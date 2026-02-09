@@ -15,6 +15,17 @@ import { mechanicRegistry } from '../registry.js';
 import { applyStateChanges } from '../registry.js';
 
 /**
+ * Get or initialize player's hand array.
+ * Ensures hand exists for games that use cards.
+ */
+function ensureHand(player: PlayerState): Card[] {
+  if (!player.hand) {
+    player.hand = [];
+  }
+  return player.hand;
+}
+
+/**
  * Result from addToHand operation
  */
 export interface AddToHandResult {
@@ -46,8 +57,9 @@ export function addToHand(state: GameState, playerId: string, cards: Card[]): Ad
 
   const cardsToAdd = (beforeResult && (beforeResult as Record<string, unknown>).cards as Card[] | undefined) ?? cards;
 
-  // Add cards to hand
-  player.hand.push(...cardsToAdd);
+  // Add cards to hand (ensure hand exists)
+  const hand = ensureHand(player);
+  hand.push(...cardsToAdd);
 
   // Fire cards-defined onAfterAddToHand hook (merge)
   if (cardsToAdd.length > 0) {
@@ -69,11 +81,12 @@ export function removeFromHandByIndex(state: GameState, playerId: string, cardIn
     throw new Error(`Player ${playerId} not found`);
   }
 
-  if (cardIndex < 0 || cardIndex >= player.hand.length) {
+  const hand = ensureHand(player);
+  if (cardIndex < 0 || cardIndex >= hand.length) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
+  const [card] = hand.splice(cardIndex, 1);
 
   // Fire cards-defined onAfterRemoveFromHand hook
   const changes = mechanicRegistry.fire('cards', 'onAfterRemoveFromHand', state, playerId, { cards: [card] });
@@ -93,12 +106,13 @@ export function removeFromHandByName(state: GameState, playerId: string, cardNam
     throw new Error(`Player ${playerId} not found`);
   }
 
-  const cardIndex = player.hand.findIndex(c => c.name === cardName);
+  const hand = ensureHand(player);
+  const cardIndex = hand.findIndex(c => c.name === cardName);
   if (cardIndex === -1) {
     return null;
   }
 
-  const [card] = player.hand.splice(cardIndex, 1);
+  const [card] = hand.splice(cardIndex, 1);
 
   // Fire cards-defined onAfterRemoveFromHand hook
   const changes = mechanicRegistry.fire('cards', 'onAfterRemoveFromHand', state, playerId, { cards: [card] });
@@ -118,12 +132,13 @@ export function removeCardsFromHand(state: GameState, playerId: string, cardName
     throw new Error(`Player ${playerId} not found`);
   }
 
+  const hand = ensureHand(player);
   const removed: Card[] = [];
 
   for (const cardName of cardNames) {
-    const cardIndex = player.hand.findIndex(c => c.name === cardName);
+    const cardIndex = hand.findIndex(c => c.name === cardName);
     if (cardIndex !== -1) {
-      const [card] = player.hand.splice(cardIndex, 1);
+      const [card] = hand.splice(cardIndex, 1);
       removed.push(card);
     }
   }
@@ -145,7 +160,8 @@ export function findInHand(state: GameState, playerId: string, cardName: string)
   const player = state.players[playerId];
   if (!player) return undefined;
 
-  return player.hand.find(c => c.name === cardName);
+  const hand = player.hand ?? [];
+  return hand.find(c => c.name === cardName);
 }
 
 /**
@@ -154,7 +170,7 @@ export function findInHand(state: GameState, playerId: string, cardName: string)
 export function getHandSize(state: GameState, playerId: string): number {
   const player = state.players[playerId];
   if (!player) return 0;
-  return player.hand.length;
+  return (player.hand ?? []).length;
 }
 
 /**
@@ -163,5 +179,5 @@ export function getHandSize(state: GameState, playerId: string): number {
 export function getHand(state: GameState, playerId: string): Card[] {
   const player = state.players[playerId];
   if (!player) return [];
-  return [...player.hand]; // Return copy to prevent mutation
+  return [...(player.hand ?? [])]; // Return copy to prevent mutation
 }

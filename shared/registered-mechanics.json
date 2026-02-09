@@ -478,7 +478,9 @@
       "config_key": "cards",
       "since": "3.0.0",
       "hooks": [
-        "onExecuteAction"
+        "initPlayerState",
+        "onExecuteAction",
+        "initSharedState"
       ]
     },
     "catch-the-leader": {

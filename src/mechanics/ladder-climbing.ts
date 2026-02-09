@@ -273,7 +273,7 @@ export const ladderClimbingMechanic: MechanicHooks = {
       const passCount = ((state.shared.ladderPassCount as number) || 0) + 1;
       const activePlayers = state.turnOrder.filter(pid => {
         const p = state.players[pid];
-        return !p.ladderEliminated && p.hand.length > 0;
+        return !p.ladderEliminated && (p.hand ?? []).length > 0;
       });
 
       stateChanges.sharedStateChanges!.ladderPassCount = passCount;

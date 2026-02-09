@@ -15,6 +15,7 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import { GameTestHarness } from './harness.js';
+import { getCardsState } from '../src/mechanics/core/cards.js';
 
 let harness: GameTestHarness | null = null;
 
@@ -148,20 +149,20 @@ describe('fortune-seekers integration', () => {
     harness = GameTestHarness.create('fortune-seekers', 2, { seed: 99 });
     harness.start();
     const hands1 = {
-      p1: harness.state.players['player-1'].hand.map(c => c.name),
-      p2: harness.state.players['player-2'].hand.map(c => c.name),
+      p1: (harness.state.players['player-1'].hand ?? []).map(c => c.name),
+      p2: (harness.state.players['player-2'].hand ?? []).map(c => c.name),
     };
-    const deck1 = harness.state.deck.map(c => c.name);
+    const deck1 = getCardsState(harness.state).deck.map(c => c.name);
     harness.cleanup();
 
     // Run 2 — same seed
     harness = GameTestHarness.create('fortune-seekers', 2, { seed: 99 });
     harness.start();
     const hands2 = {
-      p1: harness.state.players['player-1'].hand.map(c => c.name),
-      p2: harness.state.players['player-2'].hand.map(c => c.name),
+      p1: (harness.state.players['player-1'].hand ?? []).map(c => c.name),
+      p2: (harness.state.players['player-2'].hand ?? []).map(c => c.name),
     };
-    const deck2 = harness.state.deck.map(c => c.name);
+    const deck2 = getCardsState(harness.state).deck.map(c => c.name);
 
     expect(hands1).toEqual(hands2);
     expect(deck1).toEqual(deck2);
@@ -201,7 +202,7 @@ describe('engine-masters integration', () => {
     for (const id of Object.keys(harness.state.players)) {
       const player = harness.state.players[id];
       // Engine Masters uses deck-building — players should have cards
-      expect(player.hand.length).toBeGreaterThanOrEqual(0);
+      expect((player.hand ?? []).length).toBeGreaterThanOrEqual(0);
       // May have resources (power)
       if (player.resources) {
         expect(typeof player.resources.power).toBe('number');
@@ -291,9 +292,10 @@ describe('uno', () => {
   it('deck has 108 cards total', () => {
     harness = GameTestHarness.create('uno', 2, { seed: 1 });
     harness.start();
-    const totalCards = harness.state.deck.length +
-      harness.state.players['player-1'].hand.length +
-      harness.state.players['player-2'].hand.length + 1; // +1 for topCard
+    const cardsState = getCardsState(harness.state);
+    const totalCards = cardsState.deck.length +
+      (harness.state.players['player-1'].hand ?? []).length +
+      (harness.state.players['player-2'].hand ?? []).length + 1; // +1 for topCard
     expect(totalCards).toBe(108);
   });
 
@@ -470,7 +472,7 @@ describe('road-rally', () => {
   it('deck contains speed cards', () => {
     harness = GameTestHarness.create('road-rally', 2, { seed: 1 });
     harness.start();
-    expect(harness.state.deck.length).toBeGreaterThan(0);
+    expect(getCardsState(harness.state).deck.length).toBeGreaterThan(0);
   });
 });
 
@@ -480,13 +482,13 @@ describe('draft-duel', () => {
   it('initializes with zero starting cards', () => {
     harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
     harness.start();
-    expect(harness.state.players['player-1'].hand.length).toBe(0);
+    expect((harness.state.players['player-1'].hand ?? []).length).toBe(0);
   });
 
   it('has a non-empty deck', () => {
     harness = GameTestHarness.create('draft-duel', 2, { seed: 1 });
     harness.start();
-    expect(harness.state.deck.length).toBeGreaterThan(0);
+    expect(getCardsState(harness.state).deck.length).toBeGreaterThan(0);
   });
 
   it('draw gives a card', () => {

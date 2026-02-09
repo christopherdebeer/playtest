@@ -43,6 +43,8 @@ import {
   peekDiscard, hasCardsAvailable, getDeckSize, getDiscardSize
 } from '../src/mechanics/core/card-piles.js';
 
+import { getCardsState } from '../src/mechanics/core/cards.js';
+
 import {
   rollDice, rollD6, rollSingleDie, rollForMovement,
   rollCheck, rollWithAdvantage, rollWithDisadvantage,
@@ -111,9 +113,10 @@ function makeState(overrides?: Partial<GameState>): GameState {
         resources: {},
       },
     },
-    shared: {},
-    deck: [],
-    discardPile: [],
+    shared: {
+      deck: [],
+      discardPile: [],
+    },
     config: minimalConfig,
     rulesMarkdown: '',
     log: '/tmp/test-log.jsonl',
@@ -447,15 +450,16 @@ describe('card piles service', () => {
   let state: GameState;
 
   beforeEach(() => {
-    state = makeState({
-      deck: [
-        makeCard('Card-1'),
-        makeCard('Card-2'),
-        makeCard('Card-3'),
-        makeCard('Card-4'),
-        makeCard('Card-5'),
-      ],
-    });
+    state = makeState();
+    // Set up deck in shared state
+    const cardsState = getCardsState(state);
+    cardsState.deck = [
+      makeCard('Card-1'),
+      makeCard('Card-2'),
+      makeCard('Card-3'),
+      makeCard('Card-4'),
+      makeCard('Card-5'),
+    ];
   });
 
   it('drawFromDeck draws cards from top of deck', () => {
@@ -463,19 +467,20 @@ describe('card piles service', () => {
     expect(result.cards).toHaveLength(2);
     expect(result.cards[0].name).toBe('Card-1');
     expect(result.cards[1].name).toBe('Card-2');
-    expect(state.deck).toHaveLength(3);
+    expect(getCardsState(state).deck).toHaveLength(3);
     expect(result.reshuffled).toBe(false);
   });
 
   it('drawFromDeck draws nothing from empty deck', () => {
-    state.deck = [];
+    getCardsState(state).deck = [];
     const result = drawFromDeck(state, 2, 'player-1');
     expect(result.cards).toHaveLength(0);
   });
 
   it('drawFromDeck reshuffles discard when deck empty', () => {
-    state.deck = [];
-    state.discardPile = [makeCard('Discard-1'), makeCard('Discard-2')];
+    const cardsState = getCardsState(state);
+    cardsState.deck = [];
+    cardsState.discardPile = [makeCard('Discard-1'), makeCard('Discard-2')];
     const result = drawFromDeck(state, 1, 'player-1');
     expect(result.cards).toHaveLength(1);
     expect(result.reshuffled).toBe(true);
@@ -489,7 +494,7 @@ describe('card piles service', () => {
   it('addToDiscard puts cards in discard pile', () => {
     const cards = [makeCard('Used-1'), makeCard('Used-2')];
     addToDiscard(state, cards, 'player-1');
-    expect(state.discardPile).toHaveLength(2);
+    expect(getCardsState(state).discardPile).toHaveLength(2);
     expect(state.shared.topCard).toEqual(cards[1]);
   });
 
@@ -498,8 +503,8 @@ describe('card piles service', () => {
     const result = playCard(state, 'player-1', 'Fireball');
     expect(result.card?.name).toBe('Fireball');
     expect(state.players['player-1'].hand).toHaveLength(1);
-    expect(state.discardPile).toHaveLength(1);
-    expect(state.discardPile[0].name).toBe('Fireball');
+    expect(getCardsState(state).discardPile).toHaveLength(1);
+    expect(getCardsState(state).discardPile[0].name).toBe('Fireball');
   });
 
   it('playCard returns null for card not in hand', () => {
@@ -511,14 +516,14 @@ describe('card piles service', () => {
     expect(peekDiscard(state)).toBeUndefined();
     addToDiscard(state, [makeCard('A'), makeCard('B')]);
     expect(peekDiscard(state)?.name).toBe('B');
-    expect(state.discardPile).toHaveLength(2);
+    expect(getCardsState(state).discardPile).toHaveLength(2);
   });
 
   it('hasCardsAvailable checks deck + discard', () => {
     expect(hasCardsAvailable(state)).toBe(true); // 5 cards in deck
-    state.deck = [];
+    getCardsState(state).deck = [];
     expect(hasCardsAvailable(state)).toBe(false); // empty deck, empty discard
-    state.discardPile = [makeCard('A'), makeCard('B')];
+    getCardsState(state).discardPile = [makeCard('A'), makeCard('B')];
     expect(hasCardsAvailable(state)).toBe(true); // can reshuffle discard
   });
 

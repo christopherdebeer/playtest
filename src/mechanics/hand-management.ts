@@ -15,6 +15,7 @@
 import { MechanicHooks, HookContext, StateChanges } from './types.js';
 import type { CardsHooks, BeforeCardDrawPayload, BeforeAddToHandPayload } from './core/cards.js';
 import { Card, GameAction } from '../types/game.js';
+import { getCardsState } from './core/index.js';
 
 export const handManagementMechanic: MechanicHooks & CardsHooks = {
   slug: 'hand-management',
@@ -49,7 +50,7 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
 
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
 
-    const currentHandSize = ctx.player.hand.length;
+    const currentHandSize = (ctx.player.hand ?? []).length;
     const cardsToAdd = payload.cards.length;
     const wouldExceed = currentHandSize + cardsToAdd > handLimit;
 
@@ -89,7 +90,7 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
     if (policy !== 'cannot_draw') return null;
 
-    const currentHandSize = ctx.player.hand.length;
+    const currentHandSize = (ctx.player.hand ?? []).length;
     const maxDrawable = Math.max(0, handLimit - currentHandSize);
 
     if (maxDrawable === 0) {
@@ -124,19 +125,21 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
     if (policy === 'cannot_draw') return null; // Already blocked before draw
 
-    if (ctx.player.hand.length <= handLimit) return null; // No excess
+    const playerHand = ctx.player.hand ?? [];
+    if (playerHand.length <= handLimit) return null; // No excess
 
-    const excess = ctx.player.hand.length - handLimit;
+    const excess = playerHand.length - handLimit;
 
     if (policy === 'discard_oldest') {
       // Auto-discard the oldest (first) cards
       // Direct mutation since we're in postExecuteAction
       const discarded: Card[] = [];
+      const cardsState = getCardsState(ctx.state);
       for (let i = 0; i < excess; i++) {
-        const card = ctx.player.hand.shift();
+        const card = playerHand.shift();
         if (card) {
           discarded.push(card);
-          ctx.state.discardPile.push(card);
+          cardsState.discardPile.push(card);
         }
       }
       return null; // Direct mutation, no stateChanges needed

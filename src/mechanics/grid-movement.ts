@@ -22,6 +22,7 @@ import {
   StateChanges
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
+import { getCardsState } from './core/index.js';
 
 interface GridConfig {
   type?: string;
@@ -115,15 +116,17 @@ export const gridMovementMechanic: MechanicHooks = {
           const drawCount = effect.value ?? 1;
           const handLimit = (config.engine_mechanics?.hand_limit as number) ?? Infinity;
 
-          if (player.hand.length < handLimit && state.deck.length > 0) {
+          const playerHand = player.hand ?? [];
+          const cardsState = getCardsState(state);
+          if (playerHand.length < handLimit && cardsState.deck.length > 0) {
             const actualDrawCount = Math.min(
               drawCount,
-              handLimit - player.hand.length,
-              state.deck.length
+              handLimit - playerHand.length,
+              cardsState.deck.length
             );
             if (actualDrawCount > 0) {
-              const drawnCards = state.deck.splice(0, actualDrawCount);
-              player.hand.push(...drawnCards);
+              const drawnCards = cardsState.deck.splice(0, actualDrawCount);
+              playerHand.push(...drawnCards);
               cardsDrawn = drawnCards.length;
               effectsApplied.push(`${locationCard.name}: Drew ${cardsDrawn} card${cardsDrawn !== 1 ? 's' : ''}`);
             }
