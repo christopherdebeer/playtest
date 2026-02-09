@@ -362,35 +362,82 @@ Play a card by name. Removes card from hand and adds to discard pile.
 Get current game status including state, active player, turn count, and recent actions.
 
 ```bash
-./playtest status <game>
+./playtest status <game> [options]
 ```
 
 **Arguments:**
 - `<game>` - Game name or instance ID
 
-**Example output:**
+**Options:**
+- `--files` - Include file paths (logs, transcripts, analysis) - for operators only
+
+**Example:**
+```bash
+# Basic status (safe for players)
+./playtest status uno-1234
+
+# With file paths (for operators)
+./playtest status uno-1234 --files
 ```
-Game: markovs-chains (instance: mc-1234)
-Status: in_progress
-Active Player: p1
-Turn: 5
-Players: p1, p2
-```
+
+**Output fields:**
+- `instanceId`, `gameName`, `status`, `round`, `turnNumber`
+- `currentPlayer`, `players`, `winner`
+- `files` (only with --files): `log`, `state`, `analysis`, `transcripts`
 
 ### list
 
-List active game instances, optionally filtered by game name.
+List games and instances. Default shows games summary with instance counts by status.
 
 ```bash
-./playtest list [game] --all
+./playtest list [options]
 ```
 
-**Arguments:**
-- `[game]` - Optional game name to filter by
-
 **Options:**
-- `--all` - Include completed games
-- `--json` - Output as JSON
+- `-g, --game <game>` - Filter to specific game
+- `-s, --status <status>` - Filter by status (in_progress, completed, waiting_for_players, pending_analysis, cancelled)
+- `-i, --instances` - Show individual instances instead of games summary
+- `--since <time>` - Filter instances created since (e.g., "1h", "30m", "2d") - implies --instances
+- `--updated-within <time>` - Filter instances updated within (e.g., "5m", "1h") - implies --instances
+- `--stalled` - Show only stalled instances (no recent activity) - implies --instances
+- `--threshold <time>` - Stall threshold (default: "5m")
+- `--sort-by <field>` - Sort by: turns, updated, created, name
+- `--format <format>` - Output format: json, table (default: table)
+- `--validate` - Include validation status for games
+- `--files` - Include file paths in instance mode (logs, transcripts) - for operators only
+
+**Examples:**
+```bash
+# Default: games summary with instance counts by status
+./playtest list
+
+# Filter to specific game
+./playtest list --game uno
+
+# Show only games with waiting instances
+./playtest list --status waiting_for_players
+
+# Show individual instances
+./playtest list --instances
+
+# Show instances for a specific game
+./playtest list --game uno --instances
+
+# Show completed instances from last hour
+./playtest list --status completed --since 1h
+
+# Show stalled instances
+./playtest list --stalled
+
+# Include validation info
+./playtest list --validate
+
+# JSON output
+./playtest list --format json
+
+# Include file paths (for operators)
+./playtest list --instances --files --format json
+```
 
 ## Game Rules & Validation
 
@@ -541,20 +588,30 @@ Universal hook event handler (reads JSON from stdin).
 **Options:**
 - `--type <type>` - Event type (required)
 
-## Logs
+## Logs & Files
 
-Game logs are written to `games/<game>/logs/<instance-id>.jsonl` in newline-delimited JSON format. Each line represents a game event:
+Use `--files` flag to get file paths from the CLI:
+
+```bash
+# Get file paths for a specific instance
+./playtest status uno-1234 --files
+
+# List instances with file paths
+./playtest list --instances --files --format json
+```
+
+**Files returned:**
+- `log` - Game event log (JSONL format)
+- `state` - State directory
+- `analysis` - Post-game analysis (if exists)
+- `transcripts` - Agent transcripts with role and path
+
+Game logs are newline-delimited JSON. Each line represents a game event:
 
 ```json
 {"type":"game_start","timestamp":"2026-02-02T10:30:00Z","players":["p1","p2"]}
 {"type":"turn_start","timestamp":"2026-02-02T10:30:01Z","player":"p1"}
 {"type":"action","timestamp":"2026-02-02T10:30:05Z","player":"p1","action":{"type":"play","card":"red-7"}}
-```
-
-Use standard JSON tools to parse and analyze logs:
-
-```bash
-cat games/uno/logs/uno-1234.jsonl | jq '.type'
 ```
 
 ## Examples
@@ -571,10 +628,14 @@ cat games/uno/logs/uno-1234.jsonl | jq '.type'
 ./playtest status mc-1234
 ```
 
-### View game logs
+### View game files
 
 ```bash
-cat games/markovs-chains/logs/mc-1234.jsonl | jq '.'
+# Get file paths
+./playtest status mc-1234 --files
+
+# Then use the returned paths to view logs
+cat $(./playtest status mc-1234 --files | jq -r '.files.log') | jq '.'
 ```
 
 ### Manually test player actions

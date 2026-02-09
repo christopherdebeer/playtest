@@ -108,8 +108,8 @@ for (const player of spawnInstructions.players) {
 
 **Monitor:**
 - Status: `./playtest status {instanceId}`
-- List instances: `./playtest list {gameName}`
-- Logs: `games/{gameName}/logs/{instanceId}.jsonl`
+- List instances: `./playtest list --game {gameName} --instances`
+- Files: `./playtest status {instanceId} --files` (logs, transcripts, analysis)
 
 **Key Change**: Agents now call `register` as their first command to receive rules.
 ```
@@ -130,7 +130,9 @@ for (const player of spawnInstructions.players) {
 - `./playtest register <instance> -r <role> -a <agentId> [-p <playerId>]` - Register and get rules
 
 **Instance Management:**
-- `./playtest list [game]` - List active game instances
+- `./playtest list` - List games summary with instance counts by status
+- `./playtest list --game <game> --instances` - List instances for specific game
+- `./playtest list --instances` - List all instances
 - `./playtest status <instance>` - Game status (accepts instance ID or game name)
 
 **Turn Management:**

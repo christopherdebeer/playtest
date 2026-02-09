@@ -306,7 +306,7 @@ deck:
 
 # Monitor
 ./playtest status <instanceId>
-./playtest list my-new-game
+./playtest list --game my-new-game --instances
 
 # Check logs
 cat games/my-new-game/logs/<instanceId>.jsonl
