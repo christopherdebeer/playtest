@@ -297,7 +297,19 @@ function MechanicsPage() {
 
                       {mechanic.gamesUsing.length > 0 && (
                         <div className="mechanic-games">
-                          <span className="games-label">Used in {mechanic.gamesUsing.length} game{mechanic.gamesUsing.length !== 1 ? 's' : ''}</span>
+                          <span className="games-label">Used in: </span>
+                          {mechanic.gamesUsing.map((g, i) => (
+                            <span key={g.id}>
+                              {i > 0 && ', '}
+                              <Link
+                                to={`/games/${g.id}`}
+                                className="game-link-inline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {g.name}
+                              </Link>
+                            </span>
+                          ))}
                         </div>
                       )}
 
