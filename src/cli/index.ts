@@ -58,6 +58,7 @@ import {
   getMechanicImplementationStatus
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
+import { getCardsState } from '../mechanics/core/index.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
 
 const program = new Command();
@@ -278,7 +279,7 @@ program
         players: Object.fromEntries(
           Object.entries(state.players).map(([id, p]) => [
             id,
-            { state: p.state, handSize: p.hand.length, registered: !!p.agentId }
+            { state: p.state, handSize: (p.hand ?? []).length, registered: !!p.agentId }
           ])
         ),
         winner: state.shared.winner
@@ -727,13 +728,13 @@ program
       if (result.status === 'your_turn') {
         state = loadStateReadOnly(game); // Reload to get latest state
         const actionsResult = getAvailableActions(state, options.player);
+        // Spread all fields from actionsResult (includes mechanic-contributed fields)
+        // This is mechanic-agnostic: actionPoints, resources, etc. come through automatically
+        const { actions, ...otherFields } = actionsResult;
         console.log(JSON.stringify({
           ...result,
-          actions: actionsResult.actions.filter(a => a.enabled),
-          hand: actionsResult.hand,
-          currentState: actionsResult.currentState,
-          activeEffects: actionsResult.activeEffects,
-          placedCards: actionsResult.placedCards
+          ...otherFields,
+          actions: actions.filter(a => a.enabled)
         }));
       } else {
         console.log(JSON.stringify(result));
@@ -930,7 +931,7 @@ program
                 accepted: adjudication.accepted,
                 reason: adjudication.rulingReason
               },
-              handSize: currentState.players[options.player]?.hand.length,
+              handSize: (currentState.players[options.player]?.hand ?? []).length,
               nextPlayer: currentState.currentPlayer,
               gameStatus: currentState.status,
               gameOver: adjudication.accepted || currentState.status === 'completed',
@@ -948,7 +949,7 @@ program
               action,
               effect: execResult.effect,
               validation: ruleResult,
-              handSize: currentState.players[options.player]?.hand.length,
+              handSize: (currentState.players[options.player]?.hand ?? []).length,
               nextPlayer: currentState.currentPlayer,
               gameStatus: currentState.status,
               gameOver: true,
@@ -970,7 +971,7 @@ program
           effect: execResult.effect,
           validation: ruleResult,
           warning: `Adjudication timeout after ${timeout}ms. Check game status manually.`,
-          handSize: updatedState.players[options.player]?.hand.length,
+          handSize: (updatedState.players[options.player]?.hand ?? []).length,
           nextPlayer: updatedState.currentPlayer,
           gameStatus: updatedState.status,
           gameOver: updatedState.status === 'completed' || updatedState.status === 'cancelled',
@@ -987,7 +988,7 @@ program
         action,
         effect: execResult.effect,
         validation: ruleResult,
-        handSize: player?.hand.length,
+        handSize: (player?.hand ?? []).length,
         nextPlayer: updatedState.currentPlayer,
         gameStatus: updatedState.status,
         gameOver: execResult.gameOver || false,
@@ -1381,7 +1382,7 @@ program
         success: true,
         cards,
         drawn: cards.length,
-        deckRemaining: state.deck.length
+        deckRemaining: getCardsState(state).deck.length
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -1465,7 +1466,7 @@ program
         success: true,
         played: card,
         cardDefinition: cardDef?.effect,  // Effect info for gamemaster
-        handSize: state.players[options.player].hand.length,
+        handSize: (state.players[options.player].hand ?? []).length,
         topCard: state.shared.topCard,
         currentColor: state.shared.currentColor
       }));
@@ -1504,8 +1505,8 @@ program
             turnOrder: state.turnOrder,
             players: state.players,
             shared: state.shared,
-            deckSize: state.deck.length,
-            discardSize: state.discardPile.length
+            deckSize: getCardsState(state).deck.length,
+            discardSize: getCardsState(state).discardPile.length
           }
         }));
       }
@@ -2382,7 +2383,7 @@ program
             players: Object.fromEntries(
               Object.entries(state.players).map(([id, p]) => [
                 id,
-                { state: p.state, handSize: p.hand.length, registered: !!p.agentId }
+                { state: p.state, handSize: (p.hand ?? []).length, registered: !!p.agentId }
               ])
             ),
             winner: state.shared.winner

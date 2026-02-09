@@ -9,6 +9,7 @@
  * - onExecuteAction: Handle trade execution
  * - getAvailableActions: Expose trade_offer and trade_respond actions
  * - describeAction: Describe trade actions
+ * - canPlayerActNow: Allow out-of-turn trade responses
  */
 
 import {
@@ -120,7 +121,7 @@ export const tradingMechanic: MechanicHooks = {
     const actions: AvailableAction[] = [];
 
     // Get tradeable cards from player's hand
-    const tradeableCards = ctx.player.hand
+    const tradeableCards = (ctx.player.hand ?? [])
       .filter(c => !tradeConfig.item_types_only || c.type === 'item')
       .map(c => c.name);
 
@@ -137,7 +138,7 @@ export const tradingMechanic: MechanicHooks = {
       if (validTargets.length > 0) {
         const target = validTargets[0];
         const targetPlayer = ctx.state.players[target];
-        const targetCards = targetPlayer.hand
+        const targetCards = (targetPlayer.hand ?? [])
           .filter(c => !tradeConfig.item_types_only || c.type === 'item')
           .map(c => c.name);
 
@@ -193,6 +194,20 @@ export const tradingMechanic: MechanicHooks = {
     }
 
     return null;
+  },
+
+  /**
+   * Allow players to respond to trade offers out of turn.
+   * Returns true if the player has pending trades directed at them.
+   */
+  canPlayerActNow(ctx: HookContext): boolean | null {
+    if (!isMechanicEnabled(ctx.config, 'trading')) return null;
+
+    const pendingTrades = (ctx.state.shared.pendingTrades as PendingTrade[]) || [];
+    const hasPendingTrades = pendingTrades.some(t => t.to === ctx.playerId);
+
+    // Allow out-of-turn action only if player has pending trades to respond to
+    return hasPendingTrades ? true : null;
   }
 };
 
@@ -225,8 +240,9 @@ function validateTradeOffer(ctx: HookContext, action: TradeOfferAction): Validat
   }
 
   // Validate offered cards exist in player's hand
+  const playerHand = ctx.player.hand ?? [];
   for (const cardName of action.offer) {
-    const card = ctx.player.hand.find(c => c.name === cardName);
+    const card = playerHand.find(c => c.name === cardName);
     if (!card) {
       return { valid: false, error: `Card "${cardName}" not in your hand. Cannot offer it.` };
     }
@@ -237,8 +253,9 @@ function validateTradeOffer(ctx: HookContext, action: TradeOfferAction): Validat
 
   // Validate requested cards exist in target's hand
   const targetPlayer = ctx.state.players[action.target];
+  const targetHand = targetPlayer.hand ?? [];
   for (const cardName of action.request) {
-    const card = targetPlayer.hand.find(c => c.name === cardName);
+    const card = targetHand.find(c => c.name === cardName);
     if (!card) {
       return { valid: false, error: `Card "${cardName}" not in ${action.target}'s hand. Cannot request it.` };
     }
@@ -274,15 +291,17 @@ function validateTradeRespond(ctx: HookContext, action: TradeRespondAction): Val
   // If accepting, verify both players still have the cards
   if (action.accept) {
     const fromPlayer = ctx.state.players[trade.from];
+    const fromPlayerHand = fromPlayer.hand ?? [];
 
     for (const cardName of trade.offer) {
-      if (!fromPlayer.hand.find(c => c.name === cardName)) {
+      if (!fromPlayerHand.find(c => c.name === cardName)) {
         return { valid: false, error: `Offerer no longer has card "${cardName}". Trade cannot be completed.` };
       }
     }
 
+    const responderHand = ctx.player.hand ?? [];
     for (const cardName of trade.request) {
-      if (!ctx.player.hand.find(c => c.name === cardName)) {
+      if (!responderHand.find(c => c.name === cardName)) {
         return { valid: false, error: `You no longer have card "${cardName}". Trade cannot be completed.` };
       }
     }
