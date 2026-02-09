@@ -555,11 +555,11 @@ export const workerPlacementMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const spaces = cfg.spaces;
     if (!Array.isArray(spaces)) return null;
-    return { label: 'Locations', value: String(spaces.length) };
+    return [{ label: 'Locations', value: String(spaces.length) }];
   }
 };

@@ -209,11 +209,11 @@ export const teamBasedGameMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const teams = cfg.teams;
     if (!Array.isArray(teams)) return null;
-    return { label: 'Teams', value: String(teams.length) };
+    return [{ label: 'Teams', value: String(teams.length) }];
   }
 };

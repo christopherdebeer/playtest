@@ -48,12 +48,12 @@ export const boardMechanic: MechanicHooks = {
   slug: 'board',
   name: 'Board Core',
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const states = cfg.states;
     if (!Array.isArray(states) || states.length === 0) return null;
-    return { label: 'Locations', value: String(states.length) };
+    return [{ label: 'Locations', value: String(states.length) }];
   },
 
   defines: {

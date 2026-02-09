@@ -152,14 +152,14 @@ export const cardsMechanic: MechanicHooks = {
     },
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const deck = cfg.deck;
     if (!Array.isArray(deck)) return null;
     const total = deck.reduce((sum: number, c: Record<string, unknown>) => sum + ((c.count as number) ?? 0), 0);
     if (total <= 0) return null;
-    return { label: 'Cards', value: String(total) };
+    return [{ label: 'Cards', value: String(total) }];
   },
 
   /**

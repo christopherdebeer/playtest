@@ -94,11 +94,11 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const powers = cfg.powers;
     if (!Array.isArray(powers)) return null;
-    return { label: 'Powers', value: String(powers.length) };
+    return [{ label: 'Powers', value: String(powers.length) }];
   }
 };

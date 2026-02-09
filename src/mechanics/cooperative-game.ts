@@ -170,7 +170,7 @@ export const cooperativeGameMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(_config: unknown): { label: string; value: string } | null {
-    return { label: 'Mode', value: 'Co-op' };
+  getHighlight(_config: unknown): { label: string; value: string }[] | null {
+    return [{ label: 'Mode', value: 'Co-op' }];
   },
 };

@@ -208,10 +208,10 @@ export const resourcesMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!Array.isArray(config)) return null;
     const names = config.map((r: Record<string, unknown>) => r.name).filter(Boolean);
     if (names.length === 0) return null;
-    return { label: 'Resources', value: String(names.length) };
+    return [{ label: 'Resources', value: String(names.length) }];
   },
 };
