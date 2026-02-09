@@ -102,12 +102,11 @@ function buildRoleAssignments(config: HiddenRolesConfig, playerCount: number): s
     roles.push(config.defaultRole || config.roles[0]?.id || 'unknown');
   }
 
-  // Trim if too many
-  while (roles.length > playerCount) {
-    roles.pop();
-  }
+  // Shuffle BEFORE trimming so later-defined roles have equal chance of inclusion
+  const shuffled = shuffleArray(roles);
 
-  return roles;
+  // Trim if too many (after shuffle ensures fair distribution)
+  return shuffled.slice(0, playerCount);
 }
 
 export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {

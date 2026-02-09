@@ -133,6 +133,7 @@ import { socialMechanic } from './core/social-mechanic.js';
 // Effect handling mechanics
 import { locationEffectsMechanic } from './location-effects.js';
 import { placedCardEffectsMechanic } from './placed-card-effects.js';
+import { effectDispatcherMechanic } from './core/effect-dispatcher.js';
 
 // Phase 7: Worker Placement mechanics
 import { workersMechanic } from './core/workers-mechanic.js';
@@ -359,6 +360,8 @@ mechanicRegistry.register(passMechanic);
 // Register effect handling mechanics
 mechanicRegistry.register(locationEffectsMechanic);
 mechanicRegistry.register(placedCardEffectsMechanic);
+// Effect dispatcher: catch-all for card effects not handled by specialized mechanics
+mechanicRegistry.register(effectDispatcherMechanic);
 
 // Register Phase 7: Worker Placement mechanics
 mechanicRegistry.register(workersMechanic);

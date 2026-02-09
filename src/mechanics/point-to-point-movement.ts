@@ -323,7 +323,9 @@ export const pointToPointMovementMechanic: MechanicHooks = {
       playerStateChanges: {
         [playerId]: {
           currentNode: targetNode,
-          previousNode
+          previousNode,
+          // Sync board state so win conditions (race, reach-state) see the current position
+          state: targetNode
         }
       }
     };
@@ -495,7 +497,9 @@ export const pointToPointMovementMechanic: MechanicHooks = {
         playerStateChanges: {
           [playerId]: {
             currentNode,
-            previousNode: player.currentNode
+            previousNode: player.currentNode,
+            // Sync board state so win conditions see the current position
+            state: currentNode
           }
         }
       },

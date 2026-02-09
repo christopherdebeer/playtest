@@ -64,7 +64,10 @@ export const raceWinMechanic: MechanicHooks & BoardHooks = {
     const raceConfig = ctx.config.engine_mechanics?.win_race as RaceWinConfig | undefined;
     if (!raceConfig) return null;
 
-    const currentState = ctx.player.state;
+    // Check both state (board mechanic) and currentNode (point-to-point movement)
+    // These can diverge when point-to-point movement updates currentNode directly
+    const currentState = (ctx.player as unknown as Record<string, unknown>).currentNode as string
+      || ctx.player.state;
     const goalStates = raceConfig.goal_states
       ? [raceConfig.goal_state, ...raceConfig.goal_states]
       : [raceConfig.goal_state];

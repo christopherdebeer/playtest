@@ -11,7 +11,7 @@
  *     reveal_before_resolve: boolean # Show all choices before resolving
  */
 
-import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges, SharedStateInitContext, SharedStateInitResult, TurnStartContext } from './types.js';
+import { MechanicHooks, HookContext, ValidationResult, ActionExecutionContext, ActionExecutionResult, AvailableAction, StateChanges, SharedStateInitContext, SharedStateInitResult, TurnStartContext, VisibilityContext, VisibleState } from './types.js';
 import { GameAction, GameConfig } from '../types/game.js';
 
 interface SimultaneousActionConfig {
@@ -261,6 +261,30 @@ export const simultaneousActionSelectionMechanic: MechanicHooks = {
       revealedActions: selState.phase === 'revealing' || selState.phase === 'resolving'
         ? selState.revealed
         : undefined
+    };
+  },
+
+  getVisibleState(ctx: VisibilityContext): VisibleState | null {
+    const config = getConfig(ctx.config);
+    if (!config) return null;
+
+    const selState = ctx.state.shared.simultaneousSelection as SimultaneousSelectionState | undefined;
+    if (!selState || selState.phase !== 'selecting') return null;
+
+    // During selection phase, redact other players' selections from shared state
+    // Each player should only see their own selection
+    const redactedSelections: Record<string, unknown> = {};
+    if (selState.selections[ctx.viewerPlayerId]) {
+      redactedSelections[ctx.viewerPlayerId] = selState.selections[ctx.viewerPlayerId];
+    }
+
+    return {
+      shared: {
+        simultaneousSelection: {
+          ...selState,
+          selections: redactedSelections
+        }
+      }
     };
   },
 

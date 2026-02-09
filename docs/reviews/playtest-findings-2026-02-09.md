@@ -303,3 +303,53 @@ function buildRoleAssignments(config, playerCount) {
 
 - Treasure Hunters
 - Grand Bazaar
+
+---
+
+## Fix Progress Log
+
+### 2026-02-09: Critical Systemic Fixes (6 of 6 completed)
+
+All 6 critical systemic issues have been fixed, built, and validated via `/playtest-manual`.
+
+#### Fix #1: `highest_score` Win Condition — FIXED ✓
+**File**: `src/core/game.ts:1315-1335`
+**Change**: `highest_score` aggregate win condition now only evaluates when `state.round >= max_rounds` or `state.turnNumber >= max_turns`. Previously triggered immediately after any action.
+**Validated**: Spellbook Showdown game ran through multiple rounds without premature end.
+
+#### Fix #2: Action Points Multi-Action — FIXED ✓
+**File**: `src/core/game.ts:1890-1903`
+**Change**: When `action_points` mechanic is enabled, the `advanceTurn: true` flag from mechanics is overridden — only AP depletion (`shouldAutoEndTurn`) controls turn advancement. This allows players to take multiple actions per turn as designed.
+**Validated**: Spellbook Showdown player used 3 AP across 3 actions (play_card, draw, draw) before turn advanced.
+
+#### Fix #3: Card Effect Dispatcher — FIXED ✓
+**File**: `src/mechanics/core/effect-dispatcher.ts` (NEW)
+**Change**: Created central effect dispatcher that responds to `onCardPlayed` hook. Handles `draw` (force draw), `score`, `reverse`, `bonus_worker` directly. Routes other effect types through `mechanicRegistry.applyEffect()` (so `move_forward`/`move_backward` go through point-to-point-movement). Falls back to adding status effects for unhandled types.
+**Validated**: UNO Draw Two card now forces next player to draw 2 cards (P2 went from 7 → 9 cards).
+
+#### Fix #4: `player.state` / `player.currentNode` Desync — FIXED ✓
+**Files**: `src/mechanics/win-conditions/race.ts:67`, `src/mechanics/point-to-point-movement.ts:325,497`
+**Change**: Two-pronged fix:
+1. Race win condition now checks `player.currentNode || player.state` (fallback)
+2. Point-to-point movement now syncs `state: targetNode` alongside `currentNode` in stateChanges
+
+#### Fix #5: Simultaneous Selection Visibility Leak — FIXED ✓
+**File**: `src/mechanics/simultaneous-action-selection.ts`
+**Change**: Added `getVisibleState` hook that redacts `shared.simultaneousSelection.selections` during the `selecting` phase. Each player only sees their own selection in the filtered state.
+
+#### Fix #6: Hidden Role Distribution — FIXED ✓
+**File**: `src/mechanics/hidden-roles.ts:89-111`
+**Change**: `buildRoleAssignments()` now shuffles the full role list BEFORE trimming to player count. Previously used `roles.pop()` which always removed later-defined roles (Conspirator, Opportunist, Enemy), making them unassignable.
+
+### Remaining Work
+
+**High Priority** (not yet addressed):
+- Deck-building personal discard (Engine Masters)
+- Closed drafting initialization (Draft Duel)
+
+**Medium Priority** (not yet addressed):
+- Ladder climbing logic (Road Rally)
+- Push-your-luck turn handling (Fortune Seekers)
+- Worker placement integration (Battle Forge)
+- Investment maturity tracking (Dice Dynasties)
+- Cooperative threat progression (Alliance)

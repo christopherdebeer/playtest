@@ -1313,18 +1313,26 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
   const condition = state.config.win_condition?.toLowerCase() || '';
 
   // Pattern: "highest_score" / "highest score" - winner is player with highest score
+  // Only evaluate when game has reached its configured round/turn limit.
+  // Without a limit, this is handled by endGameOnTimeout fallback.
   if (condition.includes('highest_score') || condition.includes('highest score')) {
-    let highestScore = -Infinity;
-    let winner = 'none';
-    for (const [pid, player] of Object.entries(state.players)) {
-      const score = player.score ?? 0;
-      if (score > highestScore) {
-        highestScore = score;
-        winner = pid;
+    const maxRounds = state.config.max_rounds;
+    const maxTurns = state.config.max_turns as number | undefined;
+    const reachedRoundLimit = maxRounds && state.round >= maxRounds;
+    const reachedTurnLimit = maxTurns && state.turnNumber >= maxTurns;
+    if (reachedRoundLimit || reachedTurnLimit) {
+      let highestScore = -Infinity;
+      let winner = 'none';
+      for (const [pid, player] of Object.entries(state.players)) {
+        const score = player.score ?? 0;
+        if (score > highestScore) {
+          highestScore = score;
+          winner = pid;
+        }
       }
-    }
-    if (winner !== 'none') {
-      return { winner, reason: `${winner} wins with highest score (${highestScore})` };
+      if (winner !== 'none') {
+        return { winner, reason: `${winner} wins with highest score (${highestScore})` };
+      }
     }
   }
 
@@ -1880,21 +1888,19 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
     }
 
     // Handle turn advancement
-    if (mechanicResult.advanceTurn) {
+    // When action_points is enabled, AP depletion controls turn advancement,
+    // not the mechanic's advanceTurn flag. This allows multi-action turns.
+    const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
+    if (shouldEnd) {
+      advanceTurn(state);
+    } else if (mechanicResult.advanceTurn && !isMultiActionAllowed(state)) {
+      // Only respect advanceTurn when action points are NOT enabled
+      advanceTurn(state);
+    } else if (!isMultiActionAllowed(state) && player.lastActionRound === state.round) {
+      // Auto-advance if single-action-per-round and player already acted
       advanceTurn(state);
     } else {
-      // Check if AP mechanic wants to end turn
-      const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
-      if (shouldEnd) {
-        advanceTurn(state);
-      } else {
-        // Auto-advance if single-action-per-round and player already acted
-        if (!isMultiActionAllowed(state) && player.lastActionRound === state.round) {
-          advanceTurn(state);
-        } else {
-          saveState(state);
-        }
-      }
+      saveState(state);
     }
 
     return {

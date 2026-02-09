@@ -785,6 +785,11 @@
         "describeAction"
       ]
     },
+    "effect-dispatcher": {
+      "config_key": "effect_dispatcher",
+      "since": "3.0.0",
+      "hooks": []
+    },
     "effects": {
       "config_key": "effects",
       "since": "3.0.0",
@@ -1723,6 +1728,7 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
+        "getVisibleState",
         "initSharedState",
         "getPlayerView",
         "canPlayerActNow"
@@ -1923,7 +1929,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "initSharedState"
+        "initSharedState",
+        "canPlayerActNow"
       ]
     },
     "traitor-game": {
