@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { fetchMechanicsIndex, MechanicsIndex, MechanicIndexEntry } from '../utils/mechanicData'
+import gamesData from '../data/games.json'
 import BackLink from '../components/BackLink'
 import './MechanicsPage.css'
 
@@ -64,6 +65,11 @@ const sourceColors: Record<string, string> = {
 const sourceLabels: Record<string, string> = {
   bgg: 'BGG',
   engine: 'Engine',
+}
+
+const gameNames: Record<string, string> = {}
+for (const game of gamesData as Array<{ id: string; config: { name: string } }>) {
+  gameNames[game.id] = game.config.name
 }
 
 function MechanicsPage() {
@@ -298,15 +304,15 @@ function MechanicsPage() {
                       {mechanic.gamesUsing.length > 0 && (
                         <div className="mechanic-games">
                           <span className="games-label">Used in: </span>
-                          {mechanic.gamesUsing.map((g, i) => (
-                            <span key={g.id}>
+                          {mechanic.gamesUsing.map((gameId, i) => (
+                            <span key={gameId}>
                               {i > 0 && ', '}
                               <Link
-                                to={`/games/${g.id}`}
+                                to={`/games/${gameId}`}
                                 className="game-link-inline"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {g.name}
+                                {gameNames[gameId] || gameId}
                               </Link>
                             </span>
                           ))}
