@@ -150,6 +150,17 @@ function MechanicDetailPage() {
             <p>{mechanic.summary}</p>
           </section>
 
+          {/* Full Description */}
+          {mechanic.contentHtml && (
+            <section className="mechanic-description-section">
+              <h2>Description</h2>
+              <div
+                className="mechanic-content markdown-body"
+                dangerouslySetInnerHTML={{ __html: mechanic.contentHtml }}
+              />
+            </section>
+          )}
+
           {/* Implementation Details */}
           {mechanic.implementation && (
             <section className="implementation-info">
@@ -230,6 +241,20 @@ function MechanicDetailPage() {
             </section>
           )}
 
+          {/* Games Using This Mechanic */}
+          {mechanic.gamesUsing.length > 0 && (
+            <section className="games-using">
+              <h2>Games Using This Mechanic</h2>
+              <div className="games-list">
+                {mechanic.gamesUsing.map(game => (
+                  <Link key={game.id} to={`/games/${game.id}`} className="game-link">
+                    {game.name}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Source Code */}
           {mechanic.sourceCode && (
             <section className="source-code-section">
@@ -250,31 +275,6 @@ function MechanicDetailPage() {
               <pre className={`source-code ${sourceExpanded ? 'expanded' : ''}`}>
                 <code>{mechanic.sourceCode}</code>
               </pre>
-            </section>
-          )}
-
-          {/* Games Using This Mechanic */}
-          {mechanic.gamesUsing.length > 0 && (
-            <section className="games-using">
-              <h2>Games Using This Mechanic</h2>
-              <div className="games-list">
-                {mechanic.gamesUsing.map(game => (
-                  <Link key={game.id} to={`/games/${game.id}`} className="game-link">
-                    {game.name}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Full Description */}
-          {mechanic.contentHtml && (
-            <section className="mechanic-description-section">
-              <h2>Description</h2>
-              <div
-                className="mechanic-content markdown-body"
-                dangerouslySetInnerHTML={{ __html: mechanic.contentHtml }}
-              />
             </section>
           )}
         </article>

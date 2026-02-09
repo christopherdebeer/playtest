@@ -349,6 +349,17 @@ a.mechanic-card.highlighted {
   color: var(--text-secondary);
 }
 
+/* Inline game links in mechanic cards */
+.game-link-inline {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.game-link-inline:hover {
+  text-decoration: underline;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .mechanics-grid {
