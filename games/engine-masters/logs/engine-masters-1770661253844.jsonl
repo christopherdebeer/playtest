@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-09T18:20:53.854Z","event":"game_init","data":{"gameId":"engine-masters-1770661253844","playerCount":2,"config":"Engine Masters"}}
+{"timestamp":"2026-02-09T18:21:05.218Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:21.189Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw_deck","count":5,"cards":["Basic Assembler","Copper Generator","Basic Assembler","Copper Generator","Copper Generator"]}}
+{"timestamp":"2026-02-09T18:21:32.512Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Copper Generator","effect":{"type":"resource","resource":"power","value":1},"handSize":4,"newTopCard":"Copper Generator"}}
+{"timestamp":"2026-02-09T18:23:11.298Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"acquire","card":"Bronze Generator","cost":{"power":3},"destination":"discard"}}
+{"timestamp":"2026-02-09T18:23:33.286Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Basic Assembler","effect":{"type":"draw","value":1},"handSize":3,"newTopCard":"Basic Assembler"}}
+{"timestamp":"2026-02-09T18:24:11.580Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"play_card","card":"Bronze Generator","effect":{"type":"resource","resource":"power","value":2},"handSize":0,"newTopCard":"Bronze Generator"}}
+{"timestamp":"2026-02-09T18:25:09.413Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"acquire","card":"Recycler","cost":{"power":3},"destination":"discard"}}
+{"timestamp":"2026-02-09T18:25:26.498Z","event":"game_end","round":4,"turnNumber":7,"data":{"winner":"player-2","reason":"Manual playtest concluded - ending game to document findings"}}

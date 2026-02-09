@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-09T18:20:54.967Z","event":"game_init","data":{"gameId":"grand-bazaar-1770661254961","playerCount":3,"config":"Grand Bazaar"}}
+{"timestamp":"2026-02-09T18:21:11.357Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:30.012Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"buy_stock"}}
+{"timestamp":"2026-02-09T18:22:01.560Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"take_contract"}}
+{"timestamp":"2026-02-09T18:22:13.048Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:23:26.298Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"take_contract"}}
+{"timestamp":"2026-02-09T18:23:49.813Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}

@@ -1,0 +1,21 @@
+{"timestamp":"2026-02-09T18:20:54.780Z","event":"game_init","data":{"gameId":"shadow-operations-1770661254768","playerCount":3,"config":"Shadow Operations"}}
+{"timestamp":"2026-02-09T18:21:10.453Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:25.482Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","from":"HQ","to":"east_district","areaName":"East District"}}
+{"timestamp":"2026-02-09T18:21:30.209Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_influence","player":"player-1","area":"east_district","areaName":"East District","amount":1}}
+{"timestamp":"2026-02-09T18:21:34.947Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","from":"east_district","to":"financial_center","areaName":"Financial Center"}}
+{"timestamp":"2026-02-09T18:21:40.120Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_influence","player":"player-1","area":"financial_center","areaName":"Financial Center","amount":1}}
+{"timestamp":"2026-02-09T18:22:15.214Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","from":"HQ","to":"port","areaName":"Port District"}}
+{"timestamp":"2026-02-09T18:22:20.320Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_influence","player":"player-2","area":"port","areaName":"Port District","amount":1}}
+{"timestamp":"2026-02-09T18:22:25.069Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","from":"port","to":"warehouse_row","areaName":"Warehouse Row"}}
+{"timestamp":"2026-02-09T18:22:31.607Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_influence","player":"player-2","area":"warehouse_row","areaName":"Warehouse Row","amount":1}}
+{"timestamp":"2026-02-09T18:22:35.763Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","from":"HQ","to":"port","areaName":"Port District"}}
+{"timestamp":"2026-02-09T18:22:39.724Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_influence","player":"player-3","area":"port","areaName":"Port District","amount":1}}
+{"timestamp":"2026-02-09T18:22:46.325Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"tug_push","player":"player-3","position":1,"direction":1,"reachedEnd":false}}
+{"timestamp":"2026-02-09T18:22:54.318Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:23:05.758Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"investigate"}}
+{"timestamp":"2026-02-09T18:24:37.441Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"move","from":"warehouse_row","to":"financial_center","areaName":"Financial Center"}}
+{"timestamp":"2026-02-09T18:24:41.859Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"place_influence","player":"player-2","area":"financial_center","areaName":"Financial Center","amount":1}}
+{"timestamp":"2026-02-09T18:25:03.482Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"tug_push","player":"player-2","position":0,"direction":-1,"reachedEnd":false}}
+{"timestamp":"2026-02-09T18:25:08.430Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:25:37.358Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"place_influence","player":"player-3","area":"port","areaName":"Port District","amount":1}}
+{"timestamp":"2026-02-09T18:25:53.244Z","event":"game_end","round":2,"turnNumber":6,"data":{"winner":"alpha","reason":"Testing complete - Alpha Agency controlled more districts"}}

@@ -1,0 +1,17 @@
+{"timestamp":"2026-02-09T18:20:58.128Z","event":"game_init","data":{"gameId":"aaote-1770661258117","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-09T18:21:04.017Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:20.457Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"origin","totalLocations":1}}
+{"timestamp":"2026-02-09T18:21:32.275Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"},"actionTarget":"player-1","handSize":4,"newTopCard":"Spy"}}
+{"timestamp":"2026-02-09T18:21:39.123Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Village Square","adjacentTo":"origin","totalLocations":2}}
+{"timestamp":"2026-02-09T18:24:54.310Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"move","target":"Forest Clearing","previousState":"start","locationEffects":[],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-09T18:25:00.275Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:25:40.991Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:25:51.702Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"trade_offer","tradeId":"trade-1770661551701-exfx8cylm","target":"player-3","offer":["Supplies"],"request":["Lantern"]}}
+{"timestamp":"2026-02-09T18:26:24.947Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-3","data":{"type":"trade_respond","tradeId":"trade-1770661551701-exfx8cylm","from":"player-1","to":"player-3","offer":["Supplies"],"request":["Lantern"]}}
+{"timestamp":"2026-02-09T18:31:17.821Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:31:26.676Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:31:32.073Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:31:44.710Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"pass","victoryDeclaration":true,"reason":"I have completed 4 trades"}}
+{"timestamp":"2026-02-09T18:32:13.446Z","event":"victory_rejected","round":3,"turnNumber":7,"player":"player-3","data":{"reason":"Player only has 1 completed trade, not 4. Victory condition not met.","rolledBackFrom":"Victory","rolledBackTo":"Forest Clearing"}}
+{"timestamp":"2026-02-09T18:32:13.449Z","event":"victory_adjudicated","round":3,"turnNumber":8,"data":{"player":"player-3","accepted":false,"rulingReason":"Player only has 1 completed trade, not 4. Victory condition not met."}}
+{"timestamp":"2026-02-09T18:32:18.593Z","event":"game_end","round":3,"turnNumber":8,"data":{"winner":"none","reason":"Playtest ended for testing purposes"}}

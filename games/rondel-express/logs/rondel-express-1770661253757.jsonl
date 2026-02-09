@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-09T18:20:53.805Z","event":"game_init","data":{"gameId":"rondel-express-1770661253757","playerCount":2,"config":"Rondel Express"}}
+{"timestamp":"2026-02-09T18:21:08.067Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:23.991Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pickup_cargo","player":"player-1","cargo":"electronics","pickup":"factory"}}
+{"timestamp":"2026-02-09T18:21:29.284Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"rondel_move","player":"player-1","segment":"Delivery Dock","steps":6,"cost":3}}
+{"timestamp":"2026-02-09T18:21:40.452Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"deliver_cargo","player":"player-1","cargo":"electronics","delivery":"downtown","reward":{"gold":5}}}
