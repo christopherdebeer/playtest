@@ -23,7 +23,6 @@ const OUTPUT_FILE = join(__dirname, '..', 'shared', 'registered-mechanics.json')
 interface RegistryOutput {
   _comment: string;
   version: string;
-  generated: string;
   generatedBy: string;
   mechanics: Record<string, MechanicEntry>;
   partial: Record<string, PartialEntry>;
@@ -54,7 +53,6 @@ function main() {
   const output: RegistryOutput = {
     _comment: 'Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics',
     version: '4.0.0',
-    generated: new Date().toISOString(),
     generatedBy: 'scripts/generate-mechanics-registry.ts',
     mechanics: {},
     partial: {

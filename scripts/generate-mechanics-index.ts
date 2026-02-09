@@ -139,7 +139,6 @@ async function main() {
   }, {} as Record<string, number>);
 
   const output = {
-    generated: new Date().toISOString(),
     source: 'Generated from mechanics/*/*.md frontmatter',
     count: mechanics.length,
     sourceBreakdown: sourceStats,

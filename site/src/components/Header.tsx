@@ -24,12 +24,12 @@ function Header() {
         </button>
 
         <nav className="nav">
-          <a href="#usage">Usage</a>
-          <a href="#games">Games</a>
+          <a href="/#usage">Usage</a>
+          <a href="/#games">Games</a>
           <Link to="/mechanics">Mechanics</Link>
           <Link to="/logs">Logs</Link>
           <Link to="/docs">Docs</Link>
-          <a href="#architecture">Architecture</a>
+          <a href="/#architecture">Architecture</a>
           <a
             href="https://github.com/christopherdebeer/playtest"
             target="_blank"
@@ -43,12 +43,12 @@ function Header() {
 
       {mobileMenuOpen && (
         <nav className="mobile-menu">
-          <a href="#usage" onClick={closeMobileMenu}>Usage</a>
-          <a href="#games" onClick={closeMobileMenu}>Games</a>
+          <a href="/#usage" onClick={closeMobileMenu}>Usage</a>
+          <a href="/#games" onClick={closeMobileMenu}>Games</a>
           <Link to="/mechanics" onClick={closeMobileMenu}>Mechanics</Link>
           <Link to="/logs" onClick={closeMobileMenu}>Logs</Link>
           <Link to="/docs" onClick={closeMobileMenu}>Docs</Link>
-          <a href="#architecture" onClick={closeMobileMenu}>Architecture</a>
+          <a href="/#architecture" onClick={closeMobileMenu}>Architecture</a>
           <a
             href="https://github.com/christopherdebeer/playtest"
             target="_blank"
