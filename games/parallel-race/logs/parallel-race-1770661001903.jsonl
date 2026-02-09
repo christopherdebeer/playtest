@@ -1,0 +1,3 @@
+{"timestamp":"2026-02-09T18:16:41.909Z","event":"game_init","data":{"gameId":"parallel-race-1770661001903","playerCount":2,"config":"Parallel Race"}}
+{"timestamp":"2026-02-09T18:17:04.115Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:18:23.774Z","event":"game_end","round":1,"turnNumber":1,"data":{"winner":"none","reason":"Sanity check: Init, registration, and first turn validated successfully. No issues found."}}
