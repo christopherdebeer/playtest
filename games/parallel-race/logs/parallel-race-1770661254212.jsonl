@@ -1,0 +1,18 @@
+{"timestamp":"2026-02-09T18:20:54.218Z","event":"game_init","data":{"gameId":"parallel-race-1770661254212","playerCount":2,"config":"Parallel Race"}}
+{"timestamp":"2026-02-09T18:21:02.101Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:17.120Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Dash","effect":{"type":"move_forward","value":3},"handSize":2,"newTopCard":"Dash"}}
+{"timestamp":"2026-02-09T18:21:26.879Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","from":"Start","to":"Mile1","nodeName":"Mile 1","cost":1}}
+{"timestamp":"2026-02-09T18:21:40.474Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","from":"Start","to":"Mile1","nodeName":"Mile 1","cost":1}}
+{"timestamp":"2026-02-09T18:21:49.943Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","card":"Stumble","effect":{"type":"move_backward","value":1},"actionTarget":"player-1","handSize":2,"newTopCard":"Stumble"}}
+{"timestamp":"2026-02-09T18:22:02.571Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:13.340Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"play_card","card":"Block","effect":{"type":"block_turn","duration":1},"actionTarget":"player-1","handSize":1,"newTopCard":"Block"}}
+{"timestamp":"2026-02-09T18:22:31.580Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"move","from":"Mile1","to":"Mile2","nodeName":"Mile 2","cost":1}}
+{"timestamp":"2026-02-09T18:22:43.849Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"move","from":"Mile1","to":"Mile2","nodeName":"Mile 2","cost":1}}
+{"timestamp":"2026-02-09T18:22:48.715Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"move","from":"Mile2","to":"Mile3","nodeName":"Mile 3","cost":1}}
+{"timestamp":"2026-02-09T18:22:48.826Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"move","from":"Mile2","to":"Mile3","nodeName":"Mile 3","cost":1}}
+{"timestamp":"2026-02-09T18:22:48.942Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"move","from":"Mile3","to":"Mile4","nodeName":"Mile 4","cost":1}}
+{"timestamp":"2026-02-09T18:22:49.048Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"move","from":"Mile3","to":"Mile4","nodeName":"Mile 4","cost":1}}
+{"timestamp":"2026-02-09T18:22:56.466Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"move","from":"Mile4","to":"Mile5","nodeName":"Mile 5","cost":1}}
+{"timestamp":"2026-02-09T18:23:05.962Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:23:13.128Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"move","from":"Mile5","to":"Finish","nodeName":"Finish Line","cost":1}}
+{"timestamp":"2026-02-09T18:23:38.359Z","event":"game_end","round":8,"turnNumber":16,"data":{"winner":"player-1","reason":"Player-1 reached the Finish Line"}}

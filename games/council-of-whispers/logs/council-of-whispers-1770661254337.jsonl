@@ -1,0 +1,17 @@
+{"timestamp":"2026-02-09T18:20:54.350Z","event":"game_init","data":{"gameId":"council-of-whispers-1770661254337","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-09T18:21:13.581Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:29.379Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"select_action"}}
+{"timestamp":"2026-02-09T18:21:35.180Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"select_action"}}
+{"timestamp":"2026-02-09T18:21:57.103Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"select_action"}}
+{"timestamp":"2026-02-09T18:22:06.374Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"select_action"}}
+{"timestamp":"2026-02-09T18:22:40.292Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":3}}
+{"timestamp":"2026-02-09T18:22:44.982Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":2}}
+{"timestamp":"2026-02-09T18:22:49.103Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"dilemma_choice","player":"player-3","waiting":1}}
+{"timestamp":"2026-02-09T18:22:49.219Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"dilemma_choice","round":1,"choices":{"player-1":"cooperate","player-2":"defect","player-3":"cooperate","player-4":"cooperate"},"scores":{"player-1":6,"player-2":15,"player-3":6,"player-4":6},"gameOver":false}}
+{"timestamp":"2026-02-09T18:23:03.433Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"propose_alliance"}}
+{"timestamp":"2026-02-09T18:23:17.383Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-2","data":{"type":"accept_alliance"}}
+{"timestamp":"2026-02-09T18:23:24.762Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"contribute","player":"player-1","amount":1,"progress":19,"goal":"treasury"}}
+{"timestamp":"2026-02-09T18:23:35.468Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"bet"}}
+{"timestamp":"2026-02-09T18:23:50.974Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"offer_bribe"}}
+{"timestamp":"2026-02-09T18:24:03.064Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-4","data":{"type":"respond_to_bribe"}}
+{"timestamp":"2026-02-09T18:24:22.033Z","event":"game_end","round":3,"turnNumber":11,"data":{"winner":"player-2","reason":"Manual playtest complete - sufficient issues identified for analysis"}}

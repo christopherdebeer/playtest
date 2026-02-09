@@ -1,0 +1,23 @@
+{"timestamp":"2026-02-09T18:20:54.686Z","event":"game_init","data":{"gameId":"draft-duel-1770661254678","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-09T18:21:02.578Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:23.604Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:21:29.199Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:21:35.423Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:21:35.537Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:21:35.659Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:21:35.790Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:22.426Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"use_ability","ability":"Double Down","effect":"score","scoreBonus":5}}
+{"timestamp":"2026-02-09T18:22:38.208Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"use_ability","ability":"Comeback","effect":"score","scoreBonus":3}}
+{"timestamp":"2026-02-09T18:22:55.214Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:55.330Z","event":"action_executed","round":5,"turnNumber":10,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:55.449Z","event":"action_executed","round":6,"turnNumber":11,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:55.561Z","event":"action_executed","round":6,"turnNumber":12,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:55.673Z","event":"action_executed","round":7,"turnNumber":13,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:22:55.786Z","event":"action_executed","round":7,"turnNumber":14,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:24:15.851Z","event":"action_executed","round":8,"turnNumber":15,"player":"player-1","data":{"type":"collect_set","setType":"Type Set","error":"Cards do not form a valid set"}}
+{"timestamp":"2026-02-09T18:24:26.499Z","event":"action_executed","round":8,"turnNumber":16,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:24:26.621Z","event":"action_executed","round":9,"turnNumber":17,"player":"player-1","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:24:32.816Z","event":"action_executed","round":9,"turnNumber":18,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T18:24:32.979Z","event":"action_executed","round":10,"turnNumber":19,"player":"player-1","data":{"type":"collect_set","setType":"Element Set","cards":["Earth","Earth","Earth"],"points":5,"totalSets":1}}
+{"timestamp":"2026-02-09T18:24:57.894Z","event":"action_executed","round":10,"turnNumber":20,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:25:32.139Z","event":"game_end","round":11,"turnNumber":21,"data":{"winner":"player-1","reason":"Manual playtest complete - testing concluded with sufficient findings"}}

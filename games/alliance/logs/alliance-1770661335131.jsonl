@@ -1,0 +1,12 @@
+{"timestamp":"2026-02-09T18:22:15.136Z","event":"game_init","data":{"gameId":"alliance-1770661335131","playerCount":2,"config":"Alliance"}}
+{"timestamp":"2026-02-09T18:22:36.269Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:23:20.133Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:23:39.150Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1}}
+{"timestamp":"2026-02-09T18:24:04.491Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:25:16.681Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:27:44.104Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"spend","resource":"gold","amount":2,"target":"supplies","remaining":3}}
+{"timestamp":"2026-02-09T18:27:54.941Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:27:59.069Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","card":"Healer","effect":{"type":"resource","resource":"food","value":1},"handSize":1,"newTopCard":"Healer"}}
+{"timestamp":"2026-02-09T18:28:15.669Z","event":"action_executed","round":4,"turnNumber":8,"player":"player-2","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:28:20.253Z","event":"action_executed","round":5,"turnNumber":9,"player":"player-1","data":{"type":"add_to_tableau"}}
+{"timestamp":"2026-02-09T18:28:32.368Z","event":"game_end","round":5,"turnNumber":10,"data":{"winner":"player-1","reason":"Manual playtest complete - sufficient issues found"}}

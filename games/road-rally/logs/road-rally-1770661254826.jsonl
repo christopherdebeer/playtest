@@ -1,0 +1,10 @@
+{"timestamp":"2026-02-09T18:20:54.832Z","event":"game_init","data":{"gameId":"road-rally-1770661254826","playerCount":2,"config":"Road Rally"}}
+{"timestamp":"2026-02-09T18:21:00.335Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:21:18.206Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","player":"player-1","card":"Speed 3","suit":"speed","trickPosition":1,"leadSuit":"speed"}}
+{"timestamp":"2026-02-09T18:21:29.187Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","winner":"player-1","winningCard":"Speed 3","trick":[{"player":"player-1","card":"Speed 3"},{"player":"player-2","card":"Speed 2"}],"points":0}}
+{"timestamp":"2026-02-09T18:21:58.040Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"move","from":"Start","to":"Pit1","nodeName":"Pit Stop 1","cost":1}}
+{"timestamp":"2026-02-09T18:22:26.756Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"play_card","player":"player-2","card":"Speed 9","suit":"speed","trickPosition":1,"leadSuit":"speed"}}
+{"timestamp":"2026-02-09T18:22:32.643Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"pass","player":"player-1","passCount":1}}
+{"timestamp":"2026-02-09T18:22:37.855Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"pass","player":"player-2","passCount":2}}
+{"timestamp":"2026-02-09T18:23:06.379Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"play_card","winner":"player-2","winningCard":"Speed 9","trick":[{"player":"player-2","card":"Speed 9"},{"player":"player-1","card":"Speed 10"}],"points":0}}
+{"timestamp":"2026-02-09T18:23:15.011Z","event":"game_cancelled","round":4,"turnNumber":8,"data":{"reason":"Manual playtest complete - multiple critical issues discovered"}}

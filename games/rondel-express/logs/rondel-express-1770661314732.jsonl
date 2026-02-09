@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-09T18:21:54.739Z","event":"game_init","data":{"gameId":"rondel-express-1770661314732","playerCount":2,"config":"Rondel Express"}}
+{"timestamp":"2026-02-09T18:24:26.138Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T18:25:16.469Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"rondel_move","player":"player-1","segment":"Upgrade Station","steps":3,"cost":0}}
+{"timestamp":"2026-02-09T18:25:23.317Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"claim_ownership","player":"player-1","element":"property-1","cost":5}}
+{"timestamp":"2026-02-09T18:25:34.432Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass","removedFromRound":true,"nextPlayerOverride":"player-2"}}
+{"timestamp":"2026-02-09T18:25:50.110Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Fuel Tank","effect":{"type":"gain_resource","resource":"fuel","value":2},"handSize":2,"newTopCard":"Fuel Tank"}}
+{"timestamp":"2026-02-09T18:28:05.744Z","event":"game_cancelled","round":1,"turnNumber":2,"data":{"reason":"Manual playtest complete - sufficient findings"}}
