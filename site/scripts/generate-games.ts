@@ -91,9 +91,9 @@ function extractHighlights(config: Record<string, unknown>): Highlight[] {
 
   for (const [key, value] of Object.entries(mechanicsObj)) {
     const slug = key.replace(/_/g, '-')
-    const highlight = mechanicRegistry.getHighlight(slug, value)
-    if (highlight) {
-      highlights.push(highlight)
+    const mechanicHighlights = mechanicRegistry.getHighlights(slug, value)
+    if (mechanicHighlights) {
+      highlights.push(...mechanicHighlights)
     }
   }
 

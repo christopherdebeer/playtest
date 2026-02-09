@@ -841,12 +841,12 @@ export interface MechanicHooks {
   configSchema?: MechanicConfigSchema;
 
   /**
-   * Return a highlight stat for display on game cards and pages.
+   * Return highlight stats for display on game cards and pages.
    * Receives this mechanic's config from the game's RULES.md.
-   * Return { label, value } or null if nothing worth highlighting.
+   * Return one or more { label, value } pairs, or null if nothing worth highlighting.
    * Only implement on mechanics that define a game's identity.
    */
-  getHighlight?(config: unknown): { label: string; value: string } | null;
+  getHighlight?(config: unknown): { label: string; value: string }[] | null;
 
   /**
    * Allow arbitrary methods for mechanic-defined hook implementations.

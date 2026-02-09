@@ -217,8 +217,8 @@ interface MechanicHooks {
   /** Config schema for YAML validation */
   configSchema?: MechanicConfigSchema;
 
-  /** Return a highlight stat for game cards/pages (build-time only, display-only) */
-  getHighlight?(config: unknown): { label: string; value: string } | null;
+  /** Return highlight stats for game cards/pages (build-time only, display-only) */
+  getHighlight?(config: unknown): { label: string; value: string }[] | null;
 
   // ... global hooks, plus any methods from required mechanics' defines
 }
@@ -529,7 +529,7 @@ interface MechanicHooks {
   onPassPriority?(...): PassPriorityResult | null;
 
   // Build-time display (not a runtime hook)
-  getHighlight?(config: unknown): { label: string; value: string } | null;
+  getHighlight?(config: unknown): { label: string; value: string }[] | null;
 
   // Domain hooks live on defining mechanics, implemented via [key: string]
 }
@@ -689,8 +689,8 @@ Core services already participate as registered mechanics in most respects:
 | Define hooks via `defines` | **Done** | All 7 domains fire mechanic-defined hooks |
 | Leaf mechanics depend via `requires` | **Done** | e.g. `deck-building` requires `cards` |
 | Own their actions via `onExecuteAction` | **Partial** | Cards owns `play_card`, resources owns `spend`. But deck init, board init still in game.ts |
-| Own their config namespace | **Not yet** | `cards` and `board` are "pseudo-keys" in RULES.md — decomposed to top-level by `normalizeUnifiedConfig` |
-| Participate in `getHighlight` | **Not yet** | Cards/board highlights are special-cased in generate-games.ts |
+| Own their config namespace | **Partial** | Config stored in `engine_mechanics` AND decomposed to top-level for runtime backwards compat |
+| Participate in `getHighlight` | **Done** | Cards/board flow through the registry like any other mechanic |
 
 #### The Pseudo-Key Problem
 
@@ -1003,33 +1003,34 @@ export const myMechanic: MechanicHooks = {
 
 ### Highlights (Optional, Build-Time Only)
 
-Mechanics that define a game's *identity* can implement `getHighlight` to surface a stat
-on game cards and pages. This is not a runtime hook — it's called during site generation
-(`generate-games.ts`) to produce a `{ label, value }` pair from the mechanic's config.
+Mechanics that define a game's *identity* can implement `getHighlight` to surface
+stats on game cards and pages. This is not a runtime hook — it's called during site
+generation (`generate-games.ts`) to produce `{ label, value }` pairs from the
+mechanic's config. Returns an array, so a single mechanic can contribute multiple
+highlights when appropriate (e.g. cards could surface both deck size and starting hand).
 
 ```typescript
   // Only implement if this mechanic is identity-defining.
   // Receives the raw config value from RULES.md (may be `true` for boolean mechanics).
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const ppt = cfg.points_per_turn;
     if (typeof ppt !== 'number') return null;
-    return { label: 'AP/turn', value: String(ppt) };
+    return [{ label: 'AP/turn', value: String(ppt) }];
   }
 ```
 
 Design intent:
-- **Sparse**: Only ~9 of 162 mechanics implement it. Most mechanics are not identity-defining.
+- **Sparse**: Only ~11 of 162 mechanics implement it. Most mechanics are not identity-defining.
+- **Plural**: A mechanic can return multiple highlights if it has several display-worthy attributes.
 - **Freeform**: Each mechanic speaks in its own idiom — "3d6", "Co-op", "4 Locations".
 - **Opt-in**: New mechanics can add highlights without changing any central mapping.
 - **Max 4** highlights per game (capped in `generate-games.ts`).
 
-Currently implemented by: `dice-rolling`, `action-points`, `hidden-roles`,
-`variable-player-powers`, `push-your-luck`, `team-based-game`, `cooperative-game`,
-`resources`, `worker-placement`. The `cards` and `board` pseudo-key highlights
-("N Cards", "N Locations") are handled directly in the generation script since
-they are not yet full mechanics (see [Core Services as Mechanics](#core-services-as-mechanics)).
+Currently implemented by: `cards`, `board`, `dice-rolling`, `action-points`,
+`hidden-roles`, `variable-player-powers`, `push-your-luck`, `team-based-game`,
+`cooperative-game`, `resources`, `worker-placement`.
 
 ### Registration
 

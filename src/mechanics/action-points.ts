@@ -171,11 +171,11 @@ export const actionPointsMechanic: MechanicHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const ppt = cfg.points_per_turn;
     if (typeof ppt !== 'number') return null;
-    return { label: 'AP/turn', value: String(ppt) };
+    return [{ label: 'AP/turn', value: String(ppt) }];
   }
 };

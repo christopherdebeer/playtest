@@ -124,10 +124,10 @@ class MechanicRegistry {
   }
 
   /**
-   * Get highlight for a mechanic given its config from RULES.md.
-   * Returns { label, value } or null.
+   * Get highlights for a mechanic given its config from RULES.md.
+   * Returns array of { label, value } or null.
    */
-  getHighlight(slug: string, config: unknown): { label: string; value: string } | null {
+  getHighlights(slug: string, config: unknown): { label: string; value: string }[] | null {
     const mechanic = this.mechanics.get(slug);
     if (!mechanic?.getHighlight) return null;
     return mechanic.getHighlight(config);

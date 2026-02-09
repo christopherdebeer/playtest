@@ -361,11 +361,11 @@ export const hiddenRolesMechanic: MechanicHooks & VisibilityHooks = {
     }
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const roles = cfg.roles;
     if (!Array.isArray(roles)) return null;
-    return { label: 'Roles', value: String(roles.length) };
+    return [{ label: 'Roles', value: String(roles.length) }];
   }
 };

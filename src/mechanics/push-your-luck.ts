@@ -276,11 +276,11 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
     };
   },
 
-  getHighlight(config: unknown): { label: string; value: string } | null {
+  getHighlight(config: unknown): { label: string; value: string }[] | null {
     if (!config || typeof config !== 'object') return null;
     const cfg = config as Record<string, unknown>;
     const maxRolls = cfg.max_rolls;
     if (typeof maxRolls !== 'number') return null;
-    return { label: 'Max rolls', value: String(maxRolls) };
+    return [{ label: 'Max rolls', value: String(maxRolls) }];
   }
 };
