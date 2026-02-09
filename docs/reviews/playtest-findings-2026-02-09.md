@@ -341,15 +341,76 @@ All 6 critical systemic issues have been fixed, built, and validated via `/playt
 **File**: `src/mechanics/hidden-roles.ts:89-111`
 **Change**: `buildRoleAssignments()` now shuffles the full role list BEFORE trimming to player count. Previously used `roles.pop()` which always removed later-defined roles (Conspirator, Opportunist, Enemy), making them unassignable.
 
-### Remaining Work
+### 2026-02-09: High & Medium Priority Fixes (6 of 6 completed)
 
-**High Priority** (not yet addressed):
-- Deck-building personal discard (Engine Masters)
-- Closed drafting initialization (Draft Duel)
+#### Fix #7: Deck-Building Personal Discard — FIXED ✓
+**File**: `src/mechanics/deck-building.ts:229-261`
+**Change**: `onTurnStart` now discards remaining hand cards to `personalDiscard` before drawing a new hand. Previously, the hand was overwritten entirely, losing any unplayed cards (breaking the Dominion-style deck cycle).
+
+#### Fix #8: Closed Drafting Initialization — FIXED ✓
+**Files**: `src/mechanics/closed-drafting.ts:102-128, 145-203`
+**Change**: Deferred pool creation from `initSharedState` to `onTurnStart`. The cards mechanic (which builds the deck) registers after closed-drafting, so `ctx.deck` was always empty during init. Now pools are created from `state.shared.deck` on first turn when the deck actually exists. Also removed dead `cardsForPlayer` variable with nonsensical formula.
+
+#### Fix #9: Push-Your-Luck Turn Handling — FIXED ✓
+**File**: `src/mechanics/push-your-luck.ts:114-132, 155-175`
+**Change**: Bust and bank actions now set `advanceTurn: true` (previously `false`). This ensures the turn ends after busting (losing accumulated points) or banking (securing points). The AP fix (#2) ensures that in AP games, turn advancement still respects AP depletion.
+
+#### Fix #10: Worker Placement Round-Start Retrieval + Registry Fix — FIXED ✓
+**Files**: `src/mechanics/worker-placement.ts:440-469`, `src/mechanics/registry.ts:400-424`
+**Change**: Two fixes:
+1. Worker placement `onTurnStart` now retrieves ALL players' workers at round start (previously only the current player's workers)
+2. **Registry bug**: `onTurnStart` hook merger was dropping `sharedStateChanges` — only `playerStateChanges` were merged. This caused worker space updates and cooperative state changes to be silently lost. Fixed to merge both.
+
+#### Fix #11: Investment Cost Deduction — FIXED ✓
+**File**: `src/mechanics/investment.ts:148-189`
+**Change**: Investment cost now deducts from player `resources` (not `score`). Also synced `currentRound` tracking with `state.round` to prevent round desync between investment state and game state.
+
+#### Fix #12: Cooperative Threat Progression — FIXED ✓ (by Fix #10)
+**Root Cause**: The cooperative-actions mechanic correctly incremented threat in `onTurnStart` via `sharedStateChanges`, but the registry's `onTurnStart` merger was dropping `sharedStateChanges` (see Fix #10). The registry fix resolves threat progression for Alliance and all other mechanics relying on shared state changes at turn start.
+
+### 2026-02-09: Validation & Additional Fixes
+
+#### Fix #13: First-Turn onTurnStart — FIXED ✓
+**File**: `src/core/game.ts:874-878`
+**Change**: `startGameUnsafe()` now runs `mechanicRegistry.onTurnStart()` for the first player after game starts. Previously, `onTurnStart` only fired via `advanceTurn()`, which is never called for the very first turn. This caused mechanics that need first-turn initialization (e.g., closed-drafting pool distribution) to be skipped for the first player.
+**Validated**: Draft Duel players now have draft pools on turn 1 (7 draft_select actions available immediately).
+
+#### Fix #14: Alliance Config Key Mismatch — FIXED ✓
+**File**: `games/alliance/RULES.md:9`
+**Change**: Changed config key from `cooperative:` to `cooperative_actions:` to match the mechanic slug `cooperative-actions` → config key `cooperative_actions` (dash→underscore conversion in enablement check).
+
+#### Fix #15: Cooperative getConfig() Lookup — FIXED ✓
+**File**: `src/mechanics/cooperative-actions.ts:36`
+**Change**: `getConfig()` was reading `config.engine_mechanics?.cooperative` but the config key is `cooperative_actions`. Changed to `config.engine_mechanics?.cooperative_actions`. This was a second mismatch beyond the RULES.md key — even with the correct config key in RULES.md, the mechanic's own config reader was looking at the wrong key.
+
+#### Fix #16: Push-Your-Luck Turn Advancement Refinement — FIXED ✓
+**File**: `src/core/game.ts:1889-1911`
+**Change**: Two refinements to the turn advancement logic:
+1. `lastActionRound` only set when `advanceTurn !== false` — prevents blocking follow-up PYL rolls in the same round
+2. Added explicit `advanceTurn === false` case that saves state without advancing turn — allows mechanics like push-your-luck to keep a player on their turn even without action_points enabled
+
+### Validation Results
+
+#### Alliance (Cooperative Mechanics) — ✅ WORKING
+- **Threat increments**: 0→1→2 over rounds (correct)
+- **Contribute action**: Available and functional
+- **Contributing 2 gold**: Reduced threat from 2 to 1.5, added gold to shared pool
+- **Cooperative state**: Properly initialized (supplies: 10, morale: 5, threatLevel: 0)
+
+#### Draft Duel (Closed Drafting) — ✅ WORKING
+- **First-turn pools**: Player-1 has 7 draft_select actions on turn 1 (was empty before fix #13)
+- **Card selection**: draft_select works correctly
+- **Simultaneous mechanics**: Properly waits for all players before revealing
+- **Pool distribution**: `closedDraftPoolsDistributed: true` from game start
+
+#### Fortune Seekers (Push-Your-Luck) — ✅ WORKING
+- **Roll action**: Available and functional
+- **Multi-roll**: Successful rolls keep player on turn (accumulated points tracked)
+- **Bank**: Correctly adds accumulated points to score and ends turn
+- **Bust**: Correctly loses accumulated points and ends turn
+- **Turn progression**: Player-1 → Player-2 after bank/bust
+
+### Remaining Work
 
 **Medium Priority** (not yet addressed):
 - Ladder climbing logic (Road Rally)
-- Push-your-luck turn handling (Fortune Seekers)
-- Worker placement integration (Battle Forge)
-- Investment maturity tracking (Dice Dynasties)
-- Cooperative threat progression (Alliance)

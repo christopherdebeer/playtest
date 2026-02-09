@@ -385,6 +385,7 @@ export interface EngineMechanics {
   tableau_building?: TableauBuildingConfig;        // Personal tableau of cards
   action_programming?: ActionProgrammingConfig;   // Program action sequences
   cooperative?: CooperativeConfig;                // Cooperative play mechanics
+  cooperative_actions?: CooperativeConfig;            // Cooperative play mechanics (preferred key)
 
   // Economic mechanics
   contracts?: ContractsConfig;                    // Contract fulfillment system

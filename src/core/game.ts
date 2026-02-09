@@ -1841,9 +1841,6 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
   const contestState = ensureContestState(state);
 
-  // Mark that player has acted this round (prevents multiple actions without action points)
-  player.lastActionRound = state.round;
-
   // ============ Mechanic Delegation: Let mechanics handle actions first ============
   // Try to execute via mechanic hooks before falling back to built-in handling
   const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
@@ -1887,12 +1884,22 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       }
     }
 
+    // Mark that player has acted this round (prevents multiple actions without action points)
+    // Only set this if the turn will actually end or be kept within same-round continuation
+    if (mechanicResult.advanceTurn !== false) {
+      player.lastActionRound = state.round;
+    }
+
     // Handle turn advancement
     // When action_points is enabled, AP depletion controls turn advancement,
     // not the mechanic's advanceTurn flag. This allows multi-action turns.
     const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
     if (shouldEnd) {
       advanceTurn(state);
+    } else if (mechanicResult.advanceTurn === false) {
+      // Mechanic explicitly says don't advance - respect it even without AP
+      // This allows mechanics like push-your-luck to work without action_points
+      saveState(state);
     } else if (mechanicResult.advanceTurn && !isMultiActionAllowed(state)) {
       // Only respect advanceTurn when action points are NOT enabled
       advanceTurn(state);

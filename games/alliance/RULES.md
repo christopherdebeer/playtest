@@ -6,7 +6,7 @@ win_condition: "score >= 25"
 max_rounds: 15
 
 mechanics:
-  cooperative:
+  cooperative_actions:
     shared_pool:
       supplies: 10
       morale: 5
