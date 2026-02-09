@@ -1,0 +1,3 @@
+{"timestamp":"2026-02-09T22:07:28.005Z","event":"game_init","data":{"gameId":"engine-masters-1770674847992","playerCount":2,"config":"Engine Masters"}}
+{"timestamp":"2026-02-09T22:08:19.014Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T22:10:27.982Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw_deck","count":5,"cards":["Copper Generator","Copper Generator","Basic Assembler","Basic Assembler","Copper Generator"]}}

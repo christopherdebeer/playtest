@@ -1,0 +1,2 @@
+{"timestamp":"2026-02-09T22:26:23.234Z","event":"game_init","data":{"gameId":"alliance-1770675983221","playerCount":2,"config":"Alliance"}}
+{"timestamp":"2026-02-09T22:27:27.454Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}

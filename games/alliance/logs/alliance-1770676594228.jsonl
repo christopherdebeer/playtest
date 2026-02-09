@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-09T22:36:34.237Z","event":"game_init","data":{"gameId":"alliance-1770676594228","playerCount":2,"config":"Alliance"}}
+{"timestamp":"2026-02-09T22:36:43.165Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T22:37:19.472Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:37:55.964Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:38:07.822Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:38:09.996Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:38:19.327Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:38:21.404Z","event":"action_executed","round":3,"turnNumber":6,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:38:40.096Z","event":"action_executed","round":4,"turnNumber":7,"player":"player-1","data":{"type":"contribute"}}
