@@ -19,7 +19,8 @@ import {
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
-  StateChanges
+  StateChanges,
+  ActionSchema
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
 import { getCardsState } from './core/index.js';
@@ -69,6 +70,16 @@ export const gridMovementMechanic: MechanicHooks = {
   slug: 'grid-movement',
   name: 'Grid Movement',
   requires: ['board'],
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'move') return null;
+    return {
+      required: ['target'],
+      fields: {
+        target: { type: 'string' },
+      },
+    };
+  },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     // Only validate move actions

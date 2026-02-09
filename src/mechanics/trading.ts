@@ -22,6 +22,7 @@ import {
   ActionDescription,
   SharedStateInitContext,
   SharedStateInitResult,
+  ActionSchema,
   isMechanicEnabled
 } from './types.js';
 import { GameAction, TradeOfferAction, TradeRespondAction } from '../types/game.js';
@@ -75,6 +76,29 @@ export const tradingMechanic: MechanicHooks = {
         description: 'Allow one-sided trades (giving without receiving)'
       }
     }
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type === 'trade_offer') {
+      return {
+        required: ['target', 'offer', 'request'],
+        fields: {
+          target: { type: 'string' },
+          offer: { type: 'array' },
+          request: { type: 'array' },
+        },
+      };
+    }
+    if (action.type === 'trade_respond') {
+      return {
+        required: ['offerId', 'accept'],
+        fields: {
+          offerId: { type: 'string' },
+          accept: { type: 'boolean' },
+        },
+      };
+    }
+    return null;
   },
 
   /**

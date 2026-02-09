@@ -20,7 +20,8 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  ActionSchema
 } from './types.js';
 import { GameAction, BidAction } from '../types/game.js';
 import { spendResource } from './core/resources.js';
@@ -61,6 +62,21 @@ export const auctionEnglishMechanic: MechanicHooks = {
       }
     },
     required: ['currency']
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type === 'bid') {
+      return {
+        required: ['amount'],
+        fields: {
+          amount: { type: 'number', minimum: 0 },
+        },
+      };
+    }
+    if (action.type === 'auction_pass') {
+      return {};
+    }
+    return null;
   },
 
   initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {

@@ -24,7 +24,8 @@ import {
   AvailableAction,
   ActionDescription,
   PassPriorityResult,
-  ValidationResult
+  ValidationResult,
+  ActionSchema
 } from '../types.js';
 import { GameAction, GameState } from '../../types/game.js';
 import { mechanicRegistry } from '../registry.js';
@@ -55,6 +56,17 @@ export const passMechanic: MechanicHooks = {
   slug: 'pass',
   name: 'Pass Action',
   alwaysEnabled: true,
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'pass') return null;
+    return {
+      optional: ['declareVictory', 'victoryReason'],
+      fields: {
+        declareVictory: { type: 'boolean' },
+        victoryReason: { type: 'string' },
+      },
+    };
+  },
 
   /**
    * Only the current player may pass. Out-of-turn access (via canPlayerActNow)

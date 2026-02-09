@@ -22,6 +22,7 @@ import {
   StateChanges,
   PlayerInitContext,
   PlayerInitResult,
+  ActionSchema,
   isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
@@ -38,6 +39,22 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
   slug: 'push-your-luck',
   name: 'Push Your Luck',
   requires: ['cards'],
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type === 'roll') {
+      return {
+        optional: ['diceSides', 'purpose'],
+        fields: {
+          diceSides: { type: 'number' },
+          purpose: { type: 'string' },
+        },
+      };
+    }
+    if (action.type === 'bank') {
+      return {};
+    }
+    return null;
+  },
 
   configSchema: {
     type: 'object',

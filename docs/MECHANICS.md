@@ -891,15 +891,15 @@ getActionSchema(action: GameAction): ActionSchema | null {
 }
 
 // game.ts - agnostic
-const schemas = mechanicRegistry.getActionSchemas(action);
-const errors = validateAgainstSchemas(action, schemas);
+const schema = mechanicRegistry.getActionSchema(state, action);
+if (schema) errors.push(...validateAgainstSchema(action, schema));
 ```
 
 ### Migration Status
 
-Completed: pass extraction, effect type handling, player view building, shared state initialization, card type handling, block check (~330 lines removed from game.ts).
+Completed: pass extraction, effect type handling, player view building, shared state initialization, card type handling, block check, action schema validation (~360 lines removed from game.ts).
 
-**Remaining**: Action schema validation (`getActionSchema` hook) — ~150 lines removable, high complexity. See [Outstanding Engine Work](#outstanding-engine-work).
+Action schema validation fully delegated to mechanics via `getActionSchema` hook. 11 mechanics implement it: cards (`play_card`), pass (`pass`), place-card (`place_card`, `place_location`), trading (`trade_offer`, `trade_respond`), auction-english (`bid`, `auction_pass`), set-collection (`collect_set`), push-your-luck (`roll`, `bank`), open-drafting (`draft`), board-state (`move`), grid-movement (`move`), resources (`spend`). Engine-owned actions (`draw`, `resign`) use built-in schemas in game.ts. The hardcoded `validateActionSchema` switch was replaced with a generic `validateAgainstSchema` helper that validates against mechanic-provided `ActionSchema` objects.
 
 ### Target: game.ts Responsibilities
 
@@ -1168,7 +1168,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **18 games**, all using unified config format
 - **198 tests** passing, build clean
 - **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
-- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`
+- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics)
 - All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
 ### Coverage by Category
@@ -1229,16 +1229,12 @@ These mechanics are engine additions not in the BGG 209:
 | topCard init | Line 623 | LOW | `shared.topCard = topCard` — engine sets top card during init. Core card concept, acceptable. |
 | currentColor restore | Lines 2230-2232 | LOW | In `reverseAction`: restores `currentColor` only if previously set. Guarded, contest-only path. |
 | placedCards read | Line 1402 | LOW | `state.shared.placedCards` cast in getAvailableActions for player view. Read-only, could move to `getPlayerView`. |
-| Action schema | validateAction switch | LOW | Hardcoded action type validation. `getActionSchema` hook defined but not yet implemented by mechanics. |
 | checkWinCondition | Lines 1164-1218 | LOW | Legacy hardcoded win checks (reach state, empty hand, score threshold, elimination). Win-condition mechanics exist but aren't wired through this function yet. |
 
 ### Outstanding Engine Work
 
-#### `getActionSchema` Hook (Pending)
-The `getActionSchema` hook is defined in `types.ts` but no mechanic implements it yet. Currently, `validateActionSchema` in game.ts uses hardcoded switch cases for action type validation. Each action-owning mechanic should implement `getActionSchema` to provide its own validation rules.
-
-**Impact**: ~150 lines removable from game.ts `validateAction`
-**Mechanics to update**: cards, place-card, trading, auction-english, resources, set-collection, push-your-luck, open-drafting, board-state, grid-movement
+#### `getActionSchema` Hook (Complete)
+All 11 action-owning mechanics now implement `getActionSchema`, returning `ActionSchema` objects that declare required/optional fields with type constraints. The `validateActionSchema` function in game.ts was stripped of hardcoded action-type checks and replaced with a generic `validateAgainstSchema` helper. Mechanic schemas are validated in `validateAction` via `validateMechanicSchema()`. Engine-owned actions (`draw`, `resign`) use `BUILTIN_SCHEMAS`.
 
 #### Win Condition Consolidation (Planned)
 `checkWinCondition()` in game.ts hardcodes 4 win conditions (reach state, empty hand, score threshold, elimination). These should be handled by the existing win-condition mechanics via `onCheckWin` hooks, with game.ts delegating entirely to `mechanicRegistry.checkAllWinConditions()`.
@@ -1345,12 +1341,12 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 
 | Priority | Task | Impact | Complexity |
 |----------|------|--------|------------|
-| **1** | `getActionSchema` hook implementations | ~150 lines from game.ts | Medium |
-| **2** | Win condition consolidation (wire mechanic `onCheckWin` to main check path) | ~55 lines from game.ts | Medium |
-| **3** | Core services own init: cards builds deck/deals hands, board sets up states/edges via `initSharedState`/`initPlayerState` | ~60 lines from game.ts, eliminates pseudo-key decomposition | Medium |
-| **4** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
-| **5** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
-| **6** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
+| ~~1~~ | ~~`getActionSchema` hook implementations~~ | ~~Done~~ | ~~Complete~~ |
+| **1** | Win condition consolidation (wire mechanic `onCheckWin` to main check path) | ~55 lines from game.ts | Medium |
+| **2** | Core services own init: cards builds deck/deals hands, board sets up states/edges via `initSharedState`/`initPlayerState` | ~60 lines from game.ts, eliminates pseudo-key decomposition | Medium |
+| **3** | Phase 8: Advanced auction hooks | 5 new hooks | Medium |
+| **4** | Card type filtering to mechanic hooks (placeable/location/interference) | ~15 lines from game.ts | Low |
+| **5** | `reverseAction` mechanic hooks | ~100 lines from game.ts | High |
 
 ### Next Steps: New Mechanics (Priority Order)
 

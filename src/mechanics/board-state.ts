@@ -20,7 +20,8 @@ import {
   AvailableAction,
   ActionDescription,
   PlayerInitContext,
-  PlayerInitResult
+  PlayerInitResult,
+  ActionSchema
 } from './types.js';
 import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard, BoardConfig, GameConfig } from '../types/game.js';
 import { getCardsState } from './core/index.js';
@@ -142,6 +143,16 @@ export const boardStateMechanic: MechanicHooks = {
   slug: 'board-state',
   name: 'Board State',
   requires: ['board'],
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'move') return null;
+    return {
+      required: ['target'],
+      fields: {
+        target: { type: 'string' },
+      },
+    };
+  },
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const boardConfig = getBoardConfigFromConfig(ctx.config);
