@@ -257,8 +257,12 @@ program
 program
   .command('status <game>')
   .description('Get current game status (accepts game name or instance ID)')
-  .action((game: string) => {
+  .option('--files', 'Include file paths (logs, transcripts, analysis) - for operators only')
+  .action(async (game: string, options: { files?: boolean }) => {
     try {
+      const fs = await import('fs');
+      const path = await import('path');
+
       if (!stateExists(game)) {
         console.log(JSON.stringify({
           success: false,
@@ -268,7 +272,8 @@ program
       }
 
       const state = loadStateReadOnly(game);
-      console.log(JSON.stringify({
+
+      const output: Record<string, unknown> = {
         success: true,
         instanceId: state.gameId,
         gameName: state.gameName,
@@ -283,7 +288,60 @@ program
           ])
         ),
         winner: state.shared.winner
-      }));
+      };
+
+      // Only include file paths if --files flag is set (for operators, not players)
+      if (options.files) {
+        const GAMES_DIR = path.join(process.cwd(), 'games');
+        const gameName = state.gameName;
+        const instanceId = state.gameId;
+
+        // Extract timestamp from instanceId (e.g., "uno-1770216144546" -> "1770216144546")
+        const parts = instanceId.split('-');
+        const timestamp = parts[parts.length - 1];
+
+        const files: {
+          log?: string;
+          state?: string;
+          analysis?: string;
+          transcripts?: { role: string; path: string }[];
+        } = {};
+
+        // Game event log
+        const logPath = path.join(GAMES_DIR, gameName, 'logs', `${instanceId}.jsonl`);
+        if (fs.existsSync(logPath)) files.log = logPath;
+
+        // State directory
+        const statePath = path.join(GAMES_DIR, gameName, 'state', instanceId);
+        if (fs.existsSync(statePath)) files.state = statePath;
+
+        // Analysis file (if exists in state)
+        if (state.shared?.analysisFile && typeof state.shared.analysisFile === 'string') {
+          files.analysis = state.shared.analysisFile;
+        }
+
+        // Find agent transcripts
+        const logsDir = path.join(GAMES_DIR, gameName, 'logs');
+        if (fs.existsSync(logsDir)) {
+          const transcripts: { role: string; path: string }[] = [];
+          const logFiles = fs.readdirSync(logsDir);
+
+          for (const file of logFiles) {
+            const match = file.match(/^(.+)-transcript-(\d+)\.jsonl$/);
+            if (match && match[2] === timestamp) {
+              transcripts.push({ role: match[1], path: path.join(logsDir, file) });
+            }
+          }
+
+          if (transcripts.length > 0) {
+            files.transcripts = transcripts.sort((a, b) => a.role.localeCompare(b.role));
+          }
+        }
+
+        output.files = files;
+      }
+
+      console.log(JSON.stringify(output));
     } catch (e) {
       console.log(JSON.stringify({
         success: false,
@@ -294,43 +352,40 @@ program
   });
 
 program
-  .command('list [game]')
-  .description('List active game instances (optionally for a specific game)')
-  .option('--status <status>', 'Filter by status (in_progress, completed, waiting_for_players)')
-  .option('--since <time>', 'Show instances created since (e.g., "1h", "30m", "2d")')
-  .option('--updated-within <time>', 'Show instances updated within (e.g., "5m", "1h")')
-  .option('--stalled', 'Show only stalled games (no recent activity)')
+  .command('list')
+  .description('List games and instances (default: games summary with instance counts)')
+  .option('-g, --game <game>', 'Filter to specific game')
+  .option('-s, --status <status>', 'Filter by status (in_progress, completed, waiting_for_players, pending_analysis, cancelled)')
+  .option('-i, --instances', 'Show individual instances instead of games summary')
+  .option('--since <time>', 'Filter instances created since (e.g., "1h", "30m", "2d") - implies --instances')
+  .option('--updated-within <time>', 'Filter instances updated within (e.g., "5m", "1h") - implies --instances')
+  .option('--stalled', 'Show only stalled instances (no recent activity) - implies --instances')
   .option('--threshold <time>', 'Stall threshold (default: "5m")', '5m')
-  .option('--sort-by <field>', 'Sort by: turns, updated, created (default: updated)', 'updated')
-  .option('--format <format>', 'Output format: json, table, compact (default: json)', 'json')
-  .option('--show-available', 'Show available games (games with RULES.md) in addition to active instances')
-  .action(async (game?: string, options?: {
+  .option('--sort-by <field>', 'Sort by: turns, updated, created, name (default: name for games, updated for instances)')
+  .option('--format <format>', 'Output format: json, table (default: table)', 'table')
+  .option('--validate', 'Include validation status for games')
+  .option('--files', 'Include file paths in instance mode (logs, transcripts) - for operators only')
+  .action(async (options: {
+    game?: string;
     status?: string;
+    instances?: boolean;
     since?: string;
     updatedWithin?: string;
     stalled?: boolean;
     threshold?: string;
     sortBy?: string;
     format?: string;
-    showAvailable?: boolean;
+    validate?: boolean;
+    files?: boolean;
   }) => {
     try {
       const fs = await import('fs');
       const path = await import('path');
       const GAMES_DIR = path.join(process.cwd(), 'games');
 
-      interface GameInstance {
-        gameName: string;
-        instanceId: string;
-        status: string;
-        round: number;
-        turnNumber: number;
-        created?: number;
-        lastUpdated?: number;
-        elapsed?: number;
-        stalled?: boolean;
-        stalledMinutes?: number;
-      }
+      // Determine if we're showing instances or games summary
+      // Instance mode if: --instances flag OR any instance-specific filter
+      const instanceMode = options.instances || options.since || options.updatedWithin || options.stalled;
 
       // Parse time string to milliseconds
       const parseTime = (timeStr: string): number => {
@@ -346,16 +401,26 @@ program
         return parseInt(value) * multipliers[unit];
       };
 
+      // Helper to format time since
+      const formatTimeSince = (ms: number): string => {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        if (days > 0) return `${days}d`;
+        if (hours > 0) return `${hours}h`;
+        if (minutes > 0) return `${minutes}m`;
+        return `${seconds}s`;
+      };
+
       // Get last update time from log file
       const getLastUpdate = (gameName: string, instanceId: string): number | undefined => {
         try {
           const logPath = path.join(GAMES_DIR, gameName, 'logs', `${instanceId}.jsonl`);
           if (!fs.existsSync(logPath)) return undefined;
-
           const content = fs.readFileSync(logPath, 'utf-8');
           const lines = content.trim().split('\n').filter(l => l.trim());
           if (lines.length === 0) return undefined;
-
           const lastLine = lines[lines.length - 1];
           const lastEvent = JSON.parse(lastLine);
           return new Date(lastEvent.timestamp).getTime();
@@ -364,25 +429,14 @@ program
         }
       };
 
-      // Get creation time - prefers state.created, falls back to instance ID parsing (backfill), then file birthtime
+      // Get creation time
       const getCreationTime = (state: any, instanceId: string): number | undefined => {
         try {
-          // Primary method: Use state.created if available (proper way going forward)
-          if (state.created && typeof state.created === 'number') {
-            return state.created;
-          }
-
-          // Backfill method: Parse timestamp from instance ID (for existing games)
+          if (state.created && typeof state.created === 'number') return state.created;
           const parts = instanceId.split('-');
           const lastPart = parts[parts.length - 1];
           const timestamp = parseInt(lastPart, 10);
-
-          // Validate it looks like a millisecond timestamp (13 digits)
-          if (!isNaN(timestamp) && timestamp.toString().length === 13) {
-            return timestamp;
-          }
-
-          // Last resort: Fall back to file system birthtime (least reliable)
+          if (!isNaN(timestamp) && timestamp.toString().length === 13) return timestamp;
           const statePath = getStatePath(instanceId);
           const stats = fs.statSync(statePath);
           return stats.birthtimeMs;
@@ -391,268 +445,318 @@ program
         }
       };
 
-      const results: GameInstance[] = [];
-
-      // Get list of available games (games with RULES.md)
-      let availableGames: string[] = [];
-      if (options?.showAvailable) {
-        try {
-          const allDirs = fs.readdirSync(GAMES_DIR).filter((f: string) => {
-            try {
-              return fs.statSync(path.join(GAMES_DIR, f)).isDirectory();
-            } catch {
-              return false;
-            }
-          });
-
-          availableGames = allDirs.filter((gameName: string) => {
-            const rulesPath = path.join(GAMES_DIR, gameName, 'RULES.md');
-            return fs.existsSync(rulesPath);
-          });
-        } catch {
-          // Ignore errors
-        }
-      }
-
-      // If game specified, list instances for that game only
-      const gamesToCheck = game ? [game] : fs.readdirSync(GAMES_DIR).filter((f: string) => {
-        try {
-          return fs.statSync(path.join(GAMES_DIR, f)).isDirectory();
-        } catch {
-          return false;
-        }
-      });
-
-      for (const gameName of gamesToCheck) {
-        const instances = listGameInstances(gameName);
-        for (const instanceId of instances) {
-          try {
-            const state = loadStateReadOnly(instanceId);
-            const lastUpdated = getLastUpdate(gameName, instanceId);
-            const created = getCreationTime(state, instanceId);
-            const now = Date.now();
-            const stalledMinutes = lastUpdated ? (now - lastUpdated) / (60 * 1000) : undefined;
-            const elapsed = (created && lastUpdated) ? lastUpdated - created : undefined;
-
-            results.push({
-              gameName: state.gameName,
-              instanceId: state.gameId,
-              status: state.status,
-              round: state.round,
-              turnNumber: state.turnNumber,
-              created,
-              lastUpdated,
-              elapsed,
-              stalled: state.status === 'in_progress' &&
-                       stalledMinutes !== undefined &&
-                       stalledMinutes > parseTime(options?.threshold || '5m') / (60 * 1000),
-              stalledMinutes
-            });
-          } catch {
-            // Skip if can't load state
-          }
-        }
-      }
-
-      // Apply filters
-      let filtered = results;
-
-      if (options?.status) {
-        filtered = filtered.filter(i => i.status === options.status);
-      }
-
-      if (options?.since) {
-        const sinceMs = Date.now() - parseTime(options.since);
-        filtered = filtered.filter(i => i.created && i.created >= sinceMs);
-      }
-
-      if (options?.updatedWithin) {
-        const withinMs = Date.now() - parseTime(options.updatedWithin);
-        filtered = filtered.filter(i => i.lastUpdated && i.lastUpdated >= withinMs);
-      }
-
-      if (options?.stalled) {
-        filtered = filtered.filter(i => i.stalled);
-      }
-
-      // Sort results
-      const sortBy = options?.sortBy || 'updated';
-      filtered.sort((a, b) => {
-        if (sortBy === 'turns') {
-          return b.turnNumber - a.turnNumber;
-        } else if (sortBy === 'created') {
-          return (b.created || 0) - (a.created || 0);
-        } else {
-          return (b.lastUpdated || 0) - (a.lastUpdated || 0);
-        }
-      });
-
-      // Format output
-      const format = options?.format || 'json';
-
-      if (format === 'json') {
-        const output: any = {
-          success: true,
-          instances: filtered,
-          count: filtered.length
-        };
-        if (options?.showAvailable) {
-          output.availableGames = availableGames;
-          output.availableCount = availableGames.length;
-        }
-        console.log(JSON.stringify(output, null, 2));
-      } else if (format === 'table') {
-        // Table format
-        console.log('\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐');
-        console.log('│ Game Instances                                                                              │');
-        console.log('├──────────────────┬──────────────────────────────────┬─────────────┬────────┬────────┬────────┤');
-        console.log('│ Game             │ Instance ID                      │ Status      │ Round  │ Turns  │ Elapsed│');
-        console.log('├──────────────────┼──────────────────────────────────┼─────────────┼────────┼────────┼────────┤');
-
-        for (const inst of filtered) {
-          const elapsedDisplay = inst.elapsed
-            ? formatTimeSince(inst.elapsed)
-            : 'unknown';
-          const stallFlag = inst.stalled ? ' ⚠️' : '';
-          console.log(`│ ${inst.gameName.padEnd(16)} │ ${inst.instanceId.padEnd(32)} │ ${inst.status.padEnd(11)} │ ${String(inst.round).padStart(6)} │ ${String(inst.turnNumber).padStart(6)} │ ${(elapsedDisplay + stallFlag).padEnd(6)} │`);
-        }
-
-        console.log('└──────────────────┴──────────────────────────────────┴─────────────┴────────┴────────┴────────┘');
-        console.log(`\nTotal: ${filtered.length} instance(s)\n`);
-
-        if (options?.showAvailable && availableGames.length > 0) {
-          console.log('\n┌─────────────────────────────────────────────────────┐');
-          console.log('│ Available Games                                     │');
-          console.log('├─────────────────────────────────────────────────────┤');
-          for (const gameName of availableGames) {
-            console.log(`│ ${gameName.padEnd(51)} │`);
-          }
-          console.log('└─────────────────────────────────────────────────────┘');
-          console.log(`\nTotal: ${availableGames.length} available game(s)\n`);
-        }
-      } else if (format === 'compact') {
-        // Compact format
-        for (const inst of filtered) {
-          const elapsedDisplay = inst.elapsed
-            ? formatTimeSince(inst.elapsed)
-            : '?';
-          const stallFlag = inst.stalled ? ' [STALLED]' : '';
-          console.log(`${inst.instanceId} | ${inst.status} | T${inst.turnNumber} | ${elapsedDisplay}${stallFlag}`);
-        }
-
-        if (options?.showAvailable && availableGames.length > 0) {
-          console.log('\nAvailable Games:');
-          for (const gameName of availableGames) {
-            console.log(`  ${gameName}`);
-          }
-        }
-      }
-
-      // Helper to format time since
-      function formatTimeSince(ms: number): string {
-        const seconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
-
-        if (days > 0) return `${days}d`;
-        if (hours > 0) return `${hours}h`;
-        if (minutes > 0) return `${minutes}m`;
-        return `${seconds}s`;
-      }
-
-    } catch (e) {
-      console.log(JSON.stringify({
-        success: false,
-        error: (e as Error).message
-      }));
-      process.exit(1);
-    }
-  });
-
-// ============ List Games Command ============
-
-program
-  .command('list-games')
-  .description('List all available games (games with RULES.md)')
-  .option('--json', 'Output as JSON (default)')
-  .option('--validate', 'Run validation on each game\'s RULES.md')
-  .action(async (options: { json?: boolean; validate?: boolean }) => {
-    try {
-      const fs = await import('fs');
-      const pathMod = await import('path');
-      const GAMES_DIR = pathMod.join(process.cwd(), 'games');
+      const format = options.format || 'table';
 
       if (!fs.existsSync(GAMES_DIR)) {
-        console.log(JSON.stringify({ success: true, games: [], count: 0 }));
+        if (format === 'json') {
+          console.log(JSON.stringify({ success: true, games: [], instances: [], count: 0 }));
+        } else {
+          console.log('No games directory found.');
+        }
         return;
       }
 
+      // Get all game directories
       const allDirs = fs.readdirSync(GAMES_DIR).filter((f: string) => {
-        try {
-          return fs.statSync(pathMod.join(GAMES_DIR, f)).isDirectory();
-        } catch {
-          return false;
-        }
+        try { return fs.statSync(path.join(GAMES_DIR, f)).isDirectory(); }
+        catch { return false; }
       });
 
-      const games: Array<{
-        name: string;
-        hasRules: boolean;
-        title?: string;
-        players?: string;
-        instances?: number;
-        valid?: boolean;
-        errors?: number;
-        warnings?: number;
-      }> = [];
+      // Filter to games with RULES.md, optionally filter by --game
+      const gameDirs = allDirs.filter((dir: string) => {
+        const rulesPath = path.join(GAMES_DIR, dir, 'RULES.md');
+        if (!fs.existsSync(rulesPath)) return false;
+        if (options.game && dir !== options.game) return false;
+        return true;
+      });
 
-      for (const dir of allDirs) {
-        const rulesPath = pathMod.join(GAMES_DIR, dir, 'RULES.md');
-        const hasRules = fs.existsSync(rulesPath);
-        if (!hasRules) continue;
-
-        const entry: typeof games[number] = { name: dir, hasRules };
-
-        // Get basic info from RULES.md frontmatter
-        try {
-          const parsed = parseRules(dir);
-          entry.title = parsed.config.name || dir;
-          entry.players = parsed.config.players?.toString();
-        } catch {
-          entry.title = dir;
+      if (instanceMode) {
+        // ============ INSTANCE MODE ============
+        interface GameInstance {
+          gameName: string;
+          instanceId: string;
+          status: string;
+          round: number;
+          turnNumber: number;
+          created?: number;
+          lastUpdated?: number;
+          elapsed?: number;
+          stalled?: boolean;
+          stalledMinutes?: number;
+          files?: {
+            log?: string;
+            state?: string;
+            analysis?: string;
+            transcripts?: { role: string; path: string }[];
+          };
         }
 
-        // Count active instances
-        try {
-          entry.instances = listGameInstances(dir).length;
-        } catch {
-          entry.instances = 0;
-        }
+        const results: GameInstance[] = [];
 
-        // Optionally validate
-        if (options.validate) {
-          try {
-            const result = validateRules(rulesPath);
-            entry.valid = result.valid;
-            entry.errors = result.errors.length;
-            entry.warnings = result.warnings.length;
-          } catch {
-            entry.valid = false;
-            entry.errors = 1;
+        for (const gameName of gameDirs) {
+          const instances = listGameInstances(gameName);
+          for (const instanceId of instances) {
+            try {
+              const state = loadStateReadOnly(instanceId);
+              const lastUpdated = getLastUpdate(gameName, instanceId);
+              const created = getCreationTime(state, instanceId);
+              const now = Date.now();
+              const stalledMinutes = lastUpdated ? (now - lastUpdated) / (60 * 1000) : undefined;
+              const elapsed = (created && lastUpdated) ? lastUpdated - created : undefined;
+
+              const instance: GameInstance = {
+                gameName: state.gameName,
+                instanceId: state.gameId,
+                status: state.status,
+                round: state.round,
+                turnNumber: state.turnNumber,
+                created,
+                lastUpdated,
+                elapsed,
+                stalled: state.status === 'in_progress' &&
+                         stalledMinutes !== undefined &&
+                         stalledMinutes > parseTime(options.threshold || '5m') / (60 * 1000),
+                stalledMinutes
+              };
+
+              // Only include file paths if --files flag is set (for operators, not players)
+              if (options.files) {
+                const files: NonNullable<GameInstance['files']> = {};
+
+                // Extract timestamp from instanceId
+                const parts = instanceId.split('-');
+                const timestamp = parts[parts.length - 1];
+
+                // Game event log
+                const logPath = path.join(GAMES_DIR, gameName, 'logs', `${instanceId}.jsonl`);
+                if (fs.existsSync(logPath)) files.log = logPath;
+
+                // State directory
+                const statePath = path.join(GAMES_DIR, gameName, 'state', instanceId);
+                if (fs.existsSync(statePath)) files.state = statePath;
+
+                // Analysis file
+                if (state.shared?.analysisFile && typeof state.shared.analysisFile === 'string') {
+                  files.analysis = state.shared.analysisFile;
+                }
+
+                // Find agent transcripts
+                const logsDir = path.join(GAMES_DIR, gameName, 'logs');
+                if (fs.existsSync(logsDir)) {
+                  const transcripts: { role: string; path: string }[] = [];
+                  const logFiles = fs.readdirSync(logsDir);
+                  for (const file of logFiles) {
+                    const match = file.match(/^(.+)-transcript-(\d+)\.jsonl$/);
+                    if (match && match[2] === timestamp) {
+                      transcripts.push({ role: match[1], path: path.join(logsDir, file) });
+                    }
+                  }
+                  if (transcripts.length > 0) {
+                    files.transcripts = transcripts.sort((a, b) => a.role.localeCompare(b.role));
+                  }
+                }
+
+                instance.files = files;
+              }
+
+              results.push(instance);
+            } catch {
+              // Skip if can't load state
+            }
           }
         }
 
-        games.push(entry);
+        // Apply filters
+        let filtered = results;
+        if (options.status) {
+          filtered = filtered.filter(i => i.status === options.status);
+        }
+        if (options.since) {
+          const sinceMs = Date.now() - parseTime(options.since);
+          filtered = filtered.filter(i => i.created && i.created >= sinceMs);
+        }
+        if (options.updatedWithin) {
+          const withinMs = Date.now() - parseTime(options.updatedWithin);
+          filtered = filtered.filter(i => i.lastUpdated && i.lastUpdated >= withinMs);
+        }
+        if (options.stalled) {
+          filtered = filtered.filter(i => i.stalled);
+        }
+
+        // Sort
+        const sortBy = options.sortBy || 'updated';
+        filtered.sort((a, b) => {
+          if (sortBy === 'turns') return b.turnNumber - a.turnNumber;
+          if (sortBy === 'created') return (b.created || 0) - (a.created || 0);
+          if (sortBy === 'name') return a.gameName.localeCompare(b.gameName);
+          return (b.lastUpdated || 0) - (a.lastUpdated || 0);
+        });
+
+        // Output
+        if (format === 'json') {
+          console.log(JSON.stringify({ success: true, instances: filtered, count: filtered.length }, null, 2));
+        } else {
+          console.log('\n┌─────────────────────────────────────────────────────────────────────────────────────────────┐');
+          console.log('│ Game Instances                                                                              │');
+          console.log('├──────────────────┬──────────────────────────────────┬─────────────┬────────┬────────┬────────┤');
+          console.log('│ Game             │ Instance ID                      │ Status      │ Round  │ Turns  │ Elapsed│');
+          console.log('├──────────────────┼──────────────────────────────────┼─────────────┼────────┼────────┼────────┤');
+
+          for (const inst of filtered) {
+            const elapsedDisplay = inst.elapsed ? formatTimeSince(inst.elapsed) : '-';
+            const stallFlag = inst.stalled ? '⚠' : '';
+            console.log(`│ ${inst.gameName.padEnd(16)} │ ${inst.instanceId.padEnd(32)} │ ${inst.status.padEnd(11)} │ ${String(inst.round).padStart(6)} │ ${String(inst.turnNumber).padStart(6)} │ ${(elapsedDisplay + stallFlag).padEnd(6)} │`);
+          }
+
+          console.log('└──────────────────┴──────────────────────────────────┴─────────────┴────────┴────────┴────────┘');
+          console.log(`\nTotal: ${filtered.length} instance(s)\n`);
+        }
+
+      } else {
+        // ============ GAMES SUMMARY MODE ============
+        interface GameSummary {
+          name: string;
+          title?: string;
+          players?: string;
+          instances: number;
+          instancesByStatus: {
+            waiting_for_players: number;
+            in_progress: number;
+            pending_analysis: number;
+            completed: number;
+            cancelled: number;
+            initializing: number;
+          };
+          valid?: boolean;
+          errors?: number;
+          warnings?: number;
+        }
+
+        const games: GameSummary[] = [];
+
+        for (const dir of gameDirs) {
+          const rulesPath = path.join(GAMES_DIR, dir, 'RULES.md');
+          const entry: GameSummary = {
+            name: dir,
+            instances: 0,
+            instancesByStatus: {
+              waiting_for_players: 0,
+              in_progress: 0,
+              pending_analysis: 0,
+              completed: 0,
+              cancelled: 0,
+              initializing: 0
+            }
+          };
+
+          // Get game info from RULES.md
+          try {
+            const parsed = parseRules(rulesPath);
+            entry.title = parsed.config.name || dir;
+            const players = parsed.config.players;
+            if (typeof players === 'string') entry.players = players;
+            else if (typeof players === 'number') entry.players = String(players);
+            else if (typeof players === 'object' && players !== null) entry.players = `${players.min}-${players.max}`;
+          } catch {
+            entry.title = dir;
+          }
+
+          // Count instances by status
+          try {
+            const instances = listGameInstances(dir);
+            entry.instances = instances.length;
+
+            for (const instanceId of instances) {
+              try {
+                const state = loadStateReadOnly(instanceId);
+                const status = state.status as keyof typeof entry.instancesByStatus;
+                if (status in entry.instancesByStatus) {
+                  entry.instancesByStatus[status]++;
+                }
+              } catch {
+                // Skip
+              }
+            }
+          } catch {
+            // Keep defaults
+          }
+
+          // Validation
+          if (options.validate) {
+            try {
+              const result = validateRules(rulesPath);
+              entry.valid = result.valid;
+              entry.errors = result.errors.length;
+              entry.warnings = result.warnings.length;
+            } catch {
+              entry.valid = false;
+              entry.errors = 1;
+            }
+          }
+
+          games.push(entry);
+        }
+
+        // Filter by status (show games that have instances with that status)
+        let filtered = games;
+        if (options.status) {
+          const statusKey = options.status as keyof GameSummary['instancesByStatus'];
+          filtered = filtered.filter(g => g.instancesByStatus[statusKey] > 0);
+        }
+
+        // Sort
+        const sortBy = options.sortBy || 'name';
+        filtered.sort((a, b) => {
+          if (sortBy === 'name') return a.name.localeCompare(b.name);
+          if (sortBy === 'turns' || sortBy === 'updated' || sortBy === 'created') {
+            return b.instances - a.instances; // Sort by total instances for these
+          }
+          return a.name.localeCompare(b.name);
+        });
+
+        // Output
+        if (format === 'json') {
+          console.log(JSON.stringify({ success: true, games: filtered, count: filtered.length }, null, 2));
+        } else {
+          const fmt = (n: number) => n === 0 ? '-' : String(n);
+
+          if (options.validate) {
+            console.log('\n┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐');
+            console.log('│ Available Games                                                                                                  │');
+            console.log('├──────────────────────┬──────────┬──────┬──────┬──────┬──────┬──────┬────────┬────────┬──────────┤');
+            console.log('│ Game                 │ Players  │ Wait │ Play │ Pend │ Done │ Canc │ Status │ Errors │ Warnings │');
+            console.log('├──────────────────────┼──────────┼──────┼──────┼──────┼──────┼──────┼────────┼────────┼──────────┤');
+
+            for (const game of filtered) {
+              const displayName = (game.title && game.title !== game.name) ? game.title : game.name;
+              const statusIcon = game.valid ? '✓' : '✗';
+              const status = game.valid ? 'Valid' : 'Invalid';
+              const s = game.instancesByStatus;
+              console.log(`│ ${displayName.substring(0, 20).padEnd(20)} │ ${(game.players || '-').padEnd(8)} │ ${fmt(s.waiting_for_players).padStart(4)} │ ${fmt(s.in_progress).padStart(4)} │ ${fmt(s.pending_analysis).padStart(4)} │ ${fmt(s.completed).padStart(4)} │ ${fmt(s.cancelled).padStart(4)} │ ${(statusIcon + ' ' + status).padEnd(6)} │ ${String(game.errors || 0).padStart(6)} │ ${String(game.warnings || 0).padStart(8)} │`);
+            }
+
+            console.log('└──────────────────────┴──────────┴──────┴──────┴──────┴──────┴──────┴────────┴────────┴──────────┘');
+          } else {
+            console.log('\n┌────────────────────────────────────────────────────────────────────────────────┐');
+            console.log('│ Available Games                                                                │');
+            console.log('├──────────────────────┬──────────┬──────┬──────┬──────┬──────┬──────┬─────────┤');
+            console.log('│ Game                 │ Players  │ Wait │ Play │ Pend │ Done │ Canc │ Total   │');
+            console.log('├──────────────────────┼──────────┼──────┼──────┼──────┼──────┼──────┼─────────┤');
+
+            for (const game of filtered) {
+              const displayName = (game.title && game.title !== game.name) ? game.title : game.name;
+              const s = game.instancesByStatus;
+              const total = game.instances;
+              console.log(`│ ${displayName.substring(0, 20).padEnd(20)} │ ${(game.players || '-').padEnd(8)} │ ${fmt(s.waiting_for_players).padStart(4)} │ ${fmt(s.in_progress).padStart(4)} │ ${fmt(s.pending_analysis).padStart(4)} │ ${fmt(s.completed).padStart(4)} │ ${fmt(s.cancelled).padStart(4)} │ ${(total === 0 ? '-' : String(total)).padStart(7)} │`);
+            }
+
+            console.log('└──────────────────────┴──────────┴──────┴──────┴──────┴──────┴──────┴─────────┘');
+          }
+
+          console.log('Wait=Waiting, Play=In Progress, Pend=Pending Analysis, Done=Completed, Canc=Cancelled');
+          console.log(`\nTotal: ${filtered.length} game(s)\n`);
+        }
       }
-
-      games.sort((a, b) => a.name.localeCompare(b.name));
-
-      console.log(JSON.stringify({
-        success: true,
-        games,
-        count: games.length
-      }, null, 2));
 
     } catch (e) {
       console.log(JSON.stringify({
