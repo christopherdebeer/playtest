@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-09T22:32:06.395Z","event":"game_init","data":{"gameId":"fortune-seekers-1770676326380","playerCount":2,"config":"Fortune Seekers"}}
+{"timestamp":"2026-02-09T22:32:23.897Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T22:32:25.291Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"roll","roll":2,"points":10,"accumulated":10}}
+{"timestamp":"2026-02-09T22:32:26.648Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"roll","roll":3,"points":10,"accumulated":20}}
+{"timestamp":"2026-02-09T22:32:27.305Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"bank","bankedPoints":20,"totalScore":20}}

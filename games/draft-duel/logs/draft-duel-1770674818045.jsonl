@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-09T22:06:58.056Z","event":"game_init","data":{"gameId":"draft-duel-1770674818045","playerCount":2,"config":"Draft Duel"}}
+{"timestamp":"2026-02-09T22:07:21.767Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-09T22:10:20.115Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-09T22:10:41.676Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draft_select","player":"player-2","waitingFor":["player-1"]}}
+{"timestamp":"2026-02-09T22:11:01.672Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draft_select","round":1,"direction":"left","selections":{"player-1":"Wild","player-2":"Fire"}}}
+{"timestamp":"2026-02-09T22:11:23.430Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-2","data":{"type":"draft_select","player":"player-2","waitingFor":["player-1"]}}
+{"timestamp":"2026-02-09T22:11:37.583Z","event":"action_executed","round":3,"turnNumber":5,"player":"player-1","data":{"type":"draft_select","round":2,"direction":"left","selections":{"player-1":"Earth","player-2":"Insight"}}}
