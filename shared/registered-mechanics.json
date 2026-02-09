@@ -306,7 +306,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "initSharedState"
+        "initSharedState",
+        "getActionSchema"
       ]
     },
     "auction-fixed-placement": {
@@ -427,7 +428,8 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "getActionSchema"
       ]
     },
     "bribery": {
@@ -480,7 +482,8 @@
       "hooks": [
         "initPlayerState",
         "onExecuteAction",
-        "initSharedState"
+        "initSharedState",
+        "getActionSchema"
       ]
     },
     "catch-the-leader": {
@@ -911,7 +914,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "getActionSchema"
       ]
     },
     "hand-management": {
@@ -1336,7 +1340,8 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState",
-        "getPlayerView"
+        "getPlayerView",
+        "getActionSchema"
       ]
     },
     "ownership": {
@@ -1362,7 +1367,8 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions",
-        "describeAction"
+        "describeAction",
+        "getActionSchema"
       ]
     },
     "pattern-building": {
@@ -1420,7 +1426,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "initSharedState"
+        "initSharedState",
+        "getActionSchema"
       ]
     },
     "place-location": {
@@ -1526,7 +1533,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "getPlayerView"
+        "getPlayerView",
+        "getActionSchema"
       ]
     },
     "questions-and-answers": {
@@ -1592,7 +1600,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "getPlayerView"
+        "getPlayerView",
+        "getActionSchema"
       ]
     },
     "role-playing": {
@@ -1710,7 +1719,8 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction",
-        "getPlayerView"
+        "getPlayerView",
+        "getActionSchema"
       ]
     },
     "simultaneous-action-selection": {
@@ -1930,7 +1940,8 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState",
-        "canPlayerActNow"
+        "canPlayerActNow",
+        "getActionSchema"
       ]
     },
     "traitor-game": {

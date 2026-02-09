@@ -21,7 +21,8 @@ import {
   AvailableAction,
   ActionDescription,
   SharedStateInitContext,
-  SharedStateInitResult
+  SharedStateInitResult,
+  ActionSchema
 } from './types.js';
 import { GameAction, Card, DraftAction } from '../types/game.js';
 import { addToHand } from './core/hand.js';
@@ -55,6 +56,16 @@ export const openDraftingMechanic: MechanicHooks = {
       }
     },
     required: ['display_size']
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'draft') return null;
+    return {
+      required: ['card'],
+      fields: {
+        card: { type: 'string' },
+      },
+    };
   },
 
   /**

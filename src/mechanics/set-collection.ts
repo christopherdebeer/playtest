@@ -20,6 +20,7 @@ import {
   ActionDescription,
   PlayerInitContext,
   PlayerInitResult,
+  ActionSchema,
   isMechanicEnabled
 } from './types.js';
 import { GameAction, Card, SetDefinition, CollectSetAction, PlayerState } from '../types/game.js';
@@ -87,6 +88,17 @@ export const setCollectionMechanic: MechanicHooks = {
       }
     },
     required: ['sets']
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'collect_set') return null;
+    return {
+      required: ['cards', 'setType'],
+      fields: {
+        cards: { type: 'array' },
+        setType: { type: 'string' },
+      },
+    };
   },
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {

@@ -22,6 +22,7 @@ import {
   ActionDescription,
   SharedStateInitContext,
   SharedStateInitResult,
+  ActionSchema,
   isMechanicEnabled
 } from './types.js';
 import { GameAction, PlaceCardAction, PlaceLocationAction, PlacedCard, Card } from '../types/game.js';
@@ -31,6 +32,28 @@ export const placeCardMechanic: MechanicHooks = {
   slug: 'place-card',
   name: 'Place Card',
   requires: ['cards'],
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type === 'place_card') {
+      return {
+        required: ['card', 'targetState'],
+        fields: {
+          card: { type: 'string' },
+          targetState: { type: 'string' },
+        },
+      };
+    }
+    if (action.type === 'place_location') {
+      return {
+        required: ['card', 'adjacentTo'],
+        fields: {
+          card: { type: 'string' },
+          adjacentTo: { type: 'string' },
+        },
+      };
+    }
+    return null;
+  },
 
   initSharedState(_ctx: SharedStateInitContext): SharedStateInitResult | null {
     // Initialize placedCards array for tracking cards placed on board states

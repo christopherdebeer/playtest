@@ -25,9 +25,10 @@ import {
   SharedStateInitContext,
   SharedStateInitResult,
   PlayerInitContext,
-  PlayerInitResult
+  PlayerInitResult,
+  ActionSchema
 } from '../types.js';
-import { Card, PlayCardAction, GameState, DeckConfig } from '../../types/game.js';
+import { Card, PlayCardAction, GameState, DeckConfig, GameAction } from '../../types/game.js';
 import { playCard } from './card-piles.js';
 import { buildDeck, shuffleDeck } from '../../core/rules.js';
 
@@ -255,6 +256,19 @@ export const cardsMechanic: MechanicHooks = {
 
     const hand = startingHands[ctx.playerId] ?? [];
     return { hand };
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'play_card') return null;
+    return {
+      required: ['card'],
+      optional: ['declaredColor', 'target'],
+      fields: {
+        card: { type: 'string' },
+        declaredColor: { type: 'string' },
+        target: { type: 'string' },
+      },
+    };
   },
 
   /**

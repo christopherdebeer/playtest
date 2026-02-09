@@ -23,7 +23,8 @@ import {
   ActionExecutionContext,
   ActionExecutionResult,
   AvailableAction,
-  ActionDescription
+  ActionDescription,
+  ActionSchema
 } from '../types.js';
 import { SpendAction, GameAction } from '../../types/game.js';
 import { spendResource } from './resources.js';
@@ -111,6 +112,19 @@ export const resourcesMechanic: MechanicHooks = {
       description: 'After resources are spent.',
       resolution: 'merge',
     },
+  },
+
+  getActionSchema(action: GameAction): ActionSchema | null {
+    if (action.type !== 'spend') return null;
+    return {
+      required: ['resource', 'amount'],
+      optional: ['target'],
+      fields: {
+        resource: { type: 'string' },
+        amount: { type: 'number', minimum: 1 },
+        target: { type: 'string' },
+      },
+    };
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {

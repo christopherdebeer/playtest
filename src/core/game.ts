@@ -46,6 +46,7 @@ import { parseRules, getPlayerCount } from './rules.js';
 
 // Mechanics hook system (incremental extraction)
 import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
+import type { ActionSchema } from '../mechanics/types.js';
 
 // Core services (trunk mechanics)
 import {
@@ -1632,11 +1633,90 @@ export function recordAction(contestState: ContestState, action: LastAction): vo
   }
 }
 
-// Validate action schema/type
-export function validateActionSchema(action: unknown): ActionValidationResult {
+// Validate an action against an ActionSchema returned by a mechanic
+function validateAgainstSchema(action: Record<string, unknown>, schema: ActionSchema): string[] {
   const errors: string[] = [];
-  const warnings: string[] = [];
 
+  // Check required fields
+  if (schema.required) {
+    for (const field of schema.required) {
+      if (action[field] === undefined || action[field] === null) {
+        errors.push(`${action.type} action requires "${field}" field`);
+      }
+    }
+  }
+
+  // Check field types
+  if (schema.fields) {
+    for (const [field, def] of Object.entries(schema.fields)) {
+      const value = action[field];
+      if (value === undefined || value === null) continue; // Missing fields caught by required check
+
+      const actualType = Array.isArray(value) ? 'array' : typeof value;
+      if (actualType !== def.type) {
+        errors.push(`${action.type} "${field}" must be ${def.type === 'array' ? 'an array' : `a ${def.type}`}`);
+        continue;
+      }
+
+      if (def.type === 'number' && typeof value === 'number') {
+        if (def.minimum !== undefined && value < def.minimum) {
+          errors.push(`${action.type} "${field}" must be at least ${def.minimum}`);
+        }
+        if (def.maximum !== undefined && value > def.maximum) {
+          errors.push(`${action.type} "${field}" must be at most ${def.maximum}`);
+        }
+      }
+
+      if (def.enum && !def.enum.includes(value)) {
+        errors.push(`${action.type} "${field}" must be one of: ${def.enum.join(', ')}`);
+      }
+    }
+  }
+
+  // Check conditional requirements
+  if (schema.conditional) {
+    for (const cond of schema.conditional) {
+      const matches = Object.entries(cond.if).every(([k, v]) => action[k] === v);
+      if (matches) {
+        if (cond.require) {
+          for (const field of cond.require) {
+            if (action[field] === undefined || action[field] === null) {
+              errors.push(`${action.type} requires "${field}" when ${Object.entries(cond.if).map(([k, v]) => `${k}=${v}`).join(', ')}`);
+            }
+          }
+        }
+        if (cond.forbid) {
+          for (const field of cond.forbid) {
+            if (action[field] !== undefined) {
+              errors.push(`${action.type} forbids "${field}" when ${Object.entries(cond.if).map(([k, v]) => `${k}=${v}`).join(', ')}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return errors;
+}
+
+// Built-in schemas for engine-owned actions (not owned by any mechanic)
+const BUILTIN_SCHEMAS: Record<string, ActionSchema> = {
+  draw: {
+    optional: ['count'],
+    fields: {
+      count: { type: 'number', minimum: 1 },
+    },
+  },
+  resign: {
+    required: ['reason'],
+    fields: {
+      reason: { type: 'string' },
+    },
+  },
+};
+
+// Validate action schema/type (stateless check — called before game state is loaded)
+export function validateActionSchema(action: unknown): ActionValidationResult {
   if (!action || typeof action !== 'object') {
     return { valid: false, errors: ['Action must be a JSON object'] };
   }
@@ -1647,42 +1727,24 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
     return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
   }
 
-  // Action types are defined by mechanics - no hardcoded list.
-  // Basic schema validation for well-known fields:
-  if (act.type === 'play_card') {
-    if (!act.card || typeof act.card !== 'string') {
-      errors.push('play_card action requires "card" field (string) - the exact name of the card to play');
+  // Validate against built-in schema if this is an engine-owned action
+  const builtinSchema = BUILTIN_SCHEMAS[act.type];
+  if (builtinSchema) {
+    const errors = validateAgainstSchema(act, builtinSchema);
+    if (errors.length > 0) {
+      return { valid: false, errors };
     }
-    if (act.declaredColor !== undefined && typeof act.declaredColor !== 'string') {
-      errors.push('declaredColor must be a string (e.g., "Red", "Blue", "Green", "Yellow")');
-    }
-  }
-  if (act.type === 'draw' && act.count !== undefined && (typeof act.count !== 'number' || act.count < 1)) {
-    errors.push('draw "count" must be a positive number');
-  }
-  if (act.type === 'move' && act.target !== undefined && typeof act.target !== 'string') {
-    errors.push('move "target" field must be a string');
-  }
-  if (act.type === 'resign' && (!act.reason || typeof act.reason !== 'string')) {
-    errors.push('resign action requires a "reason" field (string)');
-  }
-  if (act.type === 'place_card') {
-    if (!act.card || typeof act.card !== 'string') {
-      errors.push('place_card action requires "card" field (string)');
-    }
-    if (!act.targetState || typeof act.targetState !== 'string') {
-      errors.push('place_card action requires "targetState" field (string)');
-    }
-  }
-  if (act.type === 'bid' && (act.amount === undefined || typeof act.amount !== 'number' || act.amount < 0)) {
-    errors.push('bid action requires "amount" field (non-negative number)');
   }
 
-  return {
-    valid: errors.length === 0,
-    errors,
-    warnings: warnings.length > 0 ? warnings : undefined
-  };
+  // Mechanic-owned action schemas are validated in validateAction() where game state is available
+  return { valid: true, errors: [] };
+}
+
+// Validate action against a mechanic-provided schema (called from validateAction with state)
+function validateMechanicSchema(state: GameState, action: GameAction): string[] {
+  const schema = mechanicRegistry.getActionSchema(state, action);
+  if (!schema) return []; // No mechanic claims this action type — skip schema validation
+  return validateAgainstSchema(action as unknown as Record<string, unknown>, schema);
 }
 
 // Validate action against game rules (basic engine-level validation)
@@ -1756,61 +1818,31 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     };
   }
 
-  // spend, bid, set collection, push-your-luck validation all handled by their respective mechanics
-  // Note: Draft validation moved to open-drafting mechanic
+  // ============ Mechanic Schema Validation ============
+  // Validate action fields against mechanic-provided schemas
+  const schemaErrors = validateMechanicSchema(state, action);
+  errors.push(...schemaErrors);
 
-  // Action-specific validation
-  const playerHand = player.hand ?? [];
-  const cardsState = getCardsState(state);
-  switch (action.type) {
-    case 'play_card': {
-      const playAction = action as PlayCardAction;
-      const cardIndex = playerHand.findIndex(c => c.name === playAction.card);
-      if (cardIndex === -1) {
-        errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${playerHand.map(c => c.name).join(', ')}`);
-        break;
-      }
-
-      // Note: Card type playable validation moved to card-type-rules mechanic
-      // Note: Color/value matching validation moved to card-matching mechanic (preValidateAction)
-      // Note: Wild card declaredColor validation moved to card-matching mechanic (preValidateAction)
-      // Note: Interference card targeting validation moved to take-that mechanic
-      break;
+  // ============ Engine-Level Action Checks ============
+  // Checks that require game state but don't belong in mechanic preValidateAction
+  if (action.type === 'play_card') {
+    const playAction = action as PlayCardAction;
+    const playerHand = player.hand ?? [];
+    const cardIndex = playerHand.findIndex(c => c.name === playAction.card);
+    if (cardIndex === -1) {
+      errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${playerHand.map(c => c.name).join(', ')}`);
     }
+  }
 
-    case 'draw': {
-      // Basic validation - draws are generally allowed
-      if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
-        warnings.push('Draw pile is empty and cannot be reshuffled');
-      }
-      // Note: Hand limit validation (cannot_draw policy) moved to hand-management mechanic
-      // Other policies (discard_choice, discard_oldest) are handled in executeAction
-      break;
+  if (action.type === 'draw') {
+    const cardsState = getCardsState(state);
+    if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
+      warnings.push('Draw pile is empty and cannot be reshuffled');
     }
+  }
 
-    case 'pass': {
-      // Pass might be invalid if the player has playable cards
-      // But we leave complex rule interpretation to contests
-      warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
-      break;
-    }
-
-    case 'resign': {
-      // Resignations are always schema-valid, but require gamemaster approval
-      break;
-    }
-
-    case 'move': {
-      // Note: Move validation moved to grid-movement and board-state mechanics
-      break;
-    }
-
-    case 'place_card':
-    case 'place_location':
-      // Validation handled by place-card mechanic (preValidateAction)
-      break;
-
-    // trade_offer, trade_respond, bid, spend validated by their respective mechanics
+  if (action.type === 'pass') {
+    warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
   }
 
   return {
