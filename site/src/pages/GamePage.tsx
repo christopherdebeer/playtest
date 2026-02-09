@@ -1,11 +1,8 @@
-import { useParams, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import gamesData from '../data/games.json'
 import MechanicBadge from '../components/MechanicBadge'
-import { LogsData } from '../types/logs'
-import { fetchLogsIndex } from '../utils/logData'
 import BackLink from '../components/BackLink'
-import { formatDuration } from '../utils/timeUtils'
+import RecentPlaytests from '../components/RecentPlaytests'
 import './GamePage.css'
 
 interface CardDef {
@@ -43,36 +40,10 @@ interface Game {
   rulesHtml: string
 }
 
-function formatDate(ts: string): string {
-  const date = new Date(ts)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function getOutcomeClass(outcome: string): string {
-  switch (outcome) {
-    case 'completed': return 'outcome-completed'
-    case 'ended': return 'outcome-ended'
-    case 'cancelled': return 'outcome-cancelled'
-    case 'in_progress': return 'outcome-progress'
-    default: return 'outcome-unknown'
-  }
-}
-
 function GamePage() {
   const { gameId } = useParams<{ gameId: string }>()
   const games: Game[] = gamesData as Game[]
   const game = games.find((g) => g.id === gameId)
-  const [logsData, setLogsData] = useState<LogsData | null>(null)
-
-  // Load logs index for showing log count
-  useEffect(() => {
-    fetchLogsIndex().then(setLogsData).catch(() => setLogsData(null))
-  }, [])
 
   if (!game) {
     return (
@@ -149,54 +120,7 @@ function GamePage() {
           <pre><code>/playtest {game.id} 3</code></pre>
         </div>
 
-        {logsData && (() => {
-          const gameLogs = logsData.logs
-            .filter(l => l.gameName === game.id)
-            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
-          if (gameLogs.length === 0) return null
-          const recentLogs = gameLogs.slice(0, 5)
-          return (
-            <div className="game-logs-section">
-              <h2>Recent Playtests</h2>
-              <table className="playtests-table">
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Players</th>
-                    <th>Turns</th>
-                    <th>Duration</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentLogs.map(log => (
-                    <tr key={log.gameId}>
-                      <td>
-                        <span className={`outcome-badge ${getOutcomeClass(log.outcome)}`}>
-                          {log.outcome}
-                        </span>
-                      </td>
-                      <td>{log.playerCount}</td>
-                      <td>{log.totalTurns}</td>
-                      <td>{formatDuration(log.duration)}</td>
-                      <td>{formatDate(log.startTime)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {gameLogs.length > 5 && (
-                <Link to={`/logs?game=${game.id}`} className="view-logs-btn">
-                  View all {gameLogs.length} playtests
-                </Link>
-              )}
-              {gameLogs.length <= 5 && (
-                <Link to={`/logs?game=${game.id}`} className="view-logs-btn">
-                  View detailed logs
-                </Link>
-              )}
-            </div>
-          )
-        })()}
+        <RecentPlaytests gameId={game.id} showGameColumn={false} />
 
         {game.config.board && (
           <div className="board-section">
