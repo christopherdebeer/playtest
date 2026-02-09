@@ -25,7 +25,7 @@ export interface PlayerState {
   agentId?: string;
   persona?: string;  // Persona slug for this player's personality
   state: string;  // position/status in game
-  hand: Card[];
+  hand?: Card[];  // Optional - cards mechanic sets this via initPlayerState
   effects: Effect[];
   score?: number;
   lastActionRound?: number;  // Track last round player acted (prevents multiple actions per round)
@@ -239,8 +239,18 @@ export interface Effect {
   source?: string;   // who applied it
 }
 
+// Cards config (unified format: stored in engine_mechanics.cards)
+export interface CardsEngineMechanicConfig {
+  deck?: DeckConfig[];         // Card definitions
+  starting_hand?: number;      // Cards dealt to each player at start
+}
+
 // Engine mechanics that can be enabled per-game
 export interface EngineMechanics {
+  // Core mechanics (unified format puts cards and board here)
+  cards?: CardsEngineMechanicConfig;   // Card deck and dealing config
+  board?: BoardConfig;                  // Board states and edges
+
   probability_movement?: boolean;  // Moves use edge probabilities (default: true if board.edges have probability)
   card_boosts?: boolean;           // Cards can modify move probability (default: true if deck exists)
   victory_declaration?: boolean;   // Players must declare victory for GM adjudication (default: false)
@@ -1155,9 +1165,7 @@ export interface GameState {
   currentPlayer: string | null;
   turnOrder: string[];
   players: Record<string, PlayerState>;
-  shared: Record<string, unknown>;  // game-specific shared state
-  deck: Card[];
-  discardPile: Card[];
+  shared: Record<string, unknown>;  // game-specific shared state (cards mechanic puts deck/discardPile here)
   config: GameConfig;
   rulesMarkdown: string;
   log: string;  // path to log file
@@ -1927,6 +1935,7 @@ export interface AvailableAction {
 
 /**
  * Result of getAvailableActions() - shows what a player can do.
+ * Mechanics can add additional fields via getPlayerView hooks.
  */
 export interface AvailableActionsResult {
   playerId: string;
@@ -1936,6 +1945,9 @@ export interface AvailableActionsResult {
   actions: AvailableAction[];
   placedCards: PlacedCard[];     // Cards placed on board (if any)
   activeEffects: Effect[];       // Effects currently on this player
+  // Mechanic-contributed fields (added dynamically via getPlayerView hooks)
+  // Examples: actionPoints, resources, collectedSets, power, etc.
+  [key: string]: unknown;
 }
 
 // ============ Game Analysis Types ============
