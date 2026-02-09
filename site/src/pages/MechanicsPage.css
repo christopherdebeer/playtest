@@ -306,6 +306,15 @@ a.mechanic-card.highlighted {
   color: var(--text-secondary);
 }
 
+.mechanic-game-link {
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.mechanic-game-link:hover {
+  color: var(--accent);
+}
+
 .game-link {
   padding: 0.15rem 0.5rem;
   background: var(--bg-tertiary);

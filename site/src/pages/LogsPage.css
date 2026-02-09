@@ -169,6 +169,15 @@
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
+.log-game-link {
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.log-game-link:hover {
+  color: var(--accent);
+}
+
 .log-card-stats {
   display: flex;
   gap: 1.25rem;

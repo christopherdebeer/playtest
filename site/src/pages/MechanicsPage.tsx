@@ -296,8 +296,20 @@ function MechanicsPage() {
                       <p className="mechanic-summary">{mechanic.summary}</p>
 
                       {mechanic.gamesUsing.length > 0 && (
-                        <div className="mechanic-games">
-                          <span className="games-label">Used in {mechanic.gamesUsing.length} game{mechanic.gamesUsing.length !== 1 ? 's' : ''}</span>
+                        <div className="mechanic-games" onClick={(e) => e.preventDefault()}>
+                          <span className="games-label">Used in: </span>
+                          {mechanic.gamesUsing.map((gameId, i) => (
+                            <span key={gameId}>
+                              {i > 0 && ', '}
+                              <Link
+                                to={`/games/${gameId}`}
+                                className="mechanic-game-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {gameId}
+                              </Link>
+                            </span>
+                          ))}
                         </div>
                       )}
 

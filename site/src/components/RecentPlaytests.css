@@ -1,0 +1,98 @@
+.recent-playtests-section {
+  background: var(--bg-primary);
+}
+
+.recent-playtests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.recent-playtests-table-wrapper {
+  overflow-x: auto;
+}
+
+.recent-playtests-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recent-playtests-table thead {
+  background: var(--bg-tertiary);
+}
+
+.recent-playtests-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+.recent-playtests-table td {
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.recent-playtests-table tbody tr:hover {
+  background: var(--bg-tertiary);
+}
+
+.game-name-link {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.game-name-link:hover {
+  color: var(--accent);
+}
+
+.rp-outcome {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.rp-outcome-completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.rp-outcome-ended {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.rp-outcome-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.rp-outcome-in_progress {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.rp-outcome-unknown {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .recent-playtests-table th,
+  .recent-playtests-table td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}

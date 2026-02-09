@@ -44,7 +44,13 @@ function LogCard({ log }: { log: GameLogSummary & { hasAnalysis?: boolean } }) {
       </div>
 
       <div className="log-card-meta">
-        <span className="log-id">{log.gameId}</span>
+        <Link
+          to={`/games/${log.gameName}`}
+          className="log-game-link"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {log.gameName}
+        </Link>
         <span className="log-date">{formatDate(log.startTime)}</span>
       </div>
 

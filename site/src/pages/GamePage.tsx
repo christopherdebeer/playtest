@@ -2,8 +2,9 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import gamesData from '../data/games.json'
 import MechanicBadge from '../components/MechanicBadge'
-import { LogsData } from '../types/logs'
+import { LogsData, GameLogSummary } from '../types/logs'
 import { fetchLogsIndex } from '../utils/logData'
+import { formatDuration } from '../utils/timeUtils'
 import BackLink from '../components/BackLink'
 import './GamePage.css'
 
@@ -123,17 +124,54 @@ function GamePage() {
         </div>
 
         {logsData && (() => {
-          const gameLogs = logsData.logs.filter(l => l.gameName === game.id)
+          const gameLogs = logsData.logs
+            .filter(l => l.gameName === game.id)
+            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
           if (gameLogs.length === 0) return null
+          const recentLogs = gameLogs.slice(0, 5)
           return (
             <div className="game-logs-section">
-              <h2>Playtest Logs</h2>
-              <p className="logs-summary">
-                {gameLogs.length} playtest session{gameLogs.length !== 1 ? 's' : ''} recorded
-              </p>
-              <Link to={`/logs?game=${game.id}`} className="view-logs-btn">
-                View Game Logs
-              </Link>
+              <div className="game-logs-header">
+                <h2>Recent Playtests</h2>
+                <span className="logs-total">{gameLogs.length} total</span>
+              </div>
+              <div className="logs-table-wrapper">
+                <table className="logs-summary-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Players</th>
+                      <th>Turns</th>
+                      <th>Duration</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentLogs.map((log: GameLogSummary) => (
+                      <tr key={log.gameId}>
+                        <td>
+                          <Link to={`/logs/${log.gameId}`}>
+                            {new Date(log.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </Link>
+                        </td>
+                        <td>{log.playerCount}</td>
+                        <td>{log.totalTurns}</td>
+                        <td>{formatDuration(log.duration)}</td>
+                        <td>
+                          <span className={`outcome-pill outcome-${log.outcome}`}>
+                            {log.outcome}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {gameLogs.length > 5 && (
+                <Link to={`/logs?game=${game.id}`} className="see-more-link">
+                  See all {gameLogs.length} playtests
+                </Link>
+              )}
             </div>
           )
         })()}
