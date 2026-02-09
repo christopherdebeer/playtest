@@ -42,7 +42,7 @@ import type {
   GameAnalysis,
   KeyMoment
 } from '../types/game.js';
-import { parseRules, buildDeck, shuffleDeck, getPlayerCount } from './rules.js';
+import { parseRules, getPlayerCount } from './rules.js';
 
 // Mechanics hook system (incremental extraction)
 import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
@@ -54,7 +54,10 @@ import {
   playCard,
   addToHand,
   removeFromHandByIndex,
-  applyDynamicTurnOrder
+  applyDynamicTurnOrder,
+  getCardsState,
+  getBoardState,
+  setBoardState
 } from '../mechanics/core/index.js';
 
 // Find project root (parent of src directory)
@@ -142,14 +145,14 @@ function processVictoryDeclarationIfPresent(state: GameState, originalAction: La
   }
 
   const contestState = ensureContestState(state);
-  const player = state.players[originalAction.player];
+  const playerBoardState = state.players[originalAction.player] ? getBoardState(state, originalAction.player) : 'unknown';
 
   // Create pending victory claim for GM verification
   contestState.pendingVictoryClaim = {
     player: originalAction.player,
     reason: action.victoryReason || 'Victory declared with action',
-    fromState: player?.state || 'unknown',
-    toState: player?.state || 'unknown',
+    fromState: playerBoardState,
+    toState: playerBoardState,
     action: action,
     timestamp: new Date().toISOString()
   };
@@ -598,18 +601,23 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 
   const gameId = `${gameName}-${Date.now()}`;
 
-  // Build and shuffle deck if configured
-  let deck: Card[] = [];
-  if (config.deck) {
-    deck = shuffleDeck(buildDeck(config.deck));
+  // Build turn order first (needed for initSharedState)
+  const turnOrder: string[] = [];
+  for (let i = 1; i <= playerCount; i++) {
+    turnOrder.push(`player-${i}`);
   }
+
+  // ============ Mechanic Hooks: Shared state initialization (FIRST) ============
+  // Cards mechanic builds deck, shuffles, deals starting hands, creates discard pile
+  // All card setup moved from game.ts to cards mechanic's initSharedState
+  const shared: Record<string, unknown> = {};
+  const mechanicSharedState = mechanicRegistry.initSharedState(config, [], turnOrder, shared);
+  Object.assign(shared, mechanicSharedState);
 
   // Create player slots
   const players: Record<string, PlayerState> = {};
-  const turnOrder: string[] = [];
   for (let i = 1; i <= playerCount; i++) {
     const playerId = `player-${i}`;
-    turnOrder.push(playerId);
 
     // Assign persona if specified
     // - undefined or "random" = assign random at registration
@@ -643,24 +651,25 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     // ============ Mechanic Hooks: Player initialization ============
     // Get initial player state from all enabled mechanics
     // Pass existing players for cross-player coordination (e.g., unique power assignment)
+    // Pass shared state for cross-mechanic coordination (e.g., cards mechanic pre-dealt hands)
     const playerIndex = i - 1;
-    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players);
+    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players, shared);
 
     // Initialize score from starting_state if configured
     const startingScore = startingState?.score ?? 0;
 
     players[playerId] = {
       state: 'start',
-      hand: [],
       effects: [],
       persona,
       resources,
       score: startingScore
     };
 
-    // Apply all mechanic-provided state (actionPoints, powerId, personalDeck, currentNode, state, etc.)
+    // Apply all mechanic-provided state (hand, actionPoints, powerId, personalDeck, currentNode, state, etc.)
     // Mechanics can override defaults like 'state' (board-state sets config.board.start)
-    const protectedKeys = new Set(['hand', 'effects', 'persona', 'score']);
+    // 'hand' is now set by cards mechanic via initPlayerState - NOT protected
+    const protectedKeys = new Set(['effects', 'persona', 'score']);
     for (const [key, value] of Object.entries(mechanicState)) {
       if (value !== undefined && !protectedKeys.has(key)) {
         (players[playerId] as unknown as Record<string, unknown>)[key] = value;
@@ -668,29 +677,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     }
   }
 
-  // Deal starting cards
-  const startingCards = config.starting_cards ?? 0;
-  // Deal starting cards from main deck (deck-building games handle personal deck draws via onTurnStart)
-  if (startingCards > 0 && deck.length > 0) {
-    for (const playerId of turnOrder) {
-      const drawn = deck.splice(0, startingCards);
-      players[playerId].hand = drawn;
-    }
-  }
-
-  // Initialize discard pile for card games (flip top card from deck)
-  let discardPile: Card[] = [];
-  const shared: Record<string, unknown> = {};
-
-  if (deck.length > 0 && startingCards > 0) {
-    const topCard = deck.shift()!;
-    discardPile = [topCard];
-    shared.topCard = topCard;
-  }
-
-  // Let mechanics initialize their own shared state (currentColor, placedCards, supply, etc.)
-  const mechanicSharedState = mechanicRegistry.initSharedState(config, deck, turnOrder, shared);
-  Object.assign(shared, mechanicSharedState);
+  // Clean up temporary state from cards mechanic
+  delete shared._startingHands;
 
   const logPath = getLogPath(gameName, gameId);
 
@@ -704,8 +692,6 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     turnOrder,
     players,
     shared,
-    deck,
-    discardPile,
     config,
     rulesMarkdown: markdown,
     log: logPath,
@@ -928,7 +914,7 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     .filter(pid => pid !== playerId)
     .map(pid => ({
       playerId: pid,
-      state: state.players[pid].state,
+      state: getBoardState(state, pid),
       handSize: (state.players[pid].hand || []).length,
       effects: state.players[pid].effects
     }));
@@ -939,8 +925,8 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     turnNumber: state.turnNumber,
     currentPlayer: state.currentPlayer!,
     myState: {
-      state: player.state,
-      hand: player.hand,
+      state: getBoardState(state, playerId),
+      hand: player.hand ?? [],
       effects: player.effects
     },
     opponents,
@@ -1264,14 +1250,15 @@ export function checkWinCondition(state: GameState, playerId: string): { won: bo
   const reachMatch = condition.match(/reach\s+(?:the\s+)?(\w+)(?:\s+state)?/i);
   if (reachMatch) {
     const targetState = reachMatch[1];
-    if (player.state.toLowerCase() === targetState.toLowerCase()) {
-      return { won: true, reason: `${playerId} reached ${player.state} state` };
+    const playerBoardState = getBoardState(state, playerId);
+    if (playerBoardState.toLowerCase() === targetState.toLowerCase()) {
+      return { won: true, reason: `${playerId} reached ${playerBoardState} state` };
     }
   }
 
   // Pattern: "empty hand" - card games where emptying hand wins
   if (condition.includes('empty hand') || condition.includes('emptied their hand')) {
-    if (player.hand.length === 0) {
+    if ((player.hand ?? []).length === 0) {
       return { won: true, reason: `${playerId} emptied their hand` };
     }
   }
@@ -1299,7 +1286,7 @@ export function checkWinCondition(state: GameState, playerId: string): { won: bo
     const activePlayers = state.turnOrder.filter(pid => {
       const p = state.players[pid];
       // Consider a player eliminated if they have a "eliminated" effect or are in "eliminated" state
-      return !p.effects.some(e => e.type === 'eliminated') && p.state !== 'eliminated';
+      return !p.effects.some(e => e.type === 'eliminated') && getBoardState(state, pid) !== 'eliminated';
     });
     if (activePlayers.length === 1 && activePlayers[0] === playerId) {
       return { won: true, reason: `${playerId} is the last player standing` };
@@ -1419,9 +1406,9 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const isCurrentPlayer = state.currentPlayer === playerId;
   const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
   const isYourTurn = isCurrentPlayer || canActNow;
-  const hasDeck = state.deck.length > 0 || state.discardPile.length > 0;
-  const hasCards = (state.config.starting_cards ?? 0) > 0 || state.deck.length > 0 || state.discardPile.length > 0;
-  const hand = player.hand || [];
+  const cardsState = getCardsState(state);
+  const hasCards = (state.config.starting_cards ?? 0) > 0 || cardsState.deck.length > 0 || cardsState.discardPile.length > 0;
+  const hand = player.hand ?? [];
   const handCards = hand.map(c => c.name);
   const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
   const filteredPlayable = mechanicRegistry.filterPlayableCards(state, playerId, basePlayable);
@@ -1585,7 +1572,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const result: AvailableActionsResult = {
     playerId,
     isYourTurn,
-    currentState: player.state,
+    currentState: getBoardState(state, playerId),
     hand: handCards,
     actions,
     placedCards,
@@ -1765,16 +1752,17 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   // Note: Draft validation moved to open-drafting mechanic
 
   // Action-specific validation
+  const playerHand = player.hand ?? [];
+  const cardsState = getCardsState(state);
   switch (action.type) {
     case 'play_card': {
       const playAction = action as PlayCardAction;
-      const cardIndex = player.hand.findIndex(c => c.name === playAction.card);
+      const cardIndex = playerHand.findIndex(c => c.name === playAction.card);
       if (cardIndex === -1) {
-        errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${player.hand.map(c => c.name).join(', ')}`);
+        errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${playerHand.map(c => c.name).join(', ')}`);
         break;
       }
 
-      const card = player.hand[cardIndex];
       // Note: Card type playable validation moved to card-type-rules mechanic
       // Note: Color/value matching validation moved to card-matching mechanic (preValidateAction)
       // Note: Wild card declaredColor validation moved to card-matching mechanic (preValidateAction)
@@ -1784,7 +1772,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
     case 'draw': {
       // Basic validation - draws are generally allowed
-      if (state.deck.length === 0 && state.discardPile.length <= 1) {
+      if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
         warnings.push('Draw pile is empty and cannot be reshuffled');
       }
       // Note: Hand limit validation (cannot_draw policy) moved to hand-management mechanic
@@ -1958,7 +1946,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           success: true,
           effect: {
             type: 'draw',
-            details: { drawn: cards.length, handSize: player.hand.length, turnAdvanced }
+            details: { drawn: cards.length, handSize: (player.hand ?? []).length, turnAdvanced }
           }
         };
       }
@@ -1968,11 +1956,12 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
         const passAction = action as GameAction & { declareVictory?: boolean; victoryReason?: string };
         if (passAction.declareVictory) {
           // Create pending victory claim for GM verification
+          const playerBoardState = getBoardState(state, playerId);
           contestState.pendingVictoryClaim = {
             player: playerId,
             reason: passAction.victoryReason || 'Victory declared with pass action',
-            fromState: player?.state || 'unknown',
-            toState: player?.state || 'unknown',
+            fromState: playerBoardState,
+            toState: playerBoardState,
             action: action,
             timestamp: new Date().toISOString()
           };
@@ -2284,8 +2273,7 @@ export function adjudicateVictory(
     });
   } else {
     // Rejected - ROLL BACK the move, then advance turn
-    const player = state.players[claim.player];
-    player.state = claim.fromState; // Roll back to previous state
+    setBoardState(state, claim.player, claim.fromState); // Roll back to previous state
 
     logEvent(state, {
       event: 'victory_rejected',
@@ -2329,22 +2317,25 @@ function reverseAction(state: GameState, lastAction: LastAction): boolean {
 
   if (!player) return false;
 
+  const cardsState = getCardsState(state);
+
   try {
     switch (action.type) {
       case 'play_card': {
         // Move card back from discard to hand
         const playAction = action as PlayCardAction;
-        const discardIndex = state.discardPile.findIndex(c => c.name === playAction.card);
+        const discardIndex = cardsState.discardPile.findIndex((c: Card) => c.name === playAction.card);
         if (discardIndex !== -1) {
-          const [card] = state.discardPile.splice(discardIndex, 1);
+          const [card] = cardsState.discardPile.splice(discardIndex, 1);
+          if (!player.hand) player.hand = [];
           player.hand.push(card);
 
           // Restore previous top card
-          if (state.discardPile.length > 0) {
-            state.shared.topCard = state.discardPile[state.discardPile.length - 1];
+          if (cardsState.discardPile.length > 0) {
+            cardsState.topCard = cardsState.discardPile[cardsState.discardPile.length - 1];
             // Restore currentColor only if a mechanic (card-matching) previously set it
             if (state.shared.currentColor !== undefined) {
-              state.shared.currentColor = (state.shared.topCard as Card).effect?.color ?? null;
+              state.shared.currentColor = (cardsState.topCard as Card).effect?.color ?? null;
             }
           }
         }

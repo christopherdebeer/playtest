@@ -85,7 +85,7 @@ mechanics:
   victory_declaration: true
   hidden_roles: true
   traitor_game: true
-  tile_placement: true
+  place_location: true  # Fixed: was tile_placement (wrong mechanic slug)
   trading: true
   hand_management: true
 
