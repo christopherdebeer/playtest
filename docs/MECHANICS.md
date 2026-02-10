@@ -1174,7 +1174,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
-- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw), `preValidateAction` (cards draw)
+- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw), `preValidateAction` (cards draw), `onCheckWin` (all 16 games with explicit win mechanics)
 - Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
 - All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
@@ -1222,7 +1222,7 @@ These mechanics are engine additions not in the BGG 209:
 
 ### game.ts Agnosticism Progress
 
-**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), and generic reverseAction default all extracted from game.ts.
+**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), generic reverseAction default, and **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks) all extracted from game.ts.
 
 **game.ts executeAction fallback switch now handles only:** `resign` — all other actions delegated to mechanics via `onExecuteAction`.
 
@@ -1236,7 +1236,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 
 | Area | Lines | Description |
 |------|-------|-------------|
-| **Win condition pattern matching** | ~1248-1331 | `checkWinCondition()` hardcodes 5 patterns: "reach \<state\>", "empty hand", "score >= N", "eliminate opponents", "highest_score". Win-condition mechanics exist but aren't wired to this call path. |
+| ~~**Win condition pattern matching**~~ | ~~removed~~ | ~~DONE: `checkWinCondition()` removed. All games now have explicit win condition mechanics in RULES.md. `checkAllWinConditions` delegates to registry's `onCheckWin`.~~ |
 | **Hand references throughout** | ~916, 927, 1259, 1399-1401, 1450, 1550, 1789-1792, 2235 | Engine directly accesses `player.hand` for views, filtering, validation, and reversal. Hand is a card-game concept. |
 | **Card type/effect filtering** | ~1401, 1450-1451, 1466 | Hardcoded checks for `placeable`, `location`, `interference`, `block_turn`, `wild` card types. Game-specific enum values in engine. |
 
@@ -1260,7 +1260,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | **Resources init** | ~637-647 | Legacy resource initialization fallback paths. |
 | **starting_cards config** | ~1398 | `config.starting_cards` check to determine if game has cards. |
 | **placedCards access** | ~1404, 1552 | `state.shared.placedCards` read for player view. |
-| **Elimination effect** | ~1286-1287 | Hardcoded `'eliminated'` effect type check in win condition. |
+| ~~**Elimination effect**~~ | ~~removed~~ | ~~DONE: Win condition check moved to elimination mechanic.~~ |
 | **currentColor restore** | ~2242-2243 | In reverseAction: restores `currentColor`. Card-matching mechanic state. |
 | **Blocking check passthrough** | ~1407, 1432, 1527 | Engine calls `isPlayerBlocked()` and injects into action reasons. Delegated but engine still references. |
 
@@ -1271,7 +1271,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | **Resign action** | ~1503-1510, 1915-1940 | Engine owns resign (game lifecycle). Appropriate. |
 | **Pass action scaffold** | ~1486-1498 | Base pass entry in getAvailableActions. Serves as dedup anchor. |
 | **Turn/round limits** | ~994-1008, 966 | max_turns/max_rounds enforcement. Engine lifecycle. |
-| **Win condition config** | ~1244, 1311 | Reads `config.win_condition`. Appropriate until onCheckWin wired. |
+| ~~**Win condition config**~~ | ~~removed~~ | ~~DONE: `config.win_condition` now purely informational. Win logic via mechanics.~~ |
 
 ### Completed Engine Work
 
@@ -1284,6 +1284,19 @@ Cards mechanic fully owns `draw`: schema (`getActionSchema`), discovery (`getAva
 #### Pass Action Extraction
 Pass mechanic owns execution via `onExecuteAction`. game.ts fallback switch only has `resign`.
 
+#### Win Condition Consolidation (Full)
+`checkWinCondition()` (5 hardcoded patterns, ~85 lines) removed from game.ts. `checkAllWinConditions` now delegates to registry's `onCheckWin` hooks with `'action'` trigger. All 16 games updated with explicit win condition mechanics in RULES.md:
+- **5 games**: `win_score_threshold` (alliance, battle-forge, dice-dynasties, fortune-seekers, treasure-hunters)
+- **6 games**: `win_highest_lowest_scoring` (arcane-assembly, draft-duel, grand-bazaar, rondel-express, spellbook-showdown, council-of-whispers)
+- **1 game**: `win_reach_state` (markovs-chains)
+- **2 games**: `win_race` (parallel-race, road-rally — already had it)
+- **1 game**: `win_elimination` + `win_highest_lowest_scoring` (shadow-operations)
+- **1 game**: `win_empty_hand` (uno — already had it)
+- **1 game**: `win_score_threshold` (engine-masters — already had it)
+- **1 game**: `win_timeout` (aaote — already had it; objective_completed is GM-declared)
+
+Root YAML `win_condition` field is now purely informational (not mechanic config).
+
 #### Dependency Resolution
 Infrastructure mechanics auto-enable via transitive dependency resolution. No `alwaysEnabled`.
 
@@ -1292,13 +1305,10 @@ Infrastructure mechanics auto-enable via transitive dependency resolution. No `a
 
 ### Outstanding Engine Work
 
-#### 1. Win Condition Consolidation (CRITICAL)
-`checkWinCondition()` in game.ts hardcodes 5 win patterns (reach state, empty hand, score threshold, eliminate, highest_score). These should be handled by existing win-condition mechanics via `onCheckWin` hooks.
+#### ~~1. Win Condition Consolidation~~ ✅ DONE
+See "Completed Engine Work" above.
 
-**Impact**: ~85 lines removable from game.ts (lines ~1248-1331)
-**Mechanics**: reach-state, empty-hand, score-threshold, elimination, highest-lowest-scoring already registered but not wired to the legacy call path.
-
-#### 2. Cards Mechanic Owns play_card Discovery + Validation (HIGH)
+#### 2. Cards Mechanic Owns play_card Discovery + Validation (HIGH → now #1)
 The play_card action scaffold in `getAvailableActions` (~35 lines) and play_card validation in `validateAction` (~6 lines) are hardcoded in game.ts. Cards mechanic already owns execution but not discovery or validation.
 
 **Impact**: ~40 lines removable. Eliminates hardcoded card type checks (placeable, location, interference, wild).

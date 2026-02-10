@@ -50,6 +50,8 @@ mechanics:
       - { name: "Master Smith", count: 2, type: "worker", effect: { type: "score", value: 5 } }
 
   hand_management: true
+
+  win_score_threshold: { threshold: 30 }
 ---
 
 # Battle Forge

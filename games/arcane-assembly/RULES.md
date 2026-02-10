@@ -105,6 +105,8 @@ mechanics:
       execute_program: 1
       pass: 0
     rollover: false
+
+  win_highest_lowest_scoring: { mode: "highest" }
 ---
 
 # Arcane Assembly

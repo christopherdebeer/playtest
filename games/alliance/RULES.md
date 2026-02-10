@@ -35,6 +35,8 @@ mechanics:
       - { name: "Trader", count: 3, type: "unit", effect: { type: "resource", resource: "gold", value: 2 } }
 
   hand_management: true
+
+  win_score_threshold: { threshold: 25 }
 ---
 
 # Alliance

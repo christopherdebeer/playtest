@@ -48,6 +48,8 @@ mechanics:
       - { name: "Redirect", count: 2, type: "utility", effect: { type: "force_retarget" } }
       - { name: "State Swap", count: 2, type: "utility", effect: { type: "swap_positions" } }
       - { name: "Reroll", count: 2, type: "utility", effect: { type: "reroll_failed" } }
+
+  win_reach_state: { target_state: "Victory" }
 ---
 
 # Markov's Chains - Game Rules

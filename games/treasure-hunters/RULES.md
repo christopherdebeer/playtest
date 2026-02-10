@@ -64,6 +64,8 @@ mechanics:
       - { name: "Merchant", count: 2, type: "action", effect: { type: "gold_gain", value: 3 } }
       - { name: "Gem Finder", count: 2, type: "action", effect: { type: "gem_gain", value: 2 } }
       - { name: "Thief", count: 2, type: "interference", effect: { type: "force_discard", value: 1, duration: 1 } }
+
+  win_score_threshold: { threshold: 50 }
 ---
 
 # Treasure Hunters

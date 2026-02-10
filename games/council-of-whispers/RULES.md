@@ -141,6 +141,8 @@ mechanics:
       signal: 0
       pass: 0
     rollover: false
+
+  win_highest_lowest_scoring: { mode: "highest" }
 ---
 
 # Council of Whispers

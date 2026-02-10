@@ -59,8 +59,8 @@ export const highestLowestScoringMechanic: MechanicHooks = {
     // Only handle if this mechanic is configured
     if (!isHighestLowestScoringConfig(config)) return null;
 
-    // Only apply on game end triggers
-    if (ctx.trigger !== 'timeout' && ctx.trigger !== 'game_end') return null;
+    // Apply on game end triggers and explicit win checks from mechanics
+    if (ctx.trigger !== 'timeout' && ctx.trigger !== 'game_end' && ctx.trigger !== 'action') return null;
 
     const myScore = ctx.player.score ?? 0;
     let isWinner = true;

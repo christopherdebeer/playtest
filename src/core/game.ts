@@ -1227,109 +1227,18 @@ export function roll(probability: number): { roll: number; success: boolean } {
   };
 }
 
-// ============ Win Condition Detection (Game-Agnostic) ============
+// ============ Win Condition Detection ============
 
 /**
- * Check if a player has met the win condition defined in config.
- * Supports various game-agnostic patterns:
- * - "reach <state>" / "First player to reach the <state> state" - board games
- * - "empty hand" - card games
- * - "score >= <n>" / "score > <n>" - point-based games
- * - "eliminate opponents" - last player standing
- */
-export function checkWinCondition(state: GameState, playerId: string): { won: boolean; reason?: string } {
-  const player = state.players[playerId];
-  if (!player) return { won: false };
-
-  const condition = state.config.win_condition?.toLowerCase() || '';
-
-  // Pattern: "reach <state>" or "First player to reach the <state> state"
-  // Match patterns like "reach Victory", "First player to reach the Victory state"
-  const reachMatch = condition.match(/reach\s+(?:the\s+)?(\w+)(?:\s+state)?/i);
-  if (reachMatch) {
-    const targetState = reachMatch[1];
-    const playerBoardState = getBoardState(state, playerId);
-    if (playerBoardState.toLowerCase() === targetState.toLowerCase()) {
-      return { won: true, reason: `${playerId} reached ${playerBoardState} state` };
-    }
-  }
-
-  // Pattern: "empty hand" - card games where emptying hand wins
-  if (condition.includes('empty hand') || condition.includes('emptied their hand')) {
-    if ((player.hand ?? []).length === 0) {
-      return { won: true, reason: `${playerId} emptied their hand` };
-    }
-  }
-
-  // Pattern: "score >= N" or "score > N"
-  const scoreMatch = condition.match(/score\s*(>=|>|==|=)\s*(\d+)/);
-  if (scoreMatch && player.score !== undefined) {
-    const operator = scoreMatch[1];
-    const threshold = parseInt(scoreMatch[2], 10);
-    let met = false;
-
-    switch (operator) {
-      case '>=': met = player.score >= threshold; break;
-      case '>': met = player.score > threshold; break;
-      case '==': case '=': met = player.score === threshold; break;
-    }
-
-    if (met) {
-      return { won: true, reason: `${playerId} reached score ${player.score}` };
-    }
-  }
-
-  // Pattern: "eliminate opponents" / "last player standing"
-  if (condition.includes('eliminate') || condition.includes('last player')) {
-    const activePlayers = state.turnOrder.filter(pid => {
-      const p = state.players[pid];
-      // Consider a player eliminated if they have a "eliminated" effect or are in "eliminated" state
-      return !p.effects.some(e => e.type === 'eliminated') && getBoardState(state, pid) !== 'eliminated';
-    });
-    if (activePlayers.length === 1 && activePlayers[0] === playerId) {
-      return { won: true, reason: `${playerId} is the last player standing` };
-    }
-  }
-
-  return { won: false };
-}
-
-/**
- * Check all players for win condition after an action.
- * Returns winner info if someone won, null otherwise.
+ * Check all players for win conditions after an action.
+ * Delegates to mechanic registry's onCheckWin hooks (win condition mechanics
+ * are auto-derived from win_condition string during config normalization).
  */
 export function checkAllWinConditions(state: GameState): { winner: string; reason: string } | null {
-  // Per-player win conditions (reach state, empty hand, score threshold, last standing)
-  for (const playerId of state.turnOrder) {
-    const result = checkWinCondition(state, playerId);
-    if (result.won) {
-      return { winner: playerId, reason: result.reason! };
-    }
+  const result = mechanicRegistry.checkAllWinConditions(state, 'action');
+  if (result) {
+    return { winner: result.playerId, reason: result.reason };
   }
-
-  // Aggregate win conditions (require comparing all players)
-  const condition = state.config.win_condition?.toLowerCase() || '';
-
-  // Pattern: "highest_score" / "highest score" - winner is player with highest score
-  // Only evaluate when game has reached its configured round/turn limit.
-  // Without a limit, this is handled by endGameOnTimeout fallback.
-  if (condition.includes('highest_score') || condition.includes('highest score')) {
-    // Evaluate whenever checkWin triggers it (e.g., PD game-over, mechanic request).
-    // Round/turn limits are just one trigger — mechanics can also signal game end.
-    let highestScore = -Infinity;
-    let winner = 'none';
-    for (const [pid, player] of Object.entries(state.players)) {
-      const score = player.score ?? 0;
-      if (score > highestScore) {
-        highestScore = score;
-        winner = pid;
-      }
-    }
-    if (winner !== 'none' && highestScore > 0) {
-      return { winner, reason: `${winner} wins with highest score (${highestScore})` };
-    }
-  }
-
   return null;
 }
 

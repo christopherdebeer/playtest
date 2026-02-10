@@ -57,6 +57,8 @@ mechanics:
 
       # Risk cards
       - { name: "Gambler's Ruin", count: 2, type: "risk", effect: { type: "penalty", value: -15 } }
+
+  win_score_threshold: { threshold: 100 }
 ---
 
 # Fortune Seekers

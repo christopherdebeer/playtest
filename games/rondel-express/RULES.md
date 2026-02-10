@@ -112,6 +112,8 @@ mechanics:
       - { name: "Warehouse Pass", count: 3, type: "event", effect: { type: "extra_cargo", value: 1 } }
       - { name: "Speed Boost", count: 2, type: "event", effect: { type: "free_rondel_steps", value: 2 } }
       - { name: "Insurance", count: 2, type: "event", effect: { type: "protect_cargo" } }
+
+  win_highest_lowest_scoring: { mode: "highest" }
 ---
 
 # Rondel Express
