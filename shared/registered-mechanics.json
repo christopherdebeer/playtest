@@ -485,6 +485,7 @@
         "onExecuteAction",
         "getAvailableActions",
         "initSharedState",
+        "getPlayerView",
         "getActionSchema",
         "reverseAction"
       ]
@@ -799,7 +800,9 @@
     "effects": {
       "config_key": "effects",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [
+        "onTurnEnd"
+      ]
     },
     "elapsed-real-time-ending": {
       "config_key": "elapsed_real_time_ending",

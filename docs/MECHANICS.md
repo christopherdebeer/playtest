@@ -1224,7 +1224,7 @@ These mechanics are engine additions not in the BGG 209:
 
 ### game.ts Agnosticism Progress
 
-**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, play_card, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), play_card full extraction (schema + discovery + validation + execution + reversal), `reverseAction` hook for mechanic-owned undo, **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks), and **board state extraction** (move scaffold → mechanic-provided rich actions, `getBoardState` → direct `player.state`) all extracted from game.ts.
+**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, play_card, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction, play_card full extraction, `reverseAction` hook, **win condition consolidation**, **board state extraction** (move scaffold → rich actions), **hand references extraction** (cards provides hand via `getPlayerView`), and **effect duration extraction** (`onTurnEnd` → effects mechanic) all extracted from game.ts.
 
 **game.ts executeAction fallback switch now handles only:** `resign` — all other actions delegated to mechanics via `onExecuteAction`.
 
@@ -1249,7 +1249,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | ~~**play_card in getAvailableActions**~~ | ~~removed~~ | ~~DONE: play_card scaffold moved to cards mechanic `getAvailableActions` with rich metadata (description, required, optional, examples, cards).~~ |
 | ~~**play_card reversal**~~ | ~~removed~~ | ~~DONE: Cards mechanic implements `reverseAction` hook. Engine delegates to mechanics then calls `reverseTurn`/`saveState` generically.~~ |
 | **Board state references** | ~2043 | ~~Most removed~~. Only `setBoardState()` in victory rejection rollback remains (legitimate board API use). `getBoardState()` replaced with direct `player.state` access. Move scaffold removed — board-state/grid-movement mechanics provide rich move actions. |
-| **Effect duration management** | ~1019-1027 | Engine decrements effect durations at turn end. Should be effects mechanic `onTurnEnd`. |
+| ~~**Effect duration management**~~ | ~~removed~~ | ~~DONE: Effects mechanic implements `onTurnEnd` calling `decrementEffectDurations` API. Engine calls `mechanicRegistry.onTurnEnd()` — no hardcoded duration logic.~~ |
 | ~~**play_card validation**~~ | ~~removed~~ | ~~DONE: Cards mechanic `preValidateAction` handles card-in-hand check for play_card (and empty-deck check for draw).~~ |
 
 #### MEDIUM — Should fix when refactoring nearby code
@@ -1307,6 +1307,9 @@ Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement me
 
 #### Hand References Extraction (Partial)
 Cards mechanic now contributes `hand: cardNames[]` via `getPlayerView` hook, which gets merged into `getAvailableActions` result. Engine no longer computes hand card names. Two structural references remain in `getPlayerView` function: `myState.hand: Card[]` and `opponent.handSize` (nested object structure can't be contributed via flat mechanic hook).
+
+#### Effect Duration Extraction
+Effects mechanic implements `onTurnEnd` calling `decrementEffectDurations` API (which properly fires `onEffectRemoved` hooks). Engine now calls `mechanicRegistry.onTurnEnd()` in `advanceTurn` — hardcoded duration decrement removed (~8 lines). This also fixes a latent bug where the hardcoded version didn't fire `onEffectRemoved` hooks for expired effects.
 
 #### Dependency Resolution
 Infrastructure mechanics auto-enable via transitive dependency resolution. No `alwaysEnabled`.
@@ -1445,9 +1448,9 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 | ~~**3**~~ | ~~`reverseAction` mechanic hook — cards owns play_card reversal~~ | ~~✅ DONE~~ | |
 | ~~**4**~~ | ~~Board state extraction — move scaffold, getBoardState~~ | ~~✅ MOSTLY DONE~~ | |
 | ~~**5**~~ | ~~Hand references extraction — cards contributes hand to player view~~ | ~~✅ MOSTLY DONE~~ | |
-| **6→1** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
-| **7→2** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
-| **8→3** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**6**~~ | ~~Effect duration to effects mechanic `onTurnEnd`~~ | ~~✅ DONE~~ | |
+| **7→1** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
+| **8→2** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
 
 ### Next Steps: New Mechanics (Priority Order)
 
