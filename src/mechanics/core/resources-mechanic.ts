@@ -24,7 +24,9 @@ import {
   ActionExecutionResult,
   AvailableAction,
   ActionDescription,
-  ActionSchema
+  ActionSchema,
+  PlayerInitContext,
+  PlayerInitResult
 } from '../types.js';
 import { SpendAction, GameAction } from '../../types/game.js';
 import { spendResource } from './resources.js';
@@ -112,6 +114,30 @@ export const resourcesMechanic: MechanicHooks = {
       description: 'After resources are spent.',
       resolution: 'merge',
     },
+  },
+
+  /**
+   * Initialize player resources from config.
+   * Supports both starting_state.resources (frontmatter) and engine_mechanics.resources (array).
+   */
+  initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
+    // Check starting_state.resources first (from RULES frontmatter)
+    const startingState = (ctx.config as { starting_state?: { resources?: Record<string, number> } }).starting_state;
+    if (startingState?.resources) {
+      return { resources: { ...startingState.resources } };
+    }
+
+    // Fall back to engine_mechanics.resources config (array format)
+    const resourcesConfig = ctx.config.engine_mechanics?.resources;
+    if (resourcesConfig && Array.isArray(resourcesConfig)) {
+      const resources: Record<string, number> = {};
+      for (const res of resourcesConfig) {
+        resources[res.name] = res.starting_amount ?? 0;
+      }
+      return { resources };
+    }
+
+    return null;
   },
 
   getActionSchema(action: GameAction): ActionSchema | null {
