@@ -70,7 +70,7 @@ mechanics:
 
   # Semi-cooperative: shared treasury must be maintained
   semi_cooperative_game:
-    collective_goal: "treasury"
+    collective_goal: 20
     failure_threshold: 0
     contribution_cost: 1
 

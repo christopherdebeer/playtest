@@ -70,7 +70,7 @@ mechanics:
     interest_rate: 0.5
     resource: "gold"
     repayment_deadline: 4
-    penalty: { type: "score", amount: -5 }
+    penalty: 5
 
   # Commodity speculation with fluctuating prices
   commodity_speculation:

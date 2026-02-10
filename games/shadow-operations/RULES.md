@@ -79,7 +79,7 @@ mechanics:
   # Deduction to uncover enemy plans
   deduction:
     hidden_info_types: ["agent_location", "mission_target", "force_strength"]
-    clue_action_cost: 1
+    clue_action_cost: { action_points: 1 }
     max_guesses: 3
 
   # Team-based play
@@ -92,7 +92,7 @@ mechanics:
 
   # Events that change the situation
   events:
-    deck:
+    events:
       - { id: "intel_leak", name: "Intel Leak", effect: { type: "reveal_all_positions" }, frequency: 2 }
       - { id: "reinforcements", name: "Reinforcements", effect: { type: "gain_resource", resource: "agents", amount: 2 }, frequency: 3 }
       - { id: "blackout", name: "Blackout", effect: { type: "hide_all_positions" }, frequency: 2 }

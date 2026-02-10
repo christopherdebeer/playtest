@@ -61,7 +61,7 @@ mechanics:
   turn_order_auction:
     currency: "gold"
     when: "round_start"
-    tie_breaker: "clockwise"
+    tie_breaker: "current_order"
 
   # Resources
   resources:

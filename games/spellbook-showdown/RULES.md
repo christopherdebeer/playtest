@@ -36,7 +36,8 @@ mechanics:
 
   # Multi-use cards: each card has multiple modes
   multi_use_cards:
-    modes:
+    cards: []
+    default_uses:
       - { id: "attack", name: "Attack Mode", description: "Use card for its combat effect" }
       - { id: "resource", name: "Resource Mode", description: "Discard for 2 mana" }
       - { id: "enchant", name: "Enchant Mode", description: "Place as ongoing effect" }
