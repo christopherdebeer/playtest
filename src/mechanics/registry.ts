@@ -226,7 +226,7 @@ class MechanicRegistry {
         'onDetermineTurnOrder', 'onPassPriority',
         // Agnosticism hooks
         'initSharedState', 'getPlayerView', 'applyEffect',
-        'isPlayerBlocked', 'canPlayerActNow', 'getActionSchema'
+        'isPlayerBlocked', 'canPlayerActNow', 'getActionSchema', 'reverseAction'
       ];
 
       for (const hookName of hookNames) {
@@ -597,6 +597,17 @@ class MechanicRegistry {
       }
     }
 
+    // Post-process: apply filterPlayableCards to play_card actions
+    for (const action of actions) {
+      if (action.action.type === 'play_card' && action.cards && action.cards.length > 0) {
+        const player = state.players[playerId];
+        const hand = (player?.hand ?? []) as Card[];
+        const cardObjects = hand.filter((c: Card) => action.cards!.includes(c.name));
+        const filtered = this.filterPlayableCards(state, playerId, cardObjects);
+        action.cards = filtered.map((c: Card) => c.name);
+      }
+    }
+
     // Sort by priority (higher first), then by type
     return actions.sort((a, b) => {
       const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
@@ -930,6 +941,28 @@ class MechanicRegistry {
     for (const mechanic of enabledMechanics) {
       if (mechanic.canPlayerActNow) {
         const result = mechanic.canPlayerActNow(ctx);
+        if (result === true) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Reverse a previously executed action through mechanics.
+   * First mechanic to return true wins (handled).
+   * Returns true if a mechanic handled the reversal, false otherwise.
+   * Note: The engine handles reverseTurn/saveState — mechanics only undo state changes.
+   */
+  reverseAction(state: GameState, playerId: string, action: GameAction): boolean {
+    const ctx = this.createContext(state, playerId);
+    const enabledMechanics = this.getEnabledMechanics(state.config);
+
+    for (const mechanic of enabledMechanics) {
+      if (mechanic.reverseAction) {
+        const result = mechanic.reverseAction(ctx, action);
         if (result === true) {
           return true;
         }

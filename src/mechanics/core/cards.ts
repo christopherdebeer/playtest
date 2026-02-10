@@ -285,24 +285,119 @@ export const cardsMechanic: MechanicHooks = {
   },
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
-    const { state } = ctx;
+    const { state, playerId } = ctx;
     const cardsState = getCardsState(state);
-    // Only provide draw if game has a deck
-    if (!cardsState.deck && !cardsState.discardPile) return [];
-    return [{
-      action: { type: 'draw' } as GameAction,
-      priority: 50,
-      category: 'cards',
-    }];
+    const actions: AvailableAction[] = [];
+
+    // === DRAW action (if game has a deck) ===
+    if (cardsState.deck || cardsState.discardPile) {
+      actions.push({
+        action: { type: 'draw' } as GameAction,
+        priority: 50,
+        category: 'cards',
+      });
+    }
+
+    // === PLAY_CARD action (for regular cards in hand) ===
+    const hand = getPlayerHand(state, playerId);
+    // Filter out placeable/location cards (handled by place-card mechanic)
+    const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
+    if (basePlayable.length > 0) {
+      const playableNames = basePlayable.map(c => c.name);
+      const opponents = state.turnOrder.filter(pid => pid !== playerId);
+
+      // Identify cards that need a target (interference/take-that cards)
+      const targetingCards = basePlayable.filter(c =>
+        c.type === 'interference' || c.effect?.type === 'block_turn' || c.effect?.type === 'skip'
+      ).map(c => c.name);
+
+      // Build optional fields
+      const optional: Record<string, string> = { reasoning: 'Explanation of your play' };
+      if (targetingCards.length > 0 && opponents.length > 1) {
+        optional.target = `Target player for attack cards (${targetingCards.join(', ')}). Options: ${opponents.join(', ')}`;
+      }
+      if (hand.some(c => c.effect?.type === 'wild' || c.type === 'wild')) {
+        optional.declaredColor = 'For wild cards: Red, Blue, Green, or Yellow';
+      }
+
+      // Build examples
+      const examples = playableNames.slice(0, 2).map(card => {
+        const isTargeting = targetingCards.includes(card);
+        const example: Record<string, unknown> = { type: 'play_card', card };
+        if (isTargeting && opponents.length > 0) {
+          example.target = opponents[0];
+        }
+        return example as unknown as GameAction;
+      });
+
+      actions.push({
+        action: { type: 'play_card', card: playableNames[0] } as unknown as GameAction,
+        priority: 60,
+        category: 'cards',
+        description: 'Play a card from your hand to apply its effect',
+        required: { card: 'The exact name of the card to play' },
+        optional,
+        examples,
+        cards: playableNames,
+      });
+    }
+
+    return actions;
   },
 
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
-    if (action.type !== 'draw') return null;
-    const cardsState = getCardsState(ctx.state);
-    if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
-      return { valid: false, error: 'Draw pile is empty and cannot be reshuffled' };
+    if (action.type === 'draw') {
+      const cardsState = getCardsState(ctx.state);
+      if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
+        return { valid: false, error: 'Draw pile is empty and cannot be reshuffled' };
+      }
+      return { valid: true };
     }
-    return { valid: true };
+
+    if (action.type === 'play_card') {
+      const playAction = action as PlayCardAction;
+      const hand = getPlayerHand(ctx.state, ctx.playerId);
+      const cardIndex = hand.findIndex(c => c.name === playAction.card);
+      if (cardIndex === -1) {
+        return { valid: false, error: `Card "${playAction.card}" not in your hand. Your cards: ${hand.map(c => c.name).join(', ')}` };
+      }
+      return { valid: true };
+    }
+
+    return null;
+  },
+
+  /**
+   * Reverse play_card: move card from discard back to hand, restore topCard/currentColor.
+   * Engine handles reverseTurn/saveState.
+   */
+  reverseAction(ctx: HookContext, action: GameAction): boolean | null {
+    if (action.type !== 'play_card') return null;
+
+    const { state, playerId } = ctx;
+    const player = state.players[playerId];
+    if (!player) return null;
+
+    const playAction = action as PlayCardAction;
+    const cardsState = getCardsState(state);
+
+    const discardIndex = cardsState.discardPile.findIndex((c: Card) => c.name === playAction.card);
+    if (discardIndex !== -1) {
+      const [card] = cardsState.discardPile.splice(discardIndex, 1);
+      if (!player.hand) player.hand = [];
+      player.hand.push(card);
+
+      // Restore previous top card
+      if (cardsState.discardPile.length > 0) {
+        cardsState.topCard = cardsState.discardPile[cardsState.discardPile.length - 1];
+        // Restore currentColor only if card-matching previously set it
+        if (state.shared.currentColor !== undefined) {
+          state.shared.currentColor = (cardsState.topCard as Card).effect?.color ?? null;
+        }
+      }
+    }
+
+    return true;
   },
 
   /**
