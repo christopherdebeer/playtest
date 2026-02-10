@@ -39,7 +39,6 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
   slug: 'effect-dispatcher',
   name: 'Effect Dispatcher',
   requires: ['cards'],
-  alwaysEnabled: true,
 
   /**
    * When a card is played, check if it has an effect and dispatch it.

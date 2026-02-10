@@ -1107,9 +1107,9 @@ export function maybeAdvanceTurn(state: GameState, playerId: string, action: Gam
     return true;
   }
 
-  // Auto-advance if single-action-per-round and player already acted
-  const player = state.players[playerId];
-  if (!isMultiActionAllowed(state) && player && player.lastActionRound === state.round) {
+  // Auto-advance for single-action-per-round games (no action points).
+  // This function is only called after an action is executed, so always advance.
+  if (!isMultiActionAllowed(state)) {
     advanceTurn(state);
     return true;
   }
@@ -1317,23 +1317,19 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
   // Only evaluate when game has reached its configured round/turn limit.
   // Without a limit, this is handled by endGameOnTimeout fallback.
   if (condition.includes('highest_score') || condition.includes('highest score')) {
-    const maxRounds = state.config.max_rounds;
-    const maxTurns = state.config.max_turns as number | undefined;
-    const reachedRoundLimit = maxRounds && state.round >= maxRounds;
-    const reachedTurnLimit = maxTurns && state.turnNumber >= maxTurns;
-    if (reachedRoundLimit || reachedTurnLimit) {
-      let highestScore = -Infinity;
-      let winner = 'none';
-      for (const [pid, player] of Object.entries(state.players)) {
-        const score = player.score ?? 0;
-        if (score > highestScore) {
-          highestScore = score;
-          winner = pid;
-        }
+    // Evaluate whenever checkWin triggers it (e.g., PD game-over, mechanic request).
+    // Round/turn limits are just one trigger — mechanics can also signal game end.
+    let highestScore = -Infinity;
+    let winner = 'none';
+    for (const [pid, player] of Object.entries(state.players)) {
+      const score = player.score ?? 0;
+      if (score > highestScore) {
+        highestScore = score;
+        winner = pid;
       }
-      if (winner !== 'none') {
-        return { winner, reason: `${winner} wins with highest score (${highestScore})` };
-      }
+    }
+    if (winner !== 'none' && highestScore > 0) {
+      return { winner, reason: `${winner} wins with highest score (${highestScore})` };
     }
   }
 
@@ -1701,12 +1697,7 @@ function validateAgainstSchema(action: Record<string, unknown>, schema: ActionSc
 
 // Built-in schemas for engine-owned actions (not owned by any mechanic)
 const BUILTIN_SCHEMAS: Record<string, ActionSchema> = {
-  draw: {
-    optional: ['count'],
-    fields: {
-      count: { type: 'number', minimum: 1 },
-    },
-  },
+  // draw is now owned by cards core mechanic (getActionSchema)
   resign: {
     required: ['reason'],
     fields: {
@@ -1922,24 +1913,24 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       player.lastActionRound = state.round;
     }
 
-    // Handle turn advancement
-    // When action_points is enabled, AP depletion controls turn advancement,
-    // not the mechanic's advanceTurn flag. This allows multi-action turns.
+    // Handle turn advancement — three-value semantics:
+    //   advanceTurn: true  → always advance (pass, bank, bust)
+    //   advanceTurn: false → never advance (play_card, roll — await pass or AP depletion)
+    //   advanceTurn: undefined → auto-detect (non-AP: advance; AP: let AP handle it)
     const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
     if (shouldEnd) {
       advanceTurn(state);
     } else if (mechanicResult.advanceTurn === false) {
-      // Mechanic explicitly says don't advance - respect it even without AP
-      // This allows mechanics like push-your-luck to work without action_points
       saveState(state);
-    } else if (mechanicResult.advanceTurn && !isMultiActionAllowed(state)) {
-      // Only respect advanceTurn when action points are NOT enabled
-      advanceTurn(state);
-    } else if (!isMultiActionAllowed(state) && player.lastActionRound === state.round) {
-      // Auto-advance if single-action-per-round and player already acted
+    } else if (mechanicResult.advanceTurn === true) {
       advanceTurn(state);
     } else {
-      saveState(state);
+      // advanceTurn unset: auto-detect based on game type
+      if (!isMultiActionAllowed(state)) {
+        advanceTurn(state);
+      } else {
+        saveState(state);
+      }
     }
 
     return {
@@ -1955,102 +1946,9 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
   try {
     switch (action.type) {
-      // play_card is handled by the cards core mechanic via onExecuteAction
-
-      case 'draw': {
-        const drawAction = action as DrawAction;
-        const count = drawAction.count || 1;
-        const cards = drawCards(state, playerId, count);
-        // Hand limit enforcement (discard_oldest/discard_choice) handled by hand-management postExecuteAction
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-        turnNumber: state.turnNumber,
-          result: {
-            success: true,
-            details: { drawnCount: cards.length }
-          }
-        });
-
-        // Log event BEFORE advancing turn (to capture correct turnNumber)
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: { type: 'draw', count: cards.length }
-        });
-
-        // Conditionally advance turn (respects action points)
-        const turnAdvanced = maybeAdvanceTurn(state, playerId, action);
-
-        return {
-          success: true,
-          effect: {
-            type: 'draw',
-            details: { drawn: cards.length, handSize: (player.hand ?? []).length, turnAdvanced }
-          }
-        };
-      }
-
-      case 'pass': {
-        // Check for victory declaration (Proposal 012: Victory in direct execution)
-        const passAction = action as GameAction & { declareVictory?: boolean; victoryReason?: string };
-        if (passAction.declareVictory) {
-          // Create pending victory claim for GM verification
-          const playerBoardState = getBoardState(state, playerId);
-          contestState.pendingVictoryClaim = {
-            player: playerId,
-            reason: passAction.victoryReason || 'Victory declared with pass action',
-            fromState: playerBoardState,
-            toState: playerBoardState,
-            action: action,
-            timestamp: new Date().toISOString()
-          };
-
-          logEvent(state, {
-            event: 'victory_claim_pending',
-            round: state.round,
-            turnNumber: state.turnNumber,
-            player: playerId,
-            data: {
-              reason: passAction.victoryReason || 'Victory declared with pass action',
-              note: 'Victory claim requires GM verification via gm:pending'
-            }
-          });
-
-          debug(`[VICTORY CLAIM] Created pending victory claim for ${playerId} via pass action`);
-        }
-
-        recordAction(contestState, {
-          player: playerId,
-          action,
-          timestamp: new Date().toISOString(),
-          round: state.round,
-          turnNumber: state.turnNumber,
-          result: { success: true }
-        });
-
-        // Log event BEFORE advancing turn (to capture correct turnNumber)
-        logEvent(state, {
-          event: 'action_executed',
-          round: state.round,
-          turnNumber: state.turnNumber,
-          player: playerId,
-          data: { type: 'pass', declareVictory: passAction.declareVictory, victoryReason: passAction.victoryReason }
-        });
-
-        // Pass always advances turn (bypass AP check)
-        advanceTurn(state);
-
-        return {
-          success: true,
-          effect: { type: 'pass', details: { victoryClaimPending: passAction.declareVictory } }
-        };
-      }
+      // play_card handled by cards core mechanic (onExecuteAction)
+      // draw handled by cards core mechanic (onExecuteAction)
+      // pass handled by pass core mechanic (onExecuteAction)
 
       case 'resign': {
         const resignAction = action as ResignAction;

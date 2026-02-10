@@ -157,7 +157,7 @@ export const prisonersDilemmaMechanic: MechanicHooks = {
             prisonersDilemma: { ...dState, choices: updatedChoices }
           }
         },
-        advanceTurn: isCurrentPlayer,
+        advanceTurn: true,
         checkWin: false,
         logMessage: `${ctx.playerId} has made their choice.`,
         logData: { player: ctx.playerId, waiting: allPlayers.filter(p => !updatedChoices[p]).length }

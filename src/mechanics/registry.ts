@@ -116,11 +116,38 @@ class MechanicRegistry {
   }
 
   /**
-   * Get mechanics enabled for a game config
+   * Get mechanics enabled for a game config.
+   * Resolves dependencies transitively: infrastructure mechanics (no configSchema)
+   * are auto-enabled when all their requires are satisfied.
    */
   getEnabledMechanics(config: GameConfig): MechanicHooks[] {
-    return Array.from(this.mechanics.values())
-      .filter(m => m.alwaysEnabled || isMechanicEnabled(config, m.slug));
+    const all = Array.from(this.mechanics.values());
+    const enabledSlugs = new Set<string>();
+
+    // Phase 1: explicitly configured + alwaysEnabled
+    for (const m of all) {
+      if (m.alwaysEnabled || isMechanicEnabled(config, m.slug)) {
+        enabledSlugs.add(m.slug);
+      }
+    }
+
+    // Phase 2: auto-enable infrastructure mechanics (no configSchema) whose
+    // requires are all satisfied. Iterate until no new mechanics are added.
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const m of all) {
+        if (enabledSlugs.has(m.slug)) continue;
+        if (m.configSchema) continue; // leaf mechanics need explicit config
+        const requires = getMechanicRequires(m);
+        if (requires.length > 0 && requires.every(dep => enabledSlugs.has(dep))) {
+          enabledSlugs.add(m.slug);
+          changed = true;
+        }
+      }
+    }
+
+    return all.filter(m => enabledSlugs.has(m.slug));
   }
 
   /**
