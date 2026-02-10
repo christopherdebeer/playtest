@@ -28,8 +28,9 @@ import {
   PlayerInitResult,
   ActionSchema
 } from '../types.js';
-import { Card, PlayCardAction, GameState, DeckConfig, GameAction } from '../../types/game.js';
-import { playCard } from './card-piles.js';
+import { Card, PlayCardAction, DrawAction, GameState, DeckConfig, GameAction } from '../../types/game.js';
+import { playCard, drawFromDeck } from './card-piles.js';
+import { addToHand } from './hand.js';
 import { buildDeck, shuffleDeck } from '../../core/rules.js';
 
 // ============ Cards Shared State (mechanic-owned) ============
@@ -259,25 +260,37 @@ export const cardsMechanic: MechanicHooks = {
   },
 
   getActionSchema(action: GameAction): ActionSchema | null {
-    if (action.type !== 'play_card') return null;
-    return {
-      required: ['card'],
-      optional: ['declaredColor', 'target'],
-      fields: {
-        card: { type: 'string' },
-        declaredColor: { type: 'string' },
-        target: { type: 'string' },
-      },
-    };
+    if (action.type === 'play_card') {
+      return {
+        required: ['card'],
+        optional: ['declaredColor', 'target'],
+        fields: {
+          card: { type: 'string' },
+          declaredColor: { type: 'string' },
+          target: { type: 'string' },
+        },
+      };
+    }
+    if (action.type === 'draw') {
+      return {
+        optional: ['count'],
+        fields: {
+          count: { type: 'number', minimum: 1 },
+        },
+      };
+    }
+    return null;
   },
 
   /**
-   * Handle play_card action.
-   * Core operation: remove from hand, discard, fire onCardPlayed.
-   * Also applies card effects directly (to be extracted to proper
-   * mechanics responding to onCardPlayed).
+   * Handle play_card and draw actions.
+   * - play_card: remove from hand, discard, fire onCardPlayed
+   * - draw: draw from deck, add to hand
    */
   onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
+    if (ctx.action.type === 'draw') {
+      return executeDrawAction(ctx);
+    }
     if (ctx.action.type !== 'play_card') return null;
 
     const { state, playerId } = ctx;
@@ -326,3 +339,27 @@ export const cardsMechanic: MechanicHooks = {
     };
   },
 };
+
+/**
+ * Execute draw action: draw cards from deck into hand.
+ * advanceTurn is left undefined (auto-detect): advances in non-AP, saves in AP.
+ */
+function executeDrawAction(ctx: ActionExecutionContext): ActionExecutionResult {
+  const { state, playerId } = ctx;
+  const drawAction = ctx.action as DrawAction;
+  const count = drawAction.count || 1;
+
+  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
+  if (!blocked && drawn.length > 0) {
+    addToHand(state, playerId, drawn);
+  }
+
+  return {
+    handled: true,
+    // advanceTurn intentionally omitted (undefined):
+    // Non-AP games auto-advance; AP games let shouldAutoEndTurn handle it
+    checkWin: false,
+    logMessage: 'draw',
+    logData: { count: drawn.length, handSize: getPlayerHand(state, playerId).length }
+  };
+}

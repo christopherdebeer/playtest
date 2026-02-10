@@ -585,7 +585,7 @@ core/
 
 ### Cards (`cards.ts` + `card-piles.ts` + `hand.ts`)
 
-**Mechanic** (`cards.ts`): Defines 8 hooks, handles `play_card` action via `onExecuteAction`
+**Mechanic** (`cards.ts`): Defines 8 hooks, handles `play_card` and `draw` actions via `onExecuteAction`
 
 **API** (`card-piles.ts`):
 - `drawFromDeck(state, count, playerId?)` — Fires `onBeforeCardDraw`/`onCardDrawn`
@@ -897,9 +897,11 @@ if (schema) errors.push(...validateAgainstSchema(action, schema));
 
 ### Migration Status
 
-Completed: pass extraction, effect type handling, player view building, shared state initialization, card type handling, block check, action schema validation (~360 lines removed from game.ts).
+Completed: pass extraction, draw extraction, effect type handling, player view building, shared state initialization, card type handling, block check, action schema validation (~400 lines removed from game.ts).
 
-Action schema validation fully delegated to mechanics via `getActionSchema` hook. 11 mechanics implement it: cards (`play_card`), pass (`pass`), place-card (`place_card`, `place_location`), trading (`trade_offer`, `trade_respond`), auction-english (`bid`, `auction_pass`), set-collection (`collect_set`), push-your-luck (`roll`, `bank`), open-drafting (`draft`), board-state (`move`), grid-movement (`move`), resources (`spend`). Engine-owned actions (`draw`, `resign`) use built-in schemas in game.ts. The hardcoded `validateActionSchema` switch was replaced with a generic `validateAgainstSchema` helper that validates against mechanic-provided `ActionSchema` objects.
+Action schema validation fully delegated to mechanics via `getActionSchema` hook. 11 mechanics implement it: cards (`play_card`, `draw`), pass (`pass`), place-card (`place_card`, `place_location`), trading (`trade_offer`, `trade_respond`), auction-english (`bid`, `auction_pass`), set-collection (`collect_set`), push-your-luck (`roll`, `bank`), open-drafting (`draft`), board-state (`move`), grid-movement (`move`), resources (`spend`). The only engine-owned action is `resign` (uses built-in schema in game.ts). The hardcoded `validateActionSchema` switch was replaced with a generic `validateAgainstSchema` helper that validates against mechanic-provided `ActionSchema` objects.
+
+Turn advancement uses three-value semantics: `advanceTurn: true` always advances (pass, bank, bust), `advanceTurn: false` never advances (play_card, roll), and `advanceTurn: undefined` auto-detects (non-AP games advance, AP games let `shouldAutoEndTurn` handle it).
 
 ### Target: game.ts Responsibilities
 
@@ -1166,9 +1168,10 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **150 of 202** plannable reference mechanics have implementations (**74%**)
 - **12** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **18 games**, all using unified config format
-- **198 tests** passing, build clean
-- **game.ts: 2287 lines** (down from ~3600+), ~1300+ lines removed across phases 10-13
+- **228 tests** passing, build clean
+- **game.ts: ~2200 lines** (down from ~3600+), ~1400+ lines removed across phases 10-13+
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics)
+- Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
 - All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
 ### Coverage by Category
@@ -1217,7 +1220,7 @@ These mechanics are engine additions not in the BGG 209:
 
 **Completed migrations (Phases 10-13):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, and AP consolidation all extracted from game.ts.
 
-**game.ts executeAction fallback switch now handles only:** `draw`, `pass`, `resign` — all other actions delegated to mechanics via `onExecuteAction`.
+**game.ts executeAction fallback switch now handles only:** `resign` — all other actions (including `draw` and `pass`) delegated to mechanics via `onExecuteAction`.
 
 ### Remaining game.ts Leaks
 
@@ -1234,7 +1237,13 @@ These mechanics are engine additions not in the BGG 209:
 ### Outstanding Engine Work
 
 #### `getActionSchema` Hook (Complete)
-All 11 action-owning mechanics now implement `getActionSchema`, returning `ActionSchema` objects that declare required/optional fields with type constraints. The `validateActionSchema` function in game.ts was stripped of hardcoded action-type checks and replaced with a generic `validateAgainstSchema` helper. Mechanic schemas are validated in `validateAction` via `validateMechanicSchema()`. Engine-owned actions (`draw`, `resign`) use `BUILTIN_SCHEMAS`.
+All 11 action-owning mechanics now implement `getActionSchema`, returning `ActionSchema` objects that declare required/optional fields with type constraints. The `validateActionSchema` function in game.ts was stripped of hardcoded action-type checks and replaced with a generic `validateAgainstSchema` helper. Mechanic schemas are validated in `validateAction` via `validateMechanicSchema()`. The only engine-owned action schema is `resign`; `draw` is now owned by the cards mechanic.
+
+#### Draw Action Extraction (Complete)
+The `draw` action was extracted from game.ts's fallback switch into the cards core mechanic (`onExecuteAction`). The cards mechanic now owns both `play_card` and `draw`. Draw uses `advanceTurn: undefined` (auto-detect), which auto-advances in non-AP games and defers to `shouldAutoEndTurn` in AP games. The `pass` fallback was also removed (handled by pass mechanic since Phase 10).
+
+#### Dependency Resolution (Complete)
+Infrastructure mechanics (those without `configSchema`, like `effect-dispatcher`, `dice-mechanic`) no longer use `alwaysEnabled`. Instead, `getEnabledMechanics` in the registry resolves dependencies transitively: infrastructure mechanics auto-enable when all their `requires` are met by explicitly configured or already-enabled mechanics. This keeps dependency relationships explicit.
 
 #### Win Condition Consolidation (Planned)
 `checkWinCondition()` in game.ts hardcodes 4 win conditions (reach state, empty hand, score threshold, elimination). These should be handled by the existing win-condition mechanics via `onCheckWin` hooks, with game.ts delegating entirely to `mechanicRegistry.checkAllWinConditions()`.

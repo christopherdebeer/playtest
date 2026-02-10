@@ -252,6 +252,8 @@ export class GameTestHarness {
     }
 
     const result = executeAction(this.state, player, action);
+    // Reload state after executeAction (it saves to disk internally)
+    this.state = loadState(this.instanceId);
 
     this.history.push({
       step: { player, action },
