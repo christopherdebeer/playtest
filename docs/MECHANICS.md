@@ -174,7 +174,7 @@ The system provides hooks across two tiers:
 | `onDetermineTurnOrder` | `(ctx) → TurnOrderResult \| null` | Provide custom turn order |
 | `onPassPriority` | `(ctx) → PassPriorityResult \| null` | Handle pass/claim priority |
 
-##### Agnosticism (6 hooks)
+##### Agnosticism (7 hooks)
 | Hook | Signature | Purpose |
 |------|-----------|---------|
 | `initSharedState` | `(ctx) → SharedStateChanges \| null` | Initialize shared state |
@@ -183,6 +183,7 @@ The system provides hooks across two tiers:
 | `isPlayerBlocked` | `(ctx) → boolean \| null` | Determine if player is blocked |
 | `canPlayerActNow` | `(ctx) → boolean \| null` | Allow out-of-turn actions (freeplay) |
 | `getActionSchema` | `(action) → ActionSchema \| null` | Define action validation schema |
+| `reverseAction` | `(ctx, action) → boolean \| null` | Reverse a previously executed action (contest rollback) |
 
 #### Mechanic-Defined Hooks (fired by core services, only dependents receive)
 
@@ -506,7 +507,7 @@ interface MechanicHooks {
   requires?: string[];
   defines?: Record<string, HookDefinition>;
 
-  // ~20 global hooks (engine-fired, all enabled mechanics)
+  // ~21 global hooks (engine-fired, all enabled mechanics)
   preValidateAction?(...): ValidationResult | null;
   onExecuteAction?(...): ActionExecutionResult | null;
   postExecuteAction?(...): StateChanges | null;
@@ -523,6 +524,7 @@ interface MechanicHooks {
   canPlayerActNow?(...): boolean | null;
   applyEffect?(...): EffectResult | null;
   getActionSchema?(...): ActionSchema | null;
+  reverseAction?(...): boolean | null;
   getVisibleState?(...): VisibleState | null;
   canSeeInfo?(...): boolean | undefined;
   onDetermineTurnOrder?(...): TurnOrderResult | null;
@@ -585,7 +587,7 @@ core/
 
 ### Cards (`cards.ts` + `card-piles.ts` + `hand.ts`)
 
-**Mechanic** (`cards.ts`): Defines 8 hooks, fully owns `draw` action (schema, discovery, validation, execution), handles `play_card` execution via `onExecuteAction`. Exports `drawCards()` utility for CLI.
+**Mechanic** (`cards.ts`): Defines 8 hooks, fully owns `draw` action (schema, discovery, validation, execution) and `play_card` action (schema, discovery, validation, execution, reversal). Exports `drawCards()` utility for CLI.
 
 **API** (`card-piles.ts`):
 - `drawFromDeck(state, count, playerId?)` — Fires `onBeforeCardDraw`/`onCardDrawn`
@@ -688,7 +690,7 @@ Core services already participate as registered mechanics in most respects:
 | Registered with slugs | **Done** | `cards`, `resources`, `board`, `dice`, `effects`, `visibility`, `social`, etc. |
 | Define hooks via `defines` | **Done** | All 7 domains fire mechanic-defined hooks |
 | Leaf mechanics depend via `requires` | **Done** | e.g. `deck-building` requires `cards` |
-| Own their actions via `onExecuteAction` | **Partial** | Cards fully owns `draw` (schema+discovery+validation+execution). Cards owns `play_card` execution but not discovery/validation. Resources owns `spend`. Deck init, board init still in game.ts |
+| Own their actions via `onExecuteAction` | **Partial** | Cards fully owns `draw` and `play_card` (schema+discovery+validation+execution+reversal). Resources owns `spend`. Deck init, board init still in game.ts |
 | Own their config namespace | **Partial** | Config stored in `engine_mechanics` AND decomposed to top-level for runtime backwards compat |
 | Participate in `getHighlight` | **Done** | Cards/board flow through the registry like any other mechanic |
 
@@ -897,7 +899,7 @@ if (schema) errors.push(...validateAgainstSchema(action, schema));
 
 ### Migration Status
 
-Completed: pass extraction, draw extraction (full), effect type handling, player view building, shared state initialization, card type handling, block check, action schema validation (~400 lines removed from game.ts).
+Completed: pass extraction, draw extraction (full), play_card extraction (full: discovery+validation+reversal), effect type handling, player view building, shared state initialization, card type handling, block check, action schema validation (~400 lines removed from game.ts).
 
 **Action schema validation** fully delegated to mechanics via `getActionSchema` hook. 11 mechanics implement it: cards (`play_card`, `draw`), pass (`pass`), place-card (`place_card`, `place_location`), trading (`trade_offer`, `trade_respond`), auction-english (`bid`, `auction_pass`), set-collection (`collect_set`), push-your-luck (`roll`, `bank`), open-drafting (`draft`), board-state (`move`), grid-movement (`move`), resources (`spend`). The only engine-owned action is `resign` (uses built-in schema in game.ts). The hardcoded `validateActionSchema` switch was replaced with a generic `validateAgainstSchema` helper that validates against mechanic-provided `ActionSchema` objects.
 
@@ -905,7 +907,7 @@ Completed: pass extraction, draw extraction (full), effect type handling, player
 
 **Draw action** fully owned by cards mechanic: `getActionSchema` (schema), `getAvailableActions` (discovery), `preValidateAction` (empty deck check), `onExecuteAction` (execution). The `drawCards` helper, hardcoded draw entry in `getAvailableActions`, draw validation, and draw reverseAction case were all removed from game.ts. CLI imports `drawCards` from `src/mechanics/core/cards.ts`.
 
-**Reverse action** default case now handles all mechanic-owned actions generically (calls `reverseTurn`). Only `play_card` has mechanic-specific reversal logic still in game.ts (pending `reverseAction` hook).
+**Reverse action** delegates to mechanics via `reverseAction` hook for action-specific undo (e.g., cards reverses play_card: moves card from discard back to hand, restores topCard/currentColor). Engine handles `reverseTurn`/`saveState` generically for all actions.
 
 ### Target: game.ts Responsibilities
 
@@ -1174,7 +1176,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
-- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw), `preValidateAction` (cards draw), `onCheckWin` (all 16 games with explicit win mechanics)
+- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw+play_card), `preValidateAction` (cards draw+play_card), `reverseAction` (cards play_card), `onCheckWin` (all 16 games with explicit win mechanics)
 - Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
 - All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
@@ -1222,11 +1224,11 @@ These mechanics are engine additions not in the BGG 209:
 
 ### game.ts Agnosticism Progress
 
-**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), generic reverseAction default, and **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks) all extracted from game.ts.
+**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, play_card, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), play_card full extraction (schema + discovery + validation + execution + reversal), `reverseAction` hook for mechanic-owned undo, and **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks) all extracted from game.ts.
 
 **game.ts executeAction fallback switch now handles only:** `resign` — all other actions delegated to mechanics via `onExecuteAction`.
 
-**game.ts reverseAction:** Only `play_card` has mechanic-specific logic. Default case generically calls `reverseTurn()` for all other actions.
+**game.ts reverseAction:** Fully delegated — calls `mechanicRegistry.reverseAction()` for mechanic-specific undo (cards handles play_card), then `reverseTurn()`/`saveState()` generically. No action-specific switch cases remain.
 
 ### Remaining game.ts Leaks (Comprehensive Audit)
 
@@ -1237,18 +1239,18 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | Area | Lines | Description |
 |------|-------|-------------|
 | ~~**Win condition pattern matching**~~ | ~~removed~~ | ~~DONE: `checkWinCondition()` removed. All games now have explicit win condition mechanics in RULES.md. `checkAllWinConditions` delegates to registry's `onCheckWin`.~~ |
-| **Hand references throughout** | ~916, 927, 1259, 1399-1401, 1450, 1550, 1789-1792, 2235 | Engine directly accesses `player.hand` for views, filtering, validation, and reversal. Hand is a card-game concept. |
-| **Card type/effect filtering** | ~1401, 1450-1451, 1466 | Hardcoded checks for `placeable`, `location`, `interference`, `block_turn`, `wild` card types. Game-specific enum values in engine. |
+| **Hand references throughout** | ~916, 927, 1259, 1450, 1550 | Engine directly accesses `player.hand` for views and filtering. Hand is a card-game concept. (Reduced: play_card validation/reversal now in cards mechanic.) |
+| ~~**Card type/effect filtering**~~ | ~~removed~~ | ~~DONE: Card type checks (`placeable`, `location`, `interference`, `block_turn`, `wild`) moved to cards mechanic `getAvailableActions`.~~ |
 
 #### HIGH — Moderate coupling
 
 | Area | Lines | Description |
 |------|-------|-------------|
-| **play_card in getAvailableActions** | ~1445-1480 | Full play_card action scaffold hardcoded (card filtering, targeting logic, wild card color prompt). Should be cards mechanic `getAvailableActions`. |
-| **play_card reversal** | ~2228-2252 | Engine has card-specific undo: moves card from discard to hand, restores `topCard`, restores `currentColor`. Needs `reverseAction` hook. |
+| ~~**play_card in getAvailableActions**~~ | ~~removed~~ | ~~DONE: play_card scaffold moved to cards mechanic `getAvailableActions` with rich metadata (description, required, optional, examples, cards).~~ |
+| ~~**play_card reversal**~~ | ~~removed~~ | ~~DONE: Cards mechanic implements `reverseAction` hook. Engine delegates to mechanics then calls `reverseTurn`/`saveState` generically.~~ |
 | **Board state references** | ~915, 926, 1251, 1287, 1421, 1549, 2181 | Engine calls `getBoardState()`/`setBoardState()` for views, win checks, move scaffolding. Board is board-game-specific. |
 | **Effect duration management** | ~1019-1027 | Engine decrements effect durations at turn end. Should be effects mechanic `onTurnEnd`. |
-| **play_card validation** | ~1789-1794 | Engine validates card in hand for play_card. Should be cards mechanic `preValidateAction`. |
+| ~~**play_card validation**~~ | ~~removed~~ | ~~DONE: Cards mechanic `preValidateAction` handles card-in-hand check for play_card (and empty-deck check for draw).~~ |
 
 #### MEDIUM — Should fix when refactoring nearby code
 
@@ -1261,7 +1263,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | **starting_cards config** | ~1398 | `config.starting_cards` check to determine if game has cards. |
 | **placedCards access** | ~1404, 1552 | `state.shared.placedCards` read for player view. |
 | ~~**Elimination effect**~~ | ~~removed~~ | ~~DONE: Win condition check moved to elimination mechanic.~~ |
-| **currentColor restore** | ~2242-2243 | In reverseAction: restores `currentColor`. Card-matching mechanic state. |
+| ~~**currentColor restore**~~ | ~~removed~~ | ~~DONE: Cards mechanic `reverseAction` restores `currentColor` from topCard.~~ |
 | **Blocking check passthrough** | ~1407, 1432, 1527 | Engine calls `isPlayerBlocked()` and injects into action reasons. Delegated but engine still references. |
 
 #### LOW — Appropriately engine-owned or acceptable
@@ -1280,6 +1282,9 @@ All 11 action-owning mechanics implement `getActionSchema`. Hardcoded `validateA
 
 #### Draw Action Extraction (Full)
 Cards mechanic fully owns `draw`: schema (`getActionSchema`), discovery (`getAvailableActions`), validation (`preValidateAction`), execution (`onExecuteAction`). Helper, hardcoded entries, validation, and reverseAction case all removed from game.ts. CLI imports `drawCards` from cards mechanic.
+
+#### Play Card Action Extraction (Full)
+Cards mechanic fully owns `play_card`: schema (`getActionSchema`), discovery (`getAvailableActions` with rich metadata — description, required, optional, examples, cards), validation (`preValidateAction` card-in-hand check), execution (`onExecuteAction`), reversal (`reverseAction` — moves card from discard back to hand, restores topCard/currentColor). ~60 lines removed from game.ts. `filterPlayableCards` post-processing in registry's `getAvailableActions` avoids circular dependency between cards.ts and registry.ts.
 
 #### Pass Action Extraction
 Pass mechanic owns execution via `onExecuteAction`. game.ts fallback switch only has `resign`.
@@ -1308,19 +1313,13 @@ Infrastructure mechanics auto-enable via transitive dependency resolution. No `a
 #### ~~1. Win Condition Consolidation~~ ✅ DONE
 See "Completed Engine Work" above.
 
-#### 2. Cards Mechanic Owns play_card Discovery + Validation (HIGH → now #1)
-The play_card action scaffold in `getAvailableActions` (~35 lines) and play_card validation in `validateAction` (~6 lines) are hardcoded in game.ts. Cards mechanic already owns execution but not discovery or validation.
+#### ~~2. Cards Mechanic Owns play_card Discovery + Validation~~ ✅ DONE
+See "Completed Engine Work" → "Play Card Action Extraction (Full)".
 
-**Impact**: ~40 lines removable. Eliminates hardcoded card type checks (placeable, location, interference, wild).
-**Approach**: Cards mechanic implements `getAvailableActions` for play_card (already does for draw). Add `preValidateAction` for card-in-hand check.
+#### ~~3. Cards Mechanic Owns play_card Reversal~~ ✅ DONE
+See "Completed Engine Work" → "Play Card Action Extraction (Full)".
 
-#### 3. Cards Mechanic Owns play_card Reversal (HIGH)
-`reverseAction` has a hardcoded play_card case that manipulates discard pile, hand, topCard, and currentColor. Needs `reverseAction` mechanic hook.
-
-**Impact**: ~25 lines removable. Eliminates last direct card state manipulation in engine.
-**Prerequisite**: Define `reverseAction` hook in MechanicHooks interface.
-
-#### 4. Board State References Extraction (HIGH)
+#### 4. Board State References Extraction (HIGH → now #1)
 Engine calls `getBoardState()`/`setBoardState()` in views, win checks, move scaffolding, and victory rejection. Board-state mechanic should own these via `getPlayerView`, `getAvailableActions`, and `onCheckWin`.
 
 **Impact**: ~8 call sites. Eliminates engine knowledge of board concepts.
@@ -1441,14 +1440,14 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 
 | Priority | Task | Impact | Complexity |
 |----------|------|--------|------------|
-| **1** | Win condition consolidation — wire `onCheckWin` to `checkWinCondition()` call path | ~85 lines, eliminates pattern matching | Medium |
-| **2** | Cards mechanic owns play_card discovery + validation (getAvailableActions, preValidateAction) | ~40 lines, eliminates card type checks | Medium |
-| **3** | `reverseAction` mechanic hook — cards owns play_card reversal | ~25 lines, eliminates last card state manipulation | Medium |
-| **4** | Board state extraction — board-state owns views, move scaffold, win checks | ~8 call sites | Medium |
-| **5** | Hand references extraction — cards contributes hand to player view | ~10 locations | Medium |
-| **6** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
-| **7** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
-| **8** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**1**~~ | ~~Win condition consolidation~~ | ~~✅ DONE~~ | |
+| ~~**2**~~ | ~~Cards mechanic owns play_card discovery + validation~~ | ~~✅ DONE~~ | |
+| ~~**3**~~ | ~~`reverseAction` mechanic hook — cards owns play_card reversal~~ | ~~✅ DONE~~ | |
+| **4→1** | Board state extraction — board-state owns views, move scaffold, win checks | ~8 call sites | Medium |
+| **5→2** | Hand references extraction — cards contributes hand to player view | ~10 locations | Medium |
+| **6→3** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
+| **7→4** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
+| **8→5** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
 
 ### Next Steps: New Mechanics (Priority Order)
 

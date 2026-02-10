@@ -25,7 +25,6 @@ import type {
   Card,
   LogEvent,
   GameAction,
-  PlayCardAction,
   ResignAction,
   PlacedCard,
   ActionValidationResult,
@@ -53,7 +52,6 @@ import {
   playCard,
   removeFromHandByIndex,
   applyDynamicTurnOrder,
-  getCardsState,
   getBoardState,
   setBoardState
 } from '../mechanics/core/index.js';
@@ -1303,13 +1301,8 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const isCurrentPlayer = state.currentPlayer === playerId;
   const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
   const isYourTurn = isCurrentPlayer || canActNow;
-  const cardsState = getCardsState(state);
-  const hasCards = (state.config.starting_cards ?? 0) > 0 || cardsState.deck.length > 0 || cardsState.discardPile.length > 0;
   const hand = player.hand ?? [];
   const handCards = hand.map(c => c.name);
-  const basePlayable = hand.filter(c => !c.placeable && c.type !== 'location');
-  const filteredPlayable = mechanicRegistry.filterPlayableCards(state, playerId, basePlayable);
-  const playableCards = filteredPlayable.map(c => c.name);
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
 
   // Check for blocking effects using mechanic registry
@@ -1351,46 +1344,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     });
   }
 
-  // === PLAY_CARD action (for regular cards) ===
-  if (playableCards.length > 0) {
-    const playEnabled = isYourTurn && !isBlocked;
-    // Identify cards that need a target (interference/take-that cards)
-    const targetingCards = hand.filter(c =>
-      c.type === 'interference' || c.effect?.type === 'block_turn' || c.effect?.type === 'skip'
-    ).map(c => c.name);
-
-    actions.push({
-      type: 'play_card',
-      description: 'Play a card from your hand to apply its effect',
-      enabled: playEnabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
-      required: { card: 'The exact name of the card to play' },
-      optional: Object.fromEntries(
-        Object.entries({
-          target: targetingCards.length > 0 && opponents.length > 1 ?
-                  `Target player for attack cards (${targetingCards.join(', ')}). Options: ${opponents.join(', ')}` :
-                  undefined,
-          declaredColor: 'For wild cards: Red, Blue, Green, or Yellow',
-          reasoning: 'Explanation of your play'
-        }).filter(([_, v]) => v !== undefined)
-      ) as Record<string, string>,
-      examples: playableCards.slice(0, 2).map(card => {
-        const isTargeting = targetingCards.includes(card);
-        const example: PlayCardAction = { type: 'play_card', card };
-        if (isTargeting && opponents.length > 0) {
-          example.target = opponents[0];
-        }
-        return example;
-      }),
-      cards: playableCards
-    });
-  }
-
-  // place_card and place_location actions are now provided by the place-card mechanic
-
-  // draw action is now provided by cards core mechanic (getAvailableActions)
+  // play_card, draw, place_card, place_location actions are provided by their mechanics (getAvailableActions)
 
   // === PASS action (only for currentPlayer) ===
   // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
@@ -1419,7 +1373,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   });
 
   // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (move, play_card, pass, resign)
+  // Skip mechanic actions that duplicate base actions (move, pass, resign)
   // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
   const baseActionTypes = new Set(actions.map(a => a.type));
   for (const mechanicAction of mechanicActions) {
@@ -1435,20 +1389,30 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
                    (!isYourTurn ? 'Not your turn' :
                     isBlocked ? 'You are blocked this turn' :
                     undefined);
-    // Extract required fields from action (everything except 'type')
-    const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
-    const required: Record<string, string> = {};
-    for (const [key, val] of Object.entries(actionParams)) {
-      required[key] = String(val);
+
+    // Use rich metadata from mechanic when available, fall back to extracted params
+    let required = mechanicAction.required;
+    if (!required) {
+      const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
+      required = {};
+      for (const [key, val] of Object.entries(actionParams)) {
+        required[key] = String(val);
+      }
     }
-    actions.push({
+
+    const actionEntry: AvailableAction = {
       type: mechanicAction.action.type,
-      description: `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
+      description: mechanicAction.description || `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
       enabled,
       reason: !enabled ? reason : undefined,
       required,
-      examples: [mechanicAction.action]
-    });
+      optional: mechanicAction.optional,
+      examples: mechanicAction.examples || [mechanicAction.action],
+      cards: mechanicAction.cards,
+      targets: mechanicAction.targets,
+    };
+
+    actions.push(actionEntry);
   }
 
   // Add resource and action point info to result
@@ -1691,18 +1655,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   const schemaErrors = validateMechanicSchema(state, action);
   errors.push(...schemaErrors);
 
-  // ============ Engine-Level Action Checks ============
-  // Checks that require game state but don't belong in mechanic preValidateAction
-  if (action.type === 'play_card') {
-    const playAction = action as PlayCardAction;
-    const playerHand = player.hand ?? [];
-    const cardIndex = playerHand.findIndex(c => c.name === playAction.card);
-    if (cardIndex === -1) {
-      errors.push(`Card "${playAction.card}" not in your hand. Your cards: ${playerHand.map(c => c.name).join(', ')}`);
-    }
-  }
-
-  // draw validation moved to cards core mechanic (preValidateAction)
+  // play_card and draw validation moved to cards core mechanic (preValidateAction)
 
   if (action.type === 'pass') {
     warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
@@ -2131,43 +2084,14 @@ function reverseAction(state: GameState, lastAction: LastAction): boolean {
 
   if (!player) return false;
 
-  const cardsState = getCardsState(state);
-
   try {
-    switch (action.type) {
-      case 'play_card': {
-        // Move card back from discard to hand
-        const playAction = action as PlayCardAction;
-        const discardIndex = cardsState.discardPile.findIndex((c: Card) => c.name === playAction.card);
-        if (discardIndex !== -1) {
-          const [card] = cardsState.discardPile.splice(discardIndex, 1);
-          if (!player.hand) player.hand = [];
-          player.hand.push(card);
+    // Delegate to mechanics for action-specific undo (e.g., cards reverses play_card)
+    mechanicRegistry.reverseAction(state, playerId, action);
 
-          // Restore previous top card
-          if (cardsState.discardPile.length > 0) {
-            cardsState.topCard = cardsState.discardPile[cardsState.discardPile.length - 1];
-            // Restore currentColor only if a mechanic (card-matching) previously set it
-            if (state.shared.currentColor !== undefined) {
-              state.shared.currentColor = (cardsState.topCard as Card).effect?.color ?? null;
-            }
-          }
-        }
-
-        // Reverse turn advancement
-        reverseTurn(state);
-        saveState(state);
-        return true;
-      }
-
-      default: {
-        // Generic reversal for mechanic-owned actions (draw, pass, move, etc.)
-        // Just reverse the turn — mechanic-specific undo requires reverseAction hooks
-        reverseTurn(state);
-        saveState(state);
-        return true;
-      }
-    }
+    // Always reverse turn and save (mechanics only undo state changes)
+    reverseTurn(state);
+    saveState(state);
+    return true;
   } catch {
     return false;
   }

@@ -98,6 +98,18 @@ export interface AvailableAction {
   enabled?: boolean;
   /** Reason the action is disabled (shown to player when enabled is false) */
   reason?: string;
+  /** Rich description for player-facing display */
+  description?: string;
+  /** Required field descriptions */
+  required?: Record<string, string>;
+  /** Optional field descriptions */
+  optional?: Record<string, string>;
+  /** Example actions */
+  examples?: GameAction[];
+  /** Valid card names (for card-based actions) */
+  cards?: string[];
+  /** Valid target names (for targeted actions) */
+  targets?: string[];
 }
 
 /**
@@ -769,6 +781,13 @@ export interface MechanicHooks {
    * Return null if action is not owned by this mechanic.
    */
   getActionSchema?(action: GameAction): ActionSchema | null;
+
+  /**
+   * Reverse a previously executed action (for contest rollback).
+   * Return true if reversal was handled, null to defer to other mechanics.
+   * The engine handles reverseTurn/saveState — mechanics only undo state changes.
+   */
+  reverseAction?(ctx: HookContext, action: GameAction): boolean | null;
 
   // ============ Combat System Hooks (Phase 6) ============
 
