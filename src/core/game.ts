@@ -1300,8 +1300,6 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const isCurrentPlayer = state.currentPlayer === playerId;
   const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
   const isYourTurn = isCurrentPlayer || canActNow;
-  const hand = player.hand ?? [];
-  const handCards = hand.map(c => c.name);
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
 
   // Check for blocking effects using mechanic registry
@@ -1386,7 +1384,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     playerId,
     isYourTurn,
     currentState: player.state,
-    hand: handCards,
+    hand: [],  // Cards mechanic contributes hand via getPlayerView
     actions,
     placedCards,
     activeEffects: player.effects

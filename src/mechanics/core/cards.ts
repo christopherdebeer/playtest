@@ -401,6 +401,18 @@ export const cardsMechanic: MechanicHooks = {
   },
 
   /**
+   * Contribute hand card names to the player view.
+   * Engine merges this via Object.assign into the AvailableActionsResult.
+   */
+  getPlayerView(ctx: HookContext): Record<string, unknown> | null {
+    const hand = getPlayerHand(ctx.state, ctx.playerId);
+    if (hand.length === 0 && !ctx.state.shared.deck) return null;
+    return {
+      hand: hand.map(c => c.name),
+    };
+  },
+
+  /**
    * Handle play_card and draw actions.
    * - play_card: remove from hand, discard, fire onCardPlayed
    * - draw: draw from deck, add to hand

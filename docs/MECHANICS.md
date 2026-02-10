@@ -1176,7 +1176,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
-- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (13), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw+play_card), `preValidateAction` (cards draw+play_card), `reverseAction` (cards play_card), `onCheckWin` (all 16 games with explicit win mechanics)
+- All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (14, incl. cards hand), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw+play_card, board-state move, grid-movement move), `preValidateAction` (cards draw+play_card), `reverseAction` (cards play_card), `onCheckWin` (all 16 games with explicit win mechanics)
 - Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
 - All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
 
@@ -1239,7 +1239,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | Area | Lines | Description |
 |------|-------|-------------|
 | ~~**Win condition pattern matching**~~ | ~~removed~~ | ~~DONE: `checkWinCondition()` removed. All games now have explicit win condition mechanics in RULES.md. `checkAllWinConditions` delegates to registry's `onCheckWin`.~~ |
-| **Hand references throughout** | ~916, 927, 1259, 1450, 1550 | Engine directly accesses `player.hand` for views and filtering. Hand is a card-game concept. (Reduced: play_card validation/reversal now in cards mechanic.) |
+| **Hand references throughout** | ~913, 924 | ~~Partially extracted~~. Cards mechanic contributes `hand: cardNames[]` via `getPlayerView` for `getAvailableActions` result. Only `getPlayerView` function's nested `myState.hand: Card[]` and `opponent.handSize` remain (structural — can't be contributed via flat mechanic hook). |
 | ~~**Card type/effect filtering**~~ | ~~removed~~ | ~~DONE: Card type checks (`placeable`, `location`, `interference`, `block_turn`, `wild`) moved to cards mechanic `getAvailableActions`.~~ |
 
 #### HIGH — Moderate coupling
@@ -1305,6 +1305,9 @@ Root YAML `win_condition` field is now purely informational (not mechanic config
 #### Board State Extraction
 Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement mechanics now return single rich move actions with description, required, optional, examples, and targets. `getBoardState()` calls replaced with direct `player.state` access (4 call sites). Board/grid config detection removed — engine no longer checks `state.config.board || state.config.engine_mechanics?.grid`. Only `setBoardState()` remains for victory rejection rollback (legitimate use of board API).
 
+#### Hand References Extraction (Partial)
+Cards mechanic now contributes `hand: cardNames[]` via `getPlayerView` hook, which gets merged into `getAvailableActions` result. Engine no longer computes hand card names. Two structural references remain in `getPlayerView` function: `myState.hand: Card[]` and `opponent.handSize` (nested object structure can't be contributed via flat mechanic hook).
+
 #### Dependency Resolution
 Infrastructure mechanics auto-enable via transitive dependency resolution. No `alwaysEnabled`.
 
@@ -1325,11 +1328,8 @@ See "Completed Engine Work" → "Play Card Action Extraction (Full)".
 #### ~~4. Board State References Extraction~~ ✅ MOSTLY DONE
 Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement mechanics now return single rich move actions with all metadata. `getBoardState()` calls replaced with direct `player.state` access. Only `setBoardState()` in victory rejection rollback remains (legitimate board API use).
 
-#### 5. Hand References Extraction (HIGH)
-Engine directly accesses `player.hand` in ~10 locations: views, filtering, validation, reversal. Hand is a card-game concept that should be invisible to the engine.
-
-**Impact**: Eliminates `hand` from engine vocabulary entirely.
-**Approach**: Cards mechanic contributes hand to player view via `getPlayerView`. Engine treats player state as opaque.
+#### ~~5. Hand References Extraction~~ ✅ MOSTLY DONE
+Cards mechanic now contributes `hand: cardNames[]` via `getPlayerView` for `getAvailableActions` result. Engine no longer computes hand card names — cards mechanic provides them. Only 2 references remain in `getPlayerView` function for nested `myState.hand: Card[]` and `opponent.handSize` (structural concern — can't be contributed via flat mechanic hook).
 
 #### 6. Effect Duration to Effects Mechanic (MEDIUM)
 Engine decrements effect durations at turn end (lines ~1019-1027). Effects mechanic should own this via `onTurnEnd`.
@@ -1444,10 +1444,10 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 | ~~**2**~~ | ~~Cards mechanic owns play_card discovery + validation~~ | ~~✅ DONE~~ | |
 | ~~**3**~~ | ~~`reverseAction` mechanic hook — cards owns play_card reversal~~ | ~~✅ DONE~~ | |
 | ~~**4**~~ | ~~Board state extraction — move scaffold, getBoardState~~ | ~~✅ MOSTLY DONE~~ | |
-| **5→1** | Hand references extraction — cards contributes hand to player view | ~10 locations | Medium |
-| **6→2** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
-| **7→3** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
-| **8→4** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**5**~~ | ~~Hand references extraction — cards contributes hand to player view~~ | ~~✅ MOSTLY DONE~~ | |
+| **6→1** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
+| **7→2** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
+| **8→3** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
 
 ### Next Steps: New Mechanics (Priority Order)
 
