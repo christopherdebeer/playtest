@@ -87,6 +87,8 @@ mechanics:
       # Action cards - for variety
       - { name: "Trade", count: 3, type: "action", element: "action", points: 0 }
       - { name: "Block", count: 3, type: "action", element: "action", points: 0 }
+
+  win_highest_lowest_scoring: { mode: "highest" }
 ---
 
 # Draft Duel

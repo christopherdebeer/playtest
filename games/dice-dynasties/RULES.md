@@ -113,6 +113,8 @@ mechanics:
       use_advantage: 0
       pass: 0
     rollover: false
+
+  win_score_threshold: { threshold: 40 }
 ---
 
 # Dice Dynasties
