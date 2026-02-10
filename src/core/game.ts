@@ -627,22 +627,6 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     }
     // else undefined = random assignment at registration
 
-    // Initialize resources if configured
-    let resources: Record<string, number> | undefined;
-
-    // Check starting_state.resources first (from RULES frontmatter)
-    const startingState = (config as { starting_state?: { resources?: Record<string, number>; score?: number } }).starting_state;
-    if (startingState?.resources) {
-      resources = { ...startingState.resources };
-    }
-    // Fall back to engine_mechanics.resources (legacy format)
-    else if (config.engine_mechanics?.resources) {
-      resources = {};
-      for (const res of config.engine_mechanics.resources) {
-        resources[res.name] = res.starting_amount;
-      }
-    }
-
     // ============ Mechanic Hooks: Player initialization ============
     // Get initial player state from all enabled mechanics
     // Pass existing players for cross-player coordination (e.g., unique power assignment)
@@ -651,19 +635,19 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players, shared);
 
     // Initialize score from starting_state if configured
+    const startingState = (config as { starting_state?: { score?: number } }).starting_state;
     const startingScore = startingState?.score ?? 0;
 
     players[playerId] = {
       state: 'start',
       effects: [],
       persona,
-      resources,
       score: startingScore
     };
 
-    // Apply all mechanic-provided state (hand, actionPoints, powerId, personalDeck, currentNode, state, etc.)
-    // Mechanics can override defaults like 'state' (board-state sets config.board.start)
-    // 'hand' is now set by cards mechanic via initPlayerState - NOT protected
+    // Apply all mechanic-provided state (hand, resources, actionPoints, powerId, etc.)
+    // Mechanics can override defaults like 'state' (board-state sets starting position)
+    // 'resources' now set by resources mechanic via initPlayerState
     const protectedKeys = new Set(['effects', 'persona', 'score']);
     for (const [key, value] of Object.entries(mechanicState)) {
       if (value !== undefined && !protectedKeys.has(key)) {

@@ -690,7 +690,7 @@ Core services already participate as registered mechanics in most respects:
 | Registered with slugs | **Done** | `cards`, `resources`, `board`, `dice`, `effects`, `visibility`, `social`, etc. |
 | Define hooks via `defines` | **Done** | All 7 domains fire mechanic-defined hooks |
 | Leaf mechanics depend via `requires` | **Done** | e.g. `deck-building` requires `cards` |
-| Own their actions via `onExecuteAction` | **Partial** | Cards fully owns `draw` and `play_card` (schema+discovery+validation+execution+reversal). Resources owns `spend`. Deck init, board init still in game.ts |
+| Own their actions via `onExecuteAction` | **Partial** | Cards fully owns `draw` and `play_card` (all phases). Resources owns `spend` + player init. Deck init, board init all delegated. |
 | Own their config namespace | **Partial** | Config stored in `engine_mechanics` AND decomposed to top-level for runtime backwards compat |
 | Participate in `getHighlight` | **Done** | Cards/board flow through the registry like any other mechanic |
 
@@ -1259,7 +1259,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 | ~~**Move action scaffold**~~ | ~~removed~~ | ~~DONE: Move scaffold removed from game.ts. Board-state and grid-movement mechanics now return single rich move actions with targets, description, examples.~~ |
 | **Action points config** | ~1082, 1109, 1763, 1892 | Engine checks `config.engine_mechanics?.action_points` to decide turn advancement mode. |
 | ~~**Board/grid config detection**~~ | ~~removed~~ | ~~DONE: `state.config.board \|\| state.config.engine_mechanics?.grid` check removed — mechanic-provided move actions replace config detection.~~ |
-| **Resources init** | ~637-647 | Legacy resource initialization fallback paths. |
+| ~~**Resources init**~~ | ~~removed~~ | ~~DONE: Resources mechanic implements `initPlayerState` for resource initialization from both `starting_state.resources` and `engine_mechanics.resources` config.~~ |
 | **starting_cards config** | ~1398 | `config.starting_cards` check to determine if game has cards. |
 | **placedCards access** | ~1404, 1552 | `state.shared.placedCards` read for player view. |
 | ~~**Elimination effect**~~ | ~~removed~~ | ~~DONE: Win condition check moved to elimination mechanic.~~ |
@@ -1311,6 +1311,9 @@ Cards mechanic now contributes `hand: cardNames[]` via `getPlayerView` hook, whi
 #### Effect Duration Extraction
 Effects mechanic implements `onTurnEnd` calling `decrementEffectDurations` API (which properly fires `onEffectRemoved` hooks). Engine now calls `mechanicRegistry.onTurnEnd()` in `advanceTurn` — hardcoded duration decrement removed (~8 lines). This also fixes a latent bug where the hardcoded version didn't fire `onEffectRemoved` hooks for expired effects.
 
+#### Resources Init Extraction
+Resources mechanic implements `initPlayerState` for resource initialization. Supports both `starting_state.resources` (frontmatter) and `engine_mechanics.resources` (array format). ~15 lines removed from game.ts `initGame`.
+
 #### Dependency Resolution
 Infrastructure mechanics auto-enable via transitive dependency resolution. No `alwaysEnabled`.
 
@@ -1334,15 +1337,11 @@ Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement me
 #### ~~5. Hand References Extraction~~ ✅ MOSTLY DONE
 Cards mechanic now contributes `hand: cardNames[]` via `getPlayerView` for `getAvailableActions` result. Engine no longer computes hand card names — cards mechanic provides them. Only 2 references remain in `getPlayerView` function for nested `myState.hand: Card[]` and `opponent.handSize` (structural concern — can't be contributed via flat mechanic hook).
 
-#### 6. Effect Duration to Effects Mechanic (MEDIUM)
-Engine decrements effect durations at turn end (lines ~1019-1027). Effects mechanic should own this via `onTurnEnd`.
+#### ~~6. Effect Duration to Effects Mechanic~~ ✅ DONE
+Effects mechanic implements `onTurnEnd` calling `decrementEffectDurations`. See "Completed Engine Work" → "Effect Duration Extraction".
 
-**Impact**: ~10 lines removable.
-
-#### 7. Core Services Own Init (MEDIUM)
-Cards/board config decomposed to top-level by `normalizeUnifiedConfig()` (pseudo-key problem). Cards should build deck/deal hands, board should set up states/edges via `initSharedState`/`initPlayerState`.
-
-**Impact**: ~60 lines from game.ts, eliminates pseudo-key decomposition.
+#### ~~7. Core Services Own Init~~ ✅ MOSTLY DONE
+Cards mechanic fully owns deck/hand init via `initSharedState`/`initPlayerState`. Board-state mechanic owns starting position via `initPlayerState`. Resources mechanic now owns resource init via `initPlayerState`. `normalizeUnifiedConfig` already treats all mechanics uniformly — no pseudo-key decomposition. Only remaining: score init in game.ts (engine-level concern, no scoring mechanic).
 
 #### 8. Phase 8: Advanced Auction Hooks (LOW)
 5 new auction-domain hooks. Currently only `auction-english` has full hook support.
@@ -1449,8 +1448,8 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 | ~~**4**~~ | ~~Board state extraction — move scaffold, getBoardState~~ | ~~✅ MOSTLY DONE~~ | |
 | ~~**5**~~ | ~~Hand references extraction — cards contributes hand to player view~~ | ~~✅ MOSTLY DONE~~ | |
 | ~~**6**~~ | ~~Effect duration to effects mechanic `onTurnEnd`~~ | ~~✅ DONE~~ | |
-| **7→1** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
-| **8→2** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**7**~~ | ~~Core services own init (pseudo-key elimination)~~ | ~~✅ MOSTLY DONE~~ | |
+| **8→1** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
 
 ### Next Steps: New Mechanics (Priority Order)
 
