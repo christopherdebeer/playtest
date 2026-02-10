@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-10T13:32:14.189Z","event":"game_init","data":{"gameId":"dice-dynasties-1770730334179","playerCount":2,"config":"Dice Dynasties"}}
+{"timestamp":"2026-02-10T13:32:40.225Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T13:33:12.449Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"icon_roll","icons":["gold","gem","ore"],"effects":[{"icon":"gold","effect":{"type":"gain_resource","resource":"gold","amount":2},"value":1},{"icon":"gem","effect":{"type":"gain_resource","resource":"gems","amount":1},"value":3},{"icon":"ore","effect":{"type":"gain_resource","resource":"ore","amount":2},"value":2}]}}
+{"timestamp":"2026-02-10T13:33:24.611Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"roll","diceCount":3,"diceSides":6,"results":[5,3,2],"total":10}}
+{"timestamp":"2026-02-10T13:35:23.242Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
