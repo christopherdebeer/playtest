@@ -1,0 +1,6 @@
+{"timestamp":"2026-02-10T09:45:51.243Z","event":"game_init","data":{"gameId":"uno-1770716751232","playerCount":2,"config":"UNO"}}
+{"timestamp":"2026-02-10T09:46:01.419Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T09:46:40.608Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":8}}
+{"timestamp":"2026-02-10T09:47:37.562Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-10T09:47:46.252Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"play_card","card":"Red 7","effect":{"type":"none","color":"Red","value":7},"handSize":7,"currentColor":"Red","newTopCard":"Red 7"}}
+{"timestamp":"2026-02-10T09:48:11.378Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-1","data":{"type":"draw","count":1,"handSize":8}}
