@@ -17,6 +17,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "action-drafting": {
@@ -172,6 +175,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "area-impulse": {
@@ -189,6 +195,9 @@
         "onTurnEnd",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "combat"
       ]
     },
     "area-majority-influence": {
@@ -204,6 +213,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "area-movement": {
@@ -224,7 +236,37 @@
         "initPlayerState",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "board"
       ]
+    },
+    "auction": {
+      "config_key": "auction",
+      "since": "3.0.0",
+      "hooks": [],
+      "defines": {
+        "onAuctionStart": {
+          "description": "After an auction begins. Initialize auction-specific state.",
+          "resolution": "merge"
+        },
+        "onAuctionEnd": {
+          "description": "After an auction resolves. Apply post-auction effects.",
+          "resolution": "merge"
+        },
+        "onBid": {
+          "description": "After a bid is placed. React to bids.",
+          "resolution": "merge"
+        },
+        "canBid": {
+          "description": "Before bidding. Can block a bid attempt.",
+          "resolution": "blocking"
+        },
+        "getMinimumBid": {
+          "description": "Query minimum acceptable bid for an auction.",
+          "resolution": "first"
+        }
+      }
     },
     "auction-bidding": {
       "config_key": "auction_bidding",
@@ -240,6 +282,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "auction-compensation": {
@@ -255,6 +300,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "auction-dutch": {
@@ -273,6 +321,10 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ],
+      "requires": [
+        "auction",
+        "resources"
       ]
     },
     "auction-dutch-priority": {
@@ -289,6 +341,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "auction-english": {
@@ -308,6 +363,10 @@
         "describeAction",
         "initSharedState",
         "getActionSchema"
+      ],
+      "requires": [
+        "auction",
+        "resources"
       ]
     },
     "auction-fixed-placement": {
@@ -322,6 +381,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "auction-multiple-lot": {
@@ -337,6 +399,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "auction-once-around": {
@@ -352,6 +417,10 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "auction",
+        "resources"
       ]
     },
     "auction-sealed-bid": {
@@ -367,6 +436,10 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "auction",
+        "resources"
       ]
     },
     "auction-turn-order-until-pass": {
@@ -382,6 +455,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "auction"
       ]
     },
     "automatic-resource-growth": {
@@ -393,6 +469,9 @@
       },
       "hooks": [
         "onTurnStart"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "betting-and-bluffing": {
@@ -413,12 +492,25 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "board": {
       "config_key": "board",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforePlayerMove": {
+          "description": "Before a player moves. Can modify target or block.",
+          "resolution": "blocking"
+        },
+        "onPlayerMoved": {
+          "description": "After a player moves to a new board state.",
+          "resolution": "merge"
+        }
+      }
     },
     "board-state": {
       "config_key": "board_state",
@@ -430,6 +522,9 @@
         "getAvailableActions",
         "describeAction",
         "getActionSchema"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "bribery": {
@@ -446,12 +541,37 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "building": {
       "config_key": "building",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeBuild": {
+          "description": "Before a build action. Can block or modify placement.",
+          "resolution": "blocking"
+        },
+        "onAfterBuild": {
+          "description": "After something is built/placed. Can trigger bonuses.",
+          "resolution": "merge"
+        },
+        "onConnectionFormed": {
+          "description": "When a new connection/route between points is completed.",
+          "resolution": "merge"
+        },
+        "onPatternCompleted": {
+          "description": "When a pattern of placements is completed.",
+          "resolution": "merge"
+        },
+        "getValidPlacements": {
+          "description": "Get valid positions for placement. Each mechanic contributes positions.",
+          "resolution": "merge"
+        }
+      }
     },
     "card-matching": {
       "config_key": "card_matching",
@@ -467,6 +587,9 @@
         "preValidateAction",
         "onTurnEnd",
         "initSharedState"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "card-type-rules": {
@@ -474,6 +597,9 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "cards": {
@@ -488,7 +614,45 @@
         "getPlayerView",
         "getActionSchema",
         "reverseAction"
-      ]
+      ],
+      "defines": {
+        "onBeforeCardDraw": {
+          "description": "Before drawing cards. Can block or modify draw count.",
+          "resolution": "blocking"
+        },
+        "onCardDrawn": {
+          "description": "After cards are drawn from deck into hand.",
+          "resolution": "merge"
+        },
+        "onBeforeCardPlay": {
+          "description": "Before a card is played from hand. Can block the play.",
+          "resolution": "blocking"
+        },
+        "onCardPlayed": {
+          "description": "After a card is played from hand.",
+          "resolution": "merge"
+        },
+        "onCardDiscarded": {
+          "description": "After cards are discarded.",
+          "resolution": "merge"
+        },
+        "onBeforeAddToHand": {
+          "description": "Before cards are added to hand. Can block or filter cards.",
+          "resolution": "blocking"
+        },
+        "onAfterAddToHand": {
+          "description": "After cards are added to hand.",
+          "resolution": "merge"
+        },
+        "onAfterRemoveFromHand": {
+          "description": "After cards are removed from hand.",
+          "resolution": "merge"
+        },
+        "filterPlayableCards": {
+          "description": "Filter which cards from hand are playable for play_card. Returns filtered Card[].",
+          "resolution": "first"
+        }
+      }
     },
     "catch-the-leader": {
       "config_key": "catch_the_leader",
@@ -504,6 +668,9 @@
       },
       "hooks": [
         "onTurnStart"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "chaining": {
@@ -516,6 +683,9 @@
       },
       "hooks": [
         "postExecuteAction"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "chit-pull-system": {
@@ -531,6 +701,9 @@
       "hooks": [
         "onTurnStart",
         "onDetermineTurnOrder"
+      ],
+      "requires": [
+        "combat"
       ]
     },
     "closed-drafting": {
@@ -551,12 +724,41 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "combat": {
       "config_key": "combat",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeCombat": {
+          "description": "Before combat starts. Can block or modify combat setup.",
+          "resolution": "blocking"
+        },
+        "onCombatStarted": {
+          "description": "After combat is initiated.",
+          "resolution": "merge"
+        },
+        "onAttackModifier": {
+          "description": "Gather attack modifiers. Each mechanic can contribute bonuses/penalties.",
+          "resolution": "merge"
+        },
+        "onDefenseModifier": {
+          "description": "Gather defense modifiers. Each mechanic can contribute bonuses/penalties.",
+          "resolution": "merge"
+        },
+        "onCombatResolved": {
+          "description": "After combat result is determined. Can trigger post-combat effects.",
+          "resolution": "merge"
+        },
+        "onCasualtiesApplied": {
+          "description": "After casualties are distributed. Can modify casualty effects.",
+          "resolution": "merge"
+        }
+      }
     },
     "command-cards": {
       "config_key": "command_cards",
@@ -569,6 +771,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "getPlayerView"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "commodity-speculation": {
@@ -585,6 +790,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "communication-limits": {
@@ -597,6 +805,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "connections": {
@@ -613,6 +824,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "contracts": {
@@ -633,6 +847,9 @@
         "describeAction",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "cooperative-actions": {
@@ -686,7 +903,10 @@
         "critical_hit_multiplier": "number",
         "critical_fail_penalty": "number"
       },
-      "hooks": []
+      "hooks": [],
+      "requires": [
+        "combat"
+      ]
     },
     "deck-building": {
       "config_key": "deck_building",
@@ -710,6 +930,10 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ],
+      "requires": [
+        "cards",
+        "resources"
       ]
     },
     "deck-construction": {
@@ -726,6 +950,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "deduction": {
@@ -743,12 +970,25 @@
         "onExecuteAction",
         "getAvailableActions",
         "canSeeInfo"
+      ],
+      "requires": [
+        "visibility"
       ]
     },
     "dice": {
       "config_key": "dice",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeDiceRoll": {
+          "description": "Before rolling dice. Can modify count/sides or block.",
+          "resolution": "blocking"
+        },
+        "onDiceRolled": {
+          "description": "After dice are rolled.",
+          "resolution": "merge"
+        }
+      }
     },
     "dice-rolling": {
       "config_key": "dice_rolling",
@@ -766,6 +1006,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "dice"
       ]
     },
     "die-icon-resolution": {
@@ -779,6 +1022,10 @@
       "hooks": [
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "dice",
+        "resources"
       ]
     },
     "different-dice-movement": {
@@ -790,19 +1037,43 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "dice"
       ]
     },
     "effect-dispatcher": {
       "config_key": "effect_dispatcher",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "requires": [
+        "cards"
+      ]
     },
     "effects": {
       "config_key": "effects",
       "since": "3.0.0",
       "hooks": [
         "onTurnEnd"
-      ]
+      ],
+      "defines": {
+        "onBeforeEffectAdd": {
+          "description": "Before adding an effect. Can modify or block.",
+          "resolution": "blocking"
+        },
+        "onEffectAdded": {
+          "description": "After an effect is added to a player.",
+          "resolution": "merge"
+        },
+        "onEffectRemoved": {
+          "description": "After an effect expires or is removed.",
+          "resolution": "merge"
+        },
+        "onBeforeEffectRemove": {
+          "description": "Before removing an effect. Can block removal.",
+          "resolution": "blocking"
+        }
+      }
     },
     "elapsed-real-time-ending": {
       "config_key": "elapsed_real_time_ending",
@@ -831,6 +1102,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "events": {
@@ -877,6 +1151,9 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "combat"
       ]
     },
     "freeplay": {
@@ -911,6 +1188,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "grid-movement": {
@@ -922,6 +1202,9 @@
         "getAvailableActions",
         "describeAction",
         "getActionSchema"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "hand-management": {
@@ -934,6 +1217,9 @@
       },
       "hooks": [
         "postExecuteAction"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "hexagon-grid": {
@@ -949,6 +1235,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "hidden-movement": {
@@ -959,6 +1248,10 @@
         "describeAction",
         "getVisibleState",
         "canSeeInfo"
+      ],
+      "requires": [
+        "board",
+        "visibility"
       ]
     },
     "hidden-objectives": {
@@ -972,6 +1265,9 @@
       "hooks": [
         "initPlayerState",
         "getVisibleState"
+      ],
+      "requires": [
+        "visibility"
       ]
     },
     "hidden-roles": {
@@ -989,6 +1285,9 @@
         "initPlayerState",
         "getVisibleState",
         "canSeeInfo"
+      ],
+      "requires": [
+        "visibility"
       ]
     },
     "hidden-victory-points": {
@@ -1004,6 +1303,9 @@
       "hooks": [
         "getVisibleState",
         "canSeeInfo"
+      ],
+      "requires": [
+        "visibility"
       ]
     },
     "i-cut-you-choose": {
@@ -1031,6 +1333,9 @@
       },
       "hooks": [
         "onTurnStart"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "induction": {
@@ -1080,6 +1385,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "kill-steal": {
@@ -1092,7 +1400,10 @@
         "credit_assists": "boolean",
         "assist_share": "number"
       },
-      "hooks": []
+      "hooks": [],
+      "requires": [
+        "resources"
+      ]
     },
     "ladder-climbing": {
       "config_key": "ladder_climbing",
@@ -1114,6 +1425,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "loans": {
@@ -1136,6 +1450,9 @@
         "getAvailableActions",
         "describeAction",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "location-effects": {
@@ -1151,6 +1468,9 @@
       "hooks": [
         "preValidateAction",
         "isPlayerBlocked"
+      ],
+      "requires": [
+        "effects"
       ]
     },
     "map-addition": {
@@ -1167,6 +1487,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "market": {
@@ -1187,6 +1510,9 @@
         "describeAction",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "matching": {
@@ -1218,6 +1544,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "getPlayerView"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "memory": {
@@ -1233,6 +1562,9 @@
         "initPlayerState",
         "onTurnStart",
         "canSeeInfo"
+      ],
+      "requires": [
+        "visibility"
       ]
     },
     "modular-board": {
@@ -1246,6 +1578,9 @@
       "hooks": [
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "movement-points": {
@@ -1265,6 +1600,9 @@
         "postExecuteAction",
         "initPlayerState",
         "onTurnStart"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "multi-use-cards": {
@@ -1283,6 +1621,10 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "cards",
+        "resources"
       ]
     },
     "negotiation": {
@@ -1294,6 +1636,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "network-and-route-building": {
@@ -1313,6 +1658,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "once-per-game-abilities": {
@@ -1330,6 +1678,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "open-drafting": {
@@ -1348,6 +1699,9 @@
         "initSharedState",
         "getPlayerView",
         "getActionSchema"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "ownership": {
@@ -1364,6 +1718,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "pass": {
@@ -1391,6 +1748,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "pattern-recognition": {
@@ -1422,6 +1782,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "place-card": {
@@ -1434,6 +1797,9 @@
         "describeAction",
         "initSharedState",
         "getActionSchema"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "place-location": {
@@ -1451,6 +1817,9 @@
       "since": "3.0.0",
       "hooks": [
         "applyEffect"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "player-elimination": {
@@ -1482,6 +1851,9 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "point-to-point-movement": {
@@ -1505,6 +1877,9 @@
         "getAvailableActions",
         "describeAction",
         "applyEffect"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "prisoners-dilemma": {
@@ -1521,6 +1896,9 @@
         "initSharedState",
         "getPlayerView",
         "canPlayerActNow"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "push-your-luck": {
@@ -1541,6 +1919,9 @@
         "describeAction",
         "getPlayerView",
         "getActionSchema"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "questions-and-answers": {
@@ -1570,6 +1951,10 @@
       },
       "hooks": [
         "onTurnStart"
+      ],
+      "requires": [
+        "resources",
+        "dice"
       ]
     },
     "ratio-combat-results-table": {
@@ -1580,7 +1965,10 @@
         "die_sides": "number",
         "crt": "object"
       },
-      "hooks": []
+      "hooks": [],
+      "requires": [
+        "combat"
+      ]
     },
     "re-rolling-and-locking": {
       "config_key": "re_rolling_and_locking",
@@ -1596,6 +1984,9 @@
         "onTurnStart",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "dice"
       ]
     },
     "resources": {
@@ -1609,7 +2000,25 @@
         "describeAction",
         "getPlayerView",
         "getActionSchema"
-      ]
+      ],
+      "defines": {
+        "onBeforeResourceGain": {
+          "description": "Before gaining resources. Can modify amount or block.",
+          "resolution": "blocking"
+        },
+        "onBeforeResourceSpend": {
+          "description": "Before spending resources. Can modify amount or block.",
+          "resolution": "blocking"
+        },
+        "onResourceGained": {
+          "description": "After resources are gained.",
+          "resolution": "merge"
+        },
+        "onResourceSpent": {
+          "description": "After resources are spent.",
+          "resolution": "merge"
+        }
+      }
     },
     "role-playing": {
       "config_key": "role_playing",
@@ -1624,6 +2033,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "getPlayerView"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "roles-with-asymmetric-information": {
@@ -1636,6 +2048,10 @@
       "hooks": [
         "getVisibleState",
         "canSeeInfo"
+      ],
+      "requires": [
+        "hidden-roles",
+        "visibility"
       ]
     },
     "roll-spin-and-move": {
@@ -1647,6 +2063,10 @@
         "onExecuteAction",
         "getAvailableActions",
         "describeAction"
+      ],
+      "requires": [
+        "dice",
+        "board"
       ]
     },
     "rondel": {
@@ -1663,6 +2083,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "score-and-reset-game": {
@@ -1694,6 +2117,10 @@
         "preValidateAction",
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "combat",
+        "visibility"
       ]
     },
     "semi-cooperative-game": {
@@ -1710,6 +2137,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "set-collection": {
@@ -1728,6 +2158,9 @@
         "describeAction",
         "getPlayerView",
         "getActionSchema"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "simultaneous-action-selection": {
@@ -1754,7 +2187,25 @@
     "social": {
       "config_key": "social",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeVote": {
+          "description": "Before a vote is cast. Can block.",
+          "resolution": "blocking"
+        },
+        "onPlayerVoted": {
+          "description": "After a player casts a vote.",
+          "resolution": "merge"
+        },
+        "onVoteCompleted": {
+          "description": "After a voting session completes.",
+          "resolution": "merge"
+        },
+        "onVoteTally": {
+          "description": "Custom vote tallying logic. First handler wins.",
+          "resolution": "first"
+        }
+      }
     },
     "square-grid": {
       "config_key": "square_grid",
@@ -1770,6 +2221,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "stock-holding": {
@@ -1786,6 +2240,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "storytelling": {
@@ -1802,6 +2259,9 @@
         "onExecuteAction",
         "getAvailableActions",
         "initSharedState"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "sudden-death-ending": {
@@ -1836,6 +2296,9 @@
         "getAvailableActions",
         "describeAction",
         "getPlayerView"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "take-that": {
@@ -1843,6 +2306,10 @@
       "since": "3.0.0",
       "hooks": [
         "preValidateAction"
+      ],
+      "requires": [
+        "cards",
+        "effects"
       ]
     },
     "targeted-clues": {
@@ -1892,6 +2359,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "resources"
       ]
     },
     "tile-placement": {
@@ -1912,6 +2382,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "building"
       ]
     },
     "track-movement": {
@@ -1928,6 +2401,9 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "trading": {
@@ -1970,6 +2446,10 @@
         "onCheckWin",
         "getVisibleState",
         "canSeeInfo"
+      ],
+      "requires": [
+        "hidden-roles",
+        "visibility"
       ]
     },
     "trick-taking": {
@@ -1990,6 +2470,9 @@
         "getAvailableActions",
         "describeAction",
         "initSharedState"
+      ],
+      "requires": [
+        "cards"
       ]
     },
     "tug-of-war": {
@@ -2021,6 +2504,10 @@
         "onExecuteAction",
         "getAvailableActions",
         "onDetermineTurnOrder"
+      ],
+      "requires": [
+        "auction",
+        "resources"
       ]
     },
     "turn-order-claim-action": {
@@ -2155,7 +2642,17 @@
     "visibility": {
       "config_key": "visibility",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeReveal": {
+          "description": "Before revealing information. Can block.",
+          "resolution": "blocking"
+        },
+        "onInfoRevealed": {
+          "description": "After information is revealed to players.",
+          "resolution": "merge"
+        }
+      }
     },
     "voting": {
       "config_key": "voting",
@@ -2163,6 +2660,9 @@
       "hooks": [
         "onExecuteAction",
         "getAvailableActions"
+      ],
+      "requires": [
+        "social"
       ]
     },
     "win-elimination": {
@@ -2245,6 +2745,9 @@
       },
       "hooks": [
         "onCheckWin"
+      ],
+      "requires": [
+        "board"
       ]
     },
     "win-reach-state": {
@@ -2330,6 +2833,9 @@
         "describeAction",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "workers"
       ]
     },
     "worker-placement-different-worker-types": {
@@ -2346,6 +2852,9 @@
         "postExecuteAction",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "workers"
       ]
     },
     "worker-placement-with-dice-workers": {
@@ -2363,12 +2872,38 @@
         "getAvailableActions",
         "initSharedState",
         "getPlayerView"
+      ],
+      "requires": [
+        "workers",
+        "dice"
       ]
     },
     "workers": {
       "config_key": "workers",
       "since": "3.0.0",
-      "hooks": []
+      "hooks": [],
+      "defines": {
+        "onBeforeWorkerPlace": {
+          "description": "Before placing a worker. Can block placement.",
+          "resolution": "blocking"
+        },
+        "onWorkerPlaced": {
+          "description": "After a worker is placed on a space.",
+          "resolution": "merge"
+        },
+        "onBeforeWorkerRetrieve": {
+          "description": "Before retrieving workers. Can block retrieval.",
+          "resolution": "blocking"
+        },
+        "onWorkersRetrieved": {
+          "description": "After workers are retrieved from spaces.",
+          "resolution": "merge"
+        },
+        "onSpaceActivated": {
+          "description": "After a worker space action is activated.",
+          "resolution": "merge"
+        }
+      }
     },
     "zone-of-control": {
       "config_key": "zone_of_control",
@@ -2380,7 +2915,10 @@
         "must_stop": "boolean",
         "must_attack": "boolean"
       },
-      "hooks": []
+      "hooks": [],
+      "requires": [
+        "board"
+      ]
     }
   },
   "partial": {

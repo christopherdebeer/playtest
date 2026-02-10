@@ -80,6 +80,7 @@ A game engine where:
 │  - social       │ │                 │ │ - king-of-hill  │
 │  - combat       │ │                 │ │ - finale-ending │
 │  - workers      │ │                 │ │ - + 3 more      │
+│  - auction      │ │                 │ │                 │
 │  - pass         │ │                 │ │                 │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
          │                   │                   │
@@ -112,6 +113,7 @@ src/mechanics/
 │   ├── dice.ts           # Dice rolling system
 │   ├── visibility.ts     # Information hiding
 │   ├── social.ts         # Voting and negotiation
+│   ├── auction-mechanic.ts # Auction core (defines hooks)
 │   └── pass.ts           # Pass action handling
 ├── win-conditions/       # Pluggable win conditions (13)
 │   ├── reach-state.ts
@@ -198,6 +200,7 @@ See [Mechanic-Defined Hooks](#mechanic-defined-hooks) section for details. Summa
 | `effects` | `onBeforeEffectAdd`, `onBeforeEffectRemove`, `onEffectAdded`, `onEffectRemoved` | `effects.ts` |
 | `visibility` | `onBeforeReveal`, `onInfoRevealed` | `visibility.ts` |
 | `social` | `onBeforeVote`, `onPlayerVoted`, `onVoteTally`, `onVoteCompleted` | `social.ts` |
+| `auction` | `onAuctionStart`, `onAuctionEnd`, `onBid`, `canBid`, `getMinimumBid` | `auction-mechanic.ts` |
 
 ### Mechanic Composition
 
@@ -424,12 +427,25 @@ engine (global hooks: onTurnStart, preValidateAction, onCheckWin, ...)
   │     ├── roles-asymmetric-info (requires: hidden-roles, visibility)
   │     └── traitor-game (requires: hidden-roles, visibility)
   │
-  └── social (defines: onVoteCompleted, onPlayerVoted, onBeforeVote, onVoteTally)
-        ├── voting (requires: social)
-        ├── negotiation (requires: social)
-        ├── communication-limits (requires: social)
-        ├── player-judge (requires: social)
-        └── bribery (requires: social)
+  ├── social (defines: onVoteCompleted, onPlayerVoted, onBeforeVote, onVoteTally)
+  │     ├── voting (requires: social)
+  │     ├── negotiation (requires: social)
+  │     ├── communication-limits (requires: social)
+  │     ├── player-judge (requires: social)
+  │     └── bribery (requires: social)
+  │
+  └── auction (defines: onAuctionStart, onAuctionEnd, onBid, canBid, getMinimumBid)
+        ├── auction-english (requires: auction, resources)
+        ├── auction-sealed-bid (requires: auction, resources)
+        ├── auction-dutch (requires: auction, resources)
+        ├── auction-once-around (requires: auction, resources)
+        ├── auction-bidding (requires: auction)
+        ├── auction-compensation (requires: auction)
+        ├── auction-dutch-priority (requires: auction)
+        ├── auction-fixed-placement (requires: auction)
+        ├── auction-multiple-lot (requires: auction)
+        ├── auction-turn-order-until-pass (requires: auction)
+        └── turn-order-auction (requires: auction, resources)
 ```
 
 ### HookDefinition
@@ -545,7 +561,7 @@ replacing the hardcoded routing methods that were removed from the registry.
 All 7 domain hook migrations finished (Phases 1-4):
 
 - **Infrastructure**: `defines`/`requires`/`fire()` on registry, `HookDefinition` with resolution strategies
-- **All 7 core domains** define and fire mechanic-defined hooks: cards (8 hooks), resources (4), dice (2), board (2), effects (4), visibility (2), social (4)
+- **All 8 core domains** define and fire mechanic-defined hooks: cards (8 hooks), resources (4), dice (2), board (2), effects (4), visibility (2), social (4), auction (5)
 - **All leaf mechanics** migrated from deprecated global domain hooks to mechanic-defined hooks via `requires`
 - **18 deprecated domain hooks** removed from `MechanicHooks` interface
 - **~400 lines** of deprecated routing methods removed from registry
@@ -561,10 +577,11 @@ All 7 domain hook migrations finished (Phases 1-4):
 
 ## Core Mechanics
 
-Each domain has a **mechanic** (registered, defines hooks) and an **API** (exported functions that fire those hooks). Together they form the core mechanic for that domain.
+Each domain has a **mechanic** (registered, defines hooks) and an **API** (exported functions that fire those hooks). Together they form the core mechanic for that domain. Some core mechanics (like auction) define hooks only, with no API module.
 
 ```
 core/
+├── auction-mechanic.ts   # Auction mechanic (defines hooks only, no API)
 ├── cards.ts              # Cards mechanic (defines hooks, handles play_card)
 ├── card-piles.ts         # Cards API: drawFromDeck, addToDiscard, playCard
 ├── hand.ts               # Cards API: addToHand, removeFromHand, findInHand
@@ -666,6 +683,12 @@ Pure utility — no mechanic registration, no hooks fired.
 - `movePlayerInOrder`, `removeFromTurnOrder`, `addToTurnOrder`
 - `applyDynamicTurnOrder`, `sortTurnOrderByProperty`
 - `createSnakeDraftOrder`
+
+### Auction (`auction-mechanic.ts`)
+
+**Mechanic**: Defines 5 hooks (`onAuctionStart`, `onAuctionEnd`, `onBid`, `canBid`, `getMinimumBid`). Pure hook-defining mechanic — no API module, no game.ts changes. Auction leaf mechanics (11 total) declare `requires: ['auction']` and can implement these hooks for cross-mechanic coordination.
+
+**No API**: Unlike cards/resources/dice, auction mechanics manage their own state independently. The core mechanic exists solely to define domain hooks that auction leaf mechanics can use for inter-mechanic communication (e.g., `canBid` for bid validation, `getMinimumBid` for minimum bid queries).
 
 ### Pass (`pass.ts`)
 
@@ -1170,15 +1193,15 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 ### Overview
 
 - **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
-- **162** registered mechanics: **11** core domains + **13** win conditions + **138** leaf
+- **163** registered mechanics: **12** core domains + **13** win conditions + **138** leaf
 - **150 of 202** plannable reference mechanics have implementations (**74%**)
-- **12** additional registered mechanics beyond the BGG reference (core domains, extras)
+- **13** additional registered mechanics beyond the BGG reference (core domains, extras)
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (14, incl. cards hand), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw+play_card, board-state move, grid-movement move), `preValidateAction` (cards draw+play_card), `reverseAction` (cards play_card), `onCheckWin` (all 16 games with explicit win mechanics)
 - Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
-- All 11 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building
+- All 12 core mechanic domains have mechanic-defined hooks: cards, resources, dice, board, effects, visibility, social, combat, workers, pass, building, auction
 
 ### Coverage by Category
 
@@ -1219,7 +1242,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 #### Additional Registered (Beyond BGG Reference)
 
 These mechanics are engine additions not in the BGG 209:
-- **Core domains** (11): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `building`
+- **Core domains** (12): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `building`, `auction`
 - **Extras** (2): `action-programming`, `cooperative-actions`
 
 ### game.ts Agnosticism Progress
@@ -1343,8 +1366,8 @@ Effects mechanic implements `onTurnEnd` calling `decrementEffectDurations`. See 
 #### ~~7. Core Services Own Init~~ ✅ MOSTLY DONE
 Cards mechanic fully owns deck/hand init via `initSharedState`/`initPlayerState`. Board-state mechanic owns starting position via `initPlayerState`. Resources mechanic now owns resource init via `initPlayerState`. `normalizeUnifiedConfig` already treats all mechanics uniformly — no pseudo-key decomposition. Only remaining: score init in game.ts (engine-level concern, no scoring mechanic).
 
-#### 8. Phase 8: Advanced Auction Hooks (LOW)
-5 new auction-domain hooks. Currently only `auction-english` has full hook support.
+#### ~~8. Phase 8: Advanced Auction Hooks~~ ✅ DONE
+Auction core mechanic created at `src/mechanics/core/auction-mechanic.ts` with 5 defined hooks (`onAuctionStart`, `onAuctionEnd`, `onBid`, `canBid`, `getMinimumBid`). All 11 auction leaf mechanics declare `requires: ['auction']`. Pure mechanic-layer — no game.ts changes, no API module. Hooks are available for auction leaf mechanics to implement for cross-mechanic coordination. Metadata generation updated to include `requires` and `defines` fields.
 
 ---
 
@@ -1449,7 +1472,7 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 | ~~**5**~~ | ~~Hand references extraction — cards contributes hand to player view~~ | ~~✅ MOSTLY DONE~~ | |
 | ~~**6**~~ | ~~Effect duration to effects mechanic `onTurnEnd`~~ | ~~✅ DONE~~ | |
 | ~~**7**~~ | ~~Core services own init (pseudo-key elimination)~~ | ~~✅ MOSTLY DONE~~ | |
-| **8→1** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**8→1**~~ | ~~Advanced auction hooks (Phase 8) — mechanic-layer only, no game.ts changes~~ | ~~✅ DONE~~ | |
 
 ### Next Steps: New Mechanics (Priority Order)
 

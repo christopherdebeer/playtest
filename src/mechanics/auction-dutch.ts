@@ -37,7 +37,7 @@ function getConfig(config: GameConfig): DutchAuctionConfig | undefined {
 export const auctionDutchMechanic: MechanicHooks = {
   slug: 'auction-dutch',
   name: 'Dutch Auction',
-  requires: ['resources'],
+  requires: ['auction', 'resources'],
 
   configSchema: {
     type: 'object',

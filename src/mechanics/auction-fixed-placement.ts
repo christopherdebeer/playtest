@@ -49,6 +49,7 @@ function getFixedState(shared: Record<string, unknown>): FixedPlacementState | u
 export const auctionFixedPlacementMechanic: MechanicHooks = {
   slug: 'auction-fixed-placement',
   name: 'Auction: Fixed Placement',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',

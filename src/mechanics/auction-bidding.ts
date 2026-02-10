@@ -48,6 +48,7 @@ function getBiddingState(shared: Record<string, unknown>): BiddingState | undefi
 export const auctionBiddingMechanic: MechanicHooks = {
   slug: 'auction-bidding',
   name: 'Auction: Bidding',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',

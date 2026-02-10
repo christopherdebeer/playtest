@@ -49,6 +49,7 @@ function getDutchState(shared: Record<string, unknown>): DutchPriorityState | un
 export const auctionDutchPriorityMechanic: MechanicHooks = {
   slug: 'auction-dutch-priority',
   name: 'Auction: Dutch Priority',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',

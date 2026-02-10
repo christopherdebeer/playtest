@@ -35,7 +35,7 @@ interface OnceAroundAuction {
 export const auctionOnceAroundMechanic: MechanicHooks = {
   slug: 'auction-once-around',
   name: 'Auction (Once Around)',
-  requires: ['resources'],
+  requires: ['auction', 'resources'],
 
   configSchema: {
     type: 'object',
