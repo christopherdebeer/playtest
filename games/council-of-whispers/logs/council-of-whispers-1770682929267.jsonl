@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-10T00:22:09.280Z","event":"game_init","data":{"gameId":"council-of-whispers-1770682929267","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-10T00:22:21.821Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T00:22:40.618Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"contribute","player":"player-1","amount":2,"progress":22,"goal":"treasury"}}
+{"timestamp":"2026-02-10T00:22:49.283Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}

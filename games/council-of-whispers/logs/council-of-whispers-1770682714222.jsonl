@@ -1,0 +1,14 @@
+{"timestamp":"2026-02-10T00:18:34.235Z","event":"game_init","data":{"gameId":"council-of-whispers-1770682714222","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-10T00:18:46.612Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T00:20:13.142Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":3}}
+{"timestamp":"2026-02-10T00:20:21.489Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":2}}
+{"timestamp":"2026-02-10T00:20:29.642Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"dilemma_choice","player":"player-3","waiting":1}}
+{"timestamp":"2026-02-10T00:20:38.176Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"dilemma_choice","round":1,"choices":{"player-1":"cooperate","player-2":"defect","player-3":"cooperate","player-4":"cooperate"},"scores":{"player-1":6,"player-2":15,"player-3":6,"player-4":6},"gameOver":false}}
+{"timestamp":"2026-02-10T00:21:20.266Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":3}}
+{"timestamp":"2026-02-10T00:21:20.888Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":2}}
+{"timestamp":"2026-02-10T00:21:21.474Z","event":"action_executed","round":2,"turnNumber":7,"player":"player-3","data":{"type":"dilemma_choice","player":"player-3","waiting":1}}
+{"timestamp":"2026-02-10T00:21:22.088Z","event":"action_executed","round":2,"turnNumber":8,"player":"player-4","data":{"type":"dilemma_choice","round":2,"choices":{"player-1":"cooperate","player-2":"cooperate","player-3":"cooperate","player-4":"cooperate"},"scores":{"player-1":9,"player-2":9,"player-3":9,"player-4":9},"gameOver":false}}
+{"timestamp":"2026-02-10T00:21:42.713Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-1","data":{"type":"dilemma_choice","player":"player-1","waiting":3}}
+{"timestamp":"2026-02-10T00:21:43.397Z","event":"action_executed","round":3,"turnNumber":10,"player":"player-2","data":{"type":"dilemma_choice","player":"player-2","waiting":2}}
+{"timestamp":"2026-02-10T00:21:44.056Z","event":"action_executed","round":3,"turnNumber":11,"player":"player-3","data":{"type":"dilemma_choice","player":"player-3","waiting":1}}
+{"timestamp":"2026-02-10T00:21:44.722Z","event":"action_executed","round":3,"turnNumber":12,"player":"player-4","data":{"type":"dilemma_choice","round":3,"choices":{"player-1":"cooperate","player-2":"cooperate","player-3":"cooperate","player-4":"cooperate"},"scores":{"player-1":9,"player-2":9,"player-3":9,"player-4":9},"gameOver":true}}
