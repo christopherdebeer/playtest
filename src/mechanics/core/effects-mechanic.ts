@@ -15,8 +15,9 @@
  * - onBeforeEffectRemove: Before removing an effect, can block (blocking)
  */
 
-import { MechanicHooks, HookContext, StateChanges } from '../types.js';
+import { MechanicHooks, HookContext, StateChanges, TurnEndContext } from '../types.js';
 import { Effect } from '../../types/game.js';
+import { decrementEffectDurations } from './effects.js';
 
 // ============ Payload types for effects-defined hooks ============
 
@@ -62,6 +63,15 @@ export interface EffectsHooks {
 export const effectsMechanic: MechanicHooks = {
   slug: 'effects',
   name: 'Effects Core',
+
+  /**
+   * Decrement effect durations for the player whose turn just ended.
+   * Uses the effects API which properly fires onEffectRemoved hooks.
+   */
+  onTurnEnd(ctx: TurnEndContext): StateChanges | null {
+    decrementEffectDurations(ctx.state, ctx.playerId);
+    return null; // State already mutated by decrementEffectDurations
+  },
 
   defines: {
     onBeforeEffectAdd: {

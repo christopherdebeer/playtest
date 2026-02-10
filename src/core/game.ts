@@ -1010,18 +1010,13 @@ export function advanceTurn(state: GameState): void {
     applyDynamicTurnOrder(state, 'round_start');
   }
 
-  state.currentPlayer = state.turnOrder[nextIndex];
-  const nextPlayer = state.players[state.currentPlayer];
+  // ============ Mechanic Hooks: Turn end ============
+  // Run onTurnEnd hooks for the player whose turn just ended
+  // Effects mechanic decrements durations, fires onEffectRemoved hooks
+  const turnEndChanges = mechanicRegistry.onTurnEnd(state, previousPlayer, state.turnOrder[nextIndex], isNewRound);
+  applyStateChanges(state, turnEndChanges);
 
-  // Decrement effect durations ONLY for the player whose turn just ended
-  // This ensures effects like "Block for 1 turn" last until the blocked player's turn
-  // Effects on OTHER players are decremented when THEIR turn ends
-  const prevPlayer = state.players[previousPlayer];
-  if (prevPlayer) {
-    prevPlayer.effects = prevPlayer.effects
-      .map(e => ({ ...e, duration: e.duration - 1 }))
-      .filter(e => e.duration > 0);
-  }
+  state.currentPlayer = state.turnOrder[nextIndex];
 
   // ============ Mechanic Hooks: Turn start ============
   // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP, income)
