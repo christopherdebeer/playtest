@@ -167,7 +167,7 @@ export const boardStateMechanic: MechanicHooks = {
     // Only for board games (not grid games)
     const boardConfig = getBoardConfigFromConfig(ctx.config);
     if (!boardConfig) return null;
-    if (ctx.config.engine_mechanics?.grid) return null; // Grid takes precedence
+    if (ctx.config.engine_mechanics?.grid_movement) return null; // Grid takes precedence
 
     const moveAction = action as MoveAction;
     const validStates = boardConfig.states || [];
@@ -202,7 +202,7 @@ export const boardStateMechanic: MechanicHooks = {
     // Only for board games (not grid games)
     const boardConfig = getBoardConfigFromConfig(ctx.config);
     if (!boardConfig) return null;
-    if (ctx.config.engine_mechanics?.grid) return null;
+    if (ctx.config.engine_mechanics?.grid_movement) return null;
 
     const moveAction = action as MoveAction;
 
@@ -236,7 +236,7 @@ export const boardStateMechanic: MechanicHooks = {
     // Only for board games (not grid games)
     const boardConfig = getBoardConfigFromConfig(ctx.config);
     if (!boardConfig) return [];
-    if (ctx.config.engine_mechanics?.grid) return [];
+    if (ctx.config.engine_mechanics?.grid_movement) return [];
 
     const currentState = ctx.player.state;
 

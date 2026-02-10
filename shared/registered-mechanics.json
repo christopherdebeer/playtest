@@ -1196,6 +1196,13 @@
     "grid-movement": {
       "config_key": "grid_movement",
       "since": "3.0.0",
+      "description": "Tile-based movement on a grid of placed locations",
+      "config_schema": {
+        "type": "infinite | bounded",
+        "starting_tile": "string",
+        "adjacency": "orthogonal | diagonal | hexagonal",
+        "bounds": "object"
+      },
       "hooks": [
         "preValidateAction",
         "onExecuteAction",

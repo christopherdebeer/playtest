@@ -20,7 +20,8 @@ import {
   AvailableAction,
   ActionDescription,
   StateChanges,
-  ActionSchema
+  ActionSchema,
+  ConfigValidationIssue
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
 import { getCardsState } from './core/index.js';
@@ -55,7 +56,7 @@ function getLocationCardDef(config: { deck?: unknown[] }, locationName: string):
  * Get valid move targets from the current position.
  */
 function getValidMoveTargets(ctx: HookContext): string[] {
-  const gridConfig = ctx.config.engine_mechanics?.grid as GridConfig | undefined;
+  const gridConfig = ctx.config.engine_mechanics?.grid_movement as GridConfig | undefined;
   if (!gridConfig) return [];
 
   const placedLocations = (ctx.state.shared.placedLocations as string[]) || [];
@@ -71,6 +72,48 @@ export const gridMovementMechanic: MechanicHooks = {
   name: 'Grid Movement',
   requires: ['board'],
 
+  configSchema: {
+    type: 'object',
+    description: 'Tile-based movement on a grid of placed locations',
+    properties: {
+      type: {
+        type: 'string',
+        description: 'Grid type',
+        enum: ['infinite', 'bounded'],
+        required: true
+      },
+      starting_tile: {
+        type: 'string',
+        description: 'Name of the starting tile',
+        required: true
+      },
+      adjacency: {
+        type: 'string',
+        description: 'Adjacency model',
+        enum: ['orthogonal', 'diagonal', 'hexagonal'],
+        required: true
+      },
+      bounds: {
+        type: 'object',
+        description: 'Grid bounds (required for bounded grids)'
+      }
+    }
+  },
+
+  validateConfig(config: unknown, location: string): ConfigValidationIssue[] {
+    const cfg = config as Record<string, unknown>;
+    const issues: ConfigValidationIssue[] = [];
+    if (cfg.type === 'bounded' && !cfg.bounds) {
+      issues.push({
+        code: 'MISSING_BOUNDS',
+        message: 'grid_movement.bounds is required for bounded grids',
+        path: `${location}.bounds`,
+        severity: 'error',
+      });
+    }
+    return issues;
+  },
+
   getActionSchema(action: GameAction): ActionSchema | null {
     if (action.type !== 'move') return null;
     return {
@@ -85,7 +128,7 @@ export const gridMovementMechanic: MechanicHooks = {
     // Only validate move actions
     if (action.type !== 'move') return null;
 
-    const gridConfig = ctx.config.engine_mechanics?.grid as GridConfig | undefined;
+    const gridConfig = ctx.config.engine_mechanics?.grid_movement as GridConfig | undefined;
     if (!gridConfig) return null;
 
     const moveAction = action as { target: string };
@@ -108,7 +151,7 @@ export const gridMovementMechanic: MechanicHooks = {
 
     if (action.type !== 'move') return null;
 
-    const gridConfig = config.engine_mechanics?.grid as GridConfig | undefined;
+    const gridConfig = config.engine_mechanics?.grid_movement as GridConfig | undefined;
     if (!gridConfig) return null;
 
     const moveAction = action as { target: string };
@@ -125,7 +168,7 @@ export const gridMovementMechanic: MechanicHooks = {
         case 'draw_on_enter': {
           // Draw cards when entering this location
           const drawCount = effect.value ?? 1;
-          const handLimit = (config.engine_mechanics?.hand_limit as number) ?? Infinity;
+          const handLimit = (config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit as number ?? Infinity;
 
           const playerHand = player.hand ?? [];
           const cardsState = getCardsState(state);
@@ -207,7 +250,7 @@ export const gridMovementMechanic: MechanicHooks = {
   },
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
-    const gridConfig = ctx.config.engine_mechanics?.grid as GridConfig | undefined;
+    const gridConfig = ctx.config.engine_mechanics?.grid_movement as GridConfig | undefined;
     if (!gridConfig) return [];
 
     const validTargets = getValidMoveTargets(ctx);

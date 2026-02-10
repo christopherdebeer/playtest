@@ -139,7 +139,7 @@ export const tradingMechanic: MechanicHooks = {
   },
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
-    const tradeConfig = ctx.config.engine_mechanics?.trade as TradeConfig | undefined;
+    const tradeConfig = ctx.config.engine_mechanics?.trading as TradeConfig | undefined;
     if (!tradeConfig?.enabled) return [];
 
     const actions: AvailableAction[] = [];
@@ -236,7 +236,7 @@ export const tradingMechanic: MechanicHooks = {
 };
 
 function validateTradeOffer(ctx: HookContext, action: TradeOfferAction): ValidationResult | null {
-  const tradeConfig = ctx.config.engine_mechanics?.trade as TradeConfig | undefined;
+  const tradeConfig = ctx.config.engine_mechanics?.trading as TradeConfig | undefined;
 
   // Check if trading is enabled
   if (!tradeConfig?.enabled) {

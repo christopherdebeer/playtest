@@ -862,6 +862,15 @@ export interface MechanicHooks {
   configSchema?: MechanicConfigSchema;
 
   /**
+   * Validate this mechanic's configuration beyond what configSchema expresses.
+   * Called during RULES.md validation for cross-field constraints.
+   * @param config - This mechanic's config value from engine_mechanics
+   * @param location - Path prefix for issue locations (e.g., "config.engine_mechanics.grid_movement")
+   * @returns Array of validation issues, empty if valid
+   */
+  validateConfig?(config: unknown, location: string): ConfigValidationIssue[];
+
+  /**
    * Return highlight stats for display on game cards and pages.
    * Receives this mechanic's config from the game's RULES.md.
    * Return one or more { label, value } pairs, or null if nothing worth highlighting.
@@ -897,6 +906,17 @@ export interface MechanicConfigSchema {
 }
 
 /**
+ * Issue returned by a mechanic's validateConfig method.
+ */
+export interface ConfigValidationIssue {
+  code: string;
+  message: string;
+  path: string;
+  severity: 'error' | 'warning';
+  hint?: string;
+}
+
+/**
  * Dependency resolver callback - set by the registry after all mechanics are registered.
  * Returns true if the given slug is required by any explicitly-enabled mechanic.
  */
@@ -925,21 +945,14 @@ export function hasExplicitConfig(config: GameConfig, slug: string): boolean {
     return true;
   }
 
-  // Handle special cases where legacy config keys enable mechanics
-  // hand-management is enabled by hand_limit or hand_limit_policy
-  if (slug === 'hand-management') {
-    return config.engine_mechanics.hand_limit !== undefined ||
-           config.engine_mechanics.hand_limit_policy !== undefined;
-  }
-
-  // grid-movement is enabled by grid config
+  // grid-movement is enabled by grid_movement config
   if (slug === 'grid-movement') {
-    return config.engine_mechanics.grid !== undefined;
+    return config.engine_mechanics.grid_movement !== undefined;
   }
 
-  // trading is enabled by trade config
+  // trading is enabled by trading config
   if (slug === 'trading') {
-    return config.engine_mechanics.trade !== undefined;
+    return config.engine_mechanics.trading !== undefined;
   }
 
   return false;

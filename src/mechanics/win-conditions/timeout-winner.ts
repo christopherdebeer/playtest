@@ -44,7 +44,8 @@
 import {
   MechanicHooks,
   WinCheckContext,
-  WinCheckResult
+  WinCheckResult,
+  ConfigValidationIssue
 } from '../types.js';
 import { PlayerState } from '../../types/game.js';
 
@@ -166,6 +167,20 @@ export const timeoutWinnerMechanic: MechanicHooks = {
         description: 'For "no_winner" type: custom reason message'
       }
     }
+  },
+
+  validateConfig(config: unknown, location: string): ConfigValidationIssue[] {
+    const cfg = config as Record<string, unknown>;
+    const issues: ConfigValidationIssue[] = [];
+    if (cfg.type === 'role' && !cfg.role && !cfg.role_name) {
+      issues.push({
+        code: 'MISSING_TIMEOUT_ROLE',
+        message: 'win_timeout requires "role" or "role_name" when type is "role"',
+        path: location,
+        severity: 'error',
+      });
+    }
+    return issues;
   },
 
   onCheckWin(ctx: WinCheckContext): WinCheckResult | null {

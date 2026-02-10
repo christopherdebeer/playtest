@@ -23,6 +23,7 @@ import {
   PlayerInitContext,
   PlayerInitResult,
   ActionSchema,
+  ConfigValidationIssue,
   isMechanicEnabled
 } from './types.js';
 import { GameAction } from '../types/game.js';
@@ -81,6 +82,20 @@ export const pushYourLuckMechanic: MechanicHooks & CardsHooks = {
       }
     },
     required: ['dice_sides', 'bust_threshold', 'points_per_success']
+  },
+
+  validateConfig(config: unknown, location: string): ConfigValidationIssue[] {
+    const cfg = config as PushYourLuckConfig;
+    const issues: ConfigValidationIssue[] = [];
+    if (cfg.dice_sides && cfg.bust_threshold && cfg.bust_threshold >= cfg.dice_sides) {
+      issues.push({
+        code: 'BUST_TOO_HIGH',
+        message: 'push_your_luck.bust_threshold must be less than dice_sides',
+        path: location,
+        severity: 'error',
+      });
+    }
+    return issues;
   },
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {

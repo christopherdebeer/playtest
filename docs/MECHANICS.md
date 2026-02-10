@@ -1198,6 +1198,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **26** engine-specific catalog entries (core domains, win conditions, extras)
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
+- **Validation decentralized**: mechanic-specific config validation delegated to `configSchema` + `validateConfig` hooks on each mechanic (no hardcoded validation in `validate.ts`)
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
 - All agnosticism hooks implemented: `initSharedState` (14), `getPlayerView` (14, incl. cards hand), `initPlayerState` (6), `isPlayerBlocked`, `canPlayerActNow`, `applyEffect`, `getActionSchema` (11 mechanics), `getAvailableActions` (cards draw+play_card, board-state move, grid-movement move), `preValidateAction` (cards draw+play_card), `reverseAction` (cards play_card), `onCheckWin` (all 16 games with explicit win mechanics)
 - Infrastructure mechanics auto-enable via transitive dependency resolution (no `alwaysEnabled` needed)
@@ -1248,6 +1249,8 @@ These catalog entries are engine additions beyond the BGG 192:
 - **Extras** (6): `action-programming`, `cooperative-actions`, `tableau-building`, `resources`, `cards`, `board`
 
 Note: `cards` and `board` serve as **pseudo-keys** in RULES.md — they declare the core mechanic AND provide deck/board configuration. During config normalization, `cards.deck` → `config.deck`, `cards.starting_hand` → `config.starting_cards`, `board` → `config.board`. They auto-enable via dependency resolution when card/board mechanics are used.
+
+Note: `hand_limit` and `hand_limit_policy` are **config params** of `hand_management`, not standalone mechanics. They are nested under `hand_management:` in RULES.md.
 
 Note: `prisoners-dilemma` was consolidated from the apostrophe BGG slug (`prisoner's-dilemma`) to a YAML-safe slug. The BGG catalog entry was updated in-place.
 

@@ -64,7 +64,7 @@ export const rerollingAndLockingMechanic: MechanicHooks = {
       return [];
     }
 
-    const rerollConfig = ctx.config.engine_mechanics?.rerolling;
+    const rerollConfig = ctx.config.engine_mechanics?.re_rolling_and_locking;
     if (!rerollConfig) return [];
 
     const actions: AvailableAction[] = [];
@@ -166,7 +166,7 @@ export const rerollingAndLockingMechanic: MechanicHooks = {
     }
 
     const { action, playerId, state } = ctx;
-    const rerollConfig = ctx.config.engine_mechanics?.rerolling;
+    const rerollConfig = ctx.config.engine_mechanics?.re_rolling_and_locking;
     if (!rerollConfig) return null;
 
     // Handle lock_dice action
