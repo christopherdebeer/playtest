@@ -1,0 +1,3 @@
+{"timestamp":"2026-02-10T15:04:26.876Z","event":"game_init","data":{"gameId":"shadow-operations-1770735866860","playerCount":2,"config":"Shadow Operations"}}
+{"timestamp":"2026-02-10T15:05:08.511Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:05:53.538Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"north_district","placedCardEffects":[],"probabilityModifier":0}}

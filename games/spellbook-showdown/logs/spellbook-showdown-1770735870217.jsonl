@@ -1,0 +1,6 @@
+{"timestamp":"2026-02-10T15:04:30.229Z","event":"game_init","data":{"gameId":"spellbook-showdown-1770735870217","playerCount":2,"config":"Spellbook Showdown"}}
+{"timestamp":"2026-02-10T15:05:09.385Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:06:29.939Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_command","player":"player-1","name":"Heal","power":1}}
+{"timestamp":"2026-02-10T15:06:57.140Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":1}}
+{"timestamp":"2026-02-10T15:07:20.773Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"queue_action","player":"player-1","actionType":"use_card","queueSize":1}}
+{"timestamp":"2026-02-10T15:08:16.790Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Inferno","effect":{"type":"damage","amount":5},"handSize":5,"newTopCard":"Inferno"}}

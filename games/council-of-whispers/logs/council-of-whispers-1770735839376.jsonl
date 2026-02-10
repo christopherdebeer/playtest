@@ -1,0 +1,8 @@
+{"timestamp":"2026-02-10T15:03:59.387Z","event":"game_init","data":{"gameId":"council-of-whispers-1770735839376","playerCount":4,"config":"Council of Whispers"}}
+{"timestamp":"2026-02-10T15:04:38.117Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:05:23.569Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"select_action"}}
+{"timestamp":"2026-02-10T15:05:49.609Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"select_action"}}
+{"timestamp":"2026-02-10T15:06:04.955Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"select_action"}}
+{"timestamp":"2026-02-10T15:06:21.948Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"select_action"}}
+{"timestamp":"2026-02-10T15:07:29.932Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"contribute","player":"player-1","amount":1,"progress":19,"goal":20}}
+{"timestamp":"2026-02-10T15:07:42.007Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"contribute","player":"player-1","amount":1,"progress":20,"goal":20}}

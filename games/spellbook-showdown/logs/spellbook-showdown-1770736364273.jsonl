@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-10T15:12:44.282Z","event":"game_init","data":{"gameId":"spellbook-showdown-1770736364273","playerCount":2,"config":"Spellbook Showdown"}}
+{"timestamp":"2026-02-10T15:13:21.443Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:13:59.369Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"use_card","card":"Barrier","use":"resource","useLabel":"Resource Mode"}}
+{"timestamp":"2026-02-10T15:14:17.324Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"use_card","card":"Barrier","use":"resource","useLabel":"Resource Mode"}}

@@ -1,0 +1,9 @@
+{"timestamp":"2026-02-10T15:15:40.287Z","event":"game_init","data":{"gameId":"spellbook-showdown-1770736540279","playerCount":2,"config":"Spellbook Showdown"}}
+{"timestamp":"2026-02-10T15:15:53.728Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:15:55.671Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"use_card","card":"Barrier","use":"resource","useLabel":"Resource Mode"}}
+{"timestamp":"2026-02-10T15:15:58.086Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-2","data":{"type":"play_card","card":"Fireball","effect":{"type":"damage","amount":3},"handSize":5,"newTopCard":"Fireball"}}
+{"timestamp":"2026-02-10T15:16:00.507Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"queue_action","player":"player-1","actionType":"use_card","queueSize":1}}
+{"timestamp":"2026-02-10T15:16:01.891Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-2","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-10T15:16:15.441Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"play_card","card":"Mana Crystal","effect":{"type":"gain_resource","resource":"mana","amount":3},"handSize":4,"newTopCard":"Mana Crystal"}}
+{"timestamp":"2026-02-10T15:16:18.653Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-10T15:16:19.372Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass"}}
