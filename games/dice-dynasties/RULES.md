@@ -17,7 +17,7 @@ mechanics:
       per_die_bonus: 0
     track_last_roll: true
 
-  rerolling:
+  re_rolling_and_locking:
     max_rerolls: 2
     dice_count: 3
     dice_sides: 6

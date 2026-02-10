@@ -1192,10 +1192,10 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ### Overview
 
-- **209** reference mechanics (BGG-sourced), **7** physical/not-plannable → **202** plannable
-- **163** registered mechanics: **12** core domains + **13** win conditions + **138** leaf
+- **216** catalog mechanics: **192** BGG-sourced + **24** engine-specific; **7** physical/not-plannable → **202** plannable
+- **164** registered mechanics: **12** core domains + **13** win conditions + **139** leaf
 - **150 of 202** plannable reference mechanics have implementations (**74%**)
-- **13** additional registered mechanics beyond the BGG reference (core domains, extras)
+- **24** engine-specific catalog entries (core domains, win conditions, extras)
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
@@ -1207,24 +1207,24 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 | Category | Implemented | Total | Coverage | Key Gaps |
 |----------|-------------|-------|----------|----------|
-| **Action** | 6 | 6 | **100%** | — |
+| **Action** | 6 | 7 | 86% | action-programming |
 | **Auction** | 10 | 11 | 91% | auction-dexterity (physical) |
-| **Building** | 8 | 9 | 89% | crayon-rail-system |
+| **Building** | 8 | 11 | 73% | crayon-rail-system, building (core), tableau-building |
 | **Cards** | 15 | 18 | 83% | campaign-battle-card-driven, deck-bag-and-pool-building |
 | **Conflict** | 7 | 7 | **100%** | — |
-| **Cooperative** | 5 | 5 | **100%** | — |
+| **Cooperative** | 5 | 6 | 83% | cooperative-actions |
 | **Dice** | 3 | 3 | **100%** | — |
 | **Economic** | 10 | 10 | **100%** | — |
 | **Ending** | 5 | 6 | 83% | race (overlaps win-race) |
 | **Information** | 8 | 8 | **100%** | — |
 | **Movement** | 13 | 23 | 57% | programmed-movement, line-of-sight, pattern-movement |
-| **Other** | 27 | 63 | 43% | hot-potato, constrained-bidding, closed-economy-auction |
+| **Other** | 27 | 64 | 42% | hot-potato, constrained-bidding, closed-economy-auction, resources (core) |
 | **Physical** | 0 | 7 | N/A | *Not plannable (require physical components)* |
 | **Social** | 10 | 10 | **100%** | — |
 | **Turn Order** | 8 | 8 | **100%** | — |
-| **Victory** | 12 | 12 | **100%** | — |
+| **Victory** | 12 | 14 | 86% | win-highest-lowest-scoring, win-single-loser |
 | **Worker Placement** | 3 | 3 | **100%** | — |
-| **Totals** | **150** | **202** | **74%** | **52 remaining** |
+| **Totals** | **150** | **209** | **72%** | **59 remaining (7 new catalog entries)** |
 
 #### Fully Complete Categories (11)
 
@@ -1234,16 +1234,19 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **Dice** (3/3): dice-rolling, push-your-luck, re-rolling-and-locking
 - **Economic** (10/10): income, market, trading, automatic-resource-growth, contracts, loans, stock-holding, investment, commodity-speculation, ownership
 - **Information** (8/8): deduction, hidden-objectives, hidden-roles, hidden-victory-points, roles-asymmetric-info, induction, pattern-recognition, questions-and-answers
-- **Social** (10/10): voting, negotiation, communication-limits, bribery, betting-and-bluffing, storytelling, player-judge, role-playing, acting, prisoner's-dilemma
+- **Social** (10/10): voting, negotiation, communication-limits, bribery, betting-and-bluffing, storytelling, player-judge, role-playing, acting, prisoners-dilemma
 - **Turn Order** (8/8): random, stat-based, progressive, auction, claim-action, pass-order, time-track, role-order
 - **Victory** (12/12): end-game-bonuses, highest-lowest-scoring, king-of-the-hill, victory-points-as-resource, reach-state, score-threshold, empty-hand, elimination, timeout, race, sudden-death, finale-ending
 - **Worker Placement** (3/3): worker-placement, worker-placement-different-worker-types, worker-placement-with-dice-workers
 
-#### Additional Registered (Beyond BGG Reference)
+#### Additional Engine-Specific Catalog Entries (24)
 
-These mechanics are engine additions not in the BGG 209:
+These catalog entries are engine additions beyond the BGG 192:
 - **Core domains** (12): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `building`, `auction`
-- **Extras** (2): `action-programming`, `cooperative-actions`
+- **Win conditions** (8): `win-score-threshold`, `win-highest-lowest-scoring`, `win-single-loser`, `win-elimination`, `win-empty-hand`, `win-reach-state`, `win-race`, `win-timeout`
+- **Extras** (4): `action-programming`, `cooperative-actions`, `tableau-building`, `resources`
+
+Note: `prisoners-dilemma` was consolidated from the apostrophe BGG slug (`prisoner's-dilemma`) to a YAML-safe slug. The BGG catalog entry was updated in-place.
 
 ### game.ts Agnosticism Progress
 

@@ -20,7 +20,7 @@ mechanics:
     refill: immediate      # Refill display right after pick
 
   # Variable player powers - each player has a unique ability
-  variable_powers:
+  variable_player_powers:
     assignment: random
     powers:
       - id: "lucky"

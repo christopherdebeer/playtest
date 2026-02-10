@@ -49,7 +49,7 @@ mechanics:
     commitment_binding: true
 
   # Critical hits and failures in combat
-  critical_hits:
+  critical_hits_and_failures:
     critical_hit_roll: 6
     critical_fail_roll: 1
     critical_hit_multiplier: 2
@@ -70,7 +70,7 @@ mechanics:
     fog_of_war: true
 
   # Secret unit deployment
-  secret_deployment:
+  secret_unit_deployment:
     reveal_on_combat: true
     reveal_on_adjacent: false
     allow_bluffing: true

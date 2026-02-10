@@ -1,9 +1,9 @@
 {
   "source": "Generated from mechanics/*/*.md frontmatter",
-  "count": 209,
+  "count": 216,
   "sourceBreakdown": {
     "bgg": 192,
-    "engine": 17
+    "engine": 24
   },
   "categories": [
     "action",
@@ -45,6 +45,14 @@
       "slug": "action-points",
       "category": "action",
       "path": "action/action-points.md"
+    },
+    {
+      "id": "engine-025",
+      "name": "Action Programming",
+      "slug": "action-programming",
+      "category": "action",
+      "path": "action/action-programming.md",
+      "source": "engine"
     },
     {
       "id": "2689",
@@ -145,6 +153,14 @@
       "path": "auction/auction-turn-order-until-pass.md"
     },
     {
+      "id": "engine-022",
+      "name": "Building",
+      "slug": "building",
+      "category": "building",
+      "path": "building/building.md",
+      "source": "engine"
+    },
+    {
       "id": "2883",
       "name": "Connections",
       "slug": "connections",
@@ -192,6 +208,14 @@
       "slug": "place-location",
       "category": "building",
       "path": "building/place-location.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-024",
+      "name": "Tableau Building",
+      "slug": "tableau-building",
+      "category": "building",
+      "path": "building/tableau-building.md",
       "source": "engine"
     },
     {
@@ -395,6 +419,14 @@
       "slug": "alliances",
       "category": "cooperative",
       "path": "cooperative/alliances.md"
+    },
+    {
+      "id": "engine-023",
+      "name": "Cooperative Actions",
+      "slug": "cooperative-actions",
+      "category": "cooperative",
+      "path": "cooperative/cooperative-actions.md",
+      "source": "engine"
     },
     {
       "id": "2023",
@@ -1095,6 +1127,14 @@
       "path": "other/resource-queue.md"
     },
     {
+      "id": "engine-021",
+      "name": "Resources",
+      "slug": "resources",
+      "category": "other",
+      "path": "other/resources.md",
+      "source": "engine"
+    },
+    {
       "id": "2003",
       "name": "Rock-Paper-Scissors",
       "slug": "rock-paper-scissors",
@@ -1314,9 +1354,9 @@
     {
       "id": "2858",
       "name": "Prisoner's Dilemma",
-      "slug": "prisoner's-dilemma",
+      "slug": "prisoners-dilemma",
       "category": "social",
-      "path": "social/prisoner's-dilemma.md"
+      "path": "social/prisoners-dilemma.md"
     },
     {
       "id": "2028",
@@ -1455,6 +1495,14 @@
       "source": "engine"
     },
     {
+      "id": "engine-018",
+      "name": "Win by Highest/Lowest Scoring",
+      "slug": "win-highest-lowest-scoring",
+      "category": "victory",
+      "path": "victory/win-highest-lowest-scoring.md",
+      "source": "engine"
+    },
+    {
       "id": "engine-011",
       "name": "Win by Reaching State",
       "slug": "win-reach-state",
@@ -1468,6 +1516,14 @@
       "slug": "win-score-threshold",
       "category": "victory",
       "path": "victory/win-score-threshold.md",
+      "source": "engine"
+    },
+    {
+      "id": "engine-019",
+      "name": "Win by Single Loser",
+      "slug": "win-single-loser",
+      "category": "victory",
+      "path": "victory/win-single-loser.md",
       "source": "engine"
     },
     {

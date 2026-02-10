@@ -1,15 +1,15 @@
 ---
 id: 2858
 name: "Prisoner's Dilemma"
-slug: prisoner's-dilemma
+slug: prisoners-dilemma
 category: social
-summary: "Prisoner's Dilemma mechanic"
+summary: "Cooperate/defect payoff matrix"
 bgg_url: https://boardgamegeek.com/boardgamemechanic/2858/prisoner's-dilemma
 ---
 
 # Prisoner's Dilemma
 
-Prisoner's Dilemma is a board game mechanic that affects how players interact with the game.
+Simultaneous cooperate/defect choices between players with asymmetric payoff matrix. Players independently choose to cooperate or defect, with outcomes determined by the combination of choices.
 
 ## Reference
 
@@ -21,8 +21,11 @@ Prisoner's Dilemma is a board game mechanic that affects how players interact wi
 
 ```yaml
 ---
-name: "My Game"
 mechanics:
-  - prisoner's-dilemma
+  prisoners_dilemma:
+    rounds: 3
+    payoff:
+      both_cooperate: 3
+      both_defect: 1
 ---
 ```
