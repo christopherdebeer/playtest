@@ -1192,10 +1192,10 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 
 ### Overview
 
-- **216** catalog mechanics: **192** BGG-sourced + **24** engine-specific; **7** physical/not-plannable → **202** plannable
+- **218** catalog mechanics: **192** BGG-sourced + **26** engine-specific; **7** physical/not-plannable → **204** plannable
 - **164** registered mechanics: **12** core domains + **13** win conditions + **139** leaf
-- **150 of 202** plannable reference mechanics have implementations (**74%**)
-- **24** engine-specific catalog entries (core domains, win conditions, extras)
+- **150 of 204** plannable reference mechanics have implementations (**74%**)
+- **26** engine-specific catalog entries (core domains, win conditions, extras)
 - **18 games**, all using unified config format
 - **228 tests** passing, build clean
 - **game.ts: ~2287 lines** (down from ~3600+), ~1400+ lines removed across phases 10-14
@@ -1210,7 +1210,7 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | **Action** | 6 | 7 | 86% | action-programming |
 | **Auction** | 10 | 11 | 91% | auction-dexterity (physical) |
 | **Building** | 8 | 11 | 73% | crayon-rail-system, building (core), tableau-building |
-| **Cards** | 15 | 18 | 83% | campaign-battle-card-driven, deck-bag-and-pool-building |
+| **Cards** | 15 | 19 | 79% | cards (core), campaign-battle-card-driven, deck-bag-and-pool-building |
 | **Conflict** | 7 | 7 | **100%** | — |
 | **Cooperative** | 5 | 6 | 83% | cooperative-actions |
 | **Dice** | 3 | 3 | **100%** | — |
@@ -1218,13 +1218,13 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 | **Ending** | 5 | 6 | 83% | race (overlaps win-race) |
 | **Information** | 8 | 8 | **100%** | — |
 | **Movement** | 13 | 23 | 57% | programmed-movement, line-of-sight, pattern-movement |
-| **Other** | 27 | 64 | 42% | hot-potato, constrained-bidding, closed-economy-auction, resources (core) |
+| **Other** | 27 | 65 | 42% | board (core), hot-potato, constrained-bidding, closed-economy-auction, resources (core) |
 | **Physical** | 0 | 7 | N/A | *Not plannable (require physical components)* |
 | **Social** | 10 | 10 | **100%** | — |
 | **Turn Order** | 8 | 8 | **100%** | — |
 | **Victory** | 12 | 14 | 86% | win-highest-lowest-scoring, win-single-loser |
 | **Worker Placement** | 3 | 3 | **100%** | — |
-| **Totals** | **150** | **209** | **72%** | **59 remaining (7 new catalog entries)** |
+| **Totals** | **150** | **211** | **71%** | **61 remaining (incl. 9 new catalog entries)** |
 
 #### Fully Complete Categories (11)
 
@@ -1239,12 +1239,15 @@ The testing infrastructure uncovered several engine bugs that were fixed:
 - **Victory** (12/12): end-game-bonuses, highest-lowest-scoring, king-of-the-hill, victory-points-as-resource, reach-state, score-threshold, empty-hand, elimination, timeout, race, sudden-death, finale-ending
 - **Worker Placement** (3/3): worker-placement, worker-placement-different-worker-types, worker-placement-with-dice-workers
 
-#### Additional Engine-Specific Catalog Entries (24)
+#### Additional Engine-Specific Catalog Entries (26)
 
 These catalog entries are engine additions beyond the BGG 192:
-- **Core domains** (12): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `building`, `auction`
+- **Core domains with catalog pages** (4): `cards`, `resources`, `board`, `building`
+- **Core domains without catalog pages** (8): `dice`, `effects`, `visibility`, `social`, `combat`, `workers`, `pass`, `auction` *(auto-enabled via dependency resolution, rarely referenced directly)*
 - **Win conditions** (8): `win-score-threshold`, `win-highest-lowest-scoring`, `win-single-loser`, `win-elimination`, `win-empty-hand`, `win-reach-state`, `win-race`, `win-timeout`
-- **Extras** (4): `action-programming`, `cooperative-actions`, `tableau-building`, `resources`
+- **Extras** (6): `action-programming`, `cooperative-actions`, `tableau-building`, `resources`, `cards`, `board`
+
+Note: `cards` and `board` serve as **pseudo-keys** in RULES.md — they declare the core mechanic AND provide deck/board configuration. During config normalization, `cards.deck` → `config.deck`, `cards.starting_hand` → `config.starting_cards`, `board` → `config.board`. They auto-enable via dependency resolution when card/board mechanics are used.
 
 Note: `prisoners-dilemma` was consolidated from the apostrophe BGG slug (`prisoner's-dilemma`) to a YAML-safe slug. The BGG catalog entry was updated in-place.
 
