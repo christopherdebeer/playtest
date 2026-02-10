@@ -216,9 +216,10 @@ describe('engine-masters integration', () => {
 
     expect(harness.state.currentPlayer).toBe('player-1');
 
-    // Draw a card — turn auto-advances (no pass needed)
-    const drawResult = harness.step('player-1', { type: 'draw', count: 1 });
-    expect(drawResult.success).toBe(true);
+    // Engine Masters uses deck-building (personal decks), not shared draw
+    // Pass to advance turn
+    const passResult = harness.step('player-1', { type: 'pass' });
+    expect(passResult.success).toBe(true);
     expect(harness.state.currentPlayer).toBe('player-2');
   });
 

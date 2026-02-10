@@ -15,7 +15,6 @@ import {
   endGame,
   cancelGame,
   roll,
-  drawCards,
   discardCard,
   playCardByName,
   advanceTurn,
@@ -59,6 +58,7 @@ import {
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
 import { getCardsState } from '../mechanics/core/index.js';
+import { drawCards } from '../mechanics/core/cards.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
 
 const program = new Command();

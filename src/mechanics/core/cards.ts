@@ -26,7 +26,9 @@ import {
   SharedStateInitResult,
   PlayerInitContext,
   PlayerInitResult,
-  ActionSchema
+  ActionSchema,
+  AvailableAction,
+  ValidationResult
 } from '../types.js';
 import { Card, PlayCardAction, DrawAction, GameState, DeckConfig, GameAction } from '../../types/game.js';
 import { playCard, drawFromDeck } from './card-piles.js';
@@ -282,6 +284,27 @@ export const cardsMechanic: MechanicHooks = {
     return null;
   },
 
+  getAvailableActions(ctx: HookContext): AvailableAction[] {
+    const { state } = ctx;
+    const cardsState = getCardsState(state);
+    // Only provide draw if game has a deck
+    if (!cardsState.deck && !cardsState.discardPile) return [];
+    return [{
+      action: { type: 'draw' } as GameAction,
+      priority: 50,
+      category: 'cards',
+    }];
+  },
+
+  preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
+    if (action.type !== 'draw') return null;
+    const cardsState = getCardsState(ctx.state);
+    if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
+      return { valid: false, error: 'Draw pile is empty and cannot be reshuffled' };
+    }
+    return { valid: true };
+  },
+
   /**
    * Handle play_card and draw actions.
    * - play_card: remove from hand, discard, fire onCardPlayed
@@ -362,4 +385,20 @@ function executeDrawAction(ctx: ActionExecutionContext): ActionExecutionResult {
     logMessage: 'draw',
     logData: { count: drawn.length, handSize: getPlayerHand(state, playerId).length }
   };
+}
+
+/**
+ * Draw cards from deck into a player's hand.
+ * Standalone utility for CLI/external callers (mechanic execution uses executeDrawAction).
+ */
+export function drawCards(state: GameState, playerId: string, count: number): Card[] {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
+  if (!blocked && drawn.length > 0) {
+    addToHand(state, playerId, drawn);
+  }
+  return drawn;
 }

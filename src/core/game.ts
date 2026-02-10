@@ -26,7 +26,6 @@ import type {
   LogEvent,
   GameAction,
   PlayCardAction,
-  DrawAction,
   ResignAction,
   PlacedCard,
   ActionValidationResult,
@@ -50,10 +49,8 @@ import type { ActionSchema } from '../mechanics/types.js';
 
 // Core services (trunk mechanics)
 import {
-  drawFromDeck,
   addToDiscard,
   playCard,
-  addToHand,
   removeFromHandByIndex,
   applyDynamicTurnOrder,
   getCardsState,
@@ -1339,21 +1336,7 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
 // determineTimeoutWinner logic moved to timeout-winner mechanic (onCheckWin with trigger='timeout')
 // Engine fallback (highest score) is in endGameOnTimeout() above
 
-export function drawCards(state: GameState, playerId: string, count: number): Card[] {
-  const player = state.players[playerId];
-  if (!player) {
-    throw new Error(`Player ${playerId} not found`);
-  }
-
-  // Use core services for deck and hand operations (with playerId for hooks)
-  const { cards: drawn, blocked } = drawFromDeck(state, count, playerId);
-  if (!blocked && drawn.length > 0) {
-    addToHand(state, playerId, drawn);
-  }
-
-  saveState(state);
-  return drawn;
-}
+// drawCards moved to cards core mechanic (src/mechanics/core/cards.ts)
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
   // Use core services for hand and discard operations (with playerId for hooks)
@@ -1498,21 +1481,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
 
   // place_card and place_location actions are now provided by the place-card mechanic
 
-  // === DRAW action (for card games) ===
-  if (hasCards) {
-    const drawEnabled = isYourTurn && !isBlocked;
-    actions.push({
-      type: 'draw',
-      description: 'Draw a card from the deck',
-      enabled: drawEnabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              undefined,
-      required: {},
-      optional: { count: 'Number of cards to draw (default: 1)' },
-      examples: [{ type: 'draw' }]
-    });
-  }
+  // draw action is now provided by cards core mechanic (getAvailableActions)
 
   // === PASS action (only for currentPlayer) ===
   // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
@@ -1541,11 +1510,11 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   });
 
   // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (move, play_card, draw, pass, resign, etc.)
+  // Skip mechanic actions that duplicate base actions (move, play_card, pass, resign)
   // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
   const baseActionTypes = new Set(actions.map(a => a.type));
   for (const mechanicAction of mechanicActions) {
-    // Skip movement/pass/draw mechanics that duplicate base actions
+    // Skip mechanics that duplicate base actions already listed above
     // Keep special categories like "victory" that add new functionality
     if (baseActionTypes.has(mechanicAction.action.type) &&
         !['victory', 'programming'].includes(mechanicAction.category || '')) continue;
@@ -1697,7 +1666,6 @@ function validateAgainstSchema(action: Record<string, unknown>, schema: ActionSc
 
 // Built-in schemas for engine-owned actions (not owned by any mechanic)
 const BUILTIN_SCHEMAS: Record<string, ActionSchema> = {
-  // draw is now owned by cards core mechanic (getActionSchema)
   resign: {
     required: ['reason'],
     fields: {
@@ -1715,7 +1683,7 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
   const act = action as Record<string, unknown>;
 
   if (!act.type || typeof act.type !== 'string') {
-    return { valid: false, errors: ['Action must have a "type" field (string): "play_card", "draw", "pass", "move", or "resign"'] };
+    return { valid: false, errors: ['Action must have a "type" field (string)'] };
   }
 
   // Validate against built-in schema if this is an engine-owned action
@@ -1825,12 +1793,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     }
   }
 
-  if (action.type === 'draw') {
-    const cardsState = getCardsState(state);
-    if (cardsState.deck.length === 0 && cardsState.discardPile.length <= 1) {
-      warnings.push('Draw pile is empty and cannot be reshuffled');
-    }
-  }
+  // draw validation moved to cards core mechanic (preValidateAction)
 
   if (action.type === 'pass') {
     warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
@@ -1946,8 +1909,7 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
 
   try {
     switch (action.type) {
-      // play_card handled by cards core mechanic (onExecuteAction)
-      // draw handled by cards core mechanic (onExecuteAction)
+      // play_card, draw handled by cards core mechanic (onExecuteAction)
       // pass handled by pass core mechanic (onExecuteAction)
 
       case 'resign': {
@@ -2289,24 +2251,13 @@ function reverseAction(state: GameState, lastAction: LastAction): boolean {
         return true;
       }
 
-      case 'draw': {
-        // Can't really reverse a draw without knowing which cards were drawn
-        // For now, just reverse the turn
+      default: {
+        // Generic reversal for mechanic-owned actions (draw, pass, move, etc.)
+        // Just reverse the turn — mechanic-specific undo requires reverseAction hooks
         reverseTurn(state);
         saveState(state);
         return true;
       }
-
-      case 'pass':
-      case 'move': {
-        // Reverse turn advancement
-        reverseTurn(state);
-        saveState(state);
-        return true;
-      }
-
-      default:
-        return false;
     }
   } catch {
     return false;

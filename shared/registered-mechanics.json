@@ -480,8 +480,10 @@
       "config_key": "cards",
       "since": "3.0.0",
       "hooks": [
+        "preValidateAction",
         "initPlayerState",
         "onExecuteAction",
+        "getAvailableActions",
         "initSharedState",
         "getActionSchema"
       ]
