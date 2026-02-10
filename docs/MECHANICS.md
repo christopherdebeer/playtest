@@ -1224,7 +1224,7 @@ These mechanics are engine additions not in the BGG 209:
 
 ### game.ts Agnosticism Progress
 
-**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, play_card, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), play_card full extraction (schema + discovery + validation + execution + reversal), `reverseAction` hook for mechanic-owned undo, and **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks) all extracted from game.ts.
+**Completed migrations (Phases 10-13+):** All action types migrated to mechanics (place_card, place_location, collect_set, roll, bank, draft, trade/bid/spend, move, draw, play_card, pass). Player init generalized, hand limit enforcement, deck-building init, placed card effects, move execution/targets, timeout winner determination, AP consolidation, draw full extraction (schema + discovery + validation + execution), play_card full extraction (schema + discovery + validation + execution + reversal), `reverseAction` hook for mechanic-owned undo, **win condition consolidation** (all 5 hardcoded patterns replaced by mechanic hooks), and **board state extraction** (move scaffold → mechanic-provided rich actions, `getBoardState` → direct `player.state`) all extracted from game.ts.
 
 **game.ts executeAction fallback switch now handles only:** `resign` — all other actions delegated to mechanics via `onExecuteAction`.
 
@@ -1248,7 +1248,7 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 |------|-------|-------------|
 | ~~**play_card in getAvailableActions**~~ | ~~removed~~ | ~~DONE: play_card scaffold moved to cards mechanic `getAvailableActions` with rich metadata (description, required, optional, examples, cards).~~ |
 | ~~**play_card reversal**~~ | ~~removed~~ | ~~DONE: Cards mechanic implements `reverseAction` hook. Engine delegates to mechanics then calls `reverseTurn`/`saveState` generically.~~ |
-| **Board state references** | ~915, 926, 1251, 1287, 1421, 1549, 2181 | Engine calls `getBoardState()`/`setBoardState()` for views, win checks, move scaffolding. Board is board-game-specific. |
+| **Board state references** | ~2043 | ~~Most removed~~. Only `setBoardState()` in victory rejection rollback remains (legitimate board API use). `getBoardState()` replaced with direct `player.state` access. Move scaffold removed — board-state/grid-movement mechanics provide rich move actions. |
 | **Effect duration management** | ~1019-1027 | Engine decrements effect durations at turn end. Should be effects mechanic `onTurnEnd`. |
 | ~~**play_card validation**~~ | ~~removed~~ | ~~DONE: Cards mechanic `preValidateAction` handles card-in-hand check for play_card (and empty-deck check for draw).~~ |
 
@@ -1256,9 +1256,9 @@ Organized by severity. Line numbers approximate — may shift as code changes.
 
 | Area | Lines | Description |
 |------|-------|-------------|
-| **Move action scaffold** | ~1420-1442 | Full MOVE action hardcoded in getAvailableActions with board/grid config checks. Delegates targets to mechanics but scaffolds the action. |
+| ~~**Move action scaffold**~~ | ~~removed~~ | ~~DONE: Move scaffold removed from game.ts. Board-state and grid-movement mechanics now return single rich move actions with targets, description, examples.~~ |
 | **Action points config** | ~1082, 1109, 1763, 1892 | Engine checks `config.engine_mechanics?.action_points` to decide turn advancement mode. |
-| **Board/grid config detection** | ~1421-1422 | `state.config.board \|\| state.config.engine_mechanics?.grid` — engine knows about board/grid existence. |
+| ~~**Board/grid config detection**~~ | ~~removed~~ | ~~DONE: `state.config.board \|\| state.config.engine_mechanics?.grid` check removed — mechanic-provided move actions replace config detection.~~ |
 | **Resources init** | ~637-647 | Legacy resource initialization fallback paths. |
 | **starting_cards config** | ~1398 | `config.starting_cards` check to determine if game has cards. |
 | **placedCards access** | ~1404, 1552 | `state.shared.placedCards` read for player view. |
@@ -1302,6 +1302,9 @@ Pass mechanic owns execution via `onExecuteAction`. game.ts fallback switch only
 
 Root YAML `win_condition` field is now purely informational (not mechanic config).
 
+#### Board State Extraction
+Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement mechanics now return single rich move actions with description, required, optional, examples, and targets. `getBoardState()` calls replaced with direct `player.state` access (4 call sites). Board/grid config detection removed — engine no longer checks `state.config.board || state.config.engine_mechanics?.grid`. Only `setBoardState()` remains for victory rejection rollback (legitimate use of board API).
+
 #### Dependency Resolution
 Infrastructure mechanics auto-enable via transitive dependency resolution. No `alwaysEnabled`.
 
@@ -1319,11 +1322,8 @@ See "Completed Engine Work" → "Play Card Action Extraction (Full)".
 #### ~~3. Cards Mechanic Owns play_card Reversal~~ ✅ DONE
 See "Completed Engine Work" → "Play Card Action Extraction (Full)".
 
-#### 4. Board State References Extraction (HIGH → now #1)
-Engine calls `getBoardState()`/`setBoardState()` in views, win checks, move scaffolding, and victory rejection. Board-state mechanic should own these via `getPlayerView`, `getAvailableActions`, and `onCheckWin`.
-
-**Impact**: ~8 call sites. Eliminates engine knowledge of board concepts.
-**Approach**: Board-state mechanic contributes to player views. Move action scaffold moves to board-state `getAvailableActions`.
+#### ~~4. Board State References Extraction~~ ✅ MOSTLY DONE
+Move scaffold removed from game.ts (~25 lines). Board-state and grid-movement mechanics now return single rich move actions with all metadata. `getBoardState()` calls replaced with direct `player.state` access. Only `setBoardState()` in victory rejection rollback remains (legitimate board API use).
 
 #### 5. Hand References Extraction (HIGH)
 Engine directly accesses `player.hand` in ~10 locations: views, filtering, validation, reversal. Hand is a card-game concept that should be invisible to the engine.
@@ -1443,11 +1443,11 @@ The remaining 52 unimplemented reference mechanics organized by category with ke
 | ~~**1**~~ | ~~Win condition consolidation~~ | ~~✅ DONE~~ | |
 | ~~**2**~~ | ~~Cards mechanic owns play_card discovery + validation~~ | ~~✅ DONE~~ | |
 | ~~**3**~~ | ~~`reverseAction` mechanic hook — cards owns play_card reversal~~ | ~~✅ DONE~~ | |
-| **4→1** | Board state extraction — board-state owns views, move scaffold, win checks | ~8 call sites | Medium |
-| **5→2** | Hand references extraction — cards contributes hand to player view | ~10 locations | Medium |
-| **6→3** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
-| **7→4** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
-| **8→5** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
+| ~~**4**~~ | ~~Board state extraction — move scaffold, getBoardState~~ | ~~✅ MOSTLY DONE~~ | |
+| **5→1** | Hand references extraction — cards contributes hand to player view | ~10 locations | Medium |
+| **6→2** | Effect duration to effects mechanic `onTurnEnd` | ~10 lines | Low |
+| **7→3** | Core services own init (pseudo-key elimination) | ~60 lines | Medium |
+| **8→4** | Advanced auction hooks (Phase 8) | 5 new hooks | Medium |
 
 ### Next Steps: New Mechanics (Priority Order)
 

@@ -241,30 +241,30 @@ export const boardStateMechanic: MechanicHooks = {
     const currentState = ctx.player.state;
 
     // Get valid targets based on edges from current state
-    const validTargets = getValidMoveTargets(boardConfig, currentState);
+    let validTargets = getValidMoveTargets(boardConfig, currentState);
 
+    // If no edges defined, allow move to any state except current
     if (validTargets.length === 0) {
-      // If no edges defined, allow move to any state
-      return boardConfig.states
-        .filter(s => s !== currentState)
-        .map(target => ({
-          action: {
-            type: 'move',
-            target
-          } as GameAction,
-          priority: 50,
-          category: 'movement'
-        }));
+      validTargets = boardConfig.states.filter(s => s !== currentState);
     }
 
-    return validTargets.map(target => ({
-      action: {
-        type: 'move',
-        target
-      } as GameAction,
+    const examples = validTargets.slice(0, 2).map(target => ({
+      type: 'move',
+      target
+    } as unknown as GameAction));
+
+    return [{
+      action: { type: 'move', target: validTargets[0] || '' } as unknown as GameAction,
       priority: 50,
-      category: 'movement'
-    }));
+      category: 'movement',
+      enabled: validTargets.length > 0 ? undefined : false,
+      reason: validTargets.length === 0 ? 'No valid move targets from current position' : undefined,
+      description: 'Move to an adjacent state on the board',
+      required: { target: 'The state to move to' },
+      optional: { reasoning: 'Explanation of your move choice' },
+      examples,
+      targets: validTargets,
+    }];
   },
 
   describeAction(action: GameAction): ActionDescription | null {

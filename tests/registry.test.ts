@@ -290,7 +290,9 @@ describe('registry global hooks', () => {
 
     const actions = mechanicRegistry.getAvailableActions(state, 'player-1');
     const moveActions = actions.filter(a => a.action.type === 'move');
-    expect(moveActions.length).toBeGreaterThanOrEqual(2); // A and B
+    expect(moveActions.length).toBe(1); // Single rich action with targets
+    expect(moveActions[0].targets).toBeDefined();
+    expect(moveActions[0].targets!.length).toBeGreaterThanOrEqual(2); // A and B
   });
 
   it('postExecuteAction merges changes from all mechanics', () => {
