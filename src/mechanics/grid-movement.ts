@@ -212,14 +212,23 @@ export const gridMovementMechanic: MechanicHooks = {
 
     const validTargets = getValidMoveTargets(ctx);
 
-    return validTargets.map(target => ({
-      action: {
-        type: 'move',
-        target
-      } as GameAction,
+    const examples = validTargets.slice(0, 2).map(target => ({
+      type: 'move',
+      target
+    } as unknown as GameAction));
+
+    return [{
+      action: { type: 'move', target: validTargets[0] || '' } as unknown as GameAction,
       priority: 50,
-      category: 'movement'
-    }));
+      category: 'movement',
+      enabled: validTargets.length > 0 ? undefined : false,
+      reason: validTargets.length === 0 ? 'No valid move targets from current position' : undefined,
+      description: 'Move to a placed location on the grid',
+      required: { target: 'The location to move to' },
+      optional: { reasoning: 'Explanation of your move choice' },
+      examples,
+      targets: validTargets,
+    }];
   },
 
   describeAction(action: GameAction): ActionDescription | null {

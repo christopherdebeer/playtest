@@ -52,7 +52,6 @@ import {
   playCard,
   removeFromHandByIndex,
   applyDynamicTurnOrder,
-  getBoardState,
   setBoardState
 } from '../mechanics/core/index.js';
 
@@ -141,7 +140,7 @@ function processVictoryDeclarationIfPresent(state: GameState, originalAction: La
   }
 
   const contestState = ensureContestState(state);
-  const playerBoardState = state.players[originalAction.player] ? getBoardState(state, originalAction.player) : 'unknown';
+  const playerBoardState = state.players[originalAction.player]?.state ?? 'unknown';
 
   // Create pending victory claim for GM verification
   contestState.pendingVictoryClaim = {
@@ -910,7 +909,7 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     .filter(pid => pid !== playerId)
     .map(pid => ({
       playerId: pid,
-      state: getBoardState(state, pid),
+      state: state.players[pid].state,
       handSize: (state.players[pid].hand || []).length,
       effects: state.players[pid].effects
     }));
@@ -921,7 +920,7 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     turnNumber: state.turnNumber,
     currentPlayer: state.currentPlayer!,
     myState: {
-      state: getBoardState(state, playerId),
+      state: player.state,
       hand: player.hand ?? [],
       effects: player.effects
     },
@@ -1308,43 +1307,10 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   // Check for blocking effects using mechanic registry
   const isBlocked = mechanicRegistry.isPlayerBlocked(state, playerId);
 
-  // Collect all mechanic-provided actions early (used for move targets and merger)
+  // Collect all mechanic-provided actions (move, play_card, draw, place_card, etc.)
   const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
 
-  // Derive move targets from mechanic-provided move actions (board-state, grid-movement)
-  const moveTargets = mechanicActions
-    .filter(a => a.action.type === 'move')
-    .map(a => (a.action as { target: string }).target);
-  const opponents = state.turnOrder.filter(pid => pid !== playerId);
-
   const actions: AvailableAction[] = [];
-
-  // === MOVE action (targets provided by board-state/grid-movement mechanics) ===
-  if (moveTargets.length > 0 || state.config.board || state.config.engine_mechanics?.grid) {
-    const hasGrid = !!state.config.engine_mechanics?.grid;
-    const moveEnabled = isYourTurn && !isBlocked && moveTargets.length > 0;
-    const description = hasGrid
-      ? 'Move to a placed location on the grid'
-      : 'Move to an adjacent state on the board';
-    actions.push({
-      type: 'move',
-      description,
-      enabled: moveEnabled,
-      reason: !isYourTurn ? 'Not your turn' :
-              isBlocked ? 'You are blocked this turn' :
-              moveTargets.length === 0 ? 'No valid move targets from current position' :
-              undefined,
-      required: { target: hasGrid ? 'The location to move to' : 'The state to move to' },
-      optional: { reasoning: 'Explanation of your move choice' },
-      examples: moveTargets.slice(0, 2).map(target => ({
-        type: 'move' as const,
-        target
-      })),
-      targets: moveTargets
-    });
-  }
-
-  // play_card, draw, place_card, place_location actions are provided by their mechanics (getAvailableActions)
 
   // === PASS action (only for currentPlayer) ===
   // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
@@ -1373,7 +1339,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   });
 
   // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (move, pass, resign)
+  // Skip mechanic actions that duplicate base actions (pass, resign)
   // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
   const baseActionTypes = new Set(actions.map(a => a.type));
   for (const mechanicAction of mechanicActions) {
@@ -1419,7 +1385,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   const result: AvailableActionsResult = {
     playerId,
     isYourTurn,
-    currentState: getBoardState(state, playerId),
+    currentState: player.state,
     hand: handCards,
     actions,
     placedCards,
