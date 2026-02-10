@@ -28,7 +28,7 @@ interface TurnOrderAuction {
 export const turnOrderAuctionMechanic: MechanicHooks = {
   slug: 'turn-order-auction',
   name: 'Turn Order: Auction',
-  requires: ['resources'],
+  requires: ['auction', 'resources'],
 
   configSchema: {
     type: 'object',

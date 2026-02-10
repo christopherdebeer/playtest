@@ -159,6 +159,7 @@ import { loansMechanic } from './loans.js';
 import { playerEliminationProcessMechanic } from './player-elimination-process.js';
 
 // Phase 8: New mechanics expansion
+import { auctionMechanic } from './core/auction-mechanic.js';
 import { buildingMechanic } from './core/building-mechanic.js';
 import { actionDraftingMechanic } from './action-drafting.js';
 import { actionEventMechanic } from './action-event.js';
@@ -387,6 +388,7 @@ mechanicRegistry.register(loansMechanic);
 mechanicRegistry.register(playerEliminationProcessMechanic);
 
 // Register Phase 8: New mechanics expansion
+mechanicRegistry.register(auctionMechanic);
 mechanicRegistry.register(buildingMechanic);
 mechanicRegistry.register(actionDraftingMechanic);
 mechanicRegistry.register(actionEventMechanic);

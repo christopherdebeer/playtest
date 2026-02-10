@@ -34,6 +34,8 @@ interface MechanicEntry {
   description?: string;
   config_schema?: Record<string, unknown>;
   hooks: string[];
+  requires?: string[];
+  defines?: Record<string, { description: string; resolution: string }>;
   dependencies?: string[];
   conflicts?: string[];
 }
@@ -93,6 +95,8 @@ function main() {
       description: mechanic.description,
       config_schema: configSchemaSimple,
       hooks: mechanic.hooks,
+      ...(mechanic.requires?.length ? { requires: mechanic.requires } : {}),
+      ...(mechanic.defines ? { defines: mechanic.defines } : {}),
       ...(mechanic.dependencies?.length ? { dependencies: mechanic.dependencies } : {}),
       ...(mechanic.conflicts?.length ? { conflicts: mechanic.conflicts } : {})
     };

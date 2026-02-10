@@ -35,7 +35,7 @@ interface AuctionConfig {
 export const auctionEnglishMechanic: MechanicHooks = {
   slug: 'auction-english',
   name: 'Auction (English)',
-  requires: ['resources'],
+  requires: ['auction', 'resources'],
 
   configSchema: {
     type: 'object',

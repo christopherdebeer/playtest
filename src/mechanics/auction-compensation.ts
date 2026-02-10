@@ -46,6 +46,7 @@ function getAuctionState(shared: Record<string, unknown>): CompensationAuctionSt
 export const auctionCompensationMechanic: MechanicHooks = {
   slug: 'auction-compensation',
   name: 'Auction: Compensation',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',

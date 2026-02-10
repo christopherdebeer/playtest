@@ -47,6 +47,7 @@ function getTOAState(shared: Record<string, unknown>): TurnOrderAuctionState | u
 export const auctionTurnOrderUntilPassMechanic: MechanicHooks = {
   slug: 'auction-turn-order-until-pass',
   name: 'Auction: Turn Order Until Pass',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',

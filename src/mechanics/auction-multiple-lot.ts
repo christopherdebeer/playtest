@@ -51,6 +51,7 @@ function getMultiLotState(shared: Record<string, unknown>): MultiLotState | unde
 export const auctionMultipleLotMechanic: MechanicHooks = {
   slug: 'auction-multiple-lot',
   name: 'Auction: Multiple Lot',
+  requires: ['auction'],
 
   configSchema: {
     type: 'object',
