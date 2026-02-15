@@ -1,0 +1,11 @@
+{"timestamp":"2026-02-15T10:34:44.548Z","event":"game_init","data":{"gameId":"aaote-1771151684535","playerCount":4,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-15T10:35:10.724Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-15T10:35:25.023Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-15T10:35:35.048Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-15T10:35:44.140Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass"}}
+{"timestamp":"2026-02-15T10:35:54.830Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"origin","totalLocations":1}}
+{"timestamp":"2026-02-15T10:36:04.279Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_location","card":"Forbidden Temple","adjacentTo":"origin","totalLocations":2}}
+{"timestamp":"2026-02-15T10:36:14.535Z","event":"action_executed","round":1,"turnNumber":4,"player":"player-4","data":{"type":"place_location","card":"Watchtower","adjacentTo":"origin","totalLocations":3}}
+{"timestamp":"2026-02-15T10:36:24.285Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"move","target":"Watchtower","previousState":"start","locationEffects":[],"cardsDrawn":0,"visitedCount":1}}
+{"timestamp":"2026-02-15T10:36:38.997Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-1","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"},"actionTarget":"player-2","handSize":6,"newTopCard":"Spy"}}
+{"timestamp":"2026-02-15T10:39:30.887Z","event":"game_cancelled","round":2,"turnNumber":5,"data":{"reason":"Test session - validating mechanic agent implementation"}}

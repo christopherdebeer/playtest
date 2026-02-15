@@ -145,6 +145,12 @@ export async function waitForTurn(
         // Get contest state
         const contestState = ensureContestState(state);
 
+        // Block turns while a mechanic intervention is pending
+        // The mechanic agent must resolve the unhandled effect first
+        if (contestState.pendingIntervention) {
+          return; // Keep waiting until intervention resolved
+        }
+
         // Check if it's this player's turn (or mechanics allow out-of-turn action)
         // Uses canPlayerActNow hook from mechanic registry
         const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
