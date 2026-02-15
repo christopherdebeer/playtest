@@ -185,12 +185,15 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
     // Otherwise, fall back to cosmetic status effect (legacy behavior).
     if (ctx.state.shared.mechanicAgentId) {
       const cardAny = card as unknown as Record<string, unknown>;
+      const effectAny = card.effect as unknown as Record<string, unknown>;
+      // Card description may be at card.description or card.effect.description
+      const description = (cardAny.description || effectAny.description || card.name) as string;
       createPendingIntervention(ctx.state, effectType, ctx.playerId, targetId, {
         effectValue: card.effect.value,
         effectDuration: card.effect.duration,
         cardName: card.name,
-        cardDescription: cardAny.description as string | undefined,
-        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Card description: ${cardAny.description || card.name}`
+        cardDescription: description,
+        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Description: ${description}`
       });
       // Don't add cosmetic status effect - let the mechanic agent handle it
     } else if (card.effect.duration && card.effect.duration > 0) {
