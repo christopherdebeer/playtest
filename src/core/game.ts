@@ -1460,6 +1460,7 @@ let interventionCounter = 0;
  */
 export function createIntervention(
   state: GameState,
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle',
   effectType: string,
   sourcePlayer: string,
   targetPlayer: string,
@@ -1468,13 +1469,23 @@ export function createIntervention(
     effectDuration?: number;
     cardName?: string;
     cardDescription?: string;
+    actionData?: GameAction;
+    locationName?: string;
     context?: string;
   }
 ): PendingIntervention {
   const contestState = ensureContestState(state);
 
+  const defaultContexts: Record<string, string> = {
+    effect: `Effect "${effectType}" from ${sourcePlayer} targeting ${targetPlayer} has no engine handler`,
+    action: `Action "${effectType}" from ${sourcePlayer} has no engine handler`,
+    location: `Location entry effect "${effectType}" at "${options?.locationName}" for ${targetPlayer} has no engine handler`,
+    lifecycle: `Lifecycle effect "${effectType}" for ${targetPlayer} has no engine handler`,
+  };
+
   const intervention: PendingIntervention = {
     id: `intervention-${++interventionCounter}-${Date.now()}`,
+    triggerType,
     effectType,
     effectValue: options?.effectValue,
     effectDuration: options?.effectDuration,
@@ -1482,7 +1493,9 @@ export function createIntervention(
     targetPlayer,
     cardName: options?.cardName,
     cardDescription: options?.cardDescription,
-    context: options?.context || `Effect "${effectType}" from ${sourcePlayer} targeting ${targetPlayer} has no engine handler`,
+    actionData: options?.actionData,
+    locationName: options?.locationName,
+    context: options?.context || defaultContexts[triggerType],
     gameState: {
       round: state.round,
       turnNumber: state.turnNumber,
@@ -1500,9 +1513,11 @@ export function createIntervention(
     player: sourcePlayer,
     data: {
       id: intervention.id,
+      triggerType,
       effectType,
       targetPlayer,
       cardName: options?.cardName,
+      locationName: options?.locationName,
       context: intervention.context
     }
   });
@@ -1951,8 +1966,35 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       // spend handled by resources mechanic (onExecuteAction)
       // collect_set, roll, bank, draft handled by their respective mechanics (onExecuteAction)
 
-      default:
+      default: {
+        // No mechanic handled this action type and it's not a built-in.
+        // If a mechanic agent is registered, create an intervention so the agent
+        // can interpret the action from RULES.md and apply state changes.
+        if (state.shared.mechanicAgentId) {
+          createIntervention(state, 'action', action.type, playerId, playerId, {
+            actionData: action,
+            context: `Player ${playerId} submitted action "${action.type}" which has no engine handler. The mechanic agent should read RULES.md to determine what this action does and apply state changes.`
+          });
+          saveState(state);
+
+          logEvent(state, {
+            event: 'action_deferred_to_mechanic',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: { actionType: action.type, action }
+          });
+
+          return {
+            success: true,
+            effect: {
+              type: 'intervention_pending',
+              details: { actionType: action.type, message: 'Action deferred to mechanic agent for interpretation' }
+            }
+          };
+        }
         return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
+      }
     }
   } catch (e) {
     return { success: false, error: (e as Error).message };

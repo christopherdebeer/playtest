@@ -1859,16 +1859,19 @@ export interface OperatorHint {
   expiresAfterTurns?: number;   // Optional: expire after N turns
 }
 
-// Pending mechanic intervention (effect the engine can't handle mechanically)
+// Pending mechanic intervention (effect/action the engine can't handle mechanically)
 export interface PendingIntervention {
   id: string;                      // Unique intervention ID
-  effectType: string;              // The unhandled effect type (e.g., "forced_trade")
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle';  // What caused the intervention
+  effectType: string;              // The unhandled effect type or action type
   effectValue?: number;            // Effect value if any
   effectDuration?: number;         // Effect duration if any
-  sourcePlayer: string;            // Player who triggered the effect
+  sourcePlayer: string;            // Player who triggered the effect/action
   targetPlayer: string;            // Player the effect targets
   cardName?: string;               // Card that was played (if applicable)
-  cardDescription?: string;        // Card description from rules (GM's instruction manual)
+  cardDescription?: string;        // Card description from rules
+  actionData?: GameAction;         // Full action data (for action-type triggers)
+  locationName?: string;           // Location name (for location-entry triggers)
   context: string;                 // Human-readable description of what happened
   gameState: {                     // Snapshot of relevant state at time of intervention
     round: number;

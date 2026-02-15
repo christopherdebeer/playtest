@@ -1,131 +1,159 @@
-# Proposal 013: Mechanic Agent for Unhandled Effects
+# Proposal 013: Mechanic Agent — From Effect Fallback to Game Interpretation Layer
 
-## Status: In Progress (v1 implemented, needs validation)
+## Status: In Progress (v2 — widened intervention triggers, thinned leaf mechanics)
 
 ## Problem
 
-When a card effect has no engine handler (no mechanic's `applyEffect` returns `handled: true`), the engine silently creates a cosmetic status effect that does nothing. Agents see the effect appear and expire but never realize it was inert. ~62% of AAOTE's card effects fall into this gap.
+The playtest framework has 138+ leaf mechanics implemented in TypeScript, each one a hardcoded rule interpreter for a specific game pattern. When a game designer invents novel actions, effects, or interactions, someone must write new TypeScript. This creates two problems:
 
-## Solution
+1. **Coverage gap**: ~62% of AAOTE's card effects have no engine handler — they silently become cosmetic status effects that do nothing.
+2. **Scalability ceiling**: Supporting arbitrary game designs requires infinite TypeScript mechanics. The framework should support any game expressible in RULES.md without new code.
 
-A new **mechanic agent** that implements unhandled effects by reasoning about game rules and applying state mutations through low-level CLI tools.
+## Vision
 
-### Architecture
+Separate the engine into two layers:
+
+- **Structural layer** (engine code): Game-agnostic primitives for state management — card CRUD, resource tracking, board positions, effect lifecycle, turn management, visibility.
+- **Interpretation layer** (mechanic agent): An LLM agent that reads RULES.md, examines game state, and applies the correct state mutations for any game-specific behavior the engine doesn't hardcode.
+
+The engine provides the **toolkit**. The mechanic agent provides the **judgment**.
+
+## Architecture
 
 ```
-Card played → Effect Dispatcher → No handler found
-                                       ↓
-                            ┌─ mechanic agent registered? ─┐
-                            │ YES                          │ NO
-                            ↓                              ↓
-                   PendingIntervention          Cosmetic status (legacy)
-                   Player turns BLOCKED
-                            ↓
-                   mechanic:pending picks it up
-                   Reads rules + state
-                   Applies mutations via mechanic:update
-                   Resolves via mechanic:resolve
-                            ↓
-                   Player turns UNBLOCKED
+Player submits action
+    ↓
+Engine validates structural constraints (is it your turn? does the card exist in hand?)
+    ↓
+Engine tries mechanic hooks (first-responder pattern)
+    ↓
+┌─ Handled by core mechanic? ──────────────────────────────┐
+│ YES (draw, play_card, move, pass, etc.)                  │
+│ → Fast path: engine applies state changes directly       │
+│ → Fire post-hooks (deduct AP, check win, etc.)           │
+└──────────────────────────────────────────────────────────┘
+    ↓ NO
+┌─ Mechanic agent registered? ─────────────────────────────┐
+│ YES → Create PendingIntervention                         │
+│     → Block player turns                                 │
+│     → mechanic:pending picks it up                       │
+│     → Agent reads rules + state                          │
+│     → Agent applies mutations via mechanic:update        │
+│     → Agent resolves via mechanic:resolve                │
+│     → Player turns unblocked                             │
+│                                                          │
+│ NO  → Legacy fallback (cosmetic status or error)         │
+└──────────────────────────────────────────────────────────┘
 ```
 
-## What's Implemented (commit 2dc67d2)
+### Intervention Trigger Points (v2)
 
-### Types (`src/types/game.ts`)
-- `PendingIntervention` interface with full context (effect type, source/target players, card name/description, game state snapshot)
-- `InterventionHistoryEntry` for audit trail
-- `Role` extended with `'mechanic'`
-- `ContestState` extended with `pendingIntervention` and `interventionHistory`
+| Trigger | When | Example |
+|---------|------|---------|
+| **Effect dispatch fallback** | Card effect has no `applyEffect` handler | `forced_trade`, `teleport_adjacent`, `block_tile` |
+| **Action execution fallback** | No mechanic returns `handled: true` for action type | Novel action types defined in RULES.md |
+| **Location entry effects** | Player moves to location with unhandled effect type | `draw_on_enter`, `trade_bonus`, `reveal_hint` |
+| **Turn lifecycle effects** | Active player effects with no engine interpretation | `enemy_item` curses, conditional triggers |
 
-### Core Logic (`src/core/game.ts`)
-- `createIntervention()` — creates a pending intervention with full context
-- `resolveIntervention()` — marks intervention resolved with description of changes
-- `checkAndAutoResolveIntervention()` — auto-skips after 120s timeout
-- `registerAgent()` accepts `'mechanic'` role, stores `mechanicAgentId` in shared state
-- `validateAction()` blocks player actions while intervention is pending
+## What's Game-Agnostic (Stays in Engine)
 
-### Effect Dispatcher (`src/mechanics/core/effect-dispatcher.ts`)
-- When `mechanicAgentId` is set and no handler found, creates `PendingIntervention` instead of cosmetic status
-- Legacy fallback preserved when no mechanic agent is registered
-- Circular dependency avoided by writing to state directly (not importing from game.ts)
+| Layer | Components | Purpose |
+|-------|-----------|---------|
+| State management | `loadState`, `saveState`, `logEvent` | Persistence, locking, events |
+| Turn orchestration | `advanceTurn`, `waitForTurn`, turn order | Player sequencing |
+| Card primitives | `drawFromDeck`, `addToHand`, `removeFromHand`, `playCard`, `shuffle` | Deck/hand/discard CRUD |
+| Resource primitives | `addResource`, `spendResource`, `transferResource` | Currency tracking |
+| Board primitives | `setBoardState`, `getAdjacent` | Position tracking |
+| Effect primitives | `addEffect`, `removeEffect`, `decrementDurations` | Buff/debuff lifecycle |
+| Visibility | `getVisibleState`, `canSeeInfo` | Information hiding |
+| Contest system | `adjudicateContest`, auto-timeout | Dispute resolution |
+| Action points | AP tracking, `shouldAutoEndTurn` | Turn metering |
+| Win conditions | `onCheckWin` hooks, simple predicates | Victory detection |
 
-### Turn Blocking (`src/core/turns.ts`)
-- `waitForTurn()` holds when `pendingIntervention` exists — mechanic must resolve first
+## What's Game-Specific (Defer to Mechanic Agent)
 
-### CLI Commands (`src/cli/index.ts`)
-- `mechanic:pending <game>` — blocking poll for interventions (100ms interval)
-- `mechanic:resolve <game> --apply|--skip -r "reason"` — resolve intervention
-- `mechanic:state <game>` — full game state view
-- `mechanic:update <game> -p <player>` — granular state mutations (state, score, effects, resources, cards)
-- `mechanic:shared <game> -k <key> -v <json>` — shared state mutations
+### Effect Interpretation
 
-### Agent Prompt (`.claude/agents/mechanic.md`)
-- Full instructions for the mechanic agent loop
-- Common effect patterns table
-- Tool reference for all mechanic: CLI commands
+Currently hardcoded in `effect-dispatcher.ts` (draw, score, reverse, bonus_worker) and various leaf mechanics. The mechanic agent can interpret any effect type by reading the card description in RULES.md and applying primitives.
 
-### Integration
-- `.claude/settings.json` — SubagentStart/SubagentStop hooks for mechanic
-- `.claude/skills/playtest/SKILL.md` — spawns mechanic agent alongside GM and players
-- 228/228 tests pass, clean build
+### Location Entry Effects
 
-## Issues Found During First Playtest
+Currently hardcoded in `grid-movement.ts` (`draw_on_enter`, `trade_bonus`, `hide`, `reveal`, `enemy_only`) and `board-state.ts` (`probability_boost`, `probability_penalty`, `force_discard`). These are game-specific interpretations the agent can handle.
 
-### Issue 1: No `mechanic` subagent type in Task tool
-**Severity**: Blocker for autonomous operation
-**Details**: The Task tool only supports `gamemaster` and `player` subagent types. When the mechanic agent is spawned as `subagent_type: "gamemaster"`, it gets the gamemaster system prompt and becomes confused about its role.
-**Fix needed**: Register `mechanic` as a recognized subagent type so the correct `.claude/agents/mechanic.md` prompt is loaded.
+### Novel Action Types
 
-### Issue 2: Intervention only triggers through `onCardPlayed` hook
-**Severity**: Major gap
-**Details**: The intervention system is wired into the effect dispatcher's `onCardPlayed` hook. But many AAOTE effects trigger on **location entry** (draw_on_enter, forced_trade, reveal_hint), **turn start** (enemy_item curses), or **other hooks** — not through card plays. These effects still silently fail.
-**Fix needed**: Add intervention creation to other hook points:
-- `onMove` / `onEnterLocation` — for location entry effects
-- `onTurnStart` — for ongoing effects like forbidden item curses
-- `executeAction` fallback — for action types without handlers
+Currently, unknown action types return `"Unknown action type"` error. With the mechanic agent, these become interventions — the agent reads RULES.md to understand what the action should do.
 
-### Issue 3: Most AAOTE effects handled by existing mechanics
-**Observation**: The first card play (Spy/peek_hand) didn't create an intervention — likely handled by the visibility mechanic. Many effects that seem "unhandled" actually have partial handlers. Need to identify which effects truly fall through.
-**Action**: Map each AAOTE effect type to its actual handler (or confirm no handler exists).
+### Complex Multi-Step Interactions
 
-### Issue 4: Card descriptions available but not always populated
-**Details**: The intervention includes `cardDescription` for the mechanic agent to reason about. AAOTE cards have `description` in their `effect` object, not directly on the card. The effect dispatcher correctly extracts it via `cardAny.description`, but some effects store description inside `effect.description` — need to also pass `card.effect.description`.
+Trading rules, auction variants, trick-taking trump rules, set collection criteria — all vary between games and are currently separate TypeScript files. The mechanic agent can interpret these from RULES.md.
 
-## Next Steps
+## Implementation
 
-1. **Register mechanic subagent type** — either via Claude Code config or by embedding the prompt directly in the Task call
-2. **Expand intervention trigger points** beyond `onCardPlayed` to cover location entry, turn lifecycle, and action execution
-3. **Fix card description extraction** — pass `card.effect.description` when `card.description` is absent
-4. **Run validated playtest** — with properly registered mechanic agent, observe full intervention cycle
-5. **Consider**: Should the mechanic agent also handle action types without engine handlers (not just effects)?
+### Phase 1: Foundation (v1 — complete)
 
-## AAOTE Effect Coverage
+- `PendingIntervention` type with full context
+- `createIntervention()` / `resolveIntervention()` / auto-timeout
+- Effect dispatcher creates interventions for unhandled card effects
+- CLI: `mechanic:pending`, `mechanic:resolve`, `mechanic:state`, `mechanic:update`, `mechanic:shared`
+- Mechanic agent prompt (`.claude/agents/mechanic.md`)
+- Turn blocking while intervention is pending
 
-| Effect Type | Count | Handler | Intervention? |
-|---|---|---|---|
-| safe | 9 cards | None (no-op) | No (nothing to implement) |
-| trade_bonus | 2 | None | Yes — location entry trigger needed |
-| draw_on_enter | 2 | None | Yes — location entry trigger needed |
-| forced_trade | 1 | None | Yes — location entry trigger needed |
-| reveal_hint | 1 | None | Yes — location entry trigger needed |
-| hide | 1 | visibility mechanic? | TBD |
-| reveal | 1 | visibility mechanic? | TBD |
-| enemy_only | 1 | traitor-game mechanic? | TBD |
-| utility | 6 | None (passive) | No (requirement check, not effect) |
-| movement_bonus | 2 | action-points? | TBD |
-| collectible | 3 | None | Yes — needs collection tracking |
-| currency | 3 | None (passive) | No (requirement check) |
-| accusation_bonus | 1 | action-points? | TBD |
-| defense | 1 | None | Yes — event interception |
-| enemy_item | 3 | effects mechanic? | Yes — turn-start curse effects |
-| extra_movement | 2 | None | Yes — through play_card |
-| teleport_adjacent | 2 | None | Yes — through play_card |
-| peek_hand | 2 | visibility mechanic | No (handled) |
-| peek_objective | 1 | visibility mechanic | No (handled) |
-| public_reveal | 2 | visibility mechanic? | TBD |
-| block_tile | 2 | None | Yes — through play_card |
-| steal_item | 2 | trading mechanic? | TBD |
-| destroy_location | 1 | None | Yes — through play_card |
-| force_reveal | 1 | None | Yes — through play_card |
-| counter | 2 | None | Yes — event interception |
-| secret_move | 2 | visibility mechanic? | TBD |
+### Phase 2: Widened Triggers (v2 — this commit)
+
+- **`executeAction` fallback**: When no mechanic returns `handled: true`, create intervention instead of `"Unknown action type"` error
+- **Location entry effects**: `grid-movement.ts` and `board-state.ts` defer unhandled location effects to mechanic agent
+- **Effect dispatcher thinning**: Remove direct handlers for effect types that the agent handles better (keep only truly universal ones)
+- **PendingIntervention type expanded**: New `triggerType` field distinguishes effect/action/location/lifecycle triggers
+- **Mechanic agent prompt updated**: Expanded to cover action interpretation, location effects, and turn lifecycle
+
+### Phase 3: Leaf Mechanic Thinning (future)
+
+- Identify leaf mechanics that are purely interpretive (no structural logic)
+- Flag them as "agent-deferrable" — engine skips them when mechanic agent is registered
+- Gradually thin TypeScript as agent-handled playtests validate consistency
+- End state: RULES.md is the single source of truth for game-specific behavior
+
+## Type Changes
+
+```typescript
+// Extended PendingIntervention with trigger classification
+interface PendingIntervention {
+  id: string;
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle';  // NEW
+  effectType: string;           // Effect type or action type
+  effectValue?: number;
+  effectDuration?: number;
+  sourcePlayer: string;
+  targetPlayer: string;
+  cardName?: string;
+  cardDescription?: string;
+  actionData?: GameAction;      // NEW: full action for action-type triggers
+  locationName?: string;        // NEW: location for location-entry triggers
+  context: string;
+  gameState: { round: number; turnNumber: number; currentPlayer: string | null };
+  timestamp: string;
+}
+```
+
+## Tradeoffs
+
+| Dimension | Engine Mechanics | Mechanic Agent |
+|-----------|-----------------|----------------|
+| **Speed** | <1ms per action | 5-30s per intervention |
+| **Consistency** | Deterministic | May vary across plays |
+| **Coverage** | Only what's coded | Any effect/action in RULES.md |
+| **Cost** | Zero marginal | LLM tokens per intervention |
+| **Maintenance** | Code per mechanic | Single agent prompt |
+
+**Mitigation**: Common operations (draw, play_card, move, pass) keep their fast engine paths. Only novel/unhandled operations trigger the agent. Games using only standard mechanics never invoke the agent.
+
+## Files Changed (v2)
+
+- `src/types/game.ts` — Extended `PendingIntervention` with `triggerType`, `actionData`, `locationName`
+- `src/core/game.ts` — `executeAction()` fallback creates intervention instead of error
+- `src/mechanics/core/effect-dispatcher.ts` — Cleaner separation of universal vs game-specific effects
+- `src/mechanics/grid-movement.ts` — Location effects defer to mechanic agent
+- `src/mechanics/board-state.ts` — Placed card effects defer to mechanic agent
+- `.claude/agents/mechanic.md` — Expanded prompt for action/location/lifecycle handling
+- `docs/proposals/013-mechanic-agent.md` — This document

@@ -26,10 +26,11 @@ import { addEffect } from './effects.js';
 import { mechanicRegistry } from '../registry.js';
 
 /**
- * Effect types handled directly by this dispatcher.
- * Other effect types are routed to mechanicRegistry.applyEffect().
+ * Effect types handled directly by this dispatcher (truly universal patterns).
+ * These are structural operations that map 1:1 to engine primitives.
+ * All other effect types are routed to mechanics or the mechanic agent.
  */
-const DIRECT_EFFECT_TYPES = ['draw', 'score', 'reverse', 'bonus_worker'];
+const UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse'];
 
 /**
  * Effect types that target opponents by default
@@ -42,8 +43,9 @@ let interventionCounter = 0;
  * Create a PendingIntervention directly on the state object.
  * Avoids circular dependency with game.ts by writing to state.shared directly.
  */
-function createPendingIntervention(
+export function createEffectIntervention(
   state: GameState,
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle',
   effectType: string,
   sourcePlayer: string,
   targetPlayer: string,
@@ -52,6 +54,7 @@ function createPendingIntervention(
     effectDuration?: number;
     cardName?: string;
     cardDescription?: string;
+    locationName?: string;
     context?: string;
   }
 ): void {
@@ -70,8 +73,16 @@ function createPendingIntervention(
     cs.interventionHistory = [];
   }
 
+  const defaultContexts: Record<string, string> = {
+    effect: `Effect "${effectType}" from ${sourcePlayer} targeting ${targetPlayer} has no engine handler`,
+    action: `Action "${effectType}" from ${sourcePlayer} has no engine handler`,
+    location: `Location effect "${effectType}" at "${options?.locationName}" for ${targetPlayer} has no engine handler`,
+    lifecycle: `Lifecycle effect "${effectType}" for ${targetPlayer} has no engine handler`,
+  };
+
   const intervention: PendingIntervention = {
     id: `intervention-${++interventionCounter}-${Date.now()}`,
+    triggerType,
     effectType,
     effectValue: options?.effectValue,
     effectDuration: options?.effectDuration,
@@ -79,7 +90,8 @@ function createPendingIntervention(
     targetPlayer,
     cardName: options?.cardName,
     cardDescription: options?.cardDescription,
-    context: options?.context || `Effect "${effectType}" from ${sourcePlayer} targeting ${targetPlayer} has no engine handler`,
+    locationName: options?.locationName,
+    context: options?.context || defaultContexts[triggerType],
     gameState: {
       round: state.round,
       turnNumber: state.turnNumber,
@@ -89,6 +101,13 @@ function createPendingIntervention(
   };
 
   cs.pendingIntervention = intervention;
+}
+
+/**
+ * Check if a mechanic agent is registered for this game.
+ */
+export function hasMechanicAgent(state: GameState): boolean {
+  return !!state.shared.mechanicAgentId;
 }
 
 export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
@@ -123,20 +142,18 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
       targetId = ctx.playerId;
     }
 
-    // Handle direct effect types
+    // Handle universal effect types (structural operations that map 1:1 to primitives)
     switch (effectType) {
       case 'draw': {
-        // Force target to draw cards (e.g., UNO Draw Two)
         const count = card.effect.value ?? 2;
         const drawn = drawFromDeck(ctx.state, count, targetId);
         if (drawn.cards.length > 0) {
           addToHand(ctx.state, targetId, drawn.cards);
         }
-        return null; // Direct mutation via core services
+        return null;
       }
 
       case 'score': {
-        // Add/subtract score for target
         const value = card.effect.value ?? 1;
         const target = ctx.state.players[targetId];
         if (target) {
@@ -146,20 +163,7 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
       }
 
       case 'reverse': {
-        // Reverse turn order
         ctx.state.turnOrder.reverse();
-        return null;
-      }
-
-      case 'bonus_worker': {
-        // Add a bonus worker to the player
-        const target = ctx.state.players[targetId];
-        if (target) {
-          const workers = (target as unknown as Record<string, unknown>).workers;
-          if (typeof workers === 'number') {
-            (target as unknown as Record<string, unknown>).workers = workers + (card.effect.value ?? 1);
-          }
-        }
         return null;
       }
 
@@ -167,7 +171,7 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
         break;
     }
 
-    // For effect types not handled directly, try the applyEffect dispatch
+    // For all other effect types, try the applyEffect dispatch to registered mechanics
     const result = mechanicRegistry.applyEffect(ctx.state, targetId, {
       type: effectType,
       value: card.effect.value,
@@ -183,19 +187,17 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
     // If a mechanic agent is registered, create a PendingIntervention
     // so the agent can reason about and apply the effect.
     // Otherwise, fall back to cosmetic status effect (legacy behavior).
-    if (ctx.state.shared.mechanicAgentId) {
+    if (hasMechanicAgent(ctx.state)) {
       const cardAny = card as unknown as Record<string, unknown>;
       const effectAny = card.effect as unknown as Record<string, unknown>;
-      // Card description may be at card.description or card.effect.description
       const description = (cardAny.description || effectAny.description || card.name) as string;
-      createPendingIntervention(ctx.state, effectType, ctx.playerId, targetId, {
+      createEffectIntervention(ctx.state, 'effect', effectType, ctx.playerId, targetId, {
         effectValue: card.effect.value,
         effectDuration: card.effect.duration,
         cardName: card.name,
         cardDescription: description,
         context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Description: ${description}`
       });
-      // Don't add cosmetic status effect - let the mechanic agent handle it
     } else if (card.effect.duration && card.effect.duration > 0) {
       // Legacy fallback: add as cosmetic status effect when no mechanic agent
       addEffect(ctx.state, targetId, {

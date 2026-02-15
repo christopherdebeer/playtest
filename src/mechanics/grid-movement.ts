@@ -24,6 +24,7 @@ import {
 } from './types.js';
 import { GameAction, Card } from '../types/game.js';
 import { getCardsState } from './core/index.js';
+import { createEffectIntervention, hasMechanicAgent } from './core/effect-dispatcher.js';
 
 interface GridConfig {
   type?: string;
@@ -121,9 +122,10 @@ export const gridMovementMechanic: MechanicHooks = {
     if (locationCard?.effect) {
       const effect = locationCard.effect;
 
+      // Handle structural effects that map 1:1 to engine primitives
       switch (effect.type) {
         case 'draw_on_enter': {
-          // Draw cards when entering this location
+          // Draw cards when entering this location (universal primitive: drawFromDeck)
           const drawCount = effect.value ?? 1;
           const handLimit = (config.engine_mechanics?.hand_limit as number) ?? Infinity;
 
@@ -145,30 +147,24 @@ export const gridMovementMechanic: MechanicHooks = {
           break;
         }
 
-        case 'trade_bonus':
-          effectsApplied.push(`${locationCard.name}: Trading costs 0 AP here`);
-          break;
-
-        case 'hide':
-          effectsApplied.push(`${locationCard.name}: Your position is hidden from others`);
-          break;
-
-        case 'reveal':
-          effectsApplied.push(`${locationCard.name}: You can see all player positions`);
-          break;
-
-        case 'enemy_only':
-          effectsApplied.push(`${locationCard.name}: Only The Enemy may enter this location!`);
-          break;
-
         case 'safe':
-          // No special effect
+          // No special effect — truly a no-op
           break;
 
-        default:
-          if (effect.description) {
+        default: {
+          // All other location effects are game-specific.
+          // Defer to mechanic agent if registered, otherwise log as informational.
+          if (hasMechanicAgent(state)) {
+            createEffectIntervention(state, 'location', effect.type, playerId, playerId, {
+              effectValue: effect.value,
+              locationName: moveAction.target,
+              cardDescription: effect.description,
+              context: `${playerId} entered location "${moveAction.target}" (${locationCard.name}). Location effect "${effect.type}" needs implementation. Description: ${effect.description || effect.type}`
+            });
+          } else if (effect.description) {
             effectsApplied.push(`${locationCard.name}: ${effect.description}`);
           }
+        }
       }
     }
 
