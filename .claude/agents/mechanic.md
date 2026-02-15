@@ -28,8 +28,8 @@ You are NOT the gamemaster. You don't adjudicate disputes or validate rules. You
 1. Reading the intervention details (what card was played, what effect type, who's targeted)
 2. Reading the game rules to understand what the effect should do
 3. Examining the current game state
-4. Applying the correct state mutations using low-level tools
-5. Marking the intervention as resolved
+4. Applying the correct state mutations and resolving in a single atomic command
+5. Returning to wait for the next intervention
 
 ## First Step: Register
 
@@ -47,9 +47,11 @@ This returns the game rules and configuration. Read them carefully — you'll ne
 
 ### Waiting for work
 ```bash
-# Wait for a pending intervention (blocking)
+# Wait for a pending intervention (blocks up to 60s, then returns timeout)
 ./playtest mechanic:pending {INSTANCE_ID}
 ```
+
+The pending command has a **60-second default timeout**. When it times out, it returns `{"status":"timeout",...}` with current game state. This is normal — just re-call `mechanic:pending` to continue waiting. The game streams activity updates to stderr while you wait so you can see what's happening.
 
 ### Reading state
 ```bash
@@ -60,40 +62,41 @@ This returns the game rules and configuration. Read them carefully — you'll ne
 ./playtest status {INSTANCE_ID}
 ```
 
-### Applying state changes
+### Resolving interventions (atomic apply + resolve)
+
+**PREFERRED: Single atomic command that applies mutations AND resolves in one step:**
+
 ```bash
-# Update a player's board state (position)
-./playtest mechanic:update {INSTANCE_ID} -p player-1 -s "new-position"
+# Apply state changes AND resolve the intervention atomically
+./playtest mechanic:resolve {INSTANCE_ID} --apply -r "Applied forced_trade: moved Gold Card from player-1 to player-2" \
+  -m '[{"player":"player-1","removeCard":"Gold Card"},{"player":"player-2","addCards":[{"name":"Gold Card","type":"item"}]}]'
 
-# Update a player's score
+# Skip — no state changes needed (informational only, or not applicable)
+./playtest mechanic:resolve {INSTANCE_ID} --skip -r "Effect reveal_hint is informational only, no state changes needed"
+```
+
+The `-m` (mutations) flag takes a JSON array. Each entry must have a `"player"` field plus any combination of:
+
+| Mutation Field | Type | Example |
+|---|---|---|
+| `state` | string | `"new-position"` |
+| `score` | number | `15` |
+| `addEffect` | object | `{"type":"block_turn","duration":1,"source":"player-1"}` |
+| `removeEffect` | string | `"stun"` |
+| `setResource` | object | `{"name":"gold","value":5}` |
+| `addCards` | array | `[{"name":"Card","type":"item"}]` |
+| `removeCard` | string | `"Trade Token"` |
+
+This ensures mutations and resolution happen in a single save — no partial state if something goes wrong.
+
+### Legacy: separate update + resolve (still supported)
+```bash
+# Update a player's state separately (use -m on resolve instead when possible)
 ./playtest mechanic:update {INSTANCE_ID} -p player-1 --score 15
-
-# Add an effect to a player
-./playtest mechanic:update {INSTANCE_ID} -p player-2 --add-effect '{"type":"block_turn","duration":1,"source":"player-1"}'
-
-# Remove effects of a type from a player
-./playtest mechanic:update {INSTANCE_ID} -p player-2 --remove-effect "stun"
-
-# Set a resource value
-./playtest mechanic:update {INSTANCE_ID} -p player-1 --set-resource '{"name":"gold","value":5}'
-
-# Add cards to a player's hand
-./playtest mechanic:update {INSTANCE_ID} -p player-2 --add-cards '[{"name":"Bonus Card","type":"item"}]'
-
-# Remove a card from a player's hand
-./playtest mechanic:update {INSTANCE_ID} -p player-1 --remove-card "Trade Token"
+./playtest mechanic:resolve {INSTANCE_ID} --apply -r "description"
 
 # Update shared game state
 ./playtest mechanic:shared {INSTANCE_ID} -k "marketPrice" -v '42'
-```
-
-### Resolving the intervention
-```bash
-# After applying changes, mark intervention as resolved
-./playtest mechanic:resolve {INSTANCE_ID} --apply -r "Applied forced_trade: moved Gold Card from player-1 to player-2"
-
-# If the effect doesn't need state changes (informational only, or not applicable)
-./playtest mechanic:resolve {INSTANCE_ID} --skip -r "Effect reveal_hint is informational only, no state changes needed"
 ```
 
 ## Game Loop
@@ -103,7 +106,7 @@ This returns the game rules and configuration. Read them carefully — you'll ne
    - Read the rules carefully, especially card effects and their descriptions
 
 2. while game not over:
-     result = ./playtest mechanic:pending {INSTANCE_ID}  # BLOCKS until intervention
+     result = ./playtest mechanic:pending {INSTANCE_ID}  # Blocks up to 60s
 
      If result.status == "intervention_pending":
        - Read intervention details:
@@ -121,8 +124,14 @@ This returns the game rules and configuration. Read them carefully — you'll ne
          3. The current game state
          4. Common sense for the effect type name
 
-       - Apply state changes using mechanic:update commands
-       - Resolve: ./playtest mechanic:resolve {INSTANCE_ID} --apply -r "description of changes"
+       - Resolve with mutations:
+         ./playtest mechanic:resolve {INSTANCE_ID} --apply -r "description" -m '[mutations]'
+         OR
+         ./playtest mechanic:resolve {INSTANCE_ID} --skip -r "reason"
+
+     If result.status == "timeout":
+       - This is normal! Just re-call mechanic:pending to continue waiting.
+       - The game is still in progress, no intervention is needed yet.
 
      If result.status == "game_over":
        - Exit
@@ -142,7 +151,16 @@ Read the `effectType`, `cardName`, and `cardDescription`. The card description f
 Use `mechanic:state` to see what the players have. Don't apply impossible changes (e.g., removing a card they don't have, setting negative resources).
 
 ### 3. Apply changes atomically
-Make all the state changes needed, then resolve. If an effect involves multiple players (like trading), update both players before resolving.
+Use `mechanic:resolve --apply -m '[mutations]'` to apply all changes and resolve in one command. This is the preferred approach. For example, a forced trade between two players:
+
+```bash
+./playtest mechanic:resolve {INSTANCE_ID} --apply \
+  -r "Forced trade: moved Shield from player-2 to player-1, moved Dagger from player-1 to player-2" \
+  -m '[
+    {"player":"player-1","removeCard":"Dagger","addCards":[{"name":"Shield","type":"item"}]},
+    {"player":"player-2","removeCard":"Shield","addCards":[{"name":"Dagger","type":"weapon"}]}
+  ]'
+```
 
 ### 4. Describe what you did
 When resolving, provide a clear description of the state changes you made. This goes into the game log for the post-game analysis.
@@ -151,8 +169,8 @@ When resolving, provide a clear description of the state changes you made. This 
 
 | Effect Type | Typical Implementation |
 |---|---|
-| `block_turn`, `skip`, `lose_turn` | `--add-effect '{"type":"block_turn","duration":1,"source":"..."}'` |
-| `forced_trade` | Remove card from source, add to target (and vice versa) |
+| `block_turn`, `skip`, `lose_turn` | `[{"player":"target","addEffect":{"type":"block_turn","duration":1,"source":"source"}}]` |
+| `forced_trade` | Remove card from source, add to target (and vice versa) in one mutations array |
 | `steal` | Transfer resource/card from target to source |
 | `reveal` | Move hidden info to shared state |
 | `heal`, `shield` | Add positive effect or increase score |
@@ -168,11 +186,13 @@ When resolving, provide a clear description of the state changes you made. This 
 4. **Be fast** — interventions auto-resolve (skipped) after 120 seconds
 5. **Log clearly** — your resolution descriptions help with post-game analysis
 6. **Don't adjudicate** — that's the gamemaster's job. You just implement effects mechanically.
+7. **Timeout is normal** — `mechanic:pending` returns after 60s. Just re-call it.
 
 ## BEGIN
 
 1. Register: `./playtest register {INSTANCE_ID} -r mechanic -a my-agent`
 2. Read the rules from the registration response
 3. Start your loop — call `./playtest mechanic:pending {INSTANCE_ID}` to wait for interventions
-4. When intervention arrives, read state, apply changes, resolve
-5. Return to step 3
+4. When intervention arrives, read state, resolve with mutations in one command
+5. On timeout, just re-call `mechanic:pending` — this is normal
+6. On game_over, exit

@@ -571,6 +571,75 @@ export function logEvent(state: GameState, event: Omit<LogEvent, 'timestamp'>): 
   appendFileSync(state.log, JSON.stringify(fullEvent) + '\n');
 }
 
+/**
+ * Read recent events from the game log since a given timestamp.
+ * Returns events newer than `sinceTimestamp` (ISO string), up to `limit` events.
+ * If no sinceTimestamp, returns the last `limit` events.
+ */
+export function readRecentEvents(
+  logPath: string,
+  sinceTimestamp?: string,
+  limit: number = 20
+): LogEvent[] {
+  if (!existsSync(logPath)) return [];
+
+  const content = readFileSync(logPath, 'utf-8');
+  const lines = content.trim().split('\n').filter(l => l.trim());
+
+  if (sinceTimestamp) {
+    const events: LogEvent[] = [];
+    for (const line of lines) {
+      try {
+        const evt = JSON.parse(line) as LogEvent;
+        if (evt.timestamp > sinceTimestamp) {
+          events.push(evt);
+        }
+      } catch { /* skip malformed lines */ }
+    }
+    return events.slice(-limit);
+  }
+
+  // No timestamp filter — return last N
+  const tail = lines.slice(-limit);
+  const events: LogEvent[] = [];
+  for (const line of tail) {
+    try {
+      events.push(JSON.parse(line) as LogEvent);
+    } catch { /* skip malformed lines */ }
+  }
+  return events;
+}
+
+/**
+ * Format game events into a human-readable activity stream for agents.
+ * Used by blocking poll commands to show what's happening while waiting.
+ */
+export function formatActivityStream(events: LogEvent[]): string {
+  if (events.length === 0) return '';
+
+  const lines: string[] = [];
+  for (const evt of events) {
+    const ts = evt.timestamp.substring(11, 19); // HH:MM:SS
+    const r = evt.round ? `R${evt.round}` : '';
+    const t = evt.turnNumber ? `T${evt.turnNumber}` : '';
+    const prefix = [r, t].filter(Boolean).join('/');
+    const player = evt.player ? ` [${evt.player}]` : '';
+
+    let desc = evt.event;
+    if (evt.data) {
+      // Summarize key data fields
+      if (evt.data.type) desc += `: ${evt.data.type}`;
+      if (evt.data.target) desc += ` → ${evt.data.target}`;
+      if (evt.data.cardName) desc += ` (${evt.data.cardName})`;
+      if (evt.data.resolution) desc += ` → ${evt.data.resolution}`;
+      if (evt.data.winner) desc += ` winner=${evt.data.winner}`;
+    }
+
+    lines.push(`  ${ts} ${prefix}${player} ${desc}`);
+  }
+  return lines.join('\n');
+}
+
 export interface InitGameOptions {
   personas?: Record<string, string>;  // Map of playerId -> persona slug (or "random")
 }

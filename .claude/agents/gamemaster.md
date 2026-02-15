@@ -49,7 +49,7 @@ This returns the game rules and configuration. Read them carefully.
 # Register and get rules (do this FIRST)
 ./playtest register {INSTANCE_ID} -r gamemaster -a gm-agent
 
-# Wait for contest or resignation (blocking)
+# Wait for contest or resignation (blocks up to 60s, streams activity to stderr)
 ./playtest gm:pending {INSTANCE_ID}
 
 # Get full game state for context
@@ -81,7 +81,7 @@ This returns the game rules and configuration. Read them carefully.
    - Read the rules from the response
 
 2. while game not over:
-     result = ./playtest gm:pending {INSTANCE_ID}  # BLOCKS until event
+     result = ./playtest gm:pending {INSTANCE_ID}  # Blocks up to 60s, streams activity to stderr
 
      If result.status == "contest_pending":
        - Read contest details (contestant, reason, original action)
@@ -112,6 +112,10 @@ This returns the game rules and configuration. Read them carefully.
          ...analysis content...
          EOF
        - Exit after submitting
+
+     If result.status == "timeout":
+       - This is normal! No GM action is needed yet.
+       - Just re-call gm:pending to continue waiting.
 
      If result.status == "game_over":
        - Game already completed (analysis was skipped or already submitted)
