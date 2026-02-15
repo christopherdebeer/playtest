@@ -1,9 +1,9 @@
 ---
 name: "AAOTE: An Agent of the Enemy"
-version: "0.5"
+version: "0.6"
 players: 3-5
 win_condition: "objective_completed"
-max_turns: 36  # Sweet spot: 30 too short for objectives, 40 too long. 36 = 9 rounds of 4 players
+max_turns: 32  # Tightened from 36: v0.5 game ended at turn 23 (64%), reducing to 32 increases Enemy urgency
 
 # Player Cards (dealt face-up, visible to all)
 player_cards:
@@ -176,7 +176,7 @@ Players explore an ever-expanding world, placing locations, collecting items, an
 
 3. **Starting Location**: Place the "Origin" tile in the center. All player tokens start here. **This is the ONLY tile on the grid initially — you must place location cards to create new destinations!**
 
-4. **Starting Hand**: Deal 4 cards from the main deck to each player. **Forbidden Items are never dealt in starting hands** — shuffle them into the bottom half of the deck.
+4. **Starting Hand**: Deal 5 cards from the main deck to each player. **Forbidden Items are never dealt in starting hands** — the engine shuffles them into the bottom half of the deck automatically.
 
 5. **Origin counts** as a visited location for objective purposes.
 
@@ -348,7 +348,7 @@ Forbidden Items are powerful but **cursed for regular players**:
 
 ---
 
-## Design Notes (v0.5 Changes)
+## Design Notes (v0.6 Changes)
 
 ### v0.3→v0.4 Changes (overcorrected)
 - Collector 4→5 items + 3-source requirement = too hard (nobody completed)
@@ -372,22 +372,38 @@ Forbidden Items are powerful but **cursed for regular players**:
 - **Max turns**: 30→36 (30 was too short for objectives)
 - **Gifts**: Still disabled (prevents Forbidden Item accidents)
 
+### v0.5 Playtest Results (Playtest 3)
+- **Winner**: Player-1 (Collector) in 23 turns (64% of 36-turn max)
+- **Grade**: C+ — mechanics sound but critical engine gaps
+- **What Worked**: Collector trade requirement, victory declaration, game pacing, Village Square hub
+- **What Failed**:
+  - Forbidden Item curses NOT enforced — Player-1 held Cursed Amulet + Dark Tome with zero penalties
+  - Suspicion system completely unused — 0 accusations in 23 turns
+  - Event card targeting broken — Theft, Roadblock, Interrogate all skipped
+  - Forbidden Items dealt in starting hands — rules say bottom half only
+
+### v0.6 Engine Fixes
+1. **FIX: Forbidden Item deck placement** — Engine now separates forbidden items (effect.type="enemy_item") and shuffles them into bottom half of deck only. Starting hands guaranteed clean.
+2. **FIX: Forbidden Item curse enforcement** — New `forbidden-items` mechanic runs `onTurnStart` to check player hands. Non-Enemy holders of Cursed Amulet lose 1 AP/turn; Dark Tome holders get hand limit -1. Enemy is immune.
+3. **FIX: Max turns 36→32** — Increases Enemy urgency (v0.5 ended at turn 23 of 36, Enemy had no realistic path to collect 3 Forbidden Items)
+4. **FIX: Starting hand text** — Setup section now correctly says 5 cards (matching config)
+
 ### Key Design Principles Discovered
 1. **Every objective needs at least 1 interaction gate** — prevents solo-completion
 2. **The sweet spot is ~60-80% of max turns** for objective completion
 3. **Social deduction needs to be cheap** — expensive accusations go unused
 4. **Trading needs incentive AND opportunity** — Collector trade requirement provides both
 5. **Forbidden Item curses create observable signals** for Enemy detection
+6. **Engine enforcement is critical** — GM-only adjudication of curses doesn't work; agents don't self-penalize
 
 ### Still Open
-1. **Engine doesn't enforce forbidden-items-in-bottom-half-of-deck** — needs code fix
-2. **Player abilities not tracked by engine** — GM must adjudicate manually
-3. **Multiple enemies for 5+ players** — untested
-4. **Turn auto-advance**: Engine advances after 1 action for some players — bug?
+1. **Player abilities not tracked by engine** — GM must adjudicate manually (Scholar, Merchant, Scout, Guardian, Mystic)
+2. **Multiple enemies for 5+ players** — untested
+3. **Suspicion system needs incentivization** — 0 accusations in v0.5; may need information rewards for accusing
+4. **Event card targeting** — Complex events (Theft, Roadblock, Interrogate) need mechanic agent intervention for target selection
 
-### Playtest Goals for v0.5
-- Does Collector's trade requirement force meaningful trading?
-- Is Builder achievable at 4 locations in 36 turns?
-- Does 1 AP accuse cost lead to more social deduction?
-- Is 36 turns the right balance for Enemy timeout vs objective completion?
-- Do the Forbidden Item curses actually reveal The Enemy?
+### Playtest Goals for v0.6
+- Do Forbidden Item curses now create detectable signals?
+- Does 32-turn limit increase Enemy urgency without being too tight for regular objectives?
+- Does the Suspicion system see any use with functioning curses?
+- Is the forbidden-items mechanic correctly applying AP and hand limit penalties?

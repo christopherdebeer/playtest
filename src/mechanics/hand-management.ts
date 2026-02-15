@@ -45,8 +45,12 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
    * Fired by hand.ts via mechanicRegistry.fire('cards', 'onBeforeAddToHand', ...).
    */
   onBeforeAddToHand(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; blockReason?: string; cards?: Card[] } | null {
-    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
-    if (handLimit === undefined) return null;
+    const baseHandLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    if (baseHandLimit === undefined) return null;
+
+    // Apply forbidden item curse reduction (Dark Tome)
+    const curseReduction = ctx.player.forbiddenHandLimitReduction ?? 0;
+    const handLimit = baseHandLimit - curseReduction;
 
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
 
@@ -84,8 +88,12 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
    * Fired by card-piles.ts via mechanicRegistry.fire('cards', 'onBeforeCardDraw', ...).
    */
   onBeforeCardDraw(ctx: HookContext, { requestedCount }: BeforeCardDrawPayload): { blocked?: boolean; blockReason?: string; count?: number } | null {
-    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
-    if (handLimit === undefined) return null;
+    const baseHandLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    if (baseHandLimit === undefined) return null;
+
+    // Apply forbidden item curse reduction (Dark Tome)
+    const curseReduction = ctx.player.forbiddenHandLimitReduction ?? 0;
+    const handLimit = baseHandLimit - curseReduction;
 
     const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
     if (policy !== 'cannot_draw') return null;

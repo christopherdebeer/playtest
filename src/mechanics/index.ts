@@ -178,6 +178,9 @@ import { followMechanic } from './follow.js';
 import { storytellingMechanic } from './storytelling.js';
 import { tilePlacementMechanic } from './tile-placement.js';
 
+// Forbidden Items curse enforcement
+import { forbiddenItemsMechanic } from './forbidden-items.js';
+
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
 
@@ -406,6 +409,9 @@ mechanicRegistry.register(randomProductionMechanic);
 mechanicRegistry.register(followMechanic);
 mechanicRegistry.register(storytellingMechanic);
 mechanicRegistry.register(tilePlacementMechanic);
+
+// Register forbidden items curse enforcement
+mechanicRegistry.register(forbiddenItemsMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);

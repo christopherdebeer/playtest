@@ -150,6 +150,9 @@ export interface PlayerState {
   meldCount?: number;                   // Number of melds created
   patternGrid?: unknown[][];            // Pattern building: personal grid
   completedPatterns?: string[];         // Pattern building: completed patterns
+
+  // Forbidden items curse state
+  forbiddenHandLimitReduction?: number; // Hand limit reduction from cursed items (Dark Tome)
 }
 
 /**
