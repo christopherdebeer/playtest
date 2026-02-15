@@ -77,6 +77,12 @@ export const hiddenObjectivesMechanic: MechanicHooks = {
 
   /**
    * Initialize player state with a secret objective
+   *
+   * Uses shared._objectiveAssignments for coordinated assignment across players.
+   * On first call (playerIndex 0), builds the assignment list and stores it in shared state.
+   * Subsequent calls pick from the pre-built list.
+   *
+   * For traitor games, guarantees at least 1 enemy-type objective is included.
    */
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
     const objectives = (ctx.config as { objectives?: ObjectiveDefinition[] }).objectives;
@@ -86,25 +92,48 @@ export const hiddenObjectivesMechanic: MechanicHooks = {
       return null;
     }
 
-    // Get player count from config
-    const playersConfig = ctx.config.players;
-    const playerCount = typeof playersConfig === 'number'
-      ? playersConfig
-      : (playersConfig as { min: number; max: number })?.max ?? 4;
+    // Use shared state for coordinated assignment
+    const shared = ctx.shared as Record<string, unknown> | undefined;
+    let assignments = shared?._objectiveAssignments as ObjectiveDefinition[] | undefined;
 
-    // Build objective pool (expand counts)
-    const objectivePool: ObjectiveDefinition[] = [];
-    for (const obj of objectives) {
-      for (let i = 0; i < (obj.count || 1); i++) {
-        objectivePool.push(obj);
+    if (!assignments) {
+      // First player - build and store the assignment list
+      // Build objective pool (expand counts)
+      const objectivePool: ObjectiveDefinition[] = [];
+      for (const obj of objectives) {
+        for (let i = 0; i < (obj.count || 1); i++) {
+          objectivePool.push(obj);
+        }
+      }
+
+      // Get total player count from shared state (set by game.ts before player init)
+      const totalPlayers = (shared?._numPlayers as number) || Object.keys(ctx.existingPlayers).length + 1;
+
+      // For traitor games, guarantee at least 1 enemy-type objective
+      const isTraitorGame = !!ctx.config.engine_mechanics?.traitor_game;
+      const enemyObjectives = objectivePool.filter(o => o.type === 'enemy' || o.type === 'traitor');
+      const regularObjectives = objectivePool.filter(o => o.type !== 'enemy' && o.type !== 'traitor');
+
+      let selected: ObjectiveDefinition[];
+      if (isTraitorGame && enemyObjectives.length > 0 && objectivePool.length > totalPlayers) {
+        // Guarantee 1 enemy, fill rest with shuffled regulars
+        const shuffledRegulars = shuffleArray(regularObjectives);
+        const shuffledEnemies = shuffleArray(enemyObjectives);
+        selected = [shuffledEnemies[0], ...shuffledRegulars.slice(0, totalPlayers - 1)];
+        selected = shuffleArray(selected); // Re-shuffle so enemy isn't always first
+      } else {
+        // Normal: shuffle all and take first N
+        selected = shuffleArray(objectivePool).slice(0, Math.max(totalPlayers, objectivePool.length));
+      }
+
+      assignments = selected;
+      if (shared) {
+        shared._objectiveAssignments = assignments;
       }
     }
 
-    // Shuffle objectives
-    const shuffled = shuffleArray(objectivePool);
-
-    // Assign objective based on player index
-    const assigned = shuffled[ctx.playerIndex];
+    // Assign based on player index
+    const assigned = assignments[ctx.playerIndex];
     if (!assigned) {
       return null;
     }

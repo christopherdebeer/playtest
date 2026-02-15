@@ -608,6 +608,8 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
   // Cards mechanic builds deck, shuffles, deals starting hands, creates discard pile
   // All card setup moved from game.ts to cards mechanic's initSharedState
   const shared: Record<string, unknown> = {};
+  // Store player count for mechanics that need it during per-player init (e.g., hidden-objectives)
+  shared._numPlayers = playerCount;
   const mechanicSharedState = mechanicRegistry.initSharedState(config, [], turnOrder, shared);
   Object.assign(shared, mechanicSharedState);
 
@@ -658,8 +660,10 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     }
   }
 
-  // Clean up temporary state from cards mechanic
+  // Clean up temporary state from mechanic init
   delete shared._startingHands;
+  delete shared._numPlayers;
+  delete shared._objectiveAssignments;
 
   const logPath = getLogPath(gameName, gameId);
 
@@ -937,7 +941,13 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     myState: {
       state: player.state,
       hand: player.hand ?? [],
-      effects: player.effects
+      effects: player.effects,
+      // Include hidden role info so player agents know their own objective
+      ...(player.objective ? { objective: player.objective } : {}),
+      ...(player.hiddenRole ? { hiddenRole: player.hiddenRole } : {}),
+      ...(player.team ? { team: player.team } : {}),
+      ...(player.knowledge ? { knowledge: player.knowledge } : {}),
+      ...(player.visitedLocations ? { visitedLocations: player.visitedLocations } : {})
     },
     opponents,
     shared: state.shared

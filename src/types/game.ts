@@ -1190,6 +1190,12 @@ export interface PlayerView {
     state: string;
     hand: Card[];
     effects: Effect[];
+    // Hidden role info (visible to self only)
+    objective?: { name: string; type: string; condition?: string; revealed?: boolean };
+    hiddenRole?: string;
+    team?: string;
+    knowledge?: PlayerKnowledge;
+    visitedLocations?: string[];
   };
   opponents: OpponentView[];
   shared: Record<string, unknown>;
