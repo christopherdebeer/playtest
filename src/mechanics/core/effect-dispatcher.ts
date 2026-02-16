@@ -9,13 +9,19 @@
  * When no handler exists and a mechanic agent is registered, creates a
  * PendingIntervention instead of silently adding a cosmetic status effect.
  *
+ * At turn start, scans the current player's active effects for types not handled
+ * by any engine mechanic. Creates lifecycle interventions so the mechanic agent
+ * can interpret per-turn effects (e.g., "poison deals 1 damage each turn").
+ *
  * Hooks used:
  * - onCardPlayed: Dispatch card effects to handlers or apply directly
+ * - onTurnStart: Create lifecycle interventions for unhandled active effects
  */
 
 import {
   MechanicHooks,
   HookContext,
+  TurnStartContext,
   StateChanges
 } from '../types.js';
 import type { CardsHooks, CardPlayedPayload } from './cards.js';
@@ -36,6 +42,16 @@ const UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse'];
  * Effect types that target opponents by default
  */
 const OPPONENT_TARGETING_EFFECTS = ['draw', 'block_turn', 'skip', 'lose_turn'];
+
+/**
+ * Effect types passively handled by the engine (checked during movement, blocking, etc.).
+ * These don't need per-turn lifecycle interventions because their presence is
+ * already checked by engine code paths (isBlocked, probability mods, etc.).
+ */
+const KNOWN_PASSIVE_EFFECTS = new Set([
+  'block_turn', 'skip', 'lose_turn', 'stunned', 'frozen', 'eliminated',
+  'probability_boost', 'probability_penalty',
+]);
 
 let interventionCounter = 0;
 
@@ -110,10 +126,65 @@ export function hasMechanicAgent(state: GameState): boolean {
   return !!state.shared.mechanicAgentId;
 }
 
+/**
+ * Extract a useful description from a card, checking multiple locations.
+ * Cards may store descriptions at card.description, card.effect.description,
+ * or card.text depending on how the game defines them in RULES.md.
+ */
+function extractCardDescription(card: Record<string, unknown>): string {
+  const effect = card.effect as Record<string, unknown> | undefined;
+  return (
+    card.description ||
+    effect?.description ||
+    card.text ||
+    card.flavor ||
+    card.name ||
+    'unknown card'
+  ) as string;
+}
+
 export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
   slug: 'effect-dispatcher',
   name: 'Effect Dispatcher',
   requires: ['cards'],
+
+  /**
+   * At turn start, scan the current player's active effects for types that
+   * no engine mechanic handles. If a mechanic agent is registered, create
+   * a lifecycle intervention so the agent can interpret per-turn effects
+   * (e.g., "poison deals 1 damage each turn", "regeneration heals 1 HP").
+   *
+   * Skips known passive effects (blocking markers, probability mods) since
+   * those are already checked by engine code paths.
+   */
+  onTurnStart(ctx: TurnStartContext): StateChanges | null {
+    if (!hasMechanicAgent(ctx.state)) return null;
+
+    // Don't create lifecycle interventions if there's already a pending intervention
+    const cs = ctx.state.shared.contestState as ContestState | undefined;
+    if (cs?.pendingIntervention) return null;
+
+    const activeEffects = ctx.player.effects ?? [];
+    if (activeEffects.length === 0) return null;
+
+    // Find effects whose types are not known to the engine
+    const unhandledEffects = activeEffects.filter(
+      e => !KNOWN_PASSIVE_EFFECTS.has(e.type) && !UNIVERSAL_EFFECT_TYPES.includes(e.type)
+    );
+
+    if (unhandledEffects.length === 0) return null;
+
+    // Group all unhandled effects into a single lifecycle intervention
+    const effectDescriptions = unhandledEffects.map(
+      e => `"${e.type}" (value=${e.value ?? 'none'}, duration=${e.duration}, source=${e.source ?? 'unknown'})`
+    ).join('; ');
+
+    createEffectIntervention(ctx.state, 'lifecycle', 'turn_start_effects', ctx.playerId, ctx.playerId, {
+      context: `Turn ${ctx.state.turnNumber} start for ${ctx.playerId}. Active effects needing interpretation: ${effectDescriptions}. Read RULES.md to determine what these effects do at the start of the turn and apply any state changes.`
+    });
+
+    return null;
+  },
 
   /**
    * When a card is played, check if it has an effect and dispatch it.
@@ -188,15 +259,13 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
     // so the agent can reason about and apply the effect.
     // Otherwise, fall back to cosmetic status effect (legacy behavior).
     if (hasMechanicAgent(ctx.state)) {
-      const cardAny = card as unknown as Record<string, unknown>;
-      const effectAny = card.effect as unknown as Record<string, unknown>;
-      const description = (cardAny.description || effectAny.description || card.name) as string;
+      const description = extractCardDescription(card as unknown as Record<string, unknown>);
       createEffectIntervention(ctx.state, 'effect', effectType, ctx.playerId, targetId, {
         effectValue: card.effect.value,
         effectDuration: card.effect.duration,
         cardName: card.name,
         cardDescription: description,
-        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Description: ${description}`
+        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Card: ${description}`
       });
     } else if (card.effect.duration && card.effect.duration > 0) {
       // Legacy fallback: add as cosmetic status effect when no mechanic agent

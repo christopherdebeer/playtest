@@ -1,6 +1,6 @@
 # Proposal 013: Mechanic Agent — From Effect Fallback to Game Interpretation Layer
 
-## Status: In Progress (v2 — widened intervention triggers, thinned leaf mechanics)
+## Status: In Progress (v3 — lifecycle trigger, mechanic audit, description extraction)
 
 ## Problem
 
@@ -107,11 +107,38 @@ Trading rules, auction variants, trick-taking trump rules, set collection criter
 - **PendingIntervention type expanded**: New `triggerType` field distinguishes effect/action/location/lifecycle triggers
 - **Mechanic agent prompt updated**: Expanded to cover action interpretation, location effects, and turn lifecycle
 
-### Phase 3: Leaf Mechanic Thinning (future)
+### Phase 3: Lifecycle Trigger & Mechanic Audit (v3 — this commit)
 
-- Identify leaf mechanics that are purely interpretive (no structural logic)
-- Flag them as "agent-deferrable" — engine skips them when mechanic agent is registered
-- Gradually thin TypeScript as agent-handled playtests validate consistency
+- **Lifecycle trigger**: `effect-dispatcher` gains `onTurnStart` hook — scans active effects for types no engine mechanic handles, creates lifecycle interventions so the mechanic agent can interpret per-turn effects (e.g., "poison deals 1 damage each turn")
+- **Card description extraction**: New `extractCardDescription()` helper checks `card.description`, `card.effect.description`, `card.text`, `card.flavor` for better intervention context
+- **Mechanic audit**: Full classification of 138+ leaf mechanics into structural vs agent-deferrable categories (see below)
+- **Known passive effects set**: `KNOWN_PASSIVE_EFFECTS` tracks effect types already handled by engine code paths (blocking markers, probability mods) — lifecycle trigger skips these
+
+#### Mechanic Audit Results
+
+**Structural (must stay — manage engine primitives):**
+- Core infrastructure (14): `cards`, `resources`, `dice`, `board`, `effects`, `visibility`, `social`, `workers`, `combat`, `auction`, `building`, `pass`, `effect-dispatcher`, `turns`
+- Action handlers (30+): `hand-management`, `action-points`, `income`, `card-type-rules`, `card-matching`, `take-that`, `grid-movement`, `place-location`, `place-card`, `board-state`, `open-drafting`, `closed-drafting`, `set-collection`, `deck-building`, `movement-points`, `trick-taking`, `ladder-climbing`, `worker-placement`, `chaining`, `catch-the-leader`, `dice-rolling`, `re-rolling-and-locking`, etc.
+- Turn order (7): `turn-order-random`, `turn-order-stat-based`, `turn-order-progressive`, `turn-order-pass-order`, `turn-order-auction`, `turn-order-claim`, `turn-order-time-track`
+- Visibility (5): `hidden-roles`, `hidden-movement`, `hidden-objectives`, `hidden-victory-points`, `traitor-game`
+- Win conditions (13): all win-condition mechanics
+
+These handle engine primitives (deck CRUD, resource math, board transitions, turn sequencing) and must remain as fast deterministic code paths.
+
+**Agent-deferrable (interpretive — could defer to agent in future):**
+- Social/creative: `storytelling`, `acting`, `role-playing`, `questions-and-answers`
+- Reasoning: `induction`, `pattern-recognition`, `deduction` (visibility portion stays), `memory`
+- Strategic: `betting-and-bluffing`, `bribery`, `prisoners-dilemma`
+- Meta: `freeplay` (explicitly designed for agent interpretation)
+
+These mechanics' core logic is "interpret rules and make judgments" rather than "enforce structural constraints." However, they provide useful state management, so **thinning should be additive** — the agent gets first crack when registered, mechanics stay as fallbacks.
+
+### Phase 4: Agent-First Routing (future)
+
+- Add `agentDeferrable: true` flag to interpretive mechanics
+- When mechanic agent is registered, skip agent-deferrable mechanics' `onExecuteAction` hooks — route to agent instead
+- Mechanics remain as fallback when no agent is registered
+- Gradually validate via playtest comparison: agent-handled vs mechanic-handled outcomes
 - End state: RULES.md is the single source of truth for game-specific behavior
 
 ## Type Changes
@@ -157,3 +184,8 @@ interface PendingIntervention {
 - `src/mechanics/board-state.ts` — Placed card effects defer to mechanic agent
 - `.claude/agents/mechanic.md` — Expanded prompt for action/location/lifecycle handling
 - `docs/proposals/013-mechanic-agent.md` — This document
+
+## Files Changed (v3)
+
+- `src/mechanics/core/effect-dispatcher.ts` — Added `onTurnStart` lifecycle trigger, `extractCardDescription()` helper, `KNOWN_PASSIVE_EFFECTS` set
+- `docs/proposals/013-mechanic-agent.md` — Mechanic audit results, Phase 3/4 roadmap

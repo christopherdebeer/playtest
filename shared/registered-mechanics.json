@@ -1045,7 +1045,9 @@
     "effect-dispatcher": {
       "config_key": "effect_dispatcher",
       "since": "3.0.0",
-      "hooks": [],
+      "hooks": [
+        "onTurnStart"
+      ],
       "requires": [
         "cards"
       ]
