@@ -30,6 +30,7 @@ import { drawFromDeck } from './card-piles.js';
 import { addToHand } from './hand.js';
 import { addEffect } from './effects.js';
 import { mechanicRegistry } from '../registry.js';
+import { isOpponentTargeting } from './targeting.js';
 
 /**
  * Effect types handled directly by this dispatcher (truly universal patterns).
@@ -39,9 +40,14 @@ import { mechanicRegistry } from '../registry.js';
 const UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse'];
 
 /**
- * Effect types that target opponents by default
+ * Effect types that target opponents by default.
+ * Used as a fallback when targeting cannot be inferred from the card itself
+ * (e.g., when the effect-dispatcher only has the effect type, not the full card).
  */
-const OPPONENT_TARGETING_EFFECTS = ['draw', 'block_turn', 'skip', 'lose_turn'];
+const OPPONENT_TARGETING_EFFECTS = new Set([
+  'draw', 'block_turn', 'skip', 'lose_turn',
+  'steal_item', 'peek_hand', 'peek_objective', 'block_tile',
+]);
 
 /**
  * Effect types passively handled by the engine (checked during movement, blocking, etc.).
@@ -111,7 +117,17 @@ export function createEffectIntervention(
     gameState: {
       round: state.round,
       turnNumber: state.turnNumber,
-      currentPlayer: state.currentPlayer
+      currentPlayer: state.currentPlayer,
+      turnOrder: state.turnOrder,
+      players: Object.fromEntries(
+        Object.entries(state.players).map(([pid, ps]) => [pid, {
+          state: ps.state,
+          handSize: ps.hand?.length ?? 0,
+          effects: ps.effects?.map(e => ({ type: e.type, duration: e.duration, source: e.source })) ?? [],
+          score: ps.score ?? 0,
+          resources: ps.resources,
+        }])
+      ),
     },
     timestamp: new Date().toISOString()
   };
@@ -199,16 +215,26 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
 
     // Determine target player
     const actionTarget = playContext?.actionTarget as string | undefined;
-    const targetMode = card.targetMode || (OPPONENT_TARGETING_EFFECTS.includes(effectType) ? 'opponents' : 'owner');
+    const cardIsOpponentTargeting = isOpponentTargeting(card) || OPPONENT_TARGETING_EFFECTS.has(effectType);
+    const targetMode = card.targetMode || (cardIsOpponentTargeting ? 'opponents' : 'owner');
+
+    // Helper: pick default opponent (next in turn order)
+    const defaultOpponent = (): string => {
+      const currentIdx = ctx.state.turnOrder.indexOf(ctx.playerId);
+      const nextIdx = (currentIdx + 1) % ctx.state.turnOrder.length;
+      return ctx.state.turnOrder[nextIdx];
+    };
 
     let targetId: string;
     if (actionTarget && ctx.state.players[actionTarget]) {
-      targetId = actionTarget;
+      // Defense-in-depth: reject self-targeting for opponent-targeting cards
+      if (actionTarget === ctx.playerId && cardIsOpponentTargeting) {
+        targetId = defaultOpponent();
+      } else {
+        targetId = actionTarget;
+      }
     } else if (targetMode === 'opponents') {
-      // Default to next player in turn order for opponent-targeting effects
-      const currentIdx = ctx.state.turnOrder.indexOf(ctx.playerId);
-      const nextIdx = (currentIdx + 1) % ctx.state.turnOrder.length;
-      targetId = ctx.state.turnOrder[nextIdx];
+      targetId = defaultOpponent();
     } else {
       targetId = ctx.playerId;
     }

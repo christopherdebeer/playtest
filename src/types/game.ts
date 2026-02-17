@@ -1877,6 +1877,14 @@ export interface PendingIntervention {
     round: number;
     turnNumber: number;
     currentPlayer: string | null;
+    turnOrder?: string[];          // Full turn order for context
+    players?: Record<string, {     // Player state snapshot for mechanic reasoning
+      state: string;
+      handSize: number;
+      effects: { type: string; duration?: number; source?: string }[];
+      score: number;
+      resources?: Record<string, number>;
+    }>;
   };
   timestamp: string;
 }
