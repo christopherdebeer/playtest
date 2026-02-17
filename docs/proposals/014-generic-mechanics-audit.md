@@ -425,6 +425,7 @@ interface PendingIntervention {
 ./playtest mechanic:transfer-card {INSTANCE_ID} -f player-1 -t player-2 --card "Gold Coin"
 ./playtest mechanic:transfer-resource {INSTANCE_ID} -f player-1 -t player-2 --resource gold --amount 3
 ./playtest mechanic:end-game {INSTANCE_ID} --winner player-1 --reason "Victory condition met"
+./playtest mechanic:peek {INSTANCE_ID} -p player-1 --target player-2 --scope hand  # Reveal info to one player
 ```
 
 **Tiered auto-resolution** (replaces blanket auto-skip):
@@ -583,6 +584,49 @@ Effect flags (`blocks_turn`, `passive`, `on_enter`) are game-author declarations
 7. **Phase 7** — Delete thin-wrapper mechanics. Only after Phases 1–2 confirmed working.
 8. **Phase 8** — Agent enrichment. Additive; no breaking changes.
 9. **Phase 9** — Game termination refactor. Requires careful testing; leave for last.
+
+---
+
+## Empirical Validation from Historical Playtests
+
+A fifth audit examined 47+ playtest analysis files across all 18 games (AAOTE, UNO, Markov's Chains, Parallel Race, Council of Whispers, Draft Duel, Engine Masters, and others). The historical evidence directly confirms and prioritizes the findings above.
+
+### Confirmed Failures
+
+**Targeting inference failed — 4 times in a single AAOTE game:**
+- `Theft` card (steal item): player self-targeted → effect silently skipped
+- `Spy` card (peek hand): player self-targeted → effect silently skipped
+- `Shortcut` card (teleport): no destination specified → effect silently skipped
+- `Interrogate` card (peek objective): required GM intervention
+- Root cause confirmed: `OPPONENT_EFFECT_TYPES` did not include these AAOTE-specific effect types, so heuristic inference failed. All 4 would be prevented by explicit `targetMode: "opponents"` (Phase 1).
+
+**Card effects silently skipped — 8+ games affected:**
+- Parallel Race: all `move_forward` card effects consumed cards but moved no player
+- UNO: `Draw Two` and `Wild Draw Four` did not force opponent draws until central dispatcher was added (Fix #3 in Feb 2026 playtest findings)
+- Markov's Chains v2.3: state cards (`probability_boost`, `probability_penalty`) were in the deck but never applied during movement
+- Root cause confirmed: no central effect routing → effects consumed but no handler fired
+
+**Effects needed `passive: true` — Markov's Chains:**
+- `probability_boost` and `probability_penalty` effects placed on the board had no mechanism to be checked during movement probability calculations
+- Game logs show 0 state cards played effectively across multiple sessions despite being in the deck
+- `passive: true` flag (Phase 2) would mark these as engine-checked, eliminating need for lifecycle interventions
+
+### Priority Order Confirmed by Evidence
+
+The historical record supports this implementation order:
+
+1. **Phase 1 (`targetMode`) — highest urgency**: 4 targeting failures in a single game; heuristics demonstrably broken for any effect type not in the hardcoded sets
+2. **Phase 8 (mechanic agent primitives) — high urgency**: `draw` effect had no CLI primitive; UNO force-draw broken until ad hoc dispatcher added in engine code
+3. **Phase 2 (effect flags) — high urgency**: `passive` flag needed for Markov's Chains movement probability modifiers; `blocks_turn` eliminates fragile type-name matching
+4. **Phases 3–7 — cleanup after core is sound**
+
+### Known Gap Not in Proposal (Phase Structure)
+
+Two games have architectural limitations beyond effect semantics:
+- **Council of Whispers**: 5-phase rounds (Action → Negotiation → Dilemma → Voting → Treasury) cannot be expressed in the flat sequential turn model
+- **Draft Duel**: simultaneous closed-draft selection requires concurrent action resolution, not supported by turn sequencing
+
+These represent a deeper architectural challenge — the engine's turn model itself — which is out of scope for Proposal 014 but warrants a separate proposal.
 
 ---
 
