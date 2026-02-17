@@ -39,6 +39,15 @@
         ]
       },
       {
+        "matcher": "mechanic",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./playtest hook --name start --agent mechanic"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
@@ -63,6 +72,15 @@
           {
             "type": "command",
             "command": "./playtest hook --name stop --agent gamemaster"
+          }
+        ]
+      },
+      {
+        "matcher": "mechanic",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./playtest hook --name stop --agent mechanic"
           }
         ]
       },

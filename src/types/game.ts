@@ -1,7 +1,7 @@
 // Core game types
 
 export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'pending_analysis' | 'completed' | 'cancelled';
-export type Role = 'gamemaster' | 'player';
+export type Role = 'gamemaster' | 'player' | 'mechanic';
 
 export interface Card {
   name: string;
@@ -1859,6 +1859,48 @@ export interface OperatorHint {
   expiresAfterTurns?: number;   // Optional: expire after N turns
 }
 
+// Pending mechanic intervention (effect/action the engine can't handle mechanically)
+export interface PendingIntervention {
+  id: string;                      // Unique intervention ID
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle';  // What caused the intervention
+  effectType: string;              // The unhandled effect type or action type
+  effectValue?: number;            // Effect value if any
+  effectDuration?: number;         // Effect duration if any
+  sourcePlayer: string;            // Player who triggered the effect/action
+  targetPlayer: string;            // Player the effect targets
+  cardName?: string;               // Card that was played (if applicable)
+  cardDescription?: string;        // Card description from rules
+  actionData?: GameAction;         // Full action data (for action-type triggers)
+  locationName?: string;           // Location name (for location-entry triggers)
+  context: string;                 // Human-readable description of what happened
+  gameState: {                     // Snapshot of relevant state at time of intervention
+    round: number;
+    turnNumber: number;
+    currentPlayer: string | null;
+    turnOrder?: string[];          // Full turn order for context
+    players?: Record<string, {     // Player state snapshot for mechanic reasoning
+      state: string;
+      handSize: number;
+      effects: { type: string; duration?: number; source?: string }[];
+      score: number;
+      resources?: Record<string, number>;
+    }>;
+  };
+  timestamp: string;
+}
+
+// Intervention resolution history
+export interface InterventionHistoryEntry {
+  id: string;
+  effectType: string;
+  sourcePlayer: string;
+  targetPlayer: string;
+  resolution: 'applied' | 'skipped';  // Was the effect applied or skipped
+  changes: string;                     // Description of state changes made
+  resolvedBy: string;                  // Agent ID that resolved it
+  timestamp: string;
+}
+
 // Extended game state with contest system
 export interface ContestState {
   lastAction?: LastAction;
@@ -1866,9 +1908,11 @@ export interface ContestState {
   pendingContest?: PendingContest;
   pendingResignation?: PendingResignation;
   pendingVictoryClaim?: PendingVictoryClaim;
+  pendingIntervention?: PendingIntervention;  // Unhandled effect awaiting mechanic agent
   contestHistory: ContestHistoryEntry[];
   resignations: ResignationEntry[];
   victoryHistory: VictoryClaimEntry[];
+  interventionHistory: InterventionHistoryEntry[];  // Resolved interventions
   operatorHints?: OperatorHint[];  // Ephemeral hints from operator to help agents
 }
 

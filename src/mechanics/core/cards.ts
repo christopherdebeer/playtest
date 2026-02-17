@@ -31,6 +31,7 @@ import {
   ValidationResult
 } from '../types.js';
 import { Card, PlayCardAction, DrawAction, GameState, DeckConfig, GameAction } from '../../types/game.js';
+import { isOpponentTargeting } from './targeting.js';
 import { playCard, drawFromDeck } from './card-piles.js';
 import { addToHand } from './hand.js';
 import { buildDeck, shuffleDeck } from '../../core/rules.js';
@@ -306,15 +307,13 @@ export const cardsMechanic: MechanicHooks = {
       const playableNames = basePlayable.map(c => c.name);
       const opponents = state.turnOrder.filter(pid => pid !== playerId);
 
-      // Identify cards that need a target (interference/take-that cards)
-      const targetingCards = basePlayable.filter(c =>
-        c.type === 'interference' || c.effect?.type === 'block_turn' || c.effect?.type === 'skip'
-      ).map(c => c.name);
+      // Identify cards that need a target (interference, known opponent effects, description heuristics)
+      const targetingCards = basePlayable.filter(c => isOpponentTargeting(c)).map(c => c.name);
 
       // Build optional fields
       const optional: Record<string, string> = { reasoning: 'Explanation of your play' };
-      if (targetingCards.length > 0 && opponents.length > 1) {
-        optional.target = `Target player for attack cards (${targetingCards.join(', ')}). Options: ${opponents.join(', ')}`;
+      if (targetingCards.length > 0 && opponents.length > 0) {
+        optional.target = `Target player for attack cards (${targetingCards.join(', ')}). MUST be an opponent: ${opponents.join(', ')}. Do NOT target yourself.`;
       }
       if (hand.some(c => c.effect?.type === 'wild' || c.type === 'wild')) {
         optional.declaredColor = 'For wild cards: Red, Blue, Green, or Yellow';
@@ -357,9 +356,14 @@ export const cardsMechanic: MechanicHooks = {
     if (action.type === 'play_card') {
       const playAction = action as PlayCardAction;
       const hand = getPlayerHand(ctx.state, ctx.playerId);
-      const cardIndex = hand.findIndex(c => c.name === playAction.card);
-      if (cardIndex === -1) {
+      const card = hand.find(c => c.name === playAction.card);
+      if (!card) {
         return { valid: false, error: `Card "${playAction.card}" not in your hand. Your cards: ${hand.map(c => c.name).join(', ')}` };
+      }
+      // Reject self-targeting for opponent-targeting cards
+      if (playAction.target === ctx.playerId && isOpponentTargeting(card)) {
+        const opponents = ctx.state.turnOrder.filter(pid => pid !== ctx.playerId);
+        return { valid: false, error: `Cannot target yourself with "${card.name}". Valid targets: ${opponents.join(', ')}` };
       }
       return { valid: true };
     }
