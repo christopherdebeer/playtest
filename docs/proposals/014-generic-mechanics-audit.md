@@ -1,304 +1,595 @@
 # Proposal 014: Generic Mechanics Audit — Engine Agnosticism & Mechanic Agent Delegation
 
-## Status: Draft
+## Status: Draft (v2 — expanded from parallel audit of all 150+ mechanics, 18 game RULES.md files, win conditions, core engine, and mechanic agent protocol)
+
+---
 
 ## Problem
 
-The engine contains hardcoded knowledge about what specific effect type *strings* mean. This violates the core principle: **the engine must be game-agnostic**. Currently, five locations in the engine embed implicit semantics about game content:
+The engine contains hardcoded knowledge about what specific strings — effect types, card types, player states — *mean*. This violates the core principle: **the engine must be game-agnostic**. A game author who invents a `"curse"` effect, a `"trap"` card type, or a `"defeated"` player state cannot use engine features without editing TypeScript.
+
+The initial audit identified 7 hardcoded locations. The full parallel audit across all mechanics, games, win conditions, and agent protocol found the pattern is **systemic** — with 20+ distinct violation sites falling into 6 categories.
+
+---
+
+## Full Audit Findings
+
+### Category 1: Effect Type Hardcoding (Engine Infers Semantics from Strings)
 
 | File | Hardcoded Construct | What It Assumes |
 |------|--------------------|-----------------|
 | `src/mechanics/core/targeting.ts` | `OPPONENT_EFFECT_TYPES` set | Certain effect names always target opponents |
-| `src/mechanics/core/targeting.ts` | `TARGETING_KEYWORDS` regex | Card description text reveals targeting intent |
-| `src/mechanics/core/effect-dispatcher.ts` | `UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse']` | These three effects are structurally universal |
+| `src/mechanics/core/targeting.ts` | `TARGETING_KEYWORDS` regex | Description text reveals targeting intent |
+| `src/mechanics/core/effect-dispatcher.ts` | `UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse']` | These effects are structurally universal |
 | `src/mechanics/core/effect-dispatcher.ts` | `OPPONENT_TARGETING_EFFECTS` set | Duplicate/extended targeting inference |
-| `src/mechanics/core/effect-dispatcher.ts` | `KNOWN_PASSIVE_EFFECTS` set | Certain effect names don't need lifecycle interventions |
-| `src/mechanics/core/effects.ts` | `isBlocked()` with `['block_turn', 'skip', 'lose_turn', 'stunned', 'frozen']` | Certain effect names prevent a player from acting |
-| `src/mechanics/take-that.ts` | `INTERFERENCE_EFFECTS` list | Certain effect names identify attack cards |
+| `src/mechanics/core/effect-dispatcher.ts` | `KNOWN_PASSIVE_EFFECTS` set | Certain names don't need lifecycle interventions |
+| `src/mechanics/core/effects.ts` | `isBlocked()` list `['block_turn', 'skip', 'lose_turn', 'stunned', 'frozen']` | Certain names prevent a player from acting |
+| `src/mechanics/take-that.ts` | `INTERFERENCE_EFFECTS` list | Certain names identify attack cards |
+| `src/mechanics/location-effects.ts` | `LOCATION_EFFECT_TYPES = ['draw_on_enter', 'heal_on_enter', 'damage_on_enter']` | Certain names trigger on location entry |
+| `src/mechanics/placed-card-effects.ts` | `PLACED_CARD_EFFECT_TYPES` set | Certain names apply to placed/trap cards |
 
-The result: adding a new blocking/targeting/passive effect to a game requires editing engine TypeScript, not just RULES.md.
+### Category 2: Card Type Hardcoding (Engine Infers Role from Type Name)
+
+| File | Hardcoded Pattern | What It Assumes |
+|------|--------------------|-----------------|
+| `src/mechanics/card-matching.ts` | `card.type === 'wild'` | Cards named type `"wild"` change color |
+| `src/mechanics/card-type-rules.ts` | `card.type === 'item'`, `card.type === 'location'` | Specific type names have specific playability rules |
+| `src/mechanics/place-card.ts` | `card.type === 'location'` | Only `"location"` typed cards can be placed |
+| `src/mechanics/take-that.ts` | `card.type === 'interference'` | Cards typed `"interference"` target opponents |
+| `src/mechanics/card-matching.ts` | `DEFAULT_COLORS = ['Red', 'Blue', 'Green', 'Yellow']` | These are the only valid colors |
+
+### Category 3: Player State Hardcoding (Engine Treats Specific States Specially)
+
+| File | Hardcoded Value | What It Assumes |
+|------|----------------|-----------------|
+| `src/mechanics/win-conditions/elimination.ts` | `'eliminated'` string | This exact string marks a player as out |
+| `src/mechanics/core/turns.ts` | `player.state === 'eliminated'` | Same |
+| `src/mechanics/registry.ts` | `p.state !== 'eliminated'` | Same |
+| `src/core/game.ts` (via `checkAllWinConditions`) | Via `turns.ts` | Same |
+| `src/mechanics/core/pass.ts` | `toState: 'Victory'` | Victory declarations transition to exactly `"Victory"` |
+
+### Category 4: Domain Constants Hardcoded in Engine Code
+
+| File | Hardcoded Value | Problem |
+|------|----------------|---------|
+| `src/mechanics/hexagon-grid.ts` | Terrain types `['plains', 'forest', 'hills', 'water']` | Game-specific terrain vocabulary |
+| `src/mechanics/hexagon-grid.ts` | `cell.terrain !== 'water'` blocks movement | Game-specific terrain restriction |
+| `src/mechanics/hexagon-grid.ts` | Start positions `['0,0', '1,0', ...]` | Game-specific starting arrangement |
+| `src/mechanics/freeplay.ts` | `DEFAULT_INTERACTION_ACTIONS = ['trade_offer', 'trade_respond', 'attack', ...]` | Specific action types are "interactions" |
+| `src/mechanics/turn-order-stat-based.ts` | Field names `'score'`, `'actionPoints'`, `'tricksWon'`, `'handSize'` | Only these stats can determine turn order |
+| `src/mechanics/roll-spin-and-move.ts` | `currentDoublesCount >= 3` → jail | Monopoly-specific triple-doubles rule |
+
+### Category 5: Game Termination Hardcoding
+
+| File | Hardcoded Pattern | Problem |
+|------|------------------|---------|
+| `src/core/game.ts:1006-1020` | `max_rounds` and `max_turns` as only timeout mechanisms | Cannot define "end when deck exhausted" or other termination conditions |
+| `src/core/game.ts:69` | `AUTO_ADJUDICATION_TIMEOUT_MS = 60000` | Fixed timeout; can't adjust for faster/slower playtests |
+| `src/core/game.ts:1576` | `AUTO_INTERVENTION_TIMEOUT_MS = 120000` | Fixed; can't configure per-game |
+| `src/core/rules.ts:32` | `max_rounds: raw.max_rounds ?? 50` | Arbitrary default of 50 rounds |
+
+### Category 6: Mechanic Agent Protocol Gaps
+
+The mechanic agent has good coverage for single-player, single-field mutations but is missing:
+
+**Missing primitives:**
+- `mechanic:reverse-turn-order` — currently engine-only
+- `mechanic:draw -p <player> --count N` — `--add-cards` doesn't interact with deck state
+- `mechanic:discard -p <player> --count N` — force discard to discard pile
+- `mechanic:transfer-card -f <from> -t <to> --card <name>` — atomic card theft/trade
+- `mechanic:transfer-resource -f <from> -t <to> --resource <name> --amount N` — atomic resource transfer
+- `mechanic:set-turn-order --order <json>` — beyond simple reversal
+- `mechanic:end-game --winner <player>` — instant-win card effects
+
+**Missing intervention context:**
+- Full card object (`cardData`) not just name + description
+- `targetMode` explicit in payload
+- Effect flags (`blocks_turn`, `passive`) in payload
+- Player hand contents (snapshot has `handSize` count, not actual cards)
+- Board adjacency context for movement effects
+- Deck/discard state for draw feasibility
+
+**Atomicity gap:** Multi-step mutations (card theft = remove from A + add to B) are not atomic. A crash mid-sequence leaves state inconsistent.
+
+**Single-intervention queue:** Only one `pendingIntervention` at a time. Multi-step effects that logically require chained interventions must be batched into a single resolution.
 
 ---
 
-## Audit Findings
+## The Unifying Pattern
 
-### Finding 1: Three Distinct Hardcoding Problems
+Every violation above follows the same anti-pattern:
 
-**A. Targeting Inference** (`targeting.ts`, `effect-dispatcher.ts`, `cards.ts`, `take-that.ts`)
+> **Code contains a set/array of strings that are also user-configurable data in RULES.md.**
 
-The engine tries to infer *who* a card targets (self vs opponent) from effect type strings and description text:
-- `isOpponentTargeting()` checks `OPPONENT_EFFECT_TYPES` + `TARGETING_KEYWORDS` regex
-- `effect-dispatcher.ts` independently maintains `OPPONENT_TARGETING_EFFECTS`
-- `take-that.ts` maintains `INTERFERENCE_EFFECTS` and applies special routing for them
+The fix in every case is the same principle:
 
-This means a card like `{ effect: { type: "freeze" } }` won't be recognized as opponent-targeting unless either the engine is patched or the card type is `"interference"`.
+> **Move the semantic meaning from the code string-set to a flag or annotation co-located with the data in RULES.md.**
 
-**B. Blocking Effect Inference** (`effects.ts`)
-
-`isBlocked()` checks whether a player's turn should be skipped by matching effect type names against a hardcoded list. A game inventing a `"curse"` or `"paralyzed"` status effect will not block turns without a code change.
-
-**C. Passive Effect Inference** (`effect-dispatcher.ts`)
-
-`KNOWN_PASSIVE_EFFECTS` prevents lifecycle interventions for effects the engine already checks at appropriate points (e.g., `probability_boost` checked during movement). This set must be manually extended for each new passively-checked effect.
-
-### Finding 2: `reverse` Is Not Universal
-
-`UNIVERSAL_EFFECT_TYPES` includes `reverse` alongside `draw` and `score`. But `draw` and `score` are pure structural primitives applicable to any game. `reverse` (reversing turn order) is a game-specific mechanic — not all games have turn-order reversal semantics. It belongs in the mechanic agent layer.
-
-### Finding 3: `targetMode` Already Exists But Isn't Enforced
-
-Markov's Chains v2.3 already uses `targetMode` on placed cards:
-```yaml
-- { name: "Hazard", ..., targetMode: "opponents", effect: { type: "probability_penalty" } }
-```
-
-This field was added for `placed-card-effects` specifically but never generalized. The targeting heuristics exist because `targetMode` was not made universal and required on all cards with opponent-targeting effects.
-
-### Finding 4: `take-that` Is a Symptom, Not the Problem
-
-The `take-that` mechanic exists to fill the gap left by heuristic-based targeting: it explicitly validates and routes interference cards. If targeting were declared explicitly in RULES.md, the need for `take-that` as a special-case mechanic shrinks dramatically — it becomes a simple pass-through that validates target choice, not a routing layer.
-
-### Finding 5: Mechanic Agent Has Good Primitives, Missing Two
-
-The mechanic agent protocol is well-designed. The CLI provides: add/remove effects, update score, update board state, add/remove cards, set resources, update shared state, resolve/skip. Two primitives are missing and must be delegated today via workarounds:
-- **Reverse turn order** (currently engine-only via `UNIVERSAL_EFFECT_TYPES`)
-- **Force draw from deck** (currently approximated via `--add-cards`)
+The engine reads flags (booleans, enums). It never matches against named string sets. Only the mechanic agent reads type name strings — to understand game semantics from RULES.md prose.
 
 ---
 
 ## Proposed Implementation Strategy
 
-The goal is a system where:
-1. Effect types are opaque strings to the engine — the engine has zero implicit knowledge about what they mean
-2. All semantics (targeting, blocking, passive-checking) are declared explicitly in RULES.md by the game author
-3. The mechanic agent is the sole interpreter of effect semantics not covered by the above explicit declarations
+### Phase 1: Universal `targetMode` — Eliminate All Targeting Inference
 
-### Phase 1: Universal `targetMode` — Eliminate Targeting Heuristics
+**Principle**: Cards declare targeting intent explicitly. The engine never infers it.
 
-**Principle**: Cards declare their targeting intent explicitly. The engine never infers it.
-
-**Changes to card schema in RULES.md:**
+**Card schema additions:**
 ```yaml
-# Every card with opponent effects declares targetMode
-- { name: "Block", type: "interference", targetMode: "opponents",
-    effect: { type: "block_turn", duration: 1 } }
+# Opponent-targeting card — explicit
+- { name: "Block", targetMode: "opponents",
+    effect: { type: "block_turn", duration: 1, blocks_turn: true } }
 
-# Cards that affect self (or are neutral) need no targetMode (defaults to "self")
-- { name: "Catalyst", type: "boost", effect: { type: "probability_boost", value: 0.2 } }
+# Self-targeting (default, no targetMode needed)
+- { name: "Catalyst", effect: { type: "probability_boost", value: 0.2, passive: true } }
+
+# All opponents simultaneously
+- { name: "Blizzard", targetMode: "all_opponents",
+    effect: { type: "freeze", duration: 1, blocks_turn: true } }
 ```
 
 **`targetMode` values:**
-- `"self"` — affects the playing player (default when unspecified)
-- `"opponents"` — targets an opponent; player must specify which one when multiple exist
+- `"self"` — default; affects the playing player
+- `"opponents"` — must specify which opponent when >1 exist
+- `"all_opponents"` — applies to every opponent simultaneously
 - `"any"` — player chooses any player including themselves
-- `"all_opponents"` — applies to all opponents simultaneously
-- `"owner"` — for placed cards: affects the card's owner (already supported)
+- `"owner"` — for placed/trap cards: affects the player who placed it
+
+**`targetFilter` for conditional targeting** (adjacency, state requirements):
+```yaml
+- { name: "Ambush", targetMode: "opponents",
+    targetFilter: { adjacency: true },   # Only adjacent opponents are valid
+    effect: { type: "steal_item" } }
+```
 
 **Engine changes:**
-- `isOpponentTargeting(card)` becomes `card.targetMode === "opponents"` — trivial one-liner
+- `isOpponentTargeting(card)` → `card.targetMode === "opponents" || card.targetMode === "all_opponents"`
 - Delete `OPPONENT_EFFECT_TYPES`, `TARGETING_KEYWORDS`, `OPPONENT_TARGETING_EFFECTS`
-- `take-that` loses all effect-type detection; validates only that `targetMode === "opponents"` cards have a valid target
-- Rules parser validates: if a card has no `targetMode` and its effect applies to an opponent, emit a warning (soft enforcement initially, strict later)
+- Rules parser: warn (not error) if a card appears to target opponents but lacks `targetMode`
+- `rules.ts:119`: remove hardcoded `targetMode: 'opponents'` default for placeable cards — require explicit
 
-**RULES.md updates required:**
-- Markov's Chains: `Friction`, `Block`, `Sabotage` → add `targetMode: "opponents"`
-- UNO: `Skip`, `Draw Two`, `Wild Draw Four` → add `targetMode: "opponents"`
-- All other games: audit each card with opponent effects
-
-**Outcome**: Targeting is 100% declarative. No heuristics. A game can use any effect type string for opponent-targeting; the engine doesn't care what the string says.
+**RULES.md updates required for all 18 games** (17 games have opponent-targeting cards):
+- Markov's Chains: `Friction`, `Block`, `Sabotage` → `targetMode: "opponents"`
+- UNO: `Skip`, `Draw Two`, `Wild Draw Four` → `targetMode: "opponents"`
+- AAOTE: `Spy`, `Interrogate`, `Theft`, `Roadblock`, `Sabotage` → explicit `targetMode`
+- Spellbook Showdown: all damage/freeze spells → `targetMode: "opponents"` or `"all_opponents"`
+- Parallel Race, Treasure Hunters: interference cards → `targetMode: "opponents"`
 
 ---
 
-### Phase 2: Effect Flags — Eliminate `isBlocked()` and `KNOWN_PASSIVE_EFFECTS`
+### Phase 2: Effect Flags — Eliminate All Hardcoded Effect-Semantic Sets
 
-**Principle**: Effects declare their structural semantics via boolean flags, not type names.
+**Principle**: Effects carry their structural semantics as boolean flags. The engine reads flags, not type names.
 
-**Two new flags on the effect definition in RULES.md:**
+**Three new flags on effect definitions:**
 
 ```yaml
 effect:
-  type: "block_turn"   # opaque name for human readability / mechanic agent reference
+  type: "block_turn"       # opaque — mechanic agent reads this
   duration: 1
-  blocks_turn: true    # ENGINE FLAG: player cannot act while this is present
-  passive: false       # ENGINE FLAG: this effect does NOT need lifecycle intervention
-```
-
-```yaml
-effect:
-  type: "probability_boost"
-  value: 0.2
-  passive: true        # ENGINE FLAG: engine already checks this during movement; no lifecycle intervention needed
+  blocks_turn: true        # ENGINE: player.effects.some(e => e.blocks_turn) → skip turn
+  passive: false           # ENGINE: false = needs lifecycle intervention when active
+  on_enter: false          # ENGINE: false = not a location-entry effect
 ```
 
 **Engine changes:**
-- `Effect` type gains `blocks_turn?: boolean` and `passive?: boolean` fields
-- `isBlocked(state, playerId)` becomes: `player.effects.some(e => e.blocks_turn === true)`
-- `effect-dispatcher.ts` lifecycle scan becomes: `activeEffects.filter(e => !e.passive)`
-- Delete `KNOWN_PASSIVE_EFFECTS` set entirely
-- When `addEffect()` is called, flags from the card definition are copied to the stored effect
 
-**RULES.md updates required:**
-- Any card whose effect should block turns: add `blocks_turn: true`
-- Any card whose effect is passively checked by engine code: add `passive: true`
-- Markov's Chains: `probability_boost`, `probability_penalty` → `passive: true`; `block_turn` → `blocks_turn: true`
-- UNO: `skip` effect → `blocks_turn: true`
+*`effects.ts`:*
+```typescript
+// BEFORE
+const BLOCKING = ['block_turn', 'skip', 'lose_turn', 'stunned', 'frozen'];
+isBlocked = () => player.effects.some(e => BLOCKING.includes(e.type));
 
-**Mechanic agent impact**: The agent's `--add-effect` command already passes the full effect JSON. When the game author annotates `blocks_turn: true` in the card definition, the engine applies it automatically — the mechanic agent doesn't need to know about it.
+// AFTER — zero knowledge of type names
+isBlocked = () => player.effects.some(e => e.blocks_turn === true);
+```
 
-**Outcome**: `isBlocked()` is completely agnostic. Any effect type can block turns. The engine never needs to be patched for a new blocking effect.
+*`effect-dispatcher.ts`:*
+```typescript
+// BEFORE
+const KNOWN_PASSIVE = new Set(['block_turn', 'probability_boost', ...]);
+filter(e => !KNOWN_PASSIVE.has(e.type))
+
+// AFTER
+filter(e => e.passive !== true)
+```
+
+*`location-effects.ts`:*
+```typescript
+// BEFORE
+const LOCATION_EFFECT_TYPES = ['draw_on_enter', 'heal_on_enter', 'damage_on_enter'];
+if (LOCATION_EFFECT_TYPES.includes(effect.type))
+
+// AFTER
+if (effect.on_enter === true)
+```
+
+**Type additions (`game.ts`):**
+```typescript
+interface Effect {
+  type: string;
+  value?: number;
+  duration?: number;
+  source?: string;
+  blocks_turn?: boolean;   // NEW
+  passive?: boolean;       // NEW
+  on_enter?: boolean;      // NEW
+}
+```
+
+**RULES.md updates:**
+- All cards with `block_turn`, `skip`, `lose_turn`, `freeze` effects → add `blocks_turn: true`
+- All cards with `probability_boost/penalty`, movement mods → add `passive: true`
+- All location entry effects (`draw_on_enter`, etc.) → add `on_enter: true`
+
+**Eliminates:** `KNOWN_PASSIVE_EFFECTS`, `BLOCKING_EFFECT_TYPES`, `LOCATION_EFFECT_TYPES`, `PLACED_CARD_EFFECT_TYPES`, `INTERFERENCE_EFFECTS`
 
 ---
 
-### Phase 3: Shrink `UNIVERSAL_EFFECT_TYPES` — Delegate `reverse` to Mechanic Agent
+### Phase 3: Card Type Semantic Flags — Replace Card Type String Checks
 
-**Principle**: The only effects the engine auto-handles are pure structural operations applicable to literally every possible game. Turn order reversal is not one of them.
+**Principle**: Cards carry semantic flags that describe their role. The engine reads flags, not type name strings.
+
+**Current problem**: `card.type === 'wild'`, `card.type === 'interference'`, `card.type === 'location'` etc. are scattered throughout engine mechanics. A game using `"joker"` for a wild card won't work with `card-matching`.
+
+**Card schema additions:**
+```yaml
+# Instead of type: "wild" being special, the flag is explicit
+- { name: "Wild", type: "wild", wild: true,
+    effect: { type: "wild" } }
+
+# Instead of type: "location" being checked in place-card.ts
+- { name: "Ruins", type: "location", placeable_as_location: true,
+    effect: { type: "draw_on_enter", on_enter: true } }
+
+# Instead of type: "interference" being the opponent-targeting signal
+- { name: "Block", type: "interference", targetMode: "opponents",
+    effect: { type: "block_turn", blocks_turn: true } }
+```
+
+**Flag dictionary:**
+- `wild: true` — card is a wild card (changes active color/suit); `card-matching` reads this
+- `placeable_as_location: true` — card can be placed on the board as a location
+- `placeable: true` — already exists; card can be placed as a trap/modifier (keep)
+- `multi_use: true` — card has multiple playable modes (new; see compound effects)
+
+**Engine changes:**
+- `card-matching.ts`: `card.type === 'wild'` → `card.wild === true`
+- `place-card.ts`: `card.type === 'location'` → `card.placeable_as_location === true`
+- `card-type-rules.ts`: `card.type === 'item'` → configurable card type rules (see below)
+- `cards.ts`: `c.type !== 'location'` filter → `!c.placeable_as_location`
+
+**Configurable card type rules** (`card-type-rules.ts` generalization):
+```yaml
+mechanics:
+  card_type_rules:
+    type_rules:
+      - { type: "item", can_play: true, requires_target: false }
+      - { type: "event", can_play: true, requires_target: false }
+      # engine reads these to determine playability; doesn't hardcode type names
+```
+
+**Eliminates:** All `card.type === 'specific_name'` checks in engine mechanics. Card types become opaque game-author labels; flags carry meaning.
+
+---
+
+### Phase 4: Configurable Elimination and Victory State Semantics
+
+**Principle**: The strings `"eliminated"` and `"Victory"` should not be hardcoded in engine code.
+
+**Current problem:** Five files check `player.state === 'eliminated'` or `e.type === 'eliminated'`. `pass.ts` hardcodes `toState: 'Victory'`. A game wanting `"defeated"` or `"out"` must patch code.
+
+**Config schema addition:**
+```yaml
+engine_mechanics:
+  player_lifecycle:
+    eliminated_state: "eliminated"         # Default; game can override
+    eliminated_effect_type: "eliminated"   # Default; game can override
+    victory_state: "Victory"               # Default; game can override
+```
+
+**Engine changes:**
+- Extract `isPlayerEliminated()` to shared utility that reads `config.engine_mechanics.player_lifecycle`
+- `turns.ts`, `elimination.ts`, `registry.ts`, `win-conditions/` all call this utility
+- `pass.ts` reads `victoryState` from config instead of hardcoding `'Victory'`
+
+**Eliminates:** 5 separate hardcoded `"eliminated"` string checks; `toState: 'Victory'` in pass.ts
+
+---
+
+### Phase 5: Generalize Remaining Hardcoded Domain Arrays
+
+Several mechanics hardcode game-specific vocabulary that should be RULES.md config.
+
+**A. `card-matching.ts` — Default Colors:**
+```yaml
+# BEFORE: DEFAULT_COLORS = ['Red', 'Blue', 'Green', 'Yellow'] in code
+# AFTER: in RULES.md
+mechanics:
+  card_matching:
+    valid_colors: ["Red", "Blue", "Green", "Yellow"]  # Game configures this
+```
+
+**B. `hexagon-grid.ts` — Terrain Types and Movement Restrictions:**
+```yaml
+mechanics:
+  hexagon_grid:
+    terrain_types: ["plains", "forest", "hills", "water"]
+    impassable_terrain: ["water"]       # Replaces hardcoded terrain !== 'water'
+    start_positions: ["0,0", "1,0"]    # Replaces hardcoded array
+```
+
+**C. `freeplay.ts` — Default Interaction Actions:**
+```yaml
+mechanics:
+  freeplay:
+    interaction_actions: []             # Empty by default; game lists what needs synchronization
+```
+
+**D. `turn-order-stat-based.ts` — Stat Field Names:**
+```typescript
+// BEFORE: hardcoded field name list
+const KNOWN_STAT_FIELDS = ['score', 'actionPoints', 'tricksWon', 'handSize', 'resources.*'];
+
+// AFTER: use property path resolver on any field
+// Config: sort_by: "resources.gold"
+// Engine: resolves via getNestedValue(player, config.sort_by)
+```
+
+**E. `roll-spin-and-move.ts` — Monopoly-Specific Triple-Doubles:**
+```yaml
+mechanics:
+  roll_spin_and_move:
+    doubles_bonus: true
+    max_consecutive_doubles: 3         # Replaces hardcoded `>= 3` check
+    max_doubles_consequence: "jail"    # Mechanic agent handles "jail" action
+```
+
+---
+
+### Phase 6: Delegate `reverse` and Shrink `UNIVERSAL_EFFECT_TYPES`
+
+**Principle**: Only effects that are structural primitives for *every* conceivable game stay engine-native.
 
 **Keep as engine-native:**
-- `draw` — draw cards from deck into hand (universal card primitive)
-- `score` — modify a player's score (universal resource primitive)
+- `draw` — draw N cards from deck (high-frequency; universal card primitive)
+- `score` — modify player score (high-frequency; universal resource primitive)
 
-**Move to mechanic agent:**
-- `reverse` — reverse the turn order array
+**Delegate to mechanic agent:**
+- `reverse` — reverse turn order (game-specific; rare enough to afford agent latency)
 
-To support this, add one new mechanic agent primitive:
-
+**New CLI primitive:**
 ```bash
-# New CLI command
 ./playtest mechanic:reverse-turn-order {INSTANCE_ID}
 ```
 
 **Engine changes:**
-- Remove `'reverse'` from `UNIVERSAL_EFFECT_TYPES` (array shrinks to `['draw', 'score']`)
-- Add `mechanic:reverse-turn-order` CLI command that calls `state.turnOrder.reverse()`
-- A game with a Reverse card will trigger a mechanic agent intervention → agent calls the new command
+- Remove `'reverse'` from `UNIVERSAL_EFFECT_TYPES`
+- Games using Reverse cards → agent intervention → `mechanic:reverse-turn-order`
+- `UNIVERSAL_EFFECT_TYPES` becomes `['draw', 'score']`
 
-**Mechanic agent prompt update:**
-- Add `mechanic:reverse-turn-order` to the command reference table
-- Add `| reverse | \`./playtest mechanic:reverse-turn-order {INSTANCE_ID}\`` to the Common Patterns table
-
-**Consideration**: Even `draw` and `score` could theoretically be delegated, but their frequency (every draw action, every scoring event) would make every game mechanic-agent-bound and dramatically increase latency/cost. They should remain engine-native. `reverse` is rare enough that delegation is appropriate.
+**Note on UNO:** UNO has 8 Reverse cards — high frequency. For UNO-like games, the `card-matching` mechanic should handle `reverse` directly (it already reverses turn order as a structural mechanic behavior), bypassing the mechanic agent. This keeps the common case fast.
 
 ---
 
-### Phase 4: Thin `take-that` — Remove Engine-Specific Effect Routing
+### Phase 7: Thin `take-that` and `lose-a-turn` — Remove Effect Routing Logic
 
-**Current problem**: `take-that` has two distinct responsibilities mixed together:
-1. Validate that interference cards have a valid target (correct responsibility)
-2. Apply `block_turn` and `skip` effects because the generic dispatcher didn't (compensating for heuristic gaps)
+After Phases 1–2, these mechanics' routing logic becomes redundant.
 
-After Phases 1 and 2, responsibility #2 disappears entirely:
-- Targeting is explicit via `targetMode`; the effect-dispatcher routes correctly without `INTERFERENCE_EFFECTS`
-- `block_turn` effects are applied by the generic `addEffect()` path; `take-that` doesn't need to special-case them
+**`take-that.ts`:**
+- Delete `INTERFERENCE_EFFECTS` constant
+- Delete `onCardPlayed` hook (effect-dispatcher now routes correctly via `targetMode` + flags)
+- Simplify `preValidateAction`: validate any card with `targetMode === "opponents"` has a valid target
+- Result: ~80 lines of code → ~20 lines
 
-**Changes:**
-- Delete `INTERFERENCE_EFFECTS` constant from `take-that.ts`
-- Delete `onCardPlayed` hook from `take-that.ts` — no longer needed
-- Keep `preValidateAction` in `take-that.ts` but simplify: validate any card with `targetMode === "opponents"` has a valid target
-- `take-that` becomes a thin targeting validator, not an effect router
+**`lose-a-turn.ts`:**
+- Delete `BLOCKING_EFFECT_TYPES` constant
+- `isBlocked()` already reads `blocks_turn` flag — `lose-a-turn` mechanic becomes a no-op
+- Can be deleted entirely; its function is subsumed by Phase 2
 
 ---
 
-### Phase 5: Enrich Mechanic Agent Context and Primitives
-
-With the above in place, the mechanic agent gets richer information and cleaner primitives.
+### Phase 8: Enrich Mechanic Agent — Payload, Primitives, and Transactions
 
 **Intervention payload additions:**
 ```typescript
 interface PendingIntervention {
   // existing fields...
-  targetMode?: string;          // NEW: "opponents" | "self" | "any" | etc.
-  effectFlags?: {               // NEW: structured flags from card definition
+  targetMode?: string;                    // "opponents" | "self" | "any" | etc.
+  validTargets?: string[];                // Pre-computed legal target player IDs
+  effectFlags?: {                         // Structural flags from card definition
     blocks_turn?: boolean;
     passive?: boolean;
+    on_enter?: boolean;
   };
-  cardData?: Record<string, unknown>;  // NEW: full card object from RULES.md for richer context
+  cardData?: Record<string, unknown>;     // Full card object from RULES.md
+  boardContext?: {                        // For movement/location triggers
+    currentLocation: string;
+    adjacentLocations: string[];
+    blockedLocations: string[];
+  };
+  deckState?: {                           // For draw feasibility
+    remaining: number;
+    discardSize: number;
+  };
 }
 ```
 
-**New CLI commands for mechanic agent:**
+**New CLI primitives:**
 ```bash
+# Structural operations (atomic)
 ./playtest mechanic:reverse-turn-order {INSTANCE_ID}
-./playtest mechanic:draw {INSTANCE_ID} -p player-1 --count 2   # explicit draw-from-deck primitive
-./playtest mechanic:discard {INSTANCE_ID} -p player-1 --count 1 # force discard
+./playtest mechanic:draw {INSTANCE_ID} -p player-1 --count 2        # From deck
+./playtest mechanic:discard {INSTANCE_ID} -p player-1 --count 1     # Force discard
+./playtest mechanic:transfer-card {INSTANCE_ID} -f player-1 -t player-2 --card "Gold Coin"
+./playtest mechanic:transfer-resource {INSTANCE_ID} -f player-1 -t player-2 --resource gold --amount 3
+./playtest mechanic:end-game {INSTANCE_ID} --winner player-1 --reason "Victory condition met"
 ```
 
-**Mechanic agent prompt additions:**
-- Document that `targetMode` is available in the intervention so the agent doesn't need to re-read the card
-- Document new primitives in command reference
-- Add guidance: "Effect flags (`blocks_turn`, `passive`) are handled automatically by the engine when the effect is added. You do not need to manually apply these — just call `mechanic:resolve` and the engine reads them from state."
+**Tiered auto-resolution** (replaces blanket auto-skip):
+```typescript
+// Interventions declare their fallback strategy
+PendingIntervention {
+  autoResolveStrategy: 'apply_default' | 'skip';
+}
+// apply_default: structural effects (draw, score) — engine applies using effectValue/Duration
+// skip: interpretive effects (steal, conditional, multi-step) — safe to skip
+```
+
+**Mechanic agent prompt updates:**
+- Add all new commands to reference table
+- Add guidance: "Effect flags are handled automatically — you don't re-apply `blocks_turn`. The engine reads it from the effect you add."
+- Add `boardContext` and `deckState` to intervention field docs
+- Add `validTargets` to eliminate manual target lookup
 
 ---
 
-## Summary of Changes by File
+### Phase 9: Configurable Game Termination
+
+**Principle**: Move `max_rounds`/`max_turns` timeout logic from engine core to win condition mechanics. This allows custom termination conditions.
+
+**Current problem:** `game.ts:1006-1020` directly checks `max_rounds`/`max_turns` in the turn advancement loop. A game wanting "end when deck runs out twice" cannot express this.
+
+**Changes:**
+- Extract timeout check from `advanceTurn()` into win condition hook calls
+- Existing `win-conditions/timeout-winner.ts`, `highest-lowest-scoring.ts` already respond to `'timeout'` trigger
+- Engine fires `onCheckWin` with `trigger: 'turn_limit'` or `trigger: 'round_limit'` instead of directly ending the game
+- Add to engine config schema:
+```yaml
+engine_debug:
+  auto_adjudication_timeout_ms: 60000    # Was hardcoded
+  auto_intervention_timeout_ms: 120000   # Was hardcoded
+```
+
+---
+
+## Compound Effects (Cross-Cutting)
+
+Several games have cards with multiple simultaneous effects (UNO's Draw Two = draw + lose turn; Spellbook Showdown multi-mode cards). The current schema only supports one effect per card.
+
+**Proposed `effects` array (plural) on card definition:**
+```yaml
+- { name: "Draw Two", targetMode: "opponents",
+    effects:
+      - { type: "draw", value: 2 }
+      - { type: "skip", blocks_turn: true }
+  }
+
+# Multi-mode card (Spellbook Showdown)
+- { name: "Ember Shard", multi_use: true,
+    modes:
+      - { id: "attack", label: "Attack", effect: { type: "damage", value: 2 } }
+      - { id: "resource", label: "Gain Mana", effect: { type: "gain_resource", resource: "mana", value: 1 } }
+  }
+```
+
+Engine handles single `effect` (backwards compatible). If `effects` array present, each is processed in order. If `modes` array present, player specifies `mode` in action.
+
+---
+
+## Delegation Boundary Principle (Refined)
+
+> **The engine handles: "set this specific field of this specific player/state to this specific value" — expressed via flags on data, not via knowledge of string names.**
+>
+> **The mechanic agent handles: anything that requires reading RULES.md to know *what* to change, *why*, or *whether*.**
+
+Effect flags (`blocks_turn`, `passive`, `on_enter`) are game-author declarations about the *structural shape* of an effect — not its game semantics. The engine reads shape; the agent reads semantics.
+
+---
+
+## Summary: Changes Required
+
+### Engine Files
 
 | File | Change |
 |------|--------|
-| `src/mechanics/core/targeting.ts` | Delete file entirely |
-| `src/mechanics/core/effect-dispatcher.ts` | Remove `OPPONENT_TARGETING_EFFECTS`, `KNOWN_PASSIVE_EFFECTS`; replace passive filter with `e.passive !== true`; remove `reverse` from `UNIVERSAL_EFFECT_TYPES` |
-| `src/mechanics/core/effects.ts` | Replace `isBlocked()` hardcoded list with `effect.blocks_turn === true` check |
-| `src/mechanics/core/cards.ts` | Replace `isOpponentTargeting()` with `card.targetMode === "opponents"` |
-| `src/mechanics/take-that.ts` | Delete `INTERFERENCE_EFFECTS`, `onCardPlayed`; simplify `preValidateAction` to target-mode-based check |
-| `src/types/game.ts` | Add `blocks_turn?: boolean`, `passive?: boolean` to `Effect` type; add `targetMode?: string` to `Card` |
-| `src/cli/index.ts` | Add `mechanic:reverse-turn-order`, `mechanic:draw`, `mechanic:discard` commands |
-| `src/core/rules.ts` | Add `targetMode` validation warning for cards with opponent-type effects and no `targetMode` |
-| `.claude/agents/mechanic.md` | Add new primitives to command reference; add `targetMode`/`effectFlags` to intervention docs |
-| `games/*/RULES.md` | Add `targetMode` to all opponent-targeting cards; add `blocks_turn: true` / `passive: true` to relevant effects |
+| `src/mechanics/core/targeting.ts` | **Delete** entirely |
+| `src/mechanics/core/effect-dispatcher.ts` | Remove all three hardcoded sets; replace with flag checks; remove `'reverse'` |
+| `src/mechanics/core/effects.ts` | `isBlocked()`: flag check only |
+| `src/mechanics/core/cards.ts` | `isOpponentTargeting()` → flag check; card type checks → flag checks |
+| `src/mechanics/core/turns.ts` | `isEliminated()` → reads config |
+| `src/mechanics/core/pass.ts` | Victory state from config |
+| `src/mechanics/card-matching.ts` | `card.type === 'wild'` → `card.wild === true`; colors from config |
+| `src/mechanics/card-type-rules.ts` | Type rules from config; no hardcoded type names |
+| `src/mechanics/place-card.ts` | `card.type === 'location'` → `card.placeable_as_location === true` |
+| `src/mechanics/take-that.ts` | Delete effect routing; keep target validation (simplified) |
+| `src/mechanics/lose-a-turn.ts` | **Delete** — subsumed by `blocks_turn` flag |
+| `src/mechanics/location-effects.ts` | `LOCATION_EFFECT_TYPES` → `effect.on_enter === true` |
+| `src/mechanics/placed-card-effects.ts` | `PLACED_CARD_EFFECT_TYPES` → `effect.on_enter/passive` flags |
+| `src/mechanics/freeplay.ts` | `DEFAULT_INTERACTION_ACTIONS` from config |
+| `src/mechanics/hexagon-grid.ts` | Terrain types/restrictions/starts from config |
+| `src/mechanics/turn-order-stat-based.ts` | Stat fields via property path resolver |
+| `src/mechanics/roll-spin-and-move.ts` | Max consecutive doubles from config |
+| `src/mechanics/win-conditions/elimination.ts` | Use shared `isEliminated()` |
+| `src/mechanics/registry.ts` | `'eliminated'` check → via utility |
+| `src/core/game.ts` | Timeout checks → win condition hooks; timeouts from config |
+| `src/core/rules.ts` | `targetMode` default fix; `max_rounds` default fix |
+| `src/types/game.ts` | `Effect` gains `blocks_turn?`, `passive?`, `on_enter?`; `Card` gains `targetMode?`, `wild?`, `placeable_as_location?`, `multi_use?`, `effects?`, `modes?` |
+| `src/cli/index.ts` | Add 6 new `mechanic:*` commands |
+
+### RULES.md Files (All 18 Games)
+
+- Add `targetMode` to all opponent-targeting cards
+- Add `blocks_turn: true` to all turn-blocking effects
+- Add `passive: true` to all passively-checked effects
+- Add `on_enter: true` to all location entry effects
+- Replace `effect:` with `effects:` array for compound-effect cards (e.g., UNO Draw Two)
+
+### Agent Files
+
+- `.claude/agents/mechanic.md`: New commands, richer intervention field docs, flag semantics guidance
 
 ---
 
-## What Stays in the Engine vs. What Delegates to Mechanic Agent
+## What Stays in Engine vs. Mechanic Agent
 
-### Engine Keeps (Structural Primitives — Fast, Deterministic)
-
-| Operation | Why Engine |
+### Engine (Structural — Fast, Deterministic, Flag-Driven)
+| Operation | Mechanism |
 |-----------|-----------|
-| Draw cards from deck | Every card game; high frequency |
-| Modify score | Universal across all games |
-| Add/remove effects (with flags) | Structural storage; flags carry semantics |
-| Apply `blocks_turn` skip | Pure flag check, no interpretation |
-| Apply `passive` (no intervention) | Pure flag check |
-| Move player to board state | Universal board primitive |
-| Advance/manage turn order | Structural sequencing |
-| Win condition checks (hooks) | Deterministic predicates |
-| Validate action structure | Structural constraints only |
+| Turn blocking | `effect.blocks_turn === true` flag |
+| Lifecycle intervention trigger | `!effect.passive` flag |
+| Location entry trigger | `effect.on_enter === true` flag |
+| Wild card identification | `card.wild === true` flag |
+| Location card identification | `card.placeable_as_location === true` flag |
+| Opponent targeting validation | `card.targetMode === "opponents"` flag |
+| All-opponent effect application | `card.targetMode === "all_opponents"` flag |
+| Draw N cards | Engine primitive |
+| Modify score | Engine primitive |
+| Player elimination check | Config-driven utility |
 
-### Mechanic Agent Gets (Interpretive — Anything with Game Semantics)
-
+### Mechanic Agent (Interpretive — Game Semantics, RULES.md Driven)
 | Operation | Why Agent |
-|-----------|----------|
-| Effect type semantics (what does `"freeze"` do each turn?) | Game-specific, reads RULES.md |
-| Novel action types | Game-specific, reads RULES.md |
-| Location entry effects | Game-specific, reads RULES.md |
-| Turn order reversal | Game-specific; rare enough to delegate |
-| Complex interactions (trade, auction resolution) | Requires rule interpretation |
-| Multi-step effects (conditional triggers) | Requires rule interpretation |
+|-----------|-----------|
+| Effect type semantics ("what does `freeze` do each turn?") | Game-specific; reads RULES.md |
+| Novel action types | Game-specific; reads RULES.md |
+| Location entry effects | Game-specific; reads RULES.md |
+| Turn order reversal | Game-specific; rare enough to afford latency |
+| Resource transfers (steal, trade) | Requires rules interpretation |
+| Conditional effects | Requires state + rules interpretation |
+| Multi-step interactions | Requires rules interpretation |
 | Social/creative mechanics | Inherently interpretive |
 
 ---
 
-## Delegation Boundary Principle
+## Migration Order (Safe, Backward-Compatible)
 
-> **The engine handles anything that can be expressed as: "change this specific field of this specific player from X to Y."**
-> **The mechanic agent handles anything that requires reading RULES.md to know *what* to change or *why*.**
-
-Effect flags (`blocks_turn`, `passive`) are declarations by the game author in RULES.md about the structural *shape* of an effect — not its game semantics. The engine reads flags, not type names. The mechanic agent reads type names (and descriptions, and rules) to understand semantics.
-
----
-
-## Migration Path for Existing Games
-
-1. **Phase 1 first** — targeting is the highest-impact, most visible bug surface
-2. Add `targetMode` to all games before removing heuristics (don't break existing games)
-3. Use rules parser warning (not error) initially to identify cards that need `targetMode`
-4. **Phase 2** — add flags to existing RULES.md files; no game behavior changes (flags just replace hardcoded sets)
-5. **Phase 3** — `reverse` delegation is additive; only affects games with reverse cards
-6. **Phases 4-5** — cleanup and enrichment; no behavior changes for games not using `take-that`
+1. **Phase 1** — Add `targetMode` to RULES.md before removing heuristics. Rules parser warns but doesn't break. Remove heuristics only after all games updated.
+2. **Phase 2** — Add effect flags to RULES.md. No behavior change (flags just replace sets). Remove sets after all games updated.
+3. **Phase 3** — Card type flags. Add flags first; remove type-name checks after all games updated.
+4. **Phase 4** — Elimination/victory config. Add config defaults matching current hardcoded values; games opt-in to custom names.
+5. **Phase 5** — Domain array config. Add config support; move values from code to RULES.md per game.
+6. **Phase 6** — `reverse` delegation. Additive: `card-matching` handles UNO-style reverse fast path; others go to agent.
+7. **Phase 7** — Delete thin-wrapper mechanics. Only after Phases 1–2 confirmed working.
+8. **Phase 8** — Agent enrichment. Additive; no breaking changes.
+9. **Phase 9** — Game termination refactor. Requires careful testing; leave for last.
 
 ---
 
 ## Non-Goals
 
-- Do not delegate `draw` or `score` to the mechanic agent — frequency is too high
-- Do not remove the mechanic agent fallback — it remains essential for novel effects
-- Do not require all 150+ existing leaf mechanics to be rewritten — they continue working as fast paths for games that enable them
-- Do not change the hook system or registry — this proposal is about eliminating hardcoded *constants*, not restructuring the mechanic architecture
+- Do not delegate `draw` or `score` to the mechanic agent (frequency too high)
+- Do not remove the mechanic agent fallback (essential for novel effects)
+- Do not require all 150+ leaf mechanics to be rewritten (they remain as fast paths)
+- Do not change the hook system or registry architecture
+- Do not make all 40+ custom action types in RULES.md replace TypeScript mechanics (mechanics are the right fast path; the agent handles only what mechanics can't)
