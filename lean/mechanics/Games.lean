@@ -3,3 +3,4 @@
 -- that the mechanic combination is well-formed.
 
 import Games.MarkovsChains
+import Games.AAOTE
