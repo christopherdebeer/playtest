@@ -49,17 +49,6 @@ export interface HiddenObjectivesConfig {
   reveal_on_completion?: boolean;
 }
 
-/**
- * Fisher-Yates shuffle with deterministic seed based on player count
- */
-function shuffleArray<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
 
 export const hiddenObjectivesMechanic: MechanicHooks = {
   slug: 'hidden-objectives',
@@ -100,11 +89,23 @@ export const hiddenObjectivesMechanic: MechanicHooks = {
       }
     }
 
-    // Shuffle objectives
-    const shuffled = shuffleArray(objectivePool);
+    // Remove objectives already assigned to previously initialized players.
+    // initPlayerState is called once per player in order; existingPlayers contains
+    // state already built for players 0..playerIndex-1. Without this, each call
+    // independently shuffles the pool and two players can draw the same objective.
+    const pool = [...objectivePool];
+    for (const player of Object.values(ctx.existingPlayers)) {
+      const existingObj = (player as { objective?: ObjectiveDefinition }).objective;
+      if (existingObj) {
+        const idx = pool.findIndex(o => o.name === existingObj.name);
+        if (idx >= 0) pool.splice(idx, 1);
+      }
+    }
 
-    // Assign objective based on player index
-    const assigned = shuffled[ctx.playerIndex];
+    if (pool.length === 0) return null;
+
+    // Pick randomly from remaining pool
+    const assigned = pool[Math.floor(Math.random() * pool.length)];
     if (!assigned) {
       return null;
     }

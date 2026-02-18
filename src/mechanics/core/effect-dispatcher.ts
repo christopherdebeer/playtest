@@ -57,6 +57,8 @@ export function createEffectIntervention(
     effectDuration?: number;
     cardName?: string;
     cardDescription?: string;
+    targetMode?: string;
+    validTargets?: string[];
     locationName?: string;
     context?: string;
   }
@@ -93,6 +95,8 @@ export function createEffectIntervention(
     targetPlayer,
     cardName: options?.cardName,
     cardDescription: options?.cardDescription,
+    targetMode: options?.targetMode,
+    validTargets: options?.validTargets,
     locationName: options?.locationName,
     context: options?.context || defaultContexts[triggerType],
     gameState: {
@@ -262,12 +266,21 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
     // Otherwise, fall back to cosmetic status effect (legacy behavior).
     if (hasMechanicAgent(ctx.state)) {
       const description = extractCardDescription(card as unknown as Record<string, unknown>);
+      const allPlayerIds = Object.keys(ctx.state.players);
+      const cardTargetMode = card.targetMode as string | undefined;
+      const validTargets = cardTargetMode === 'opponents' || cardTargetMode === 'all_opponents'
+        ? allPlayerIds.filter(id => id !== ctx.playerId)
+        : cardTargetMode === 'self'
+          ? [ctx.playerId]
+          : allPlayerIds;
       createEffectIntervention(ctx.state, 'effect', effectType, ctx.playerId, targetId, {
         effectValue: card.effect.value,
         effectDuration: card.effect.duration,
         cardName: card.name,
         cardDescription: description,
-        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Card: ${description}`
+        targetMode: cardTargetMode,
+        validTargets,
+        context: `${ctx.playerId} played "${card.name}" targeting ${targetId}. Effect type "${effectType}" has no engine handler. Card: ${description}${cardTargetMode ? ` [targetMode: ${cardTargetMode}, validTargets: ${validTargets.join(', ')}]` : ''}`
       });
     } else if (card.effect.duration && card.effect.duration > 0) {
       // Legacy fallback: add as cosmetic status effect when no mechanic agent

@@ -1910,6 +1910,8 @@ export interface PendingIntervention {
   targetPlayer: string;            // Player the effect targets
   cardName?: string;               // Card that was played (if applicable)
   cardDescription?: string;        // Card description from rules
+  targetMode?: string;             // Card's targetMode flag (e.g. "opponents" — use to validate target)
+  validTargets?: string[];         // Pre-computed list of valid target player IDs
   actionData?: GameAction;         // Full action data (for action-type triggers)
   locationName?: string;           // Location name (for location-entry triggers)
   context: string;                 // Human-readable description of what happened

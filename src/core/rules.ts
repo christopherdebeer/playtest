@@ -113,11 +113,13 @@ export function buildDeck(deckConfig: DeckConfig[]): Card[] {
         effect: cardDef.effect ?? { type: 'none' }
       };
 
-      // Add placeable card properties if defined
-      if (cardDef.placeable) {
-        card.placeable = true;
-        card.targetMode = cardDef.targetMode;  // Proposal 014: No default — requires explicit declaration
-      }
+      // Copy Proposal 014 semantic flags — applies to all card types, not just placeable ones.
+      // These must survive from DeckConfig → Card so the engine can enforce them at play time.
+      if (cardDef.targetMode) card.targetMode = cardDef.targetMode;
+      if (cardDef.wild) card.wild = true;
+      if (cardDef.placeable_as_location) card.placeable_as_location = true;
+      if (cardDef.placeable) card.placeable = true;
+      if (cardDef.targetFilter) card.targetFilter = cardDef.targetFilter;
 
       deck.push(card);
     }

@@ -164,24 +164,24 @@ When an intervention arrives, it includes these fields you can use for reasoning
 | `targetPlayer` | The player who is affected (may be same as sourcePlayer) |
 | `cardName` | Name of the card played (if card-triggered) |
 | `cardDescription` | Description text of the card (if card-triggered) |
-| `cardData` | Full card object from RULES.md including all properties |
+| `targetMode` | Card's targeting mode: `"opponents"`, `"all_opponents"`, `"self"`, `"any"` (see below) |
+| `validTargets` | Pre-computed list of valid target player IDs based on `targetMode` |
 | `actionData` | Full action JSON (if action-triggered) |
 | `locationName` | Location name (if location-triggered) |
-| `context` | Human-readable description of what happened |
-| `targetMode` | Pre-computed targeting mode from card definition (see below) |
-| `validTargets` | Pre-computed list of valid target player IDs |
-| `effectFlags` | Structural flags: `{ blocks_turn, passive, on_enter }` |
+| `context` | Human-readable description including targetMode and validTargets when present |
 
 ## targetMode
 
-When `targetMode` is present in the intervention, use it to determine who to affect:
+When `targetMode` is present in the intervention, use it to enforce targeting:
 
-- `"opponents"` — choose one opponent from `validTargets`
-- `"all_opponents"` — apply effect to ALL players in `validTargets`
-- `"self"` — apply to `sourcePlayer` only
-- `"any"` — the player who played the card chose a target (check `targetPlayer` in intervention)
+- `"opponents"` — effect applies to ONE opponent; `validTargets` lists them. If `targetPlayer === sourcePlayer` (self-targeting), **skip or redirect to first validTarget**.
+- `"all_opponents"` — apply effect to ALL players in `validTargets`. Never apply to `sourcePlayer`.
+- `"self"` — apply to `sourcePlayer` only.
+- `"any"` — player chose any target; `targetPlayer` is their chosen target; it may be self.
 
-If `targetMode` is absent, use the card description and RULES.md to determine targeting.
+**Self-targeting guard**: if `targetMode` is `"opponents"` or `"all_opponents"` and `targetPlayer === sourcePlayer`, this is an invalid self-play. Mark the intervention as skipped with a clear reason: `"Card has targetMode: opponents — cannot target self"`.
+
+If `targetMode` is absent, infer from the card description and RULES.md.
 
 ## reverse-turn-order
 

@@ -598,6 +598,27 @@ class MechanicRegistry {
       }
     }
 
+    // Deduplicate actions by type — multiple mechanics may emit the same action type
+    // (e.g., place-location and place-card both emit place_location). Merge their card
+    // lists and prefer enabled state; keep the first mechanic's description/examples.
+    const actionsByType = new Map<string, AvailableAction>();
+    for (const action of actions) {
+      const key = action.action.type;
+      const existing = actionsByType.get(key);
+      if (!existing) {
+        actionsByType.set(key, { ...action, cards: action.cards ? [...action.cards] : undefined });
+      } else {
+        if (action.enabled && !existing.enabled) {
+          existing.enabled = true;
+          delete existing.reason;
+        }
+        if (action.cards && action.cards.length > 0) {
+          existing.cards = Array.from(new Set([...(existing.cards ?? []), ...action.cards]));
+        }
+      }
+    }
+    actions.splice(0, actions.length, ...Array.from(actionsByType.values()));
+
     // Post-process: apply filterPlayableCards to play_card actions
     for (const action of actions) {
       if (action.action.type === 'play_card' && action.cards && action.cards.length > 0) {
