@@ -1694,6 +1694,284 @@ program
     }
   });
 
+
+program
+  .command('mechanic:reverse-turn-order <game>')
+  .description('[Mechanic] Reverse the current turn order array in game state')
+  .action((game: string) => {
+    try {
+      const gameState = loadState(game);
+      const before = [...gameState.turnOrder];
+      gameState.turnOrder = [...gameState.turnOrder].reverse();
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_reverse_turn_order',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        data: { before, after: gameState.turnOrder }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        before,
+        after: gameState.turnOrder
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:draw <game>')
+  .description('[Mechanic] Draw N cards from deck into player hand')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .requiredOption('--count <n>', 'Number of cards to draw')
+  .action((game: string, options: { player: string; count: string }) => {
+    try {
+      const gameState = loadState(game);
+      const count = parseInt(options.count, 10);
+      if (!gameState.players[options.player]) {
+        throw new Error(`Player ${options.player} not found`);
+      }
+      const drawn = drawCards(gameState, options.player, count);
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_draw',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        player: options.player,
+        data: { count, drawn: drawn.map(c => c.name) }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        player: options.player,
+        drawn,
+        drawnCount: drawn.length,
+        deckRemaining: getCardsState(gameState).deck.length
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:discard <game>')
+  .description('[Mechanic] Force discard N cards from player hand to discard pile')
+  .requiredOption('-p, --player <id>', 'Player ID')
+  .requiredOption('--count <n>', 'Number of cards to discard')
+  .action((game: string, options: { player: string; count: string }) => {
+    try {
+      const gameState = loadState(game);
+      const count = parseInt(options.count, 10);
+      const player = gameState.players[options.player];
+      if (!player) {
+        throw new Error(`Player ${options.player} not found`);
+      }
+      if (!player.hand) player.hand = [];
+      const toDiscard = player.hand.splice(0, count);
+      if (toDiscard.length === 0) {
+        throw new Error(`Player ${options.player} has no cards to discard`);
+      }
+      const cardsState = getCardsState(gameState);
+      cardsState.discardPile.push(...toDiscard);
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_discard',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        player: options.player,
+        data: { discarded: toDiscard.map(c => c.name) }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        player: options.player,
+        discarded: toDiscard,
+        discardedCount: toDiscard.length,
+        handRemaining: player.hand.length
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:transfer-card <game>')
+  .description('[Mechanic] Atomically transfer a card from one player hand to another')
+  .requiredOption('-f, --from <playerId>', 'Source player ID')
+  .requiredOption('-t, --to <playerId>', 'Destination player ID')
+  .requiredOption('--card <cardName>', 'Name of card to transfer')
+  .action((game: string, options: { from: string; to: string; card: string }) => {
+    try {
+      const gameState = loadState(game);
+      const fromPlayer = gameState.players[options.from];
+      const toPlayer = gameState.players[options.to];
+      if (!fromPlayer) throw new Error(`Player ${options.from} not found`);
+      if (!toPlayer) throw new Error(`Player ${options.to} not found`);
+      if (!fromPlayer.hand) fromPlayer.hand = [];
+      if (!toPlayer.hand) toPlayer.hand = [];
+
+      const idx = fromPlayer.hand.findIndex(c => c.name === options.card);
+      if (idx < 0) {
+        throw new Error(`Card "${options.card}" not found in ${options.from}'s hand`);
+      }
+      const [card] = fromPlayer.hand.splice(idx, 1);
+      toPlayer.hand.push(card);
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_transfer_card',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        data: { card: options.card, from: options.from, to: options.to }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        card: options.card,
+        from: options.from,
+        to: options.to,
+        fromHandSize: fromPlayer.hand.length,
+        toHandSize: toPlayer.hand.length
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:transfer-resource <game>')
+  .description('[Mechanic] Atomically transfer a resource amount from one player to another')
+  .requiredOption('-f, --from <playerId>', 'Source player ID')
+  .requiredOption('-t, --to <playerId>', 'Destination player ID')
+  .requiredOption('--resource <resourceName>', 'Resource name to transfer')
+  .requiredOption('--amount <n>', 'Amount to transfer')
+  .action((game: string, options: { from: string; to: string; resource: string; amount: string }) => {
+    try {
+      const gameState = loadState(game);
+      const fromPlayer = gameState.players[options.from];
+      const toPlayer = gameState.players[options.to];
+      if (!fromPlayer) throw new Error(`Player ${options.from} not found`);
+      if (!toPlayer) throw new Error(`Player ${options.to} not found`);
+
+      const amount = parseInt(options.amount, 10);
+      if (isNaN(amount) || amount <= 0) throw new Error('Amount must be a positive integer');
+
+      if (!fromPlayer.resources) fromPlayer.resources = {};
+      if (!toPlayer.resources) toPlayer.resources = {};
+
+      const fromAmount = fromPlayer.resources[options.resource] ?? 0;
+      if (fromAmount < amount) {
+        throw new Error(`Player ${options.from} has insufficient ${options.resource}: has ${fromAmount}, needs ${amount}`);
+      }
+
+      fromPlayer.resources[options.resource] = fromAmount - amount;
+      toPlayer.resources[options.resource] = (toPlayer.resources[options.resource] ?? 0) + amount;
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_transfer_resource',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        data: { resource: options.resource, amount, from: options.from, to: options.to }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        resource: options.resource,
+        amount,
+        from: options.from,
+        to: options.to,
+        fromRemaining: fromPlayer.resources[options.resource],
+        toTotal: toPlayer.resources[options.resource]
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:end-game <game>')
+  .description('[Mechanic] Instantly end game with a winner')
+  .requiredOption('--winner <playerId>', 'Winner player ID')
+  .requiredOption('--reason <text>', 'Reason for game end')
+  .action((game: string, options: { winner: string; reason: string }) => {
+    try {
+      const state = endGame(game, options.winner, options.reason);
+
+      console.log(JSON.stringify({
+        success: true,
+        gameId: state.gameId,
+        winner: options.winner,
+        totalRounds: state.round,
+        totalTurnNumber: state.turnNumber,
+        reason: options.reason
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:peek <game>')
+  .description('[Mechanic] Log visible snapshot of target player hand/objectives to requesting player perspective')
+  .requiredOption('-p, --player <id>', 'Requesting player ID')
+  .requiredOption('--target <targetPlayerId>', 'Target player to peek at')
+  .requiredOption('--scope <scope>', 'What to peek at: hand | objectives | all')
+  .action((game: string, options: { player: string; target: string; scope: string }) => {
+    try {
+      const gameState = loadState(game);
+      const targetPlayer = gameState.players[options.target];
+      if (!targetPlayer) throw new Error(`Target player ${options.target} not found`);
+      if (!gameState.players[options.player]) throw new Error(`Player ${options.player} not found`);
+
+      const validScopes = ['hand', 'objectives', 'all'];
+      if (!validScopes.includes(options.scope)) {
+        throw new Error(`Invalid scope "${options.scope}". Must be one of: ${validScopes.join(', ')}`);
+      }
+
+      const snapshot: Record<string, unknown> = {};
+
+      if (options.scope === 'hand' || options.scope === 'all') {
+        snapshot.hand = targetPlayer.hand ?? [];
+      }
+      if (options.scope === 'objectives' || options.scope === 'all') {
+        snapshot.objectives = (targetPlayer.resources ?? {});
+      }
+
+      logEvent(gameState, {
+        event: 'mechanic_peek',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        player: options.player,
+        data: { target: options.target, scope: options.scope, snapshot }
+      });
+
+      saveState(gameState);
+
+      console.log(JSON.stringify({
+        success: true,
+        requestingPlayer: options.player,
+        target: options.target,
+        scope: options.scope,
+        snapshot
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
 // ============ Game Mechanics Commands ============
 
 program

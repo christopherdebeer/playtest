@@ -93,6 +93,27 @@ This returns the game rules and configuration. **Read them carefully** — the r
 
 # Update shared game state
 ./playtest mechanic:shared {INSTANCE_ID} -k "marketPrice" -v '42'
+
+# Reverse the current turn order
+./playtest mechanic:reverse-turn-order {INSTANCE_ID}
+
+# Draw N cards from deck into player's hand
+./playtest mechanic:draw {INSTANCE_ID} -p player-1 --count 2
+
+# Force discard N cards from player's hand to discard pile
+./playtest mechanic:discard {INSTANCE_ID} -p player-1 --count 1
+
+# Atomically transfer a card from one player's hand to another
+./playtest mechanic:transfer-card {INSTANCE_ID} -f player-1 -t player-2 --card "Gold Card"
+
+# Atomically transfer a resource amount from one player to another
+./playtest mechanic:transfer-resource {INSTANCE_ID} -f player-1 -t player-2 --resource gold --amount 3
+
+# Instantly end game with a winner
+./playtest mechanic:end-game {INSTANCE_ID} --winner player-1 --reason "Reached target score"
+
+# Log visible snapshot of target player's hand/objectives to requesting player's perspective
+./playtest mechanic:peek {INSTANCE_ID} -p player-1 --target player-2 --scope hand
 ```
 
 ### Resolving the intervention
@@ -103,6 +124,68 @@ This returns the game rules and configuration. **Read them carefully** — the r
 # If the effect doesn't need state changes (informational only, or not applicable)
 ./playtest mechanic:resolve {INSTANCE_ID} --skip -r "Effect is informational only, no state changes needed"
 ```
+
+## Command Reference Table
+
+| Command | Syntax | Description |
+|---|---|---|
+| `mechanic:pending` | `mechanic:pending <instanceId>` | Wait (blocking) for a pending intervention |
+| `mechanic:resolve` | `mechanic:resolve <instanceId> --apply\|--skip -r <reason>` | Resolve a pending intervention |
+| `mechanic:state` | `mechanic:state <instanceId>` | Get full game state |
+| `mechanic:update` | `mechanic:update <instanceId> -p <playerId> [options]` | Apply state mutations to a player |
+| `mechanic:shared` | `mechanic:shared <instanceId> -k <key> -v <json>` | Update shared game state |
+| `mechanic:reverse-turn-order` | `mechanic:reverse-turn-order <instanceId>` | Reverse the current turn order array in game state |
+| `mechanic:draw` | `mechanic:draw <instanceId> -p <playerId> --count <N>` | Draw N cards from deck into player's hand |
+| `mechanic:discard` | `mechanic:discard <instanceId> -p <playerId> --count <N>` | Force discard N cards from player's hand to discard pile |
+| `mechanic:transfer-card` | `mechanic:transfer-card <instanceId> -f <fromPlayerId> -t <toPlayerId> --card <cardName>` | Atomically transfer a card between player hands |
+| `mechanic:transfer-resource` | `mechanic:transfer-resource <instanceId> -f <fromPlayerId> -t <toPlayerId> --resource <resourceName> --amount <N>` | Atomically transfer resource amount between players |
+| `mechanic:end-game` | `mechanic:end-game <instanceId> --winner <playerId> --reason <string>` | Instantly end game with a declared winner |
+| `mechanic:peek` | `mechanic:peek <instanceId> -p <playerId> --target <targetPlayerId> --scope <hand\|objectives\|all>` | Log visible snapshot of target's hand/objectives to requesting player's perspective |
+
+## Effect Flags
+
+Effect flags are handled automatically by the engine — you do NOT need to re-apply them:
+
+- `blocks_turn: true` — engine automatically skips this player's turn; you don't call any command
+- `passive: true` — engine checks this effect automatically; no intervention needed for passive checks
+- `on_enter: true` — engine triggers this automatically on location entry
+
+Your job is to interpret effects that **lack** these flags or have additional game-specific semantics beyond what the flags cover.
+
+## Intervention Payload Fields
+
+When an intervention arrives, it includes these fields you can use for reasoning:
+
+| Field | Description |
+|---|---|
+| `triggerType` | What caused the intervention: `effect`, `action`, `location`, or `lifecycle` |
+| `effectType` | The specific unhandled effect or action type name |
+| `sourcePlayer` | The player who triggered this (played the card, took the action) |
+| `targetPlayer` | The player who is affected (may be same as sourcePlayer) |
+| `cardName` | Name of the card played (if card-triggered) |
+| `cardDescription` | Description text of the card (if card-triggered) |
+| `cardData` | Full card object from RULES.md including all properties |
+| `actionData` | Full action JSON (if action-triggered) |
+| `locationName` | Location name (if location-triggered) |
+| `context` | Human-readable description of what happened |
+| `targetMode` | Pre-computed targeting mode from card definition (see below) |
+| `validTargets` | Pre-computed list of valid target player IDs |
+| `effectFlags` | Structural flags: `{ blocks_turn, passive, on_enter }` |
+
+## targetMode
+
+When `targetMode` is present in the intervention, use it to determine who to affect:
+
+- `"opponents"` — choose one opponent from `validTargets`
+- `"all_opponents"` — apply effect to ALL players in `validTargets`
+- `"self"` — apply to `sourcePlayer` only
+- `"any"` — the player who played the card chose a target (check `targetPlayer` in intervention)
+
+If `targetMode` is absent, use the card description and RULES.md to determine targeting.
+
+## reverse-turn-order
+
+`mechanic:reverse-turn-order` is the correct primitive to use for reversing turn order. If you encounter a card or effect with effect type `"reverse"`, use this command. Do not attempt to manually modify the turn order via `mechanic:shared`.
 
 ## Game Loop
 
@@ -120,9 +203,13 @@ This returns the game rules and configuration. **Read them carefully** — the r
          - sourcePlayer: who triggered it
          - targetPlayer: who is affected
          - cardName/cardDescription: card details (if card-triggered)
+         - cardData: full card object (if card-triggered)
          - actionData: full action JSON (if action-triggered)
          - locationName: location name (if location-triggered)
          - context: human-readable description
+         - targetMode: pre-computed targeting mode (if present)
+         - validTargets: pre-computed valid target list (if present)
+         - effectFlags: { blocks_turn, passive, on_enter }
 
        - Get full state: ./playtest mechanic:state {INSTANCE_ID}
 
@@ -131,6 +218,7 @@ This returns the game rules and configuration. **Read them carefully** — the r
          2. The game rules (RULES.md)
          3. The current game state
          4. The effect/action type name and description
+         5. targetMode and validTargets if present
 
        - Apply state changes using mechanic:update commands
        - Resolve: ./playtest mechanic:resolve {INSTANCE_ID} --apply -r "description"
@@ -147,8 +235,10 @@ A card was played with an effect the engine can't execute. Read `cardName`, `car
 **Process:**
 1. Look up the card in RULES.md to understand what it does
 2. Check `effectType` — it tells you the category of effect
-3. Check the current state to ensure changes are valid
-4. Apply using mechanic:update commands
+3. Check `effectFlags` — if `blocks_turn`, `passive`, or `on_enter` is true, the engine already handled that flag; you handle additional semantics only
+4. Use `targetMode` and `validTargets` to determine who to affect
+5. Check the current state to ensure changes are valid
+6. Apply using mechanic:update commands
 
 ### Action Triggers (`triggerType: "action"`)
 A player submitted an action type that no engine mechanic handles. Read `actionData` for the full action JSON.
@@ -182,7 +272,7 @@ A turn/round event triggered an effect with no handler.
 |---|---|
 | `block_turn`, `skip`, `lose_turn` | `--add-effect '{"type":"block_turn","duration":1,"source":"..."}'` |
 | `forced_trade` | Remove card from one player, add to another (and vice versa) |
-| `steal`, `steal_item` | Transfer card/resource from target to source |
+| `steal`, `steal_item` | `mechanic:transfer-card` or `mechanic:transfer-resource` from target to source |
 | `reveal`, `force_reveal` | Move hidden info to shared state or reveal to player |
 | `hide`, `secret_move` | Update position without revealing (use shared state flags) |
 | `teleport`, `teleport_adjacent` | Change player board state via `-s "location"` |
@@ -193,6 +283,13 @@ A turn/round event triggered an effect with no handler.
 | `extra_movement` | Add movement_bonus effect or directly move player |
 | `trade_bonus` | Set a shared state flag for reduced trade cost |
 | `bonus_worker` | Increment worker count on player |
+| `reverse` | `mechanic:reverse-turn-order` to reverse the turn order |
+| `draw` (forced) | `mechanic:draw` to draw cards into a specific player's hand |
+| `discard` (forced) | `mechanic:discard` to force a player to discard cards |
+| `transfer_card` | `mechanic:transfer-card` for atomic hand-to-hand card transfer |
+| `transfer_resource` | `mechanic:transfer-resource` for atomic resource transfer |
+| `instant_win` | `mechanic:end-game` to end the game with a winner |
+| `peek`, `look_at_hand` | `mechanic:peek` to snapshot a player's hand for another player |
 
 ## Important Rules
 
@@ -204,6 +301,8 @@ A turn/round event triggered an effect with no handler.
 6. **Don't adjudicate** — that's the gamemaster's job
 7. **Check state before mutating** — don't remove cards players don't have, don't set negative resources
 8. **Handle multi-player effects** — if an effect touches multiple players, update all of them before resolving
+9. **Use atomic primitives** — prefer `mechanic:transfer-card` and `mechanic:transfer-resource` over manual remove+add for transfers
+10. **Effect flags are pre-handled** — never re-apply `blocks_turn`, `passive`, or `on_enter` effects; the engine already processed them
 
 ## BEGIN
 
