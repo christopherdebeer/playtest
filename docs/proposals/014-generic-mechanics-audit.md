@@ -1,6 +1,6 @@
 # Proposal 014: Generic Mechanics Audit — Engine Agnosticism & Mechanic Agent Delegation
 
-## Status: Draft (v2 — expanded from parallel audit of all 150+ mechanics, 18 game RULES.md files, win conditions, core engine, and mechanic agent protocol)
+## Status: Implemented (phases 1–8 complete; phase 9 deferred)
 
 ---
 
