@@ -61,6 +61,7 @@ mechanics:
       - name: Stumble
         count: 4
         type: interference
+        targetMode: "opponents"
         value: -1
         effect:
           type: move_backward
@@ -68,9 +69,11 @@ mechanics:
       - name: Block
         count: 4
         type: interference
+        targetMode: "opponents"
         effect:
           type: block_turn
           duration: 1
+          blocks_turn: true
 ---
 
 # Parallel Race
