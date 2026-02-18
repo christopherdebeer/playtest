@@ -88,3 +88,6 @@
 {"timestamp":"2026-02-18T10:59:01.174Z","event":"intervention_auto_resolved","round":9,"turnNumber":34,"data":{"id":"intervention-1-1771412210558","effectType":"teleport_adjacent","elapsed":130616}}
 {"timestamp":"2026-02-18T10:59:01.194Z","event":"action_executed","round":9,"turnNumber":34,"player":"player-2","data":{"type":"draw","count":1,"handSize":7}}
 {"timestamp":"2026-02-18T10:59:12.581Z","event":"action_executed","round":9,"turnNumber":34,"player":"player-2","data":{"type":"play_card","card":"Evasion","effect":{"type":"counter","description":"Cancel an event targeting you"},"handSize":6,"newTopCard":"Evasion"}}
+{"timestamp":"2026-02-18T11:01:28.616Z","event":"intervention_auto_resolved","round":9,"turnNumber":35,"data":{"id":"intervention-1-1771412352579","effectType":"counter","elapsed":136037}}
+{"timestamp":"2026-02-18T11:01:28.634Z","event":"action_executed","round":9,"turnNumber":35,"player":"player-3","data":{"type":"trade_respond","tradeId":"trade-1771411839481-f1382s9hc","from":"player-2","to":"player-3","offer":["Supplies"],"request":[]}}
+{"timestamp":"2026-02-18T11:01:38.747Z","event":"action_executed","round":9,"turnNumber":35,"player":"player-3","data":{"type":"pass","victoryDeclaration":true,"reason":"I now hold 4 different items simultaneously: Lantern, Map Fragment, Rope, and Supplies. This completes The Collector objective."}}
