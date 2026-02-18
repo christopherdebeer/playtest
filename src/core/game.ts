@@ -144,6 +144,24 @@ function processVictoryDeclarationIfPresent(state: GameState, originalAction: La
   const contestState = ensureContestState(state);
   const playerBoardState = state.players[originalAction.player]?.state ?? 'unknown';
 
+  // Do not overwrite an existing pending claim — first valid declaration takes precedence.
+  // The declaring player may try again once the current claim is adjudicated.
+  if (contestState.pendingVictoryClaim) {
+    const existing = contestState.pendingVictoryClaim;
+    logEvent(state, {
+      event: 'victory_claim_deferred',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      player: originalAction.player,
+      data: {
+        reason: action.victoryReason || 'Victory declared with action',
+        note: `Deferred: ${existing.player}'s victory claim from turn ${existing.timestamp} is still pending GM adjudication`
+      }
+    });
+    debug(`[VICTORY CLAIM] Deferred victory claim from ${originalAction.player} — ${existing.player}'s claim already pending`);
+    return;
+  }
+
   // Create pending victory claim for GM verification
   contestState.pendingVictoryClaim = {
     player: originalAction.player,
