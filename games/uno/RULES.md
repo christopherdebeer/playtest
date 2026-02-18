@@ -59,21 +59,73 @@ mechanics:
       - { name: "Blue 8", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 8 } }
       - { name: "Blue 9", count: 2, type: "number", effect: { type: "none", color: "Blue", value: 9 } }
       # Action cards (2 each per color) - 24 total
-      - { name: "Red Skip", count: 2, type: "action", effect: { type: "skip", color: "Red" } }
+      - name: "Red Skip"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effect: { type: "skip", color: "Red", blocks_turn: true }
       - { name: "Red Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Red" } }
-      - { name: "Red Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Red", value: 2 } }
-      - { name: "Yellow Skip", count: 2, type: "action", effect: { type: "skip", color: "Yellow" } }
+      - name: "Red Draw Two"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effects:
+          - { type: "draw", value: 2 }
+          - { type: "skip", blocks_turn: true }
+        effect: { type: "draw", color: "Red", value: 2 }
+      - name: "Yellow Skip"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effect: { type: "skip", color: "Yellow", blocks_turn: true }
       - { name: "Yellow Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Yellow" } }
-      - { name: "Yellow Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Yellow", value: 2 } }
-      - { name: "Green Skip", count: 2, type: "action", effect: { type: "skip", color: "Green" } }
+      - name: "Yellow Draw Two"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effects:
+          - { type: "draw", value: 2 }
+          - { type: "skip", blocks_turn: true }
+        effect: { type: "draw", color: "Yellow", value: 2 }
+      - name: "Green Skip"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effect: { type: "skip", color: "Green", blocks_turn: true }
       - { name: "Green Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Green" } }
-      - { name: "Green Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Green", value: 2 } }
-      - { name: "Blue Skip", count: 2, type: "action", effect: { type: "skip", color: "Blue" } }
+      - name: "Green Draw Two"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effects:
+          - { type: "draw", value: 2 }
+          - { type: "skip", blocks_turn: true }
+        effect: { type: "draw", color: "Green", value: 2 }
+      - name: "Blue Skip"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effect: { type: "skip", color: "Blue", blocks_turn: true }
       - { name: "Blue Reverse", count: 2, type: "action", effect: { type: "reverse", color: "Blue" } }
-      - { name: "Blue Draw Two", count: 2, type: "action", effect: { type: "draw", color: "Blue", value: 2 } }
+      - name: "Blue Draw Two"
+        count: 2
+        type: "action"
+        targetMode: "opponents"
+        effects:
+          - { type: "draw", value: 2 }
+          - { type: "skip", blocks_turn: true }
+        effect: { type: "draw", color: "Blue", value: 2 }
       # Wild cards - 8 total
-      - { name: "Wild", count: 4, type: "wild", effect: { type: "wild" } }
-      - { name: "Wild Draw Four", count: 4, type: "wild", effect: { type: "wild_draw", value: 4 } }
+      - { name: "Wild", count: 4, type: "wild", wild: true, effect: { type: "wild" } }
+      - name: "Wild Draw Four"
+        count: 4
+        type: "wild"
+        wild: true
+        targetMode: "opponents"
+        effects:
+          - { type: "wild_draw", value: 4 }
+          - { type: "skip", blocks_turn: true }
+        effect: { type: "wild_draw", value: 4 }
 ---
 
 # UNO Game Rules

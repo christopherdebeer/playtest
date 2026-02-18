@@ -94,23 +94,23 @@ mechanics:
     deck:
       # === LOCATIONS (placed on grid) ===
       # Basic locations
-      - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", effect: { type: "safe" } }
-      - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", effect: { type: "safe" } }
-      - { name: "River Crossing", count: 2, type: "location", terrain: "water", effect: { type: "safe" } }
-      - { name: "Village Square", count: 2, type: "location", terrain: "settlement", effect: { type: "trade_bonus" } }
-      - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", effect: { type: "draw_on_enter", value: 1 } }
-      - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, effect: { type: "safe" } }
+      - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "River Crossing", count: 2, type: "location", terrain: "water", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "Village Square", count: 2, type: "location", terrain: "settlement", placeable_as_location: true, effect: { type: "trade_bonus" } }
+      - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", placeable_as_location: true, effect: { type: "draw_on_enter", value: 1, on_enter: true } }
+      - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, placeable_as_location: true, effect: { type: "safe" } }
 
       # Special locations
-      - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", effect: { type: "hide", description: "Avatar cannot be seen by others" } }
-      - { name: "Watchtower", count: 1, type: "location", terrain: "tower", effect: { type: "reveal", description: "See all player positions" } }
-      - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
+      - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", placeable_as_location: true, effect: { type: "hide", description: "Avatar cannot be seen by others" } }
+      - { name: "Watchtower", count: 1, type: "location", terrain: "tower", placeable_as_location: true, effect: { type: "reveal", description: "See all player positions" } }
+      - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", placeable_as_location: true, effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
 
       # === ITEMS (held in hand, tradeable) ===
       # Common items
       - { name: "Lantern", count: 3, type: "item", effect: { type: "utility", description: "Required for cave locations" } }
       - { name: "Rope", count: 3, type: "item", effect: { type: "utility", description: "Required for mountain locations" } }
-      - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn" } }
+      - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn", passive: true } }
       - { name: "Map Fragment", count: 4, type: "item", effect: { type: "collectible", description: "Collect 3 to peek at any objective" } }
       - { name: "Supplies", count: 3, type: "item", effect: { type: "currency", description: "Used for certain events" } }
 
@@ -125,13 +125,13 @@ mechanics:
       - { name: "Shortcut", count: 2, type: "event", effect: { type: "teleport_adjacent", description: "Move to any tile adjacent to any player" } }
 
       # Information events
-      - { name: "Spy", count: 2, type: "event", effect: { type: "peek_hand", description: "Look at target player's hand" } }
-      - { name: "Interrogate", count: 1, type: "event", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective" } }
+      - { name: "Spy", count: 2, type: "event", targetMode: "opponents", effect: { type: "peek_hand", description: "Look at target player's hand" } }
+      - { name: "Interrogate", count: 1, type: "event", targetMode: "opponents", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective" } }
 
       # Interference events
-      - { name: "Roadblock", count: 2, type: "event", effect: { type: "block_tile", duration: 1, description: "Block a location for 1 round" } }
-      - { name: "Theft", count: 2, type: "event", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from adjacent player" } }
-      - { name: "Sabotage", count: 1, type: "event", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
+      - { name: "Roadblock", count: 2, type: "event", targetMode: "opponents", effect: { type: "block_tile", duration: 1, blocks_turn: true, description: "Block a location for 1 round" } }
+      - { name: "Theft", count: 2, type: "event", targetMode: "opponents", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from adjacent player" } }
+      - { name: "Sabotage", count: 1, type: "event", targetMode: "opponents", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
 
       # Defensive events
       - { name: "Evasion", count: 2, type: "event", effect: { type: "counter", description: "Cancel an event targeting you" } }

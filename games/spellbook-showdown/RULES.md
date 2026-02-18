@@ -89,18 +89,18 @@ mechanics:
     starting_hand: 6
     deck:
       # Fire spells
-      - { name: "Fireball", count: 4, type: "command", subtype: "fire", value: 3, effect: { type: "damage", amount: 3 } }
-      - { name: "Inferno", count: 2, type: "command", subtype: "fire", value: 5, effect: { type: "damage", amount: 5 } }
+      - { name: "Fireball", count: 4, type: "command", subtype: "fire", value: 3, targetMode: "opponents", effect: { type: "damage", amount: 3 } }
+      - { name: "Inferno", count: 2, type: "command", subtype: "fire", value: 5, targetMode: "opponents", effect: { type: "damage", amount: 5 } }
       # Ice spells
-      - { name: "Frost Bolt", count: 4, type: "command", subtype: "ice", value: 2, effect: { type: "freeze", duration: 1 } }
-      - { name: "Blizzard", count: 2, type: "command", subtype: "ice", value: 4, effect: { type: "freeze_all", duration: 1 } }
+      - { name: "Frost Bolt", count: 4, type: "command", subtype: "ice", value: 2, targetMode: "opponents", effect: { type: "freeze", duration: 1, blocks_turn: true } }
+      - { name: "Blizzard", count: 2, type: "command", subtype: "ice", value: 4, targetMode: "all_opponents", effect: { type: "freeze_all", duration: 1, blocks_turn: true } }
       # Healing
       - { name: "Heal", count: 4, type: "command", subtype: "heal", value: 2, effect: { type: "heal", amount: 2 } }
       - { name: "Greater Heal", count: 2, type: "command", subtype: "heal", value: 4, effect: { type: "heal", amount: 4 } }
       # Shield
       - { name: "Barrier", count: 4, type: "command", subtype: "shield", value: 1, effect: { type: "block", amount: 3 } }
       # Lightning
-      - { name: "Lightning Bolt", count: 2, type: "command", subtype: "lightning", value: 5, effect: { type: "damage", amount: 5 } }
+      - { name: "Lightning Bolt", count: 2, type: "command", subtype: "lightning", value: 5, targetMode: "opponents", effect: { type: "damage", amount: 5 } }
       # Utility
       - { name: "Mana Crystal", count: 3, type: "resource", value: 0, effect: { type: "gain_resource", resource: "mana", amount: 3 } }
       - { name: "Scroll of Recall", count: 2, type: "utility", value: 0, effect: { type: "retrieve", amount: 1 } }
