@@ -579,6 +579,7 @@
       "description": "UNO-style card matching with color and value rules",
       "config_schema": {
         "colors": "array",
+        "valid_colors": "array",
         "value_matching": "boolean",
         "action_matching": "boolean",
         "allow_any_when_no_color": "boolean"
@@ -1230,7 +1231,10 @@
       "description": "Hexagonal grid movement and positioning",
       "config_schema": {
         "radius": "number",
-        "movement_range": "number"
+        "movement_range": "number",
+        "terrain_types": "array",
+        "impassable_terrain": "array",
+        "start_positions": "array"
       },
       "hooks": [
         "onExecuteAction",
@@ -2060,6 +2064,10 @@
       "config_key": "roll_spin_and_move",
       "since": "3.0.0",
       "description": "Classic board game movement where dice determine spaces moved.",
+      "config_schema": {
+        "max_consecutive_doubles": "number",
+        "max_doubles_consequence": "string"
+      },
       "hooks": [
         "onTurnStart",
         "onExecuteAction",
@@ -2310,8 +2318,7 @@
         "preValidateAction"
       ],
       "requires": [
-        "cards",
-        "effects"
+        "cards"
       ]
     },
     "targeted-clues": {
