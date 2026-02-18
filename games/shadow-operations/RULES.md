@@ -97,7 +97,7 @@ mechanics:
       - { id: "reinforcements", name: "Reinforcements", effect: { type: "gain_resource", resource: "agents", amount: 2 }, frequency: 3 }
       - { id: "blackout", name: "Blackout", effect: { type: "hide_all_positions" }, frequency: 2 }
       - { id: "crackdown", name: "Crackdown", effect: { type: "remove_influence", amount: 1 }, frequency: 2 }
-      - { id: "double_agent", name: "Double Agent", effect: { type: "steal_influence", amount: 1 }, frequency: 1 }
+      - { id: "double_agent", name: "Double Agent", targetMode: "opponents", effect: { type: "steal_influence", amount: 1 }, frequency: 1 }
 
   # Turn order based on claiming initiative
   turn_order_claim_action:
