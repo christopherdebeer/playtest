@@ -37,9 +37,9 @@ interface CardMatchingConfig {
   allow_any_when_no_color?: boolean;
   /** Whether to force draw when no playable cards (default: true for UNO rules) */
   force_draw_when_blocked?: boolean;
+  /** Valid colors for wild card declaration */
+  valid_colors?: string[];
 }
-
-const DEFAULT_COLORS = ['Red', 'Blue', 'Green', 'Yellow'];
 
 /**
  * Check if a card is playable given the current game state
@@ -55,7 +55,7 @@ export function isCardPlayable(
   const allowAnyWhenNoColor = config?.allow_any_when_no_color ?? true;
 
   // Wild cards are always playable
-  if (card.type === 'wild') return true;
+  if (card.wild === true) return true;
 
   // If no color constraint, any card is playable
   if (!currentColor && allowAnyWhenNoColor) return true;
@@ -108,6 +108,10 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
       colors: {
         type: 'array',
         description: 'Available colors (default: Red, Blue, Green, Yellow)'
+      },
+      valid_colors: {
+        type: 'array',
+        description: 'Valid colors for wild card declaration (default: Red, Blue, Green, Yellow)'
       },
       value_matching: {
         type: 'boolean',
@@ -203,7 +207,8 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
     const playAction = action as { type: 'play_card'; card: string; declaredColor?: string };
     if (!playAction.card) return null;
 
-    const validColors = matchConfig?.colors ?? DEFAULT_COLORS;
+    // Read valid colors from config, falling back to defaults
+    const validColors = matchConfig?.valid_colors ?? matchConfig?.colors ?? ['Red', 'Blue', 'Green', 'Yellow'];
     const valueMatching = matchConfig?.value_matching ?? true;
     const actionMatching = matchConfig?.action_matching ?? true;
     const allowAnyWhenNoColor = matchConfig?.allow_any_when_no_color ?? true;
@@ -219,7 +224,7 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
     }
 
     // Wild card handling
-    if (card.type === 'wild') {
+    if (card.wild === true) {
       if (!playAction.declaredColor) {
         return {
           valid: false,
@@ -287,7 +292,7 @@ export const cardMatchingMechanic: MechanicHooks & CardsHooks = {
     if (!isMechanicEnabled(ctx.config, 'card-matching')) return null;
 
     // Wild card with declared color takes priority
-    if (card.type === 'wild' && playContext?.declaredColor) {
+    if (card.wild === true && playContext?.declaredColor) {
       return {
         sharedStateChanges: {
           currentColor: playContext.declaredColor

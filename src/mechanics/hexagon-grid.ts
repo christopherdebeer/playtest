@@ -25,6 +25,9 @@ import { GameAction, GameConfig } from '../types/game.js';
 interface HexGridConfig {
   radius?: number;
   movement_range?: number;
+  terrain_types?: string[];
+  impassable_terrain?: string[];
+  start_positions?: string[];
 }
 
 interface HexCell {
@@ -45,6 +48,10 @@ const HEX_DIRECTIONS = [
   { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 }
 ];
 
+const DEFAULT_TERRAIN_TYPES = ['plains', 'forest', 'hills', 'water'];
+const DEFAULT_IMPASSABLE_TERRAIN = ['water'];
+const DEFAULT_START_POSITIONS = ['0,0', '1,0', '-1,0', '0,1', '0,-1', '1,-1'];
+
 function getConfig(config: GameConfig): HexGridConfig | undefined {
   return config.engine_mechanics?.hexagon_grid as HexGridConfig | undefined;
 }
@@ -63,7 +70,10 @@ export const hexagonGridMechanic: MechanicHooks = {
     description: 'Hexagonal grid movement and positioning',
     properties: {
       radius: { type: 'number', default: 3 },
-      movement_range: { type: 'number', default: 1 }
+      movement_range: { type: 'number', default: 1 },
+      terrain_types: { type: 'array', description: 'Available terrain types (default: plains, forest, hills, water)' },
+      impassable_terrain: { type: 'array', description: 'Terrain types that block movement (default: water)' },
+      start_positions: { type: 'array', description: 'Starting positions for players as "q,r" strings' }
     }
   },
 
@@ -72,8 +82,8 @@ export const hexagonGridMechanic: MechanicHooks = {
     if (!config) return null;
 
     const radius = config.radius ?? 3;
+    const terrains = config.terrain_types ?? DEFAULT_TERRAIN_TYPES;
     const cells: Record<string, HexCell> = {};
-    const terrains = ['plains', 'forest', 'hills', 'water'];
 
     // Generate hex grid with given radius
     for (let q = -radius; q <= radius; q++) {
@@ -91,7 +101,7 @@ export const hexagonGridMechanic: MechanicHooks = {
 
     // Place players around the center
     const positions: Record<string, string> = {};
-    const startPositions = ['0,0', '1,0', '-1,0', '0,1', '0,-1', '1,-1'];
+    const startPositions = config.start_positions ?? DEFAULT_START_POSITIONS;
     for (let i = 0; i < ctx.playerIds.length; i++) {
       const pos = startPositions[i % startPositions.length];
       positions[ctx.playerIds[i]] = pos;
@@ -113,12 +123,15 @@ export const hexagonGridMechanic: MechanicHooks = {
     const [q, r] = myPos.split(',').map(Number);
     const actions: AvailableAction[] = [];
 
+    const hexConfig = getConfig(ctx.config);
+    const impassableTerrain = hexConfig?.impassable_terrain ?? DEFAULT_IMPASSABLE_TERRAIN;
+
     for (const dir of HEX_DIRECTIONS) {
       const nq = q + dir.q;
       const nr = r + dir.r;
       const key = `${nq},${nr}`;
       const cell = hexState.cells[key];
-      if (cell && !cell.occupant && cell.terrain !== 'water') {
+      if (cell && !cell.occupant && !impassableTerrain.includes(cell.terrain)) {
         actions.push({
           action: {
             type: 'hex_move',

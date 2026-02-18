@@ -116,7 +116,7 @@ export function buildDeck(deckConfig: DeckConfig[]): Card[] {
       // Add placeable card properties if defined
       if (cardDef.placeable) {
         card.placeable = true;
-        card.targetMode = cardDef.targetMode ?? 'opponents';  // Default to affecting opponents
+        card.targetMode = cardDef.targetMode;  // Proposal 014: No default — requires explicit declaration
       }
 
       deck.push(card);

@@ -251,7 +251,7 @@ export function getEffectValue(state: GameState, playerId: string, effectType: s
 
 /**
  * Check if a player is blocked by any blocking effect.
- * Common blocking effects: block_turn, skip, lose_turn
+ * Reads the blocks_turn flag from each active effect.
  */
 export function isBlocked(state: GameState, playerId: string): boolean {
   const player = state.players[playerId];
@@ -259,8 +259,7 @@ export function isBlocked(state: GameState, playerId: string): boolean {
     throw new Error(`Player ${playerId} not found`);
   }
 
-  const blockingEffectTypes = ['block_turn', 'skip', 'lose_turn', 'stunned', 'frozen'];
-  return player.effects.some(e => blockingEffectTypes.includes(e.type));
+  return player.effects.some(e => e.blocks_turn === true);
 }
 
 /**

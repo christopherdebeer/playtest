@@ -39,6 +39,7 @@ import {
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card, Effect } from '../types/game.js';
 import { logEvent } from '../core/game.js';
+import { isPlayerEliminated } from './core/turns.js';
 
 /**
  * Error returned when validating mechanic dependencies/conflicts
@@ -504,7 +505,7 @@ class MechanicRegistry {
    */
   checkAllWinConditions(state: GameState, trigger: string): { playerId: string; reason: string } | null {
     const activePlayers = Object.entries(state.players)
-      .filter(([_, p]) => p.state !== 'eliminated' && !p.effects?.some(e => e.type === 'eliminated'));
+      .filter(([_, p]) => !isPlayerEliminated(p, state.config));
 
     for (const [playerId] of activePlayers) {
       const result = this.onCheckWin(state, playerId, trigger);

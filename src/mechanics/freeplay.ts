@@ -24,6 +24,7 @@
  * - actions_per_round: How many total actions before round advances (optional)
  * - interaction_timeout: Seconds to wait for interaction response (optional)
  * - allow_concurrent_resource_access: Whether multiple players can access same resource
+ * - interaction_actions: Action types that require synchronization (default: [])
  */
 
 import {
@@ -68,18 +69,6 @@ interface FreeplaySharedState {
   playersAwaitingResponse: string[];
 }
 
-/**
- * Default interaction actions that require synchronization
- */
-const DEFAULT_INTERACTION_ACTIONS = [
-  'trade_offer',
-  'trade_respond',
-  'attack',
-  'negotiate',
-  'challenge',
-  'vote'
-];
-
 export const freeplayMechanic: MechanicHooks = {
   slug: 'freeplay',
   name: 'Freeplay (Experimental)',
@@ -102,7 +91,7 @@ export const freeplayMechanic: MechanicHooks = {
       },
       interaction_actions: {
         type: 'array',
-        description: 'Action types that require synchronization'
+        description: 'Action types that require synchronization (default: [] — game must declare explicitly)'
       }
     }
   },
@@ -143,10 +132,12 @@ export const freeplayMechanic: MechanicHooks = {
 
     const freeplayState = ctx.state.shared.freeplayState as FreeplaySharedState | undefined;
 
+    // Read interaction actions from config; default to empty array (game must declare explicitly)
+    const interactionActions = config.interaction_actions ?? [];
+
     // Check if player is awaiting an interaction response
     if (freeplayState?.playersAwaitingResponse.includes(ctx.playerId)) {
       // Only allow interaction responses while awaiting
-      const interactionActions = config.interaction_actions || DEFAULT_INTERACTION_ACTIONS;
       if (!interactionActions.includes(action.type) && action.type !== 'pass') {
         return {
           valid: false,
@@ -156,7 +147,6 @@ export const freeplayMechanic: MechanicHooks = {
     }
 
     // Check if this is an interaction action that needs a target
-    const interactionActions = config.interaction_actions || DEFAULT_INTERACTION_ACTIONS;
     if (interactionActions.includes(action.type)) {
       // Interaction actions are valid but will create pending state
       return { valid: true };

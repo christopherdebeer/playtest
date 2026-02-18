@@ -9,8 +9,24 @@
  * - onTurnEnd: Called at end of player's turn (before advancing)
  */
 
-import { GameState } from '../../types/game.js';
+import { GameState, GameConfig } from '../../types/game.js';
 import { mechanicRegistry, applyStateChanges } from '../registry.js';
+
+/**
+ * Check if a player is eliminated.
+ * Reads the eliminated state string from config, falling back to 'eliminated'.
+ * Checks both player.state and player.effects for the eliminated marker.
+ */
+export function isPlayerEliminated(
+  player: { state?: string; effects?: Array<{ type: string }> },
+  config?: GameConfig
+): boolean {
+  const eliminatedState = (config as Record<string, unknown> & { engine_mechanics?: { player_lifecycle?: { eliminated_state?: string } } } | undefined)
+    ?.engine_mechanics?.player_lifecycle?.eliminated_state ?? 'eliminated';
+  if (player.state === eliminatedState) return true;
+  if (player.effects?.some(e => e.type === eliminatedState)) return true;
+  return false;
+}
 
 /**
  * Get the current player's ID.
@@ -100,9 +116,7 @@ export function getActivePlayers(state: GameState): string[] {
   return state.turnOrder.filter(playerId => {
     const player = state.players[playerId];
     if (!player) return false;
-    if (player.state === 'eliminated') return false;
-    if (player.effects?.some(e => e.type === 'eliminated')) return false;
-    return true;
+    return !isPlayerEliminated(player, state.config);
   });
 }
 
@@ -112,9 +126,7 @@ export function getActivePlayers(state: GameState): string[] {
 export function isPlayerActive(state: GameState, playerId: string): boolean {
   const player = state.players[playerId];
   if (!player) return false;
-  if (player.state === 'eliminated') return false;
-  if (player.effects?.some(e => e.type === 'eliminated')) return false;
-  return true;
+  return !isPlayerEliminated(player, state.config);
 }
 
 /**

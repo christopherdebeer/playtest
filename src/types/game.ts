@@ -13,6 +13,8 @@ export interface Card {
     duration?: number;
     target?: string;
     color?: string;  // For card games like UNO
+    passive?: boolean;   // Proposal 014: true = checked passively (always-on effect)
+    on_enter?: boolean;  // Proposal 014: true = trigger on location entry
   };
   placeable?: boolean;  // Can this card be placed on board states?
   targetMode?: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner';  // Explicit targeting declaration (replaces old 'owner' | 'opponents' | 'all')
@@ -484,6 +486,24 @@ export interface EngineMechanics {
   matching?: Record<string, unknown>;                  // Pair matching
   interrupts?: Record<string, unknown>;                // Out-of-turn reactions
   score_and_reset_game?: Record<string, unknown>;      // Multi-round scoring
+
+  // Proposal 014: Generic mechanics audit — typed config sub-objects
+  player_lifecycle?: {
+    eliminated_state?: string;       // Default: "eliminated"
+    eliminated_effect_type?: string; // Default: "eliminated"
+    victory_state?: string;          // Default: "Victory"
+  };
+  card_matching?: {
+    valid_colors?: string[];         // Default: ["Red", "Blue", "Green", "Yellow"]
+  };
+  freeplay?: {
+    interaction_actions?: string[];
+  };
+  roll_spin_and_move?: {
+    doubles_bonus?: boolean;
+    max_consecutive_doubles?: number;
+    max_doubles_consequence?: string;
+  };
 }
 
 // Proposal 007: Grid configuration
@@ -1112,7 +1132,9 @@ export interface GameConfig {
   mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
   engine_mechanics?: EngineMechanics;  // Enable/disable engine capabilities
   engine_debug?: {
-    hook_telemetry?: boolean;  // Enable hook telemetry logging
+    hook_telemetry?: boolean;                  // Enable hook telemetry logging
+    auto_adjudication_timeout_ms?: number;     // Proposal 014: Timeout for auto-adjudication
+    auto_intervention_timeout_ms?: number;     // Proposal 014: Timeout for auto-intervention
   };
   [key: string]: unknown;  // game-specific config
 }
@@ -1442,7 +1464,7 @@ export interface PlacedCard {
     value?: number;
     duration?: number;        // How long the effect lasts after triggering
   };
-  targetMode: 'owner' | 'opponents' | 'all';  // Who the effect applies to
+  targetMode: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner' | 'all';  // Who the effect applies to (Proposal 014: extended modes)
   triggersRemaining?: number; // How many times it can trigger (undefined = unlimited until removed)
 }
 

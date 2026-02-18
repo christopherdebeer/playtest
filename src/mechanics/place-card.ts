@@ -114,8 +114,8 @@ export const placeCardMechanic: MechanicHooks = {
         return null; // Let core validation handle missing card
       }
 
-      // Check if card is a location type
-      if (card.type !== 'location') {
+      // Check if card is a placeable location (using flag instead of type check)
+      if (!card.placeable_as_location) {
         return {
           valid: false,
           error: `Card "${placeAction.card}" is not a location card.`
@@ -238,8 +238,8 @@ export const placeCardMechanic: MechanicHooks = {
 
       const card = hand[cardIndex];
 
-      // Verify card is a location type
-      if (card.type !== 'location') {
+      // Verify card is a placeable location (using flag instead of type check)
+      if (!card.placeable_as_location) {
         return {
           handled: true,
           stateChanges: {},
@@ -308,7 +308,8 @@ export const placeCardMechanic: MechanicHooks = {
     const gridConfig = ctx.config.engine_mechanics?.grid as
       { type?: string; starting_tile?: string; adjacency?: string } | undefined;
     if (gridConfig) {
-      const locationCards = hand.filter((c: Card) => c.type === 'location');
+      // Use placeable_as_location flag instead of type check
+      const locationCards = hand.filter((c: Card) => c.placeable_as_location === true);
       if (locationCards.length > 0) {
         const startingTile = gridConfig.starting_tile || 'origin';
         const placedLocations = (ctx.state.shared.placedLocations as string[]) || [];

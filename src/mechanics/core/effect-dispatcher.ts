@@ -4,7 +4,7 @@
  * Central dispatcher for card effects that aren't handled by specialized mechanics.
  * When a card with an effect is played, this mechanic routes the effect to the
  * appropriate handler via mechanicRegistry.applyEffect(), or handles common effects
- * directly (draw, score, reverse).
+ * directly (draw, score).
  *
  * When no handler exists and a mechanic agent is registered, creates a
  * PendingIntervention instead of silently adding a cosmetic status effect.
@@ -36,28 +36,9 @@ import { isOpponentTargeting } from './targeting.js';
  * Effect types handled directly by this dispatcher (truly universal patterns).
  * These are structural operations that map 1:1 to engine primitives.
  * All other effect types are routed to mechanics or the mechanic agent.
+ * Note: 'reverse' is no longer handled here — it creates an intervention instead.
  */
-const UNIVERSAL_EFFECT_TYPES = ['draw', 'score', 'reverse'];
-
-/**
- * Effect types that target opponents by default.
- * Used as a fallback when targeting cannot be inferred from the card itself
- * (e.g., when the effect-dispatcher only has the effect type, not the full card).
- */
-const OPPONENT_TARGETING_EFFECTS = new Set([
-  'draw', 'block_turn', 'skip', 'lose_turn',
-  'steal_item', 'peek_hand', 'peek_objective', 'block_tile',
-]);
-
-/**
- * Effect types passively handled by the engine (checked during movement, blocking, etc.).
- * These don't need per-turn lifecycle interventions because their presence is
- * already checked by engine code paths (isBlocked, probability mods, etc.).
- */
-const KNOWN_PASSIVE_EFFECTS = new Set([
-  'block_turn', 'skip', 'lose_turn', 'stunned', 'frozen', 'eliminated',
-  'probability_boost', 'probability_penalty',
-]);
+const UNIVERSAL_EFFECT_TYPES = ['draw', 'score'];
 
 let interventionCounter = 0;
 
@@ -170,8 +151,8 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
    * a lifecycle intervention so the agent can interpret per-turn effects
    * (e.g., "poison deals 1 damage each turn", "regeneration heals 1 HP").
    *
-   * Skips known passive effects (blocking markers, probability mods) since
-   * those are already checked by engine code paths.
+   * Skips effects marked as passive (effect.passive === true) since those
+   * are already checked by engine code paths (isBlocked, probability mods, etc.).
    */
   onTurnStart(ctx: TurnStartContext): StateChanges | null {
     if (!hasMechanicAgent(ctx.state)) return null;
@@ -183,9 +164,9 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
     const activeEffects = ctx.player.effects ?? [];
     if (activeEffects.length === 0) return null;
 
-    // Find effects whose types are not known to the engine
+    // Find effects that are not passive and not universally handled by the engine
     const unhandledEffects = activeEffects.filter(
-      e => !KNOWN_PASSIVE_EFFECTS.has(e.type) && !UNIVERSAL_EFFECT_TYPES.includes(e.type)
+      e => e.passive !== true && !UNIVERSAL_EFFECT_TYPES.includes(e.type)
     );
 
     if (unhandledEffects.length === 0) return null;
@@ -213,9 +194,9 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
 
     const effectType = card.effect.type.toLowerCase();
 
-    // Determine target player
+    // Determine target player using card.targetMode flag
     const actionTarget = playContext?.actionTarget as string | undefined;
-    const cardIsOpponentTargeting = isOpponentTargeting(card) || OPPONENT_TARGETING_EFFECTS.has(effectType);
+    const cardIsOpponentTargeting = isOpponentTargeting(card);
     const targetMode = card.targetMode || (cardIsOpponentTargeting ? 'opponents' : 'owner');
 
     // Helper: pick default opponent (next in turn order)
@@ -233,7 +214,7 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
       } else {
         targetId = actionTarget;
       }
-    } else if (targetMode === 'opponents') {
+    } else if (targetMode === 'opponents' || targetMode === 'all_opponents') {
       targetId = defaultOpponent();
     } else {
       targetId = ctx.playerId;
@@ -256,11 +237,6 @@ export const effectDispatcherMechanic: MechanicHooks & CardsHooks = {
         if (target) {
           target.score = (target.score ?? 0) + value;
         }
-        return null;
-      }
-
-      case 'reverse': {
-        ctx.state.turnOrder.reverse();
         return null;
       }
 

@@ -129,6 +129,9 @@ export const VALID_EFFECT_TYPES = [
   'destroy_location',
   'counter',
   'secret_move',
+  // Proposal 014: lifecycle and entry effects
+  'eliminated',
+  'location_entry',
 ];
 
 /**
@@ -187,4 +190,23 @@ export const VALID_TIMEOUT_WINNER_TYPES = ['role', 'highest_score', 'specific_pl
 /**
  * Valid card target modes.
  */
-export const VALID_TARGET_MODES = ['owner', 'opponents', 'all'];
+export const VALID_TARGET_MODES = ['self', 'opponents', 'all_opponents', 'any', 'owner', 'all'];  // Proposal 014: extended modes ('self', 'all_opponents', 'any' added; legacy 'all' kept for compatibility)
+
+// Proposal 014: Valid card field additions
+/**
+ * Valid card wild flag — replaces card.type === 'wild' checks.
+ */
+export const VALID_CARD_BOOLEAN_FLAGS = ['wild', 'placeable_as_location', 'multi_use'] as const;
+
+/**
+ * Valid player lifecycle states (configurable via engine_mechanics.player_lifecycle).
+ */
+export const VALID_LIFECYCLE_STATES = {
+  eliminated_state: 'eliminated',
+  victory_state: 'Victory',
+};
+
+/**
+ * Valid default card matching colors (configurable via engine_mechanics.card_matching).
+ */
+export const DEFAULT_CARD_MATCHING_COLORS = ['Red', 'Blue', 'Green', 'Yellow'];
