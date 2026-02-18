@@ -1591,7 +1591,7 @@ export function resolveIntervention(
   return { success: true };
 }
 
-const AUTO_INTERVENTION_TIMEOUT_MS = 120000; // 120 seconds
+const AUTO_INTERVENTION_TIMEOUT_MS = 240000; // 240 seconds (LLM agent needs 3-4 CLI roundtrips)
 
 /**
  * Auto-resolve an intervention if the mechanic agent doesn't respond in time.
@@ -1869,7 +1869,32 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
 
   if (mechanicResult?.handled) {
-    // Mechanic handled the action - apply its state changes
+    // Detect failure: mechanics signal failure with logMessage ending in '_failed' or containing 'failed'
+    const isFailure = typeof mechanicResult.logMessage === 'string' &&
+      (mechanicResult.logMessage.endsWith('_failed') || mechanicResult.logMessage.includes('failed'));
+
+    if (isFailure) {
+      // Action failed: do NOT apply state changes, do NOT deduct AP, do NOT advance turn.
+      // Log the failure so the game record is accurate, then return an error to the caller.
+      logEvent(state, {
+        event: 'action_failed',
+        round: state.round,
+        turnNumber: state.turnNumber,
+        player: playerId,
+        data: {
+          type: action.type,
+          logMessage: mechanicResult.logMessage,
+          ...mechanicResult.logData
+        }
+      });
+      saveState(state);
+      const errorMsg = (mechanicResult.logData as { error?: string } | undefined)?.error
+        ?? mechanicResult.logMessage
+        ?? 'Action failed';
+      return { success: false, error: errorMsg };
+    }
+
+    // Mechanic handled the action successfully - apply its state changes
     if (mechanicResult.stateChanges) {
       applyStateChanges(state, mechanicResult.stateChanges);
     }

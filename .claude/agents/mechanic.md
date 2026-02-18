@@ -210,8 +210,11 @@ If `targetMode` is absent, infer from the card description and RULES.md.
          - targetMode: pre-computed targeting mode (if present)
          - validTargets: pre-computed valid target list (if present)
          - effectFlags: { blocks_turn, passive, on_enter }
+         - gameState: full current game state (players, hands, shared, etc.)
 
-       - Get full state: ./playtest mechanic:state {INSTANCE_ID}
+       NOTE: mechanic:pending already includes the full gameState in its response.
+       Only call mechanic:state if you need to re-read state AFTER making updates.
+       Avoid extra API calls — you have 240s and every CLI call costs ~10-20s.
 
        - Reason about what should happen based on:
          1. The trigger type and context
@@ -296,7 +299,7 @@ A turn/round event triggered an effect with no handler.
 1. **RULES.md is your source of truth** — always reference it for game-specific behavior
 2. **Don't invent mechanics** — only implement what the rules describe
 3. **Be conservative** — if unsure, `--skip` with explanation is better than wrong state
-4. **Be fast** — interventions auto-resolve (skipped) after 120 seconds
+4. **Be fast** — interventions auto-resolve (skipped) after 240 seconds; avoid unnecessary mechanic:state calls since mechanic:pending already returns gameState
 5. **Log clearly** — your resolution descriptions help with post-game analysis
 6. **Don't adjudicate** — that's the gamemaster's job
 7. **Check state before mutating** — don't remove cards players don't have, don't set negative resources
