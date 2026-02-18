@@ -15,10 +15,17 @@ export interface Card {
     color?: string;  // For card games like UNO
   };
   placeable?: boolean;  // Can this card be placed on board states?
-  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  targetMode?: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner';  // Explicit targeting declaration (replaces old 'owner' | 'opponents' | 'all')
+  targetFilter?: { adjacency?: boolean };  // Conditional targeting constraints
   // Trick-taking card attributes
   suit?: string;  // Card suit (e.g., "hearts", "spades")
   value?: number | string;  // Card value (e.g., 1-13, "A", "K", "Q", "J")
+  // Proposal 014: Generic mechanics audit additions
+  wild?: boolean;                    // Replaces card.type === 'wild' checks
+  placeable_as_location?: boolean;  // Replaces card.type === 'location' checks
+  multi_use?: boolean;               // Card has multiple playable modes
+  effects?: Effect[];                // Compound effects (plural) — processed in order
+  modes?: Array<{ id: string; label: string; effect: Effect }>;  // Multi-mode card
 }
 
 export interface PlayerState {
@@ -237,6 +244,10 @@ export interface Effect {
   value?: number;
   duration: number;  // player turns remaining (decrements when effect holder's turn ends)
   source?: string;   // who applied it
+  // Proposal 014: Generic mechanics audit additions
+  blocks_turn?: boolean;   // Engine reads this to block player turn (replaces BLOCKING string set)
+  passive?: boolean;       // Engine reads this: false/undefined = needs lifecycle intervention; true = checked passively
+  on_enter?: boolean;      // Engine reads this: true = trigger on location entry
 }
 
 // Cards config (unified format: stored in engine_mechanics.cards)
@@ -1134,7 +1145,14 @@ export interface DeckConfig {
     color?: string;  // For card games like UNO
   };
   placeable?: boolean;  // Can this card be placed on board states?
-  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  targetMode?: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner';  // Explicit targeting declaration
+  targetFilter?: { adjacency?: boolean };  // Conditional targeting constraints
+  // Proposal 014: Generic mechanics audit additions
+  wild?: boolean;                    // Replaces card.type === 'wild' checks
+  placeable_as_location?: boolean;  // Replaces card.type === 'location' checks
+  multi_use?: boolean;               // Card has multiple playable modes
+  effects?: Effect[];                // Compound effects (plural) — processed in order
+  modes?: Array<{ id: string; label: string; effect: Effect }>;  // Multi-mode card
 }
 
 export interface BoardConfig {
