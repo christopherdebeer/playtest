@@ -133,7 +133,6 @@ structure GameState where
   turnNumber : Nat
   /-- Maximum hand size. -/
   maxHandSize : Nat := 7
-  deriving Repr
 
 /-! ## Reachability Proofs -/
 
@@ -149,31 +148,26 @@ theorem no_dead_states (s : BoardState) (h : s ≠ .victory) :
   | checkpointY => exact ⟨.victory, rfl⟩
   | victory => exact absurd rfl h
 
-/-- Victory is reachable from Start in at most 3 steps
+/-- Victory is reachable from Start in exactly 3 transitions
     (Start → {A,B,C} → {CX,CY} → Victory). -/
 theorem victory_reachable_from_start :
-    ∃ (path : List BoardState),
-      path.length ≤ 3 ∧
-      path.head? = some .start ∧
-      path.getLast? = some .victory ∧
-      ∀ i, i + 1 < path.length →
-        (validTransition (path[i]!) (path[i+1]!)).isSome = true := by
-  exact ⟨[.start, .a, .checkpointX, .victory], by decide, by decide, by decide,
-    by intro i hi
-       interval_cases i <;> decide⟩
+    ∃ (s1 s2 : BoardState),
+      (validTransition .start s1).isSome = true ∧
+      (validTransition s1 s2).isSome = true ∧
+      (validTransition s2 .victory).isSome = true := by
+  exact ⟨.a, .checkpointX, rfl, rfl, rfl⟩
 
-/-- The minimum hops from Start to Victory is exactly 3. -/
-theorem min_hops_to_victory : ¬∃ (path : List BoardState),
-    path.length ≤ 2 ∧
-    path.head? = some .start ∧
-    path.getLast? = some .victory ∧
-    ∀ i, i + 1 < path.length →
-      (validTransition (path[i]!) (path[i+1]!)).isSome = true := by
-  intro ⟨path, hlen, hhead, hlast, htrans⟩
-  match path, hlen, hhead, hlast with
-  | [.start, .victory], _, _, _ => have := htrans 0 (by omega); simp [validTransition] at this
-  | [.start], _, _, hlast => simp at hlast
-  | [], _, hhead, _ => simp at hhead
+/-- No 2-transition path from Start to Victory exists. -/
+theorem min_hops_to_victory :
+    ¬∃ (mid : BoardState),
+      (validTransition .start mid).isSome = true ∧
+      (validTransition mid .victory).isSome = true := by
+  intro ⟨mid, h1, h2⟩
+  cases mid <;> simp [validTransition] at h1 h2
+
+/-- No direct transition from Start to Victory. -/
+theorem no_direct_start_victory :
+    (validTransition .start .victory).isSome = false := by decide
 
 /-- No transition probability exceeds 100%. -/
 theorem probabilities_valid (s t : BoardState) :
@@ -189,7 +183,7 @@ theorem probabilities_valid (s t : BoardState) :
 theorem game_terminates (maxRounds : Nat) (g : GameState)
     (hRounds : maxRounds > 0) :
     ∃ n : Nat, n * g.playerIds.length ≤ maxRounds * g.playerIds.length := by
-  exact ⟨maxRounds, le_refl _⟩
+  exact ⟨maxRounds, Nat.le_refl _⟩
 
 /-! ## Expected Transitions -/
 
@@ -218,6 +212,6 @@ def isBoostCard (c : Card) : Bool :=
 theorem hand_bounded (g : GameState) (pid : PlayerId) :
     (g.players pid).hand.length ≤ g.maxHandSize →
     True := by
-  trivial
+  intro; trivial
 
 end Playtest.Games.MarkovsChains

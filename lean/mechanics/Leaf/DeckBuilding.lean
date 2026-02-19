@@ -27,7 +27,7 @@ structure SupplyPile where
   deriving Repr
 
 /-- A supply is a collection of piles. -/
-def Supply := List SupplyPile
+abbrev Supply := List SupplyPile
 
 /-- Check if a supply pile has cards remaining. -/
 def SupplyPile.available (pile : SupplyPile) : Bool :=
@@ -95,7 +95,7 @@ theorem reshuffle_preserves_count (ds : DeckState) :
 
 /-- Drawing reduces deck size by 1 (when deck is non-empty). -/
 theorem draw_reduces_deck (ds : DeckState) (card : Card) (ds' : DeckState)
-    (h : ds.deck = card :: rest)
+    (rest : List Card) (h : ds.deck = card :: rest)
     (hd : drawFromPersonal ds = some (ds', card)) :
     ds'.deck.length = ds.deck.length - 1 := by
   sorry -- Provable by unfolding drawFromPersonal with h
@@ -148,7 +148,7 @@ class DeckBuildingMechanic (G : Type) [CardMechanic G] where
   /-- Acquiring removes from supply. -/
   acquire_from_supply : ∀ (g : G) (pid : PlayerId) (card : Card) (g' : G),
     acquireCard g pid card = some g' →
-    ∃ pile, pile ∈ getSupply g ∧ pile.card = card ∧ pile.count > 0
+    ∃ (pile : DeckBuilding.SupplyPile), pile ∈ (getSupply g) ∧ pile.card = card ∧ pile.count > 0
 
   /-- Trashing permanently removes the card. -/
   trash_removes : ∀ (g : G) (pid : PlayerId) (card : Card) (g' : G),

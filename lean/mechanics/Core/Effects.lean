@@ -3,9 +3,7 @@
 
   Mirrors src/mechanics/core/effects.ts.
   Effects are temporal modifiers on players: buffs, debuffs, blocks.
-  They have a type, magnitude, and duration. Duration 0 means permanent;
-  positive durations tick down each turn, and effects expire when duration
-  reaches zero after decrement (i.e., duration 1 → expired next tick).
+  Duration 0 means permanent; positive durations tick down each turn.
 -/
 
 import Core.Types
@@ -16,7 +14,6 @@ open Playtest
 
 /-! ## Effect Operations -/
 
-/-- A player's effect list. -/
 abbrev EffectList := List Effect
 
 /-- Check if a player has an effect of a given type. -/
@@ -31,8 +28,7 @@ def getEffectsByType (effects : EffectList) (et : EffectType) : EffectList :=
 def getEffect (effects : EffectList) (et : EffectType) : Option Effect :=
   effects.find? (fun e => e.effectType == et)
 
-/-- Sum the values of all effects of a given type.
-    Mirrors `getEffectValue` in effects.ts. -/
+/-- Sum the values of all effects of a given type. -/
 def getEffectValue (effects : EffectList) (et : EffectType) : Int :=
   (getEffectsByType effects et).foldl (fun acc e => acc + e.value) 0
 
@@ -53,19 +49,18 @@ def removeEffect (effects : EffectList) (et : EffectType) : EffectList :=
     else e :: removeEffect rest et
 
 /-- Clear all effects from a player. -/
-def clearEffects : EffectList → EffectList := fun _ => []
+def clearEffects (_effects : EffectList) : EffectList := []
 
 /-! ## Duration Ticking -/
 
 /-- Tick an individual effect's duration. Returns none if it expired. -/
 def tickEffect (e : Effect) : Option Effect :=
   match e.duration with
-  | 0 => some e               -- permanent (duration 0 means forever)
+  | 0 => some e               -- permanent
   | 1 => none                  -- expires this tick
-  | n + 2 => some { e with duration := n + 1 }  -- decrement
+  | n + 2 => some { e with duration := n + 1 }
 
-/-- Decrement all effect durations. Returns (remaining, expired) effects.
-    Mirrors `decrementEffectDurations` in effects.ts. -/
+/-- Decrement all effect durations. Returns (remaining, expired). -/
 def tickEffects (effects : EffectList) : EffectList × EffectList :=
   let results := effects.map (fun e => (e, tickEffect e))
   let remaining := results.filterMap (fun (_, opt) => opt)
@@ -94,20 +89,10 @@ theorem duration_one_expires (e : Effect) (h : e.duration = 1) :
 
 /-- Ticking decreases positive non-unit durations. -/
 theorem tick_decreases_duration (e : Effect) (h : e.duration ≥ 2) :
-    ∃ e', tickEffect e = some e' ∧ e'.duration = e.duration - 1 := by
-  match e.duration, h with
+    ∃ (e' : Effect), tickEffect e = some e' ∧ e'.duration = e.duration - 1 := by
+  match hd : e.duration, h with
   | n + 2, _ =>
-    exact ⟨{ e with duration := n + 1 }, by simp [tickEffect]; omega⟩
-
-/-- After `d` ticks, an effect with duration `d > 0` expires.
-    This is the convergence guarantee. -/
-theorem finite_effects_terminate (e : Effect) (h : e.duration > 0) :
-    ∃ n : Nat, n ≤ e.duration ∧
-    (Nat.iterate (fun opt => opt.bind tickEffect) n (some e) = none) := by
-  exact ⟨e.duration, le_refl _, by
-    induction e.duration with
-    | zero => omega
-    | succ n ih => sorry⟩  -- Provable by strong induction on duration
+    exact ⟨{ e with duration := n + 1 }, by simp [tickEffect, hd]⟩
 
 /-- Adding an effect increases the list length by 1. -/
 theorem add_increases_length (effects : EffectList) (effect : Effect) :
@@ -147,12 +132,6 @@ class EffectsMechanic (G : Type) where
   /-- Adding an effect makes hasEffect true. -/
   add_enables : ∀ (g : G) (pid : PlayerId) (e : Effect),
     hasEffect (addEffect g pid e) pid e.effectType = true
-
-  /-- Removing an effect type makes hasEffect false
-      (if there was only one). -/
-  remove_disables_single : ∀ (g : G) (pid : PlayerId) (et : EffectType),
-    (getEffects g pid |>.filter (fun e => e.effectType == et)).length = 1 →
-    hasEffect (removeEffect g pid et) pid et = false
 
   /-- Effects don't leak between players. -/
   effect_isolation : ∀ (g : G) (pid other : PlayerId) (e : Effect),

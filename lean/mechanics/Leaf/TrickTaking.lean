@@ -153,12 +153,10 @@ class TrickTakingMechanic (G : Type) [CardMechanic G] where
   -- Laws
 
   /-- Must follow suit if possible. -/
-  follow_suit : ∀ (g : G) (pid : PlayerId) (card : Card),
-    let trick := getCurrentTrick g
-    let hand := CardMechanic.getHand g pid
-    trick.leadSuit.isSome = true →
-    TrickTaking.hasSuitInHand hand (trick.leadSuit.get (by assumption)) = true →
-    card.suit ≠ trick.leadSuit →
+  follow_suit : ∀ (g : G) (pid : PlayerId) (card : Card) (suit : Suit),
+    (getCurrentTrick g).leadSuit = some suit →
+    TrickTaking.hasSuitInHand (CardMechanic.getHand g pid) suit = true →
+    card.suit ≠ some suit →
     playToTrick g pid card = none
 
   /-- Trick winner exists for non-empty tricks. -/

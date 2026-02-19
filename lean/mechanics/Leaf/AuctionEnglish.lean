@@ -68,7 +68,8 @@ def isComplete (auction : AuctionState) : Bool :=
 
 /-- Bids are strictly increasing. -/
 theorem bid_strictly_increases (auction : AuctionState) (bidder : PlayerId)
-    (amount : Nat) (h : amount ≥ auction.currentBid + auction.minIncrement) :
+    (amount : Nat) (h : amount ≥ auction.currentBid + auction.minIncrement)
+    (hmin : auction.minIncrement > 0) :
     (placeBid auction bidder amount).currentBid > auction.currentBid := by
   simp [placeBid]; omega
 

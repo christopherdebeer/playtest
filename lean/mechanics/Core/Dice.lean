@@ -2,13 +2,8 @@
   Core/Dice.lean — Dice mechanic formalization.
 
   Mirrors src/mechanics/core/dice.ts.
-  Dice are fundamentally about nondeterministic choice. Since Lean is
-  deterministic, we model dice rolls as universally quantified over all
-  possible outcomes, proving properties that hold for *every* roll.
-
-  This is the "probability as nondeterminism" approach: instead of
-  computing probabilities, we prove that invariants hold regardless
-  of what the dice show.
+  We model dice rolls as universally quantified over all possible
+  outcomes, proving properties that hold for *every* roll.
 -/
 
 import Core.Types
@@ -21,13 +16,9 @@ open Playtest
 
 /-- Configuration for a dice roll. -/
 structure DiceConfig where
-  /-- Number of dice to roll. -/
   count : Nat
-  /-- Number of sides per die. -/
   sides : Nat
-  /-- Sides must be positive. -/
   sides_pos : sides > 0
-  /-- Additive modifier to the total. -/
   modifier : Int := 0
   deriving Repr
 
@@ -48,9 +39,7 @@ structure DieResult (sides : Nat) (h : sides > 0) where
 
 /-- A complete roll result for a dice configuration. -/
 structure RollResult (config : DiceConfig) where
-  /-- Individual die results. -/
   dice : List (DieResult config.sides config.sides_pos)
-  /-- Correct number of dice. -/
   count_correct : dice.length = config.count
   deriving Repr
 
@@ -123,7 +112,7 @@ theorem disadvantage_le_both {config : DiceConfig}
   simp [withDisadvantage]
   split <;> omega
 
-/-! ## Exploding Dice -/
+/-! ## Success Counting -/
 
 /-- Count of successes: how many dice meet or exceed a threshold. -/
 def countSuccesses {config : DiceConfig} (r : RollResult config) (threshold : Nat) : Nat :=
@@ -140,28 +129,24 @@ end Playtest.Dice
 
 namespace Playtest
 
-/-- The DiceMechanic typeclass — what core/dice.ts provides.
-    Since dice are nondeterministic, the typeclass models rolling as
-    producing a result that satisfies validity constraints, universally
-    quantified over the actual outcome. -/
+/-- The DiceMechanic typeclass — what core/dice.ts provides. -/
 class DiceMechanic (G : Type) where
-  /-- Roll dice and update state. The result is nondeterministic,
-      but we know its bounds. Returns (new state, raw results, total). -/
+  /-- Roll dice and update state. Returns (new state, raw results, total). -/
   rollDice : G → PlayerId → Dice.DiceConfig → G × List Nat × Int
   /-- Get the last roll results for a player. -/
   getLastRoll : G → PlayerId → Option (List Nat)
 
-  -- Laws (hold for all possible outcomes)
+  -- Laws
 
-  /-- Roll results are within valid bounds. -/
+  /-- Roll results have correct count and are within valid bounds. -/
   roll_valid : ∀ (g : G) (pid : PlayerId) (config : Dice.DiceConfig),
     let (_, results, _) := rollDice g pid config
     results.length = config.count ∧
-    results.all (fun v => v ≥ 1 && v ≤ config.sides) = true
+    results.all (fun v => decide (v ≥ 1 && v ≤ config.sides)) = true
 
   /-- Total equals sum of results plus modifier. -/
   roll_total : ∀ (g : G) (pid : PlayerId) (config : Dice.DiceConfig),
     let (_, results, total) := rollDice g pid config
-    total = (results.foldl (· + ·) 0 : Int) + config.modifier
+    total = (results.foldl (fun (acc : Int) (v : Nat) => acc + ↑v) 0) + config.modifier
 
 end Playtest

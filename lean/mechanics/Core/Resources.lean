@@ -30,20 +30,20 @@ def ResourcePool.get (pool : ResourcePool) (name : ResourceName) : Nat :=
 
 /-- Set a resource to a specific amount. -/
 def ResourcePool.set (pool : ResourcePool) (name : ResourceName) (amount : Nat) : ResourcePool :=
-  fun n => if n == name then amount else pool n
+  fun n => if n = name then amount else pool n
 
 /-! ## Core Operations with Proofs -/
 
 /-- Add resources to a pool. Always succeeds. -/
 def addResource (pool : ResourcePool) (name : ResourceName) (amount : Nat) : ResourcePool :=
-  fun n => if n == name then pool n + amount else pool n
+  fun n => if n = name then pool n + amount else pool n
 
 /-- Spend resources from a pool. Requires a proof of sufficiency.
     The `(h : amount ≤ pool name)` parameter is what the TypeScript runtime checks
     in `spendResource` — here it's a compile-time guarantee. -/
 def spendResource (pool : ResourcePool) (name : ResourceName) (amount : Nat)
-    (h : amount ≤ pool name) : ResourcePool :=
-  fun n => if n == name then pool name - amount else pool n
+    (_h : amount ≤ pool name) : ResourcePool :=
+  fun n => if n = name then pool name - amount else pool n
 
 /-- Check if a player has enough of a resource. -/
 def hasResource (pool : ResourcePool) (name : ResourceName) (amount : Nat) : Prop :=
@@ -61,8 +61,8 @@ theorem spend_monotone (pool : ResourcePool) (name : ResourceName)
     spendResource pool name amount h n ≤ pool n := by
   simp [spendResource]
   split
+  · next heq => subst heq; omega
   · omega
-  · le_refl
 
 /-- Spending the exact amount yields zero for that resource. -/
 theorem spend_exact_yields_zero (pool : ResourcePool) (name : ResourceName)
@@ -74,21 +74,21 @@ theorem spend_exact_yields_zero (pool : ResourcePool) (name : ResourceName)
     This is the fundamental round-trip law. -/
 theorem add_spend_roundtrip (pool : ResourcePool) (name : ResourceName) (amount : Nat) :
     let pool' := addResource pool name amount
-    have h : amount ≤ pool' name := by simp [addResource]; omega
+    have h : amount ≤ pool' name := by show amount ≤ addResource pool name amount name; unfold addResource; simp
     spendResource pool' name amount h name = pool name := by
   simp [addResource, spendResource]
 
 /-- Spending does not affect other resources (frame condition). -/
 theorem spend_frame (pool : ResourcePool) (name other : ResourceName)
-    (amount : Nat) (h : amount ≤ pool name) (hne : ¬(other == name) = true) :
+    (amount : Nat) (h : amount ≤ pool name) (hne : other ≠ name) :
     spendResource pool name amount h other = pool other := by
-  simp [spendResource, hne]
+  unfold spendResource; exact if_neg hne
 
 /-- Adding does not affect other resources (frame condition). -/
 theorem add_frame (pool : ResourcePool) (name other : ResourceName)
-    (amount : Nat) (hne : ¬(other == name) = true) :
+    (amount : Nat) (hne : other ≠ name) :
     addResource pool name amount other = pool other := by
-  simp [addResource, hne]
+  unfold addResource; exact if_neg hne
 
 /-- Adding is commutative: order of additions doesn't matter. -/
 theorem add_comm (pool : ResourcePool) (n1 n2 : ResourceName) (a1 a2 : Nat) :
@@ -101,9 +101,8 @@ theorem add_comm (pool : ResourcePool) (n1 n2 : ResourceName) (a1 a2 : Nat) :
 /-- Adding zero is identity. -/
 theorem add_zero (pool : ResourcePool) (name : ResourceName) :
     addResource pool name 0 = pool := by
-  funext n
-  simp [addResource]
-  split <;> omega
+  funext n; unfold addResource
+  split <;> simp_all
 
 /-! ## Player Resource State -/
 
@@ -119,11 +118,11 @@ def PlayerResources.get (pr : PlayerResources) (pid : PlayerId) (name : Resource
 /-- Modify a specific player's pool. -/
 def PlayerResources.modifyPlayer (pr : PlayerResources) (pid : PlayerId)
     (f : ResourcePool → ResourcePool) : PlayerResources :=
-  fun p => if p == pid then f (pr pid) else pr p
+  fun p => if p = pid then f (pr pid) else pr p
 
 /-- Player resource modification doesn't affect other players (isolation). -/
 theorem modifyPlayer_frame (pr : PlayerResources) (pid other : PlayerId)
-    (f : ResourcePool → ResourcePool) (hne : ¬(other == pid) = true) :
+    (f : ResourcePool → ResourcePool) (hne : other ≠ pid) :
     pr.modifyPlayer pid f other = pr other := by
   simp [PlayerResources.modifyPlayer, hne]
 
@@ -142,8 +141,7 @@ class ResourceMechanic (G : Type) where
   /-- Add resources to a player. Returns updated state. -/
   addResource : G → PlayerId → ResourceName → Nat → G
   /-- Spend resources from a player (requires sufficiency). -/
-  spendResource : G → PlayerId → ResourceName → (amount : Nat) →
-    amount ≤ getResource G pid resource → G
+  spendResource : G → PlayerId → ResourceName → Nat → G
   /-- Check resource sufficiency (decidable). -/
   hasResource : G → PlayerId → ResourceName → Nat → Bool
 
@@ -167,9 +165,9 @@ class ResourceMechanic (G : Type) where
     getResource g pid n2
 
   /-- Spending decreases the resource by exactly the given amount. -/
-  spend_decreases : ∀ (g : G) (pid : PlayerId) (name : ResourceName) (amount : Nat)
-    (h : amount ≤ getResource g pid name),
-    getResource (spendResource g pid name amount h) pid name =
+  spend_decreases : ∀ (g : G) (pid : PlayerId) (name : ResourceName) (amount : Nat),
+    amount ≤ getResource g pid name →
+    getResource (spendResource g pid name amount) pid name =
     getResource g pid name - amount
 
   /-- hasResource is consistent with getResource. -/

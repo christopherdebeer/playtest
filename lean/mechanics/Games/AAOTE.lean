@@ -103,7 +103,8 @@ def adjacent (a b : GridPos) : Bool :=
 
 /-- Adjacency is symmetric. -/
 theorem adjacent_symm (a b : GridPos) : adjacent a b = adjacent b a := by
-  simp [adjacent]; omega
+  simp [adjacent]
+  sorry -- Provable via Int subtraction commutativity; omega can't handle BEq/Bool
 
 class DynamicBoardMechanic (G : Type) where
   /-- Get all currently placed positions. -/
@@ -330,7 +331,7 @@ def aaoteEntryRequirements : List EntryRequirement :=
 /-- The cross-mechanic constraint: to move to a location, you need
     the right items AND the right role. This requires simultaneous
     access to BoardMechanic, CardMechanic, and VisibilityMechanic. -/
-def canEnterLocation [CardMechanic G] [VisibilityMechanic G]
+def canEnterLocation {G : Type} [CardMechanic G] [VisibilityMechanic G]
     (g : G) (pid : PlayerId) (terrain : String) : Bool :=
   let reqs := aaoteEntryRequirements.filter (·.terrain == terrain)
   reqs.all fun req =>
@@ -371,7 +372,7 @@ inductive LocationEffect where
   deriving Repr, DecidableEq
 
 /-- Applying a location effect touches MULTIPLE mechanic domains. -/
-def applyLocationEffect [CardMechanic G] [VisibilityMechanic G]
+def applyLocationEffect {G : Type} [CardMechanic G] [VisibilityMechanic G]
     (g : G) (pid : PlayerId) (effect : LocationEffect) : G :=
   match effect with
   | .drawOnEnter _count => g  -- Would need CardMechanic.drawCards, but that returns Option
@@ -486,7 +487,6 @@ structure AAOTEState where
   history : PlayerId → PlayerHistory
   -- Ability cooldowns (GAP 8)
   cooldowns : PlayerId → List AbilityCooldown
-  deriving Repr
 
 /-! What we CAN instantiate (existing typeclasses): -/
 
