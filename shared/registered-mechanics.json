@@ -1430,6 +1430,18 @@
         "cards"
       ]
     },
+    "lean-verifier": {
+      "config_key": "lean_verifier",
+      "since": "3.0.0",
+      "description": "Enable Lean 4 formal verification of game actions. Requires lean-game binary (cd lean && lake build lean-game).",
+      "config_schema": {
+        "enabled": "boolean"
+      },
+      "hooks": [
+        "preValidateAction",
+        "onCheckWin"
+      ]
+    },
     "loans": {
       "config_key": "loans",
       "since": "3.0.0",

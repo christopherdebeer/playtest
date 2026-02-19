@@ -181,6 +181,9 @@ import { tilePlacementMechanic } from './tile-placement.js';
 // Experimental mechanics
 import { freeplayMechanic } from './freeplay.js';
 
+// Lean formal verification
+import { leanVerifierMechanic } from './lean-verifier.js';
+
 // Phase 15: Category completers
 import { semiCooperativeGameMechanic } from './semi-cooperative-game.js';
 import { actionQueueMechanic } from './action-queue.js';
@@ -409,6 +412,9 @@ mechanicRegistry.register(tilePlacementMechanic);
 
 // Register experimental mechanics
 mechanicRegistry.register(freeplayMechanic);
+
+// Register Lean formal verification (requires lean-game binary)
+mechanicRegistry.register(leanVerifierMechanic);
 
 // Register Phase 15: Category completers
 mechanicRegistry.register(semiCooperativeGameMechanic);
