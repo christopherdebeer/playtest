@@ -44,6 +44,7 @@ def main (args : List String) : IO UInt32 := do
       IO.println json
       return 0
     | none =>
-      IO.eprintln s!"Unknown game or command: {game} {String.intercalate \" \" rest}"
+      let argsStr := String.intercalate " " rest
+      IO.eprintln s!"Unknown game or command: {game} {argsStr}"
       IO.eprintln usage
       return 1

@@ -97,15 +97,18 @@ def checkWin (args : List String) : String :=
     In GemCollector, each move to mine or cave grants 1 gem, so total gems
     should never exceed total turns (a loose but sound bound). -/
 def checkInvariants (args : List String) : String :=
-  let scores := parsePlayerGems args
-  let totalGems := scores.foldl (fun acc (_, g) => acc + g) 0
-  -- Parse expected max from last arg if present (format: "max:N")
-  let expectedMax := match args.getLast? with
+  -- Separate "max:N" from player gem entries
+  let gemArgs := args.filter (fun s => !(s.startsWith "max:"))
+  let scores := parsePlayerGems gemArgs
+  let totalGems : Nat := scores.foldl (fun acc (_, g) => acc + g) 0
+  -- Parse expected max from "max:N" arg if present
+  let maxArg := args.find? (fun s => s.startsWith "max:")
+  let expectedMax : Nat := match maxArg with
     | some s => match s.splitOn ":" with
-      | ["max", n] => n.toNat?.getD 999
+      | [_, n] => n.toNat?.getD 999
       | _ => 999
     | none => 999
-  if totalGems ≤ expectedMax then
+  if Nat.ble totalGems expectedMax then
     Json.invariantOk
   else
     Json.invariantViolation s!"Total gems ({totalGems}) exceeds maximum ({expectedMax})"
