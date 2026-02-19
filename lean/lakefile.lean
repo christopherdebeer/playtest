@@ -9,4 +9,4 @@ package «PlaytestMechanics» where
 @[default_target]
 lean_lib «PlaytestMechanics» where
   srcDir := "mechanics"
-  roots := #[`Core, `Leaf, `Composition, `Games]
+  roots := #[`Core, `Leaf, `Composition, `Abstract, `Games]
