@@ -933,7 +933,8 @@ program
   .requiredOption('-a, --action <json>', 'Action JSON')
   .option('--wait', 'For resign actions: wait for GM adjudication result (Proposal 009)')
   .option('--wait-timeout <ms>', 'Adjudication wait timeout in milliseconds', '120000')
-  .action(async (game: string, options: { player: string; action: string; wait?: boolean; waitTimeout?: string }) => {
+  .option('--lean', 'Route mechanic execution through the Lean engine binary')
+  .action(async (game: string, options: { player: string; action: string; wait?: boolean; waitTimeout?: string; lean?: boolean }) => {
     try {
       const state = loadState(game);
 
@@ -967,6 +968,100 @@ program
           return undefined as never;
         }
       })();
+
+      // Lean engine path: delegate to compiled Lean binary
+      if (options.lean) {
+        const { leanExecuteAction, isLeanEngineAvailable } = await import('../lean-engine.js');
+        if (!isLeanEngineAvailable()) {
+          console.log(JSON.stringify({
+            success: false,
+            error: 'Lean engine binary not found. Build with: cd lean && lake build lean-engine'
+          }));
+          process.exit(1);
+          return;
+        }
+
+        const leanResult = leanExecuteAction(state, options.player, action);
+        if (!leanResult.success) {
+          console.log(JSON.stringify({
+            success: false,
+            error: leanResult.error,
+            validation: leanResult.validation
+          }));
+          process.exit(1);
+          return;
+        }
+
+        // Apply Lean state changes to the game state
+        if (leanResult.state) {
+          // Merge Lean engine state back into the full game state
+          const leanState = leanResult.state as unknown as Record<string, unknown>;
+          const leanPlayers = leanState.players as Record<string, Record<string, unknown>> | undefined;
+          if (leanPlayers) {
+            for (const [pid, lps] of Object.entries(leanPlayers)) {
+              if (state.players[pid]) {
+                Object.assign(state.players[pid], lps);
+              }
+            }
+          }
+          if (leanState.shared) {
+            state.shared = { ...state.shared, ...(leanState.shared as Record<string, unknown>) };
+          }
+        }
+
+        // Advance turn if the Lean engine says so
+        if (leanResult.execution?.advanceTurn) {
+          advanceTurn(state);
+        }
+
+        // Log the action
+        if (leanResult.execution?.logMessage) {
+          logEvent(state, {
+            event: 'lean_action_executed',
+            player: options.player,
+            data: {
+              action,
+              message: leanResult.execution.logMessage,
+            },
+          });
+        }
+
+        // Check win conditions if needed
+        let gameOver = false;
+        let winner: string | undefined;
+        if (leanResult.execution?.checkWin) {
+          const { leanCheckWin } = await import('../lean-engine.js');
+          for (const pid of state.turnOrder) {
+            const winResult = leanCheckWin(state, pid);
+            if (winResult.won) {
+              gameOver = true;
+              winner = pid;
+              state.status = 'completed';
+              state.shared.winner = pid;
+              break;
+            }
+          }
+        }
+
+        saveState(state);
+        const updatedState = loadState(game);
+        const playerView = getPlayerView(updatedState, options.player);
+        const player = updatedState.players[options.player];
+
+        console.log(JSON.stringify({
+          success: true,
+          action,
+          engine: 'lean',
+          effect: leanResult.execution,
+          handSize: (player?.hand ?? []).length,
+          nextPlayer: updatedState.currentPlayer,
+          gameStatus: updatedState.status,
+          gameOver,
+          winner,
+          view: playerView
+        }));
+        return;
+      }
 
       // Step 1: Schema validation
       const schemaResult = validateActionSchema(action);
