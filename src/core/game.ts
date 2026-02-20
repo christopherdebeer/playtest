@@ -1353,12 +1353,32 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   if (isLeanEngineAvailable()) {
     const leanActions = leanGetAvailableActions(state, playerId);
     for (const la of leanActions) {
+      let targets = la.targets;
+      let cards = la.cards;
+
+      // Augment move actions with board targets if not provided by Lean
+      if (la.action.type === 'move' && !targets) {
+        const boardConfig = state.config.board || (state.config.engine_mechanics as Record<string, unknown>)?.board as typeof state.config.board;
+        if (boardConfig?.edges) {
+          const currentPos = player.state;
+          const edge = boardConfig.edges.find(e => {
+            const from = Array.isArray(e.from) ? e.from : [e.from];
+            return from.includes(currentPos);
+          });
+          if (edge) {
+            targets = Array.isArray(edge.to) ? edge.to : [edge.to];
+          }
+        }
+      }
+
       actions.push({
-        type: (la as GameAction).type,
-        description: `${(la as GameAction).type}`,
-        enabled: true,
+        type: la.action.type,
+        description: la.description || `${la.action.type}`,
+        enabled: la.enabled !== false,
         required: {},
-        examples: [la as GameAction]
+        examples: [la.action],
+        ...(targets ? { targets } : {}),
+        ...(cards ? { cards } : {}),
       });
     }
   }

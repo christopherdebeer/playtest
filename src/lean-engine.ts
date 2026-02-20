@@ -235,10 +235,18 @@ export function leanExecuteAction(
 /**
  * Get available actions for a player using the Lean engine.
  */
+export interface LeanAvailableAction {
+  action: GameAction;
+  enabled?: boolean;
+  targets?: string[];
+  cards?: string[];
+  description?: string;
+}
+
 export function leanGetAvailableActions(
   state: GameState,
   playerId: string
-): GameAction[] {
+): LeanAvailableAction[] {
   const response = callLeanEngine({
     command: 'get_available_actions',
     state: toEngineState(state),
@@ -247,8 +255,7 @@ export function leanGetAvailableActions(
 
   if (!response.success || !response.availableActions) return [];
   return response.availableActions
-    .filter(a => a.enabled !== false)
-    .map(a => a.action);
+    .filter(a => a.enabled !== false);
 }
 
 /**
@@ -276,6 +283,8 @@ export function leanInitState(
   config: GameConfig,
   playerIds: string[]
 ): GameState | null {
+  // Pass a seed derived from Math.random() so seeded tests get deterministic results
+  const seed = Math.floor(Math.random() * 2147483647);
   const response = callLeanEngine({
     command: 'init_state',
     config: {
@@ -286,6 +295,7 @@ export function leanInitState(
       engine_mechanics: config.engine_mechanics || {},
     },
     playerIds,
+    seed,
   });
 
   if (!response.success || !response.state) return null;
