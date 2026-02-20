@@ -158,6 +158,19 @@ function toEngineState(state: GameState): Record<string, unknown> {
         placedLocationCount: ps.placedLocationCount,
         completedTrades: ps.completedTrades,
         currentBid: ps.currentBid,
+        tableau: (((ps as unknown) as Record<string, unknown>).tableau as unknown[] || []).map((c: unknown) => {
+          const card = c as Record<string, unknown>;
+          return {
+            name: card.name,
+            type: card.type || '',
+            ...(card.id ? { id: card.id } : {}),
+            ...(card.suit ? { suit: card.suit } : {}),
+            ...(card.value !== undefined ? { value: card.value } : {}),
+            ...(card.subtype ? { subtype: card.subtype } : {}),
+            ...(card.effect ? { effect: card.effect } : {}),
+          };
+        }),
+        diceResult: ((ps as unknown) as Record<string, unknown>).diceResult || [],
       }])
     ),
     turnOrder: state.turnOrder || [],
@@ -165,7 +178,17 @@ function toEngineState(state: GameState): Record<string, unknown> {
     round: state.round || 1,
     turnNumber: state.turnNumber || 1,
     status: state.status || 'in_progress',
-    shared: state.shared || {},
+    shared: {
+      ...(state.shared || {}),
+      deck: ((state.shared as Record<string, unknown>)?.deck as unknown[] || []).map((c: unknown) => {
+        const card = c as Record<string, unknown>;
+        return { name: card.name, type: card.type || '', ...card };
+      }),
+      market: ((state.shared as Record<string, unknown>)?.market as unknown[] || []).map((c: unknown) => {
+        const card = c as Record<string, unknown>;
+        return { name: card.name, type: card.type || '', ...card };
+      }),
+    },
   };
 }
 
@@ -330,6 +353,8 @@ export function leanGetPlayerView(
     visitedLocations?: string[];
     placedLocationCount?: number;
     completedTrades?: number;
+    tableau?: unknown[];
+    diceResult?: number[];
   };
   opponents: Array<{
     playerId: string;
@@ -340,6 +365,7 @@ export function leanGetPlayerView(
     resources?: Record<string, number>;
     placedLocationCount?: number;
     completedTrades?: number;
+    tableau?: unknown[];
   }>;
   shared: {
     deckSize: number;
@@ -348,6 +374,7 @@ export function leanGetPlayerView(
     boardEdges?: Array<{ from: string; to: string }>;
     currentBoardState?: string;
     placedLocations?: string[];
+    market?: unknown[];
   };
 } | null {
   const response = callLeanEngine({

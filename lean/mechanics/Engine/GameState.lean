@@ -51,6 +51,10 @@ structure PlayerState where
   placedLocationCount : Option Nat := none
   completedTrades : Option Nat := none
   currentBid : Option Nat := none
+  -- Tableau: persistent played cards (for tableau-building, set-collection, workers)
+  tableau : List Card := []
+  -- Last dice roll result (for dice-rolling games)
+  diceResult : List Nat := []
   -- Extensible: additional fields stored as raw JSON
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited
@@ -66,6 +70,8 @@ structure SharedState where
   boardEdges : List (String × String) := []
   currentBoardState : Option String := none
   placedLocations : List String := []
+  -- Market: shared display of cards available for purchase/drafting
+  market : List Card := []
   -- Extensible: game-specific shared state as raw JSON
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited
@@ -143,6 +149,7 @@ structure OpponentView where
   resources : Lean.RBMap String Nat compare := .empty
   placedLocationCount : Option Nat := none
   completedTrades : Option Nat := none
+  tableau : List Card := []
   deriving Inhabited
 
 /-- The viewing player's own state (full visibility). -/
@@ -157,6 +164,8 @@ structure MyStateView where
   visitedLocations : List String := []
   placedLocationCount : Option Nat := none
   completedTrades : Option Nat := none
+  tableau : List Card := []
+  diceResult : List Nat := []
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited
 
@@ -168,6 +177,7 @@ structure SharedView where
   boardEdges : List (String × String) := []
   currentBoardState : Option String := none
   placedLocations : List String := []
+  market : List Card := []
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited
 

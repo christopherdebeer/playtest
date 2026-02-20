@@ -22,10 +22,10 @@ private def jsonNat (n : Nat) : Json := ToJson.toJson n
 private def rbmapToJsonWith {V : Type} (f : V → Json) (m : Lean.RBMap String V compare) : Json :=
   Json.mkObj (m.toList.map fun (k, v) => (k, f v))
 
-private def rbmapNatToJson (m : Lean.RBMap String Nat compare) : Json :=
+def rbmapNatToJson (m : Lean.RBMap String Nat compare) : Json :=
   rbmapToJsonWith (fun (n : Nat) => ToJson.toJson n) m
 
-private def rbmapJsonToJson (m : Lean.RBMap String Json compare) : Json :=
+def rbmapJsonToJson (m : Lean.RBMap String Json compare) : Json :=
   rbmapToJsonWith id m
 
 private def rbmapFromJsonWith {V : Type} (f : Json → Except String V)
@@ -110,6 +110,8 @@ instance : ToJson PlayerState where
     let fields := match ps.placedLocationCount with | some plc => fields ++ [("placedLocationCount", jsonNat plc)] | none => fields
     let fields := match ps.completedTrades with | some ct => fields ++ [("completedTrades", jsonNat ct)] | none => fields
     let fields := match ps.currentBid with | some b => fields ++ [("currentBid", jsonNat b)] | none => fields
+    let fields := if ps.tableau.isEmpty then fields else fields ++ [("tableau", ToJson.toJson ps.tableau)]
+    let fields := if ps.diceResult.isEmpty then fields else fields ++ [("diceResult", ToJson.toJson ps.diceResult)]
     -- Merge extra fields
     let fields := fields ++ ps.extra.toList
     Json.mkObj fields
@@ -129,9 +131,11 @@ instance : FromJson PlayerState where
     let placedLocationCount := j.getObjVal? "placedLocationCount" |>.toOption |>.bind (·.getNat?.toOption)
     let completedTrades := j.getObjVal? "completedTrades" |>.toOption |>.bind (·.getNat?.toOption)
     let currentBid := j.getObjVal? "currentBid" |>.toOption |>.bind (·.getNat?.toOption)
+    let tableau ← (j.getObjValAs? (List Card) "tableau") <|> pure []
+    let diceResult ← (j.getObjValAs? (List Nat) "diceResult") <|> pure []
     let knownFields : List String := ["state", "hand", "effects", "score", "resources",
       "actionPoints", "actionPointsUsed", "visitedLocations", "placedLocationCount",
-      "completedTrades", "currentBid", "agentId", "persona"]
+      "completedTrades", "currentBid", "tableau", "diceResult", "agentId", "persona"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
@@ -141,7 +145,8 @@ instance : FromJson PlayerState where
         pure m
       | _ => pure .empty
     return { state, hand, effects, score, resources, actionPoints, actionPointsUsed,
-             visitedLocations, placedLocationCount, completedTrades, currentBid, extra }
+             visitedLocations, placedLocationCount, completedTrades, currentBid,
+             tableau, diceResult, extra }
 
 /-! ## SharedState JSON -/
 
@@ -160,6 +165,8 @@ instance : ToJson SharedState where
       | none => fields
     let fields := if ss.placedLocations.isEmpty then fields
       else fields ++ [("placedLocations", ToJson.toJson ss.placedLocations)]
+    let fields := if ss.market.isEmpty then fields
+      else fields ++ [("market", ToJson.toJson ss.market)]
     let fields := fields ++ ss.extra.toList
     Json.mkObj fields
 
@@ -179,8 +186,9 @@ instance : FromJson SharedState where
       | _ => pure []
     let currentBoardState := j.getObjVal? "currentBoardState" |>.toOption |>.bind (·.getStr?.toOption)
     let placedLocations ← (j.getObjValAs? (List String) "placedLocations") <|> pure []
+    let market ← (j.getObjValAs? (List Card) "market") <|> pure []
     let knownFields : List String := ["deck", "discard", "boardStates", "boardEdges",
-      "currentBoardState", "placedLocations"]
+      "currentBoardState", "placedLocations", "market"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
@@ -189,7 +197,7 @@ instance : FromJson SharedState where
             m := m.insert k v
         pure m
       | _ => pure .empty
-    return { deck, discard, boardStates, boardEdges, currentBoardState, placedLocations, extra }
+    return { deck, discard, boardStates, boardEdges, currentBoardState, placedLocations, market, extra }
 
 /-! ## GameConfig JSON -/
 
@@ -338,6 +346,7 @@ instance : ToJson OpponentView where
     let fields := if o.resources.isEmpty then fields else fields ++ [("resources", rbmapNatToJson o.resources)]
     let fields := match o.placedLocationCount with | some n => fields ++ [("placedLocationCount", jsonNat n)] | none => fields
     let fields := match o.completedTrades with | some n => fields ++ [("completedTrades", jsonNat n)] | none => fields
+    let fields := if o.tableau.isEmpty then fields else fields ++ [("tableau", ToJson.toJson o.tableau)]
     Json.mkObj fields
 
 instance : ToJson MyStateView where
@@ -352,6 +361,8 @@ instance : ToJson MyStateView where
     let fields := if m.visitedLocations.isEmpty then fields else fields ++ [("visitedLocations", ToJson.toJson m.visitedLocations)]
     let fields := match m.placedLocationCount with | some n => fields ++ [("placedLocationCount", jsonNat n)] | none => fields
     let fields := match m.completedTrades with | some n => fields ++ [("completedTrades", jsonNat n)] | none => fields
+    let fields := if m.tableau.isEmpty then fields else fields ++ [("tableau", ToJson.toJson m.tableau)]
+    let fields := if m.diceResult.isEmpty then fields else fields ++ [("diceResult", ToJson.toJson m.diceResult)]
     let fields := fields ++ m.extra.toList
     Json.mkObj fields
 
@@ -369,6 +380,7 @@ instance : ToJson SharedView where
       | none => fields
     let fields := if sv.placedLocations.isEmpty then fields
       else fields ++ [("placedLocations", ToJson.toJson sv.placedLocations)]
+    let fields := if sv.market.isEmpty then fields else fields ++ [("market", ToJson.toJson sv.market)]
     let fields := fields ++ sv.extra.toList
     Json.mkObj fields
 
