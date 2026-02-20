@@ -1,0 +1,26 @@
+{"timestamp":"2026-02-19T23:59:10.350Z","event":"game_init","data":{"gameId":"aaote-1771545550339","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-19T23:59:40.666Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T00:00:53.947Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"origin","totalLocations":1}}
+{"timestamp":"2026-02-20T00:06:04.964Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","card":"Crossroads","adjacentTo":"origin","totalLocations":2}}
+{"timestamp":"2026-02-20T00:06:15.750Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"place_location","card":"Village Square","adjacentTo":"origin","totalLocations":3}}
+{"timestamp":"2026-02-20T00:06:24.680Z","event":"action_executed","round":2,"turnNumber":4,"player":"player-1","data":{"type":"place_location","card":"Hidden Cave","adjacentTo":"origin","totalLocations":4}}
+{"timestamp":"2026-02-20T00:06:33.125Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":1,"handSize":5}}
+{"timestamp":"2026-02-20T00:07:03.432Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-20T00:07:13.781Z","event":"action_executed","round":2,"turnNumber":5,"player":"player-2","data":{"type":"place_location","card":"Ancient Ruins","adjacentTo":"origin","totalLocations":5}}
+{"timestamp":"2026-02-20T00:07:23.912Z","event":"action_executed","round":2,"turnNumber":6,"player":"player-3","data":{"type":"place_location","card":"Forest Clearing","adjacentTo":"origin","totalLocations":6}}
+{"timestamp":"2026-02-20T00:07:56.568Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1,"handSize":4}}
+{"timestamp":"2026-02-20T00:08:04.030Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1,"handSize":5}}
+{"timestamp":"2026-02-20T00:08:15.171Z","event":"action_executed","round":3,"turnNumber":7,"player":"player-1","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-20T00:08:43.125Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-20T00:08:43.698Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-20T00:08:44.260Z","event":"action_executed","round":3,"turnNumber":8,"player":"player-2","data":{"type":"place_location","card":"Watchtower","adjacentTo":"origin","totalLocations":7}}
+{"timestamp":"2026-02-20T00:08:54.427Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"draw","count":1,"handSize":4}}
+{"timestamp":"2026-02-20T00:08:54.980Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"draw","count":1,"handSize":5}}
+{"timestamp":"2026-02-20T00:08:55.557Z","event":"action_executed","round":3,"turnNumber":9,"player":"player-3","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-20T00:09:05.074Z","event":"action_executed","round":4,"turnNumber":10,"player":"player-1","data":{"type":"place_location","card":"Mountain Pass","adjacentTo":"origin","totalLocations":8}}
+{"timestamp":"2026-02-20T00:09:32.918Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-20T00:09:44.548Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"play_card","card":"Spy","effect":{"type":"peek_hand","description":"Look at target player's hand"},"actionTarget":"player-1","handSize":6,"newTopCard":"Spy"}}
+{"timestamp":"2026-02-20T00:09:45.136Z","event":"action_executed","round":4,"turnNumber":11,"player":"player-2","data":{"type":"pass"}}
+{"timestamp":"2026-02-20T00:10:04.241Z","event":"action_executed","round":4,"turnNumber":12,"player":"player-3","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-20T00:10:04.812Z","event":"action_executed","round":4,"turnNumber":12,"player":"player-3","data":{"type":"draw","count":0,"handSize":7}}
+{"timestamp":"2026-02-20T00:10:05.402Z","event":"action_executed","round":4,"turnNumber":12,"player":"player-3","data":{"type":"pass"}}
