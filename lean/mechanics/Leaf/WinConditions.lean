@@ -51,14 +51,18 @@ class WinScoreThreshold (G : Type) [ResourceMechanic G] where
 theorem threshold_reachable (income : Nat) (threshold : Nat)
     (h : income > 0) :
     ∃ rounds : Nat, income * rounds ≥ threshold := by
-  sorry -- Provable: ⟨threshold, ...⟩ works when income ≥ 1
+  refine ⟨threshold, ?_⟩
+  exact Nat.le_mul_of_pos_left _ h
 
 /-- Stronger: minimum rounds to reach threshold. -/
 theorem min_rounds_to_threshold (income : Nat) (threshold : Nat)
     (h : income > 0) :
     ∃ rounds : Nat, rounds ≤ (threshold + income - 1) / income ∧
     income * rounds ≥ threshold := by
-  sorry -- Provable via Nat.div_mul_le_self
+  refine ⟨(threshold + income - 1) / income, Nat.le_refl _, ?_⟩
+  have h1 := Nat.div_add_mod (threshold + income - 1) income
+  have h2 := Nat.mod_lt (threshold + income - 1) h
+  omega
 
 /-! ## Board Position Win -/
 
@@ -124,7 +128,22 @@ theorem composed_finds_winner (checks : List (Unit → WinResult))
     (h : ∃ check, check ∈ checks ∧ ∃ pid reason,
       check () = WinResult.winner pid reason) :
     checkWinConditions checks ≠ WinResult.noWinner := by
-  sorry -- Provable by induction on checks list
+  induction checks with
+  | nil =>
+    obtain ⟨check, hm, _⟩ := h
+    exact absurd hm (List.not_mem_nil _)
+  | cons c rest ih =>
+    unfold checkWinConditions
+    obtain ⟨check, hm, pid, reason, hwin⟩ := h
+    cases hc : c () with
+    | noWinner =>
+      apply ih
+      cases List.mem_cons.mp hm with
+      | inl heq =>
+        subst heq; rw [hwin] at hc; exact absurd hc (by simp)
+      | inr hmem => exact ⟨check, hmem, pid, reason, hwin⟩
+    | winner _ _ => simp [hc]
+    | draw _ _ => simp [hc]
 
 /-! ## Game Termination -/
 

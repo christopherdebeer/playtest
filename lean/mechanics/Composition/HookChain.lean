@@ -90,7 +90,26 @@ theorem blocking_preserves_invariant (hooks : List (BlockingHook G)) (inv : Inva
     (state : G) (h_inv : inv state) (result : G)
     (h_result : resolveBlocking hooks state = some result) :
     inv result := by
-  sorry -- Provable by induction; requires careful pattern matching on hook results
+  induction hooks generalizing state with
+  | nil =>
+    simp [resolveBlocking] at h_result
+    subst h_result
+    exact h_inv
+  | cons hook rest ih =>
+    simp only [resolveBlocking] at h_result
+    have h_hook := h_all hook (List.mem_cons_self _ _)
+    have h_rest : ∀ h, h ∈ rest → BlockingHookPreserves h inv :=
+      fun h hm => h_all h (List.mem_cons_of_mem _ hm)
+    cases hv : hook state with
+    | none =>
+      rw [hv] at h_result
+      exact ih h_rest state h_inv h_result
+    | some pair =>
+      rw [hv] at h_result
+      match pair, h_result with
+      | (state', false), h_result =>
+        exact ih h_rest state' (h_hook state state' false h_inv hv) h_result
+      | (_, true), h_result => exact absurd h_result (by simp)
 
 /-! ## Composing Hook Chains -/
 

@@ -61,12 +61,47 @@ def isLegalPlay (hand : List Card) (card : Card) (leadSuit : Option Suit) : Bool
     card.suit == some suit ||     -- follows suit
     !hasSuitInHand hand suit      -- void in suit
 
+/-- Helper: if List.any returns true, there exists a witness. -/
+private theorem exists_of_any {α : Type} {p : α → Bool} {l : List α}
+    (h : l.any p = true) : ∃ a ∈ l, p a = true := by
+  induction l with
+  | nil => simp at h
+  | cons x xs ih =>
+    simp only [List.any_cons, Bool.or_eq_true] at h
+    rcases h with hx | hxs
+    · exact ⟨x, List.mem_cons_self _ _, hx⟩
+    · obtain ⟨a, ha, hpa⟩ := ih hxs
+      exact ⟨a, List.mem_cons_of_mem _ ha, hpa⟩
+
 /-- Legal play is total: there always exists a legal play if the hand is non-empty.
     (Because if you can't follow suit, any card is legal.) -/
 theorem legal_play_exists (hand : List Card) (leadSuit : Option Suit)
     (hne : hand ≠ []) :
     ∃ c, c ∈ hand ∧ isLegalPlay hand c leadSuit = true := by
-  sorry -- Provable by case analysis on leadSuit and hasSuitInHand
+  match hh : hand, hne with
+  | c :: rest, _ =>
+    cases leadSuit with
+    | none =>
+      exact ⟨c, List.mem_cons_self _ _, by simp [isLegalPlay]⟩
+    | some suit =>
+      -- Case split on whether hand has cards of the lead suit
+      cases hsuit : hasSuitInHand (c :: rest) suit with
+      | false =>
+        -- Void in suit: any card is legal (including c)
+        exact ⟨c, List.mem_cons_self _ _, by
+          simp [isLegalPlay, hsuit]⟩
+      | true =>
+        -- Has suit: c follows suit, or some card in hand does
+        cases hc : (c.suit == some suit) with
+        | true =>
+          exact ⟨c, List.mem_cons_self _ _, by
+            simp [isLegalPlay, hc]⟩
+        | false =>
+          -- c doesn't follow suit, but some card in rest does
+          simp [hasSuitInHand, List.any_cons, hc] at hsuit
+          obtain ⟨card, hm, hcard⟩ := hsuit
+          exact ⟨card, List.mem_cons_of_mem _ hm, by
+            simp [isLegalPlay, hcard]⟩
 
 /-! ## Card Comparison -/
 

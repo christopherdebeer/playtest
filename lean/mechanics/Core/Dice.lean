@@ -59,15 +59,50 @@ def minRaw (config : DiceConfig) : Nat := config.count
 /-- Maximum possible raw total for a config. -/
 def maxRaw (config : DiceConfig) : Nat := config.count * config.sides
 
+/-- Helper: foldl add over die values is at least acc + list length. -/
+private theorem foldl_add_ge_length {sides : Nat} {h : sides > 0}
+    (dice : List (DieResult sides h)) (acc : Nat) :
+    dice.foldl (fun a (d : DieResult sides h) => a + d.value) acc ≥ acc + dice.length := by
+  induction dice generalizing acc with
+  | nil => simp
+  | cons d rest ih =>
+    simp [List.foldl]
+    have hge := ih (acc + d.value)
+    have := d.ge_one
+    omega
+
+/-- Helper: foldl add over die values is at most acc + length * sides. -/
+private theorem foldl_add_le_mul_sides {sides : Nat} {h : sides > 0}
+    (dice : List (DieResult sides h)) (acc : Nat) :
+    dice.foldl (fun a (d : DieResult sides h) => a + d.value) acc ≤ acc + dice.length * sides := by
+  induction dice generalizing acc with
+  | nil => simp
+  | cons d rest ih =>
+    simp [List.foldl]
+    have hle := ih (acc + d.value)
+    have hsides := d.le_sides
+    have hmul : (rest.length + 1) * sides = rest.length * sides + sides := by
+      rw [Nat.add_mul, Nat.one_mul]
+    rw [hmul]
+    omega
+
 /-- Any roll's raw total is at least the number of dice (each die ≥ 1). -/
 theorem roll_ge_min (config : DiceConfig) (r : RollResult config) :
     r.rawTotal ≥ minRaw config := by
-  sorry -- Provable by induction on dice list using ge_one
+  unfold RollResult.rawTotal minRaw
+  have := foldl_add_ge_length r.dice 0
+  simp at this
+  rw [r.count_correct] at this
+  exact this
 
 /-- Any roll's raw total is at most count × sides (each die ≤ sides). -/
 theorem roll_le_max (config : DiceConfig) (r : RollResult config) :
     r.rawTotal ≤ maxRaw config := by
-  sorry -- Provable by induction on dice list using le_sides
+  unfold RollResult.rawTotal maxRaw
+  have := foldl_add_le_mul_sides r.dice 0
+  simp at this
+  rw [r.count_correct] at this
+  exact this
 
 /-- The raw total is bounded. -/
 theorem roll_bounded (config : DiceConfig) (r : RollResult config) :
@@ -118,10 +153,28 @@ theorem disadvantage_le_both {config : DiceConfig}
 def countSuccesses {config : DiceConfig} (r : RollResult config) (threshold : Nat) : Nat :=
   r.dice.foldl (fun acc d => if d.value ≥ threshold then acc + 1 else acc) 0
 
+/-- Helper: foldl counting successes is bounded by acc + list length. -/
+private theorem foldl_count_le_length {sides : Nat} {h : sides > 0}
+    (dice : List (DieResult sides h)) (threshold : Nat) (acc : Nat) :
+    dice.foldl (fun a (d : DieResult sides h) => if d.value ≥ threshold then a + 1 else a) acc
+    ≤ acc + dice.length := by
+  induction dice generalizing acc with
+  | nil => simp
+  | cons d rest ih =>
+    simp only [List.foldl, List.length_cons]
+    have h1 := ih (if d.value ≥ threshold then acc + 1 else acc)
+    have h2 : (if d.value ≥ threshold then acc + 1 else acc) ≤ acc + 1 := by
+      split <;> omega
+    omega
+
 /-- Successes are bounded by the number of dice. -/
 theorem successes_bounded {config : DiceConfig} (r : RollResult config) (threshold : Nat) :
     countSuccesses r threshold ≤ config.count := by
-  sorry -- Provable by induction using count_correct
+  unfold countSuccesses
+  have := foldl_count_le_length r.dice threshold 0
+  simp at this
+  rw [r.count_correct] at this
+  exact this
 
 end Playtest.Dice
 

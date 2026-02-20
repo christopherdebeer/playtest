@@ -98,7 +98,12 @@ theorem draw_reduces_deck (ds : DeckState) (card : Card) (ds' : DeckState)
     (rest : List Card) (h : ds.deck = card :: rest)
     (hd : drawFromPersonal ds = some (ds', card)) :
     ds'.deck.length = ds.deck.length - 1 := by
-  sorry -- Provable by unfolding drawFromPersonal with h
+  unfold drawFromPersonal at hd
+  rw [h] at hd
+  simp at hd
+  subst hd
+  rw [h]
+  simp
 
 /-- Acquiring increases total owned cards by 1. -/
 theorem acquire_increases (ds : DeckState) (card : Card) (handSize : Nat)

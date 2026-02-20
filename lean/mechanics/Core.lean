@@ -10,3 +10,8 @@ import Core.Turns
 import Core.Effects
 import Core.Dice
 import Core.Visibility
+import Core.ActionPoints
+import Core.Trading
+import Core.Simultaneous
+import Core.DynamicBoard
+import Core.Combat

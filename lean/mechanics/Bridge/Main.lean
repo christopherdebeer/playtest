@@ -2,9 +2,21 @@
   Bridge/Main.lean — CLI entry point for the Lean game engine
 
   Protocol:
-    ./lean-game <game> <cmd> <args...>
+    ./lean-game <namespace> <cmd> <args...>
 
-  GemCollector (validation only):
+  Game-agnostic commands:
+    ./lean-game registry validate cards resources trick-taking
+    ./lean-game registry deps trick-taking
+    ./lean-game registry list
+    ./lean-game graph validate src dst edge1:edge2 ...
+    ./lean-game graph reachable src dst edge1:edge2 ...
+    ./lean-game pool check gold 5 gold:10 silver:3
+    ./lean-game pool transfer gold 5 gold:10 -- gold:2
+    ./lean-game invariant conservation gold:5 silver:3 expected:8
+    ./lean-game score threshold 10 Alice:8 Bob:12
+    ./lean-game score highest Alice:8 Bob:12
+
+  Game-specific commands:
     ./lean-game gem-collector validate Alice mine cave
     ./lean-game gem-collector check-win Alice:3 Bob:1
 
@@ -19,20 +31,26 @@
 -/
 import Bridge.GemCollector
 import Bridge.AAOTE
+import Bridge.Generic
 
 open Playtest.Bridge
 
 def usage : String :=
-  "Usage: lean-game <game> <cmd> <args...>\n" ++
-  "Games: gem-collector, aaote\n" ++
-  "Commands (gem-collector):\n" ++
-  "  validate <player> <position> <target>  - Check if move is legal\n" ++
-  "  check-win <name:gems>...               - Check win condition\n" ++
-  "Commands (aaote — reads state JSON from stdin):\n" ++
-  "  init <numPlayers> [<seed>]             - Initialize new game\n" ++
-  "  act <playerId> <actionType> <args...>  - Execute an action\n" ++
-  "  available <playerId>                   - List available actions\n" ++
-  "  check-win [<playerId>]                 - Check win conditions"
+  "Usage: lean-game <namespace> <cmd> <args...>\n\n" ++
+  "Game-agnostic commands:\n" ++
+  "  registry validate <slug...>             - Validate mechanic configuration\n" ++
+  "  registry deps <slug...>                 - Resolve transitive dependencies\n" ++
+  "  registry list                           - List all known mechanics\n" ++
+  "  graph validate <src> <dst> <edges...>   - Validate edge exists\n" ++
+  "  graph reachable <src> <dst> <edges...>  - Check reachability via BFS\n" ++
+  "  pool check <name> <amount> <entries...> - Check resource sufficiency\n" ++
+  "  pool transfer <name> <amt> <src> -- <dst> - Validate transfer\n" ++
+  "  invariant conservation <entries...>     - Check resource conservation\n" ++
+  "  score threshold <N> <name:score...>     - Check threshold win\n" ++
+  "  score highest <name:score...>           - Check highest score win\n\n" ++
+  "Game-specific commands:\n" ++
+  "  gem-collector validate|check-win|...    - GemCollector referee\n" ++
+  "  aaote init|act|available|check-win|...  - AAOTE execution engine (stdin JSON)"
 
 def main (args : List String) : IO UInt32 := do
   match args with
@@ -43,10 +61,8 @@ def main (args : List String) : IO UInt32 := do
     -- Read stdin (needed for AAOTE state round-tripping)
     let stdin ← IO.getStdin
     let stdinContent ← do
-      -- Try to read stdin (non-blocking for gem-collector which doesn't use it)
       try
         let content ← stdin.getLine
-        -- Read remaining lines
         let mut allContent := content
         while true do
           let line ← stdin.getLine
@@ -54,16 +70,19 @@ def main (args : List String) : IO UInt32 := do
           allContent := allContent ++ line
         pure allContent
       catch _ => pure ""
-    let result := match game with
-      | "gem-collector" => GemCollector.dispatch rest
-      | "aaote" => AAOTEBridge.dispatch stdinContent rest
-      | _ => none
+    -- Try game-agnostic dispatch first, then game-specific
+    let result := match Generic.dispatch (game :: rest) with
+      | some json => some json
+      | none => match game with
+        | "gem-collector" => GemCollector.dispatch rest
+        | "aaote" => AAOTEBridge.dispatch stdinContent rest
+        | _ => none
     match result with
     | some json =>
       IO.println json
       return 0
     | none =>
-      let argsStr := String.intercalate " " rest
-      IO.eprintln s!"Unknown game or command: {game} {argsStr}"
+      let argsStr := String.intercalate " " (game :: rest)
+      IO.eprintln s!"Unknown command: {argsStr}"
       IO.eprintln usage
       return 1

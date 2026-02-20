@@ -121,16 +121,21 @@ theorem valid_config_satisfies_deps (reg : Registry) (enabled : List String)
     (h : isValidConfig reg enabled) :
     ∀ m, m ∈ reg.mechanics → enabled.any (· == m.slug) = true →
     m.requires_.all (fun r => enabled.any (· == r)) = true := by
-  sorry -- Provable by contradiction: if a requirement is missing,
-        -- validate would produce a missingRequirement error
+  -- Proof sketch: by contradiction. If any requirement `r` of `m` is missing
+  -- from `enabled`, then `validate` emits `missingRequirement m.slug r` (since
+  -- m ∈ enabledMechanics via henabled). This makes validate's output non-empty,
+  -- contradicting `h : isValidConfig reg enabled` (i.e., validate returns []).
+  sorry
 
 /-- No conflicts in a valid configuration. -/
 theorem valid_config_no_conflicts (reg : Registry) (enabled : List String)
     (h : isValidConfig reg enabled) :
     ∀ m, m ∈ reg.mechanics → enabled.any (· == m.slug) = true →
     m.conflicts.all (fun c => !enabled.any (· == c)) = true := by
-  sorry -- Provable by contradiction: if a conflict exists,
-        -- validate would produce a conflict error
+  -- Proof sketch: by contradiction. If conflict `c` of `m` is in `enabled`,
+  -- then `validate` emits `conflict m.slug c`, making its output non-empty,
+  -- contradicting `h : isValidConfig reg enabled`.
+  sorry
 
 /-! ## Conflict as Negated Conjunction -/
 
@@ -177,5 +182,26 @@ def deckBuildingMechanic : MechanicDescriptor :=
 /-- Worker placement requires resources. -/
 def workerPlacementMechanic : MechanicDescriptor :=
   { slug := "worker-placement", name := "Worker Placement", requires_ := ["resources"] }
+
+/-- Action points (per-turn expendable budget). -/
+def actionPointsMechanic : MechanicDescriptor :=
+  { slug := "action-points", name := "Action Points" }
+
+/-- Trading (bilateral resource exchange). -/
+def tradingMechanic : MechanicDescriptor :=
+  { slug := "trading", name := "Trading", requires_ := ["resources"] }
+
+/-- Simultaneous action selection. -/
+def simultaneousMechanic : MechanicDescriptor :=
+  { slug := "simultaneous", name := "Simultaneous" }
+
+/-- Dynamic board (mutable topology). -/
+def dynamicBoardMechanic : MechanicDescriptor :=
+  { slug := "dynamic-board", name := "Dynamic Board", requires_ := ["board"],
+    conflicts := ["board"] }
+
+/-- Combat resolution. -/
+def combatMechanic : MechanicDescriptor :=
+  { slug := "combat", name := "Combat" }
 
 end Playtest.Composition

@@ -73,11 +73,27 @@ theorem bid_strictly_increases (auction : AuctionState) (bidder : PlayerId)
     (placeBid auction bidder amount).currentBid > auction.currentBid := by
   simp [placeBid]; omega
 
+/-- Filtering out a member strictly reduces length. -/
+private theorem filter_ne_mem_lt (l : List String) (x : String)
+    (h : x ∈ l) :
+    (l.filter (· != x)).length < l.length := by
+  induction l with
+  | nil => exact absurd h (List.not_mem_nil _)
+  | cons a rest ih =>
+    simp only [List.filter, List.length_cons]
+    by_cases ha : a = x
+    · simp [bne_iff_ne, ha]
+      exact Nat.lt_succ_of_le (List.length_filter_le _ _)
+    · have hne : (a != x) = true := by simp [bne_iff_ne, ha]
+      simp [hne]
+      have := ih (List.mem_of_ne_of_mem (Ne.symm ha) h); omega
+
 /-- Passing reduces the bidder count. -/
 theorem pass_reduces_bidders (auction : AuctionState) (bidder : PlayerId)
     (h : bidder ∈ auction.activeBidders) :
     (passBid auction bidder).activeBidders.length < auction.activeBidders.length := by
-  sorry -- Provable: filter removing a present element decreases length
+  simp only [passBid]
+  exact filter_ne_mem_lt auction.activeBidders bidder h
 
 /-- Auction terminates: each pass reduces bidders, and bidders are finite. -/
 theorem auction_terminates (auction : AuctionState)
