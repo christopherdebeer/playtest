@@ -54,6 +54,8 @@ import {
   leanCheckWin,
   leanTurnStart,
   leanTurnEnd,
+  leanInitState,
+  leanGetPlayerView,
   isLeanEngineAvailable
 } from '../lean-engine.js';
 
@@ -619,62 +621,63 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     turnOrder.push(`player-${i}`);
   }
 
-  // ============ Mechanic Hooks: Shared state initialization (FIRST) ============
-  // Cards mechanic builds deck, shuffles, deals starting hands, creates discard pile
-  // All card setup moved from game.ts to cards mechanic's initSharedState
-  const shared: Record<string, unknown> = {};
-  const mechanicSharedState = mechanicRegistry.initSharedState(config, [], turnOrder, shared);
-  Object.assign(shared, mechanicSharedState);
-
-  // Create player slots
+  // ============ Lean Engine: State initialization ============
+  // Lean engine handles: deck building, shuffling, dealing, board setup, resources
+  let shared: Record<string, unknown> = {};
   const players: Record<string, PlayerState> = {};
+
+  if (isLeanEngineAvailable()) {
+    const leanState = leanInitState(config, turnOrder);
+    if (leanState) {
+      // Merge Lean-initialized player states
+      for (const pid of turnOrder) {
+        const leanPlayers = leanState.players as unknown as Record<string, Record<string, unknown>>;
+        const leanPlayer = leanPlayers?.[pid] || {};
+        players[pid] = {
+          state: (leanPlayer.state as string) || 'start',
+          hand: (leanPlayer.hand as Card[]) || [],
+          effects: (leanPlayer.effects as PlayerState['effects']) || [],
+          score: (leanPlayer.score as number) ?? 0,
+          resources: (leanPlayer.resources as Record<string, number>) || {},
+          ...(leanPlayer.actionPoints !== undefined ? { actionPoints: leanPlayer.actionPoints as number } : {}),
+          ...(leanPlayer.visitedLocations ? { visitedLocations: leanPlayer.visitedLocations as string[] } : {}),
+        } as PlayerState;
+      }
+      // Merge Lean-initialized shared state
+      shared = (leanState.shared as Record<string, unknown>) || {};
+    }
+  }
+
+  // Apply personas and fill any uninitialized players
   for (let i = 1; i <= playerCount; i++) {
     const playerId = `player-${i}`;
 
     // Assign persona if specified
-    // - undefined or "random" = assign random at registration
-    // - empty string "" = no persona (explicit opt-out)
-    // - any other string = specific persona slug
     const assignedPersona = options?.personas?.[playerId];
     let persona: string | undefined;
     if (assignedPersona === '') {
-      persona = '_none_';  // Marker for explicit no-persona
+      persona = '_none_';
     } else if (assignedPersona && assignedPersona !== 'random') {
       persona = assignedPersona;
     }
-    // else undefined = random assignment at registration
 
-    // ============ Mechanic Hooks: Player initialization ============
-    // Get initial player state from all enabled mechanics
-    // Pass existing players for cross-player coordination (e.g., unique power assignment)
-    // Pass shared state for cross-mechanic coordination (e.g., cards mechanic pre-dealt hands)
-    const playerIndex = i - 1;
-    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players, shared);
-
-    // Initialize score from starting_state if configured
-    const startingState = (config as { starting_state?: { score?: number } }).starting_state;
-    const startingScore = startingState?.score ?? 0;
-
-    players[playerId] = {
-      state: 'start',
-      effects: [],
-      persona,
-      score: startingScore
-    };
-
-    // Apply all mechanic-provided state (hand, resources, actionPoints, powerId, etc.)
-    // Mechanics can override defaults like 'state' (board-state sets starting position)
-    // 'resources' now set by resources mechanic via initPlayerState
-    const protectedKeys = new Set(['effects', 'persona', 'score']);
-    for (const [key, value] of Object.entries(mechanicState)) {
-      if (value !== undefined && !protectedKeys.has(key)) {
-        (players[playerId] as unknown as Record<string, unknown>)[key] = value;
+    if (!players[playerId]) {
+      // Fallback: create minimal player state if Lean didn't initialize
+      players[playerId] = {
+        state: 'start',
+        effects: [],
+        persona,
+        score: 0
+      } as PlayerState;
+    } else {
+      // Attach persona to Lean-initialized state
+      (players[playerId] as unknown as Record<string, unknown>).persona = persona;
+      // Ensure effects array exists
+      if (!players[playerId].effects) {
+        players[playerId].effects = [];
       }
     }
   }
-
-  // Clean up temporary state from cards mechanic
-  delete shared._startingHands;
 
   const logPath = getLogPath(gameName, gameId);
 
@@ -906,6 +909,51 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     throw new Error(`Player ${playerId} not found`);
   }
 
+  // Use Lean engine for visibility-filtered view when available
+  if (isLeanEngineAvailable()) {
+    const leanView = leanGetPlayerView(state, playerId);
+    if (leanView) {
+      return {
+        gameId: leanView.gameId || state.gameId,
+        round: leanView.round,
+        turnNumber: leanView.turnNumber,
+        currentPlayer: leanView.currentPlayer,
+        myState: {
+          state: leanView.myState.state,
+          hand: (leanView.myState.hand ?? []) as Card[],
+          effects: (leanView.myState.effects ?? []) as PlayerState['effects'],
+          score: leanView.myState.score,
+          resources: leanView.myState.resources,
+          actionPoints: leanView.myState.actionPoints,
+          actionPointsUsed: leanView.myState.actionPointsUsed,
+          visitedLocations: leanView.myState.visitedLocations,
+          placedLocationCount: leanView.myState.placedLocationCount,
+          completedTrades: leanView.myState.completedTrades,
+        },
+        opponents: leanView.opponents.map(op => ({
+          playerId: op.playerId,
+          state: op.state,
+          handSize: op.handSize,
+          effects: (op.effects ?? []) as PlayerState['effects'],
+          score: op.score,
+          resources: op.resources,
+          placedLocationCount: op.placedLocationCount,
+          completedTrades: op.completedTrades,
+        })),
+        shared: {
+          ...state.shared,
+          // Override: hide deck contents, show size only
+          deck: undefined,
+          deckSize: leanView.shared.deckSize,
+          discard: leanView.shared.discard ?? state.shared.discard,
+          boardStates: leanView.shared.boardStates,
+          placedLocations: leanView.shared.placedLocations,
+        }
+      };
+    }
+  }
+
+  // Fallback: basic TS-side view
   const opponents: OpponentView[] = state.turnOrder
     .filter(pid => pid !== playerId)
     .map(pid => ({

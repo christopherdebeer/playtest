@@ -57,6 +57,140 @@ private def getValidLocations (gs : GameState) : List String :=
   let startingTile := getStartingTile gs
   [startingTile] ++ gs.shared.placedLocations
 
+/-- Helper: check if a visibility rule hides an info type from a viewer.
+    Config format: visibility: { hand: "self", role: "self", score: "all", ... } -/
+private def isInfoHidden (gs : GameState) (infoType : String) (viewerId ownerId : String) : Bool :=
+  if viewerId == ownerId then false  -- always see own info
+  else
+    match gs.config.engineMechanics.find? "visibility" with
+    | none => false  -- no visibility config = everything public
+    | some cfg =>
+      match cfg.getObjVal? infoType with
+      | .ok (Json.str "self") => true        -- only self can see
+      | .ok (Json.str "hidden") => true      -- hidden from all others
+      | .ok (Json.str "all") => false        -- visible to all
+      | .ok (Json.str "public") => false
+      | _ => false  -- default: public
+
+/-! ## Effects Mechanic -/
+
+namespace Effects
+
+/-- Tick all effects for a player: decrease durations, remove expired.
+    Duration 0 = permanent (never expires). -/
+def tickEffects (ps : PlayerState) : PlayerState × List Effect :=
+  let (remaining, expired) := ps.effects.foldl (init := ([], []))
+    fun (rem, exp) eff =>
+      if eff.duration == 0 then
+        -- Permanent effect: never expires
+        (rem ++ [eff], exp)
+      else if eff.duration ≤ 1 then
+        -- Expires this tick
+        (rem, exp ++ [eff])
+      else
+        -- Decrement duration
+        (rem ++ [{ eff with duration := eff.duration - 1 }], exp)
+  ({ ps with effects := remaining }, expired)
+
+/-- Apply a card's effect to the game state when played. Reads effect from card.extra. -/
+def applyCardEffect (gs : GameState) (pid : String) (card : Card) : GameState × Option String :=
+  -- Read effect from card.extra
+  let effectJson := card.extra.find? "effect"
+  match effectJson with
+  | none => (gs, none)
+  | some ej =>
+    let effectType := (ej.getObjVal? "type" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+    match effectType with
+    | "probability_boost" | "probability_penalty" =>
+      -- These are informational — the GM interprets them. We just log.
+      let value := (ej.getObjVal? "value" |>.toOption |>.bind fun v =>
+        match v with | Json.num n => some (toString n) | _ => none).getD "?"
+      (gs, some s!"Effect: {effectType} ({value})")
+    | "skip" =>
+      -- Add skip effect to target (next player) or self-target
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          -- Default: next player in turn order
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let eff : Effect := { effectType := "skip", duration := 1, source := some pid }
+      let gs' := gs.modifyPlayer target fun tps =>
+        { tps with effects := tps.effects ++ [eff] }
+      (gs', some s!"Skip applied to {target}")
+    | "draw" =>
+      -- Force target to draw N cards
+      let drawCount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let tps := gs.getPlayer target
+      let drawn := gs.shared.deck.take drawCount
+      let tps' := { tps with hand := tps.hand ++ drawn }
+      let shared' := { gs.shared with deck := gs.shared.deck.drop drawCount }
+      let gs' := { gs.setPlayer target tps' with shared := shared' }
+      (gs', some s!"{target} forced to draw {drawn.length}")
+    | "reverse" =>
+      -- Reverse turn order
+      let gs' := { gs with turnOrder := gs.turnOrder.reverse }
+      (gs', some s!"Turn order reversed")
+    | "force_discard" =>
+      -- Target discards N cards (from front of hand for simplicity)
+      let discardCount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let tps := gs.getPlayer target
+      let discarded := tps.hand.take discardCount
+      let tps' := { tps with hand := tps.hand.drop discardCount }
+      let shared' := { gs.shared with discard := gs.shared.discard ++ discarded }
+      let gs' := { gs.setPlayer target tps' with shared := shared' }
+      (gs', some s!"{target} forced to discard {discarded.length}")
+    | "block_turn" =>
+      -- Add blocked effect with duration
+      let duration := (ej.getObjVal? "duration" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let eff : Effect := { effectType := "blocked", duration := duration, source := some pid }
+      let gs' := gs.modifyPlayer target fun tps =>
+        { tps with effects := tps.effects ++ [eff] }
+      (gs', some s!"{target} blocked for {duration} turn(s)")
+    | "add_score" =>
+      -- Add score to player
+      let amount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let gs' := gs.modifyPlayer pid fun ps =>
+        { ps with score := some ((ps.score.getD 0) + amount) }
+      (gs', some s!"{pid} gained {amount} score")
+    | "add_resource" =>
+      -- Add resource to player
+      let resName := (ej.getObjVal? "resource" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+      let amount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      if resName.isEmpty then (gs, none)
+      else
+        let gs' := gs.modifyPlayer pid fun ps =>
+          ps.setResource resName ((ps.getResource resName) + amount)
+        (gs', some s!"{pid} gained {amount} {resName}")
+    | _ =>
+      -- Unknown effect type — log it for GM interpretation
+      (gs, some s!"Effect: {effectType} (GM interprets)")
+
+/-- Check if a player is blocked (has a "blocked" or "skip" effect). -/
+def isBlocked (ps : PlayerState) : Bool :=
+  ps.effects.any fun e => e.effectType == "blocked" || e.effectType == "skip"
+
+end Effects
+
 /-! ## Resource Mechanic -/
 
 namespace Resources
@@ -109,7 +243,7 @@ def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :
 
 end Resources
 
-/-! ## Cards Mechanic (with card type rules and hand limit) -/
+/-! ## Cards Mechanic (with card type rules, hand limit, and effect resolution) -/
 
 namespace Cards
 
@@ -157,19 +291,26 @@ def execute (gs : GameState) (pid : String) (action : GameAction) : Option (Game
     let cardName ← action.card
     let ps := gs.getPlayer pid
     let card ← ps.hand.find? (·.name == cardName)
-    -- Only event cards can be played
+    -- Remove card from hand and discard
     let ps' := { ps with hand := ps.hand.filter (·.name != cardName) }
     let shared' := { gs.shared with discard := gs.shared.discard ++ [card] }
     let gs' := { gs.setPlayer pid ps' with shared := shared' }
-    some (gs', {
+    -- Apply card effect
+    let (gs'', effectMsg) := Effects.applyCardEffect gs' pid card
+    let logMsg := match effectMsg with
+      | some msg => s!"{pid} played {cardName}. {msg}"
+      | none => s!"{pid} played {cardName}"
+    some (gs'', {
       handled := true,
       stateChanges := {
         playerStateChanges := mkPlayerChange pid
-            [("hand", ToJson.toJson ps'.hand)],
+            [("hand", ToJson.toJson (gs''.getPlayer pid).hand),
+             ("effects", ToJson.toJson (gs''.getPlayer pid).effects),
+             ("score", ToJson.toJson ((gs''.getPlayer pid).score.getD 0))],
         sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare).insert
-            "discard" (ToJson.toJson shared'.discard)
+            "discard" (ToJson.toJson gs''.shared.discard)
       },
-      logMessage := some s!"{pid} played {cardName}",
+      logMessage := some logMsg,
       checkWin := true
     })
   | "draw" =>
@@ -518,6 +659,30 @@ def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :
 
 end Trade
 
+/-! ## Score Mechanic -/
+
+namespace Score
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "add_score" then none
+  else
+    let amount := action.amount.getD 1
+    let gs' := gs.modifyPlayer pid fun ps =>
+      { ps with score := some ((ps.score.getD 0) + amount) }
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("score", ToJson.toJson ((gs'.getPlayer pid).score.getD 0))]
+      },
+      logMessage := some s!"{pid} gained {amount} score",
+      checkWin := true
+    })
+
+def getAvailableActions (_gs : GameState) (_pid : String) : List AvailableAction := []
+
+end Score
+
 /-! ## Win Condition Mechanics -/
 
 namespace WinConditions
@@ -585,6 +750,65 @@ def checkAll (gs : GameState) (pid : String) : WinCheckResult :=
 
 end WinConditions
 
+/-! ## Visibility / Player View -/
+
+namespace Visibility
+
+/-- Build the player view for a specific player.
+    Applies visibility rules to hide information. -/
+def getPlayerView (gs : GameState) (viewerId : String) : PlayerViewResult :=
+  let myPs := gs.getPlayer viewerId
+  let myView : MyStateView := {
+    state := myPs.state,
+    hand := myPs.hand,
+    effects := myPs.effects,
+    score := myPs.score,
+    resources := myPs.resources,
+    actionPoints := myPs.actionPoints,
+    actionPointsUsed := myPs.actionPointsUsed,
+    visitedLocations := myPs.visitedLocations,
+    placedLocationCount := myPs.placedLocationCount,
+    completedTrades := myPs.completedTrades,
+    extra := myPs.extra
+  }
+  let opponents := gs.turnOrder.filter (· != viewerId) |>.map fun opId =>
+    let opPs := gs.getPlayer opId
+    let showScore := !isInfoHidden gs "score" viewerId opId
+    let showResources := !isInfoHidden gs "resources" viewerId opId
+    let showEffects := !isInfoHidden gs "effects" viewerId opId
+    {
+      playerId := opId,
+      state := opPs.state,
+      handSize := opPs.hand.length,
+      effects := if showEffects then opPs.effects else [],
+      score := if showScore then opPs.score else none,
+      resources := if showResources then opPs.resources else .empty,
+      placedLocationCount := opPs.placedLocationCount,
+      completedTrades := opPs.completedTrades
+      : OpponentView
+    }
+  -- Shared view: hide deck contents (only show size), keep discard visible
+  let sharedView : SharedView := {
+    deckSize := gs.shared.deck.length,
+    discard := gs.shared.discard,
+    boardStates := gs.shared.boardStates,
+    boardEdges := gs.shared.boardEdges,
+    currentBoardState := gs.shared.currentBoardState,
+    placedLocations := gs.shared.placedLocations,
+    extra := gs.shared.extra
+  }
+  {
+    gameId := gs.gameId,
+    round := gs.round,
+    turnNumber := gs.turnNumber,
+    currentPlayer := gs.currentPlayer,
+    myState := myView,
+    opponents := opponents,
+    shared := sharedView
+  }
+
+end Visibility
+
 /-! ## Mechanic Router -/
 
 /-- Route a validation call through all enabled mechanics.
@@ -594,17 +818,22 @@ def validateAction (gs : GameState) (pid : String) (action : GameAction) : Valid
   if gs.currentPlayer != pid && action.actionType != "pass" then
     { valid := false, error := some s!"Not {pid}'s turn (current: {gs.currentPlayer})" }
   else
-    let checks := [
-      ActionPoints.validate gs pid action,
-      Resources.validate gs pid action,
-      Cards.validate gs pid action,
-      Board.validate gs pid action,
-      PlaceLocation.validate gs pid action,
-      Trade.validate gs pid action
-    ]
-    match checks.find? (!·.valid) with
-    | some failure => failure
-    | none => { valid := true }
+    -- Check if player is blocked by an effect
+    let ps := gs.getPlayer pid
+    if Effects.isBlocked ps && action.actionType != "pass" then
+      { valid := false, error := some s!"{pid} is blocked and cannot act this turn. Pass instead." }
+    else
+      let checks := [
+        ActionPoints.validate gs pid action,
+        Resources.validate gs pid action,
+        Cards.validate gs pid action,
+        Board.validate gs pid action,
+        PlaceLocation.validate gs pid action,
+        Trade.validate gs pid action
+      ]
+      match checks.find? (!·.valid) with
+      | some failure => failure
+      | none => { valid := true }
 
 /-- Route an action execution through mechanics.
     First mechanic to handle it wins (like TypeScript registry). -/
@@ -621,7 +850,8 @@ def executeAction (gs : GameState) (pid : String) (action : GameAction) : Engine
       Cards.execute gs pid action,
       Board.execute gs pid action,
       Resources.execute gs pid action,
-      Trade.execute gs pid action
+      Trade.execute gs pid action,
+      Score.execute gs pid action
     ]
     let results := handlers.filterMap fun x => x
     match results.head? with
@@ -639,77 +869,135 @@ def executeAction (gs : GameState) (pid : String) (action : GameAction) : Engine
 
 /-- Get all available actions for a player. -/
 def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
-  let cardActions := Cards.getAvailableActions gs pid
-  let boardActions := Board.getAvailableActions gs pid
-  let placeActions := PlaceLocation.getAvailableActions gs pid
-  let resourceActions := if gs.isMechanicEnabled "resources" then Resources.getAvailableActions gs pid else []
-  let tradeActions := Trade.getAvailableActions gs pid
-  let passActions := Pass.getAvailableActions gs pid
-  -- Filter by action points cost if AP mechanic is enabled
-  let allActions := cardActions ++ boardActions ++ placeActions ++ resourceActions ++ tradeActions ++ passActions
-  if gs.isMechanicEnabled "action_points" || gs.isMechanicEnabled "action-points" then
-    let ps := gs.getPlayer pid
-    match ps.actionPoints with
-    | some ap =>
-      allActions.filter fun a =>
-        let cost := getActionCost gs a.action.actionType
-        ap ≥ cost
-    | none => allActions
-  else allActions
+  -- If player is blocked, only pass is available
+  let ps := gs.getPlayer pid
+  if Effects.isBlocked ps then
+    Pass.getAvailableActions gs pid
+  else
+    let cardActions := Cards.getAvailableActions gs pid
+    let boardActions := Board.getAvailableActions gs pid
+    let placeActions := PlaceLocation.getAvailableActions gs pid
+    let resourceActions := if gs.isMechanicEnabled "resources" then Resources.getAvailableActions gs pid else []
+    let tradeActions := Trade.getAvailableActions gs pid
+    let passActions := Pass.getAvailableActions gs pid
+    -- Filter by action points cost if AP mechanic is enabled
+    let allActions := cardActions ++ boardActions ++ placeActions ++ resourceActions ++ tradeActions ++ passActions
+    if gs.isMechanicEnabled "action_points" || gs.isMechanicEnabled "action-points" then
+      let ps := gs.getPlayer pid
+      match ps.actionPoints with
+      | some ap =>
+        allActions.filter fun a =>
+          let cost := getActionCost gs a.action.actionType
+          ap ≥ cost
+      | none => allActions
+    else allActions
 
 /-- Check win conditions for a player. -/
 def checkWin (gs : GameState) (pid : String) (_trigger : String) : WinCheckResult :=
   WinConditions.checkAll gs pid
 
-/-- Handle turn start lifecycle. -/
+/-- Handle turn start lifecycle: refresh AP, tick effects. -/
 def onTurnStart (gs : GameState) (pid : String) (_isNewRound : Bool) : GameState :=
-  ActionPoints.onTurnStart gs pid
+  -- Tick effects for the player whose turn is starting
+  let gs' := gs.modifyPlayer pid fun ps =>
+    let (ps', _expired) := Effects.tickEffects ps
+    ps'
+  -- Refresh action points
+  ActionPoints.onTurnStart gs' pid
 
-/-- Handle turn end lifecycle. -/
-def onTurnEnd (gs : GameState) (_pid : String) (_nextPid : String) (_isRoundEnd : Bool) : GameState :=
-  -- Tick effect durations, etc.
-  gs
+/-- Handle turn end lifecycle: tick effects for ending player. -/
+def onTurnEnd (gs : GameState) (pid : String) (_nextPid : String) (_isRoundEnd : Bool) : GameState :=
+  -- Currently effects are ticked on turn start. Turn end is a hook point
+  -- for future mechanics (income, upkeep, etc.)
+  gs.modifyPlayer pid fun ps => ps
+
+/-- Helper: expand board edge config where from/to can be arrays.
+    Input: { from: ["A","B"], to: ["X","Y"] } → [(A,X),(A,Y),(B,X),(B,Y)] -/
+private def expandBoardEdges (edgesJson : Json) : List (String × String) :=
+  match edgesJson with
+  | Json.arr edges => edges.toList.foldl (init := []) fun acc e =>
+      let froms : List String := match e.getObjVal? "from" with
+        | .ok (Json.str s) => [s]
+        | .ok (Json.arr arr) => arr.toList.filterMap (·.getStr?.toOption)
+        | _ => []
+      let tos : List String := match e.getObjVal? "to" with
+        | .ok (Json.str s) => [s]
+        | .ok (Json.arr arr) => arr.toList.filterMap (·.getStr?.toOption)
+        | _ => []
+      acc ++ (froms.foldl (init := []) fun inner f =>
+        inner ++ tos.map fun t => (f, t))
+  | _ => []
+
+/-- Parse card definitions from config, preserving extra fields (effect, etc.). -/
+private def parseCards (cardsJson : Json) : List Card :=
+  match cardsJson with
+  | Json.arr cards => cards.toList.foldl (init := []) fun acc cardJson =>
+      match (cardJson.getObjValAs? String "name").toOption with
+      | none => acc
+      | some name =>
+        let ctype := (cardJson.getObjValAs? String "type" <|> pure "").toOption |>.getD ""
+        let count := (cardJson.getObjVal? "count" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+        let suit := cardJson.getObjVal? "suit" |>.toOption |>.bind (·.getStr?.toOption)
+        let value := cardJson.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)
+        let subtype := cardJson.getObjVal? "subtype" |>.toOption |>.bind (·.getStr?.toOption)
+        -- Preserve all extra fields (effect, placeable, targetMode, terrain, etc.)
+        let knownFields : List String := ["name", "type", "count", "suit", "value", "subtype"]
+        let extra : Lean.RBMap String Json compare := match cardJson with
+          | Json.obj kvs =>
+            kvs.toArray.foldl (init := .empty) fun m ⟨k, v⟩ =>
+              if !knownFields.contains k then m.insert k v else m
+          | _ => .empty
+        acc ++ List.replicate count { name, cardType := ctype, suit, value, subtype, extra : Card }
+  | _ => []
 
 /-- Initialize game state from config. -/
 def initState (config : GameConfig) (playerIds : List String) : GameState :=
+  -- Parse cards from config
   let deck : List Card := match config.engineMechanics.find? "cards" with
     | some cfg =>
       match cfg.getObjVal? "deck" with
-      | .ok (Json.arr cards) =>
-        let cardLists : List (List Card) := cards.toList.filterMap fun cardJson => do
-          let name ← (cardJson.getObjValAs? String "name").toOption
-          let ctype ← (cardJson.getObjValAs? String "type" <|> pure "").toOption
-          let count := (cardJson.getObjVal? "count" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
-          let suit := cardJson.getObjVal? "suit" |>.toOption |>.bind (·.getStr?.toOption)
-          let value := cardJson.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)
-          some (List.replicate count { name, cardType := ctype, suit, value : Card })
-        cardLists.flatten
+      | .ok deckJson => parseCards deckJson
       | _ => []
     | none => []
+  -- Starting hand size
   let startingHand := match config.engineMechanics.find? "cards" with
     | some cfg => (cfg.getObjVal? "starting_hand" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
     | none => 0
+  -- Board states
   let boardStates := match config.engineMechanics.find? "board" with
     | some cfg =>
       match cfg.getObjVal? "states" with
       | .ok (Json.arr states) => states.toList.filterMap (·.getStr?.toOption)
       | _ => []
     | none => []
+  -- Board edges (with array expansion)
   let boardEdges := match config.engineMechanics.find? "board" with
     | some cfg =>
       match cfg.getObjVal? "edges" with
-      | .ok (Json.arr edges) => edges.toList.filterMap fun e => do
-          let f ← (e.getObjValAs? String "from").toOption
-          let t ← (e.getObjValAs? String "to").toOption
-          some (f, t)
+      | .ok edgesJson => expandBoardEdges edgesJson
       | _ => []
     | none => []
-  let startState := boardStates.head?
+  -- Board start state
+  let boardStart := match config.engineMechanics.find? "board" with
+    | some cfg =>
+      (cfg.getObjVal? "start" |>.toOption |>.bind (·.getStr?.toOption))
+      |>.orElse fun _ => boardStates.head?
+    | none => boardStates.head?
+  -- Grid starting tile
+  let gridStart := match config.engineMechanics.find? "grid" with
+    | some cfg => (cfg.getObjVal? "starting_tile" |>.toOption |>.bind (·.getStr?.toOption))
+    | none => none
+  -- Determine starting state for players
+  let startState := (boardStart.orElse fun _ => gridStart).getD "start"
+  -- Starting score
+  let startingScore := match config.engineMechanics.find? "starting_score" with
+    | some cfg => cfg.getNat?.toOption
+    | none => none
   -- Deal cards to players
   let (playerMap, remainingDeck) := playerIds.foldl (init := (Lean.RBMap.empty, deck))
-    fun (players, deck) pid =>
-      let hand := deck.take startingHand
-      let rest := deck.drop startingHand
+    fun (players, currentDeck) pid =>
+      let hand := currentDeck.take startingHand
+      let rest := currentDeck.drop startingHand
       let resources := match config.engineMechanics.find? "resources" with
         | some (Json.arr resList) =>
           resList.toList.foldl (init := Lean.RBMap.empty) fun m resJson =>
@@ -718,9 +1006,10 @@ def initState (config : GameConfig) (playerIds : List String) : GameState :=
             if name.isEmpty then m else m.insert name starting
         | _ => .empty
       let ps : PlayerState := {
-        state := startState.getD "start"
-        hand := hand
-        resources := resources
+        state := startState,
+        hand := hand,
+        resources := resources,
+        score := startingScore
       }
       (players.insert pid ps, rest)
   {
@@ -732,7 +1021,7 @@ def initState (config : GameConfig) (playerIds : List String) : GameState :=
       deck := remainingDeck,
       boardStates := boardStates,
       boardEdges := boardEdges,
-      currentBoardState := startState
+      currentBoardState := boardStart
     }
   }
 

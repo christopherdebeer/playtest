@@ -324,6 +324,65 @@ instance : ToJson WinCheckResult where
     let fields := match w.reason with | some r => fields ++ [("reason", Json.str r)] | none => fields
     Json.mkObj fields
 
+/-! ## Player View JSON -/
+
+instance : ToJson OpponentView where
+  toJson o :=
+    let fields : List (String × Json) := [
+      ("playerId", Json.str o.playerId),
+      ("state", Json.str o.state),
+      ("handSize", jsonNat o.handSize)
+    ]
+    let fields := if o.effects.isEmpty then fields else fields ++ [("effects", ToJson.toJson o.effects)]
+    let fields := match o.score with | some s => fields ++ [("score", jsonNat s)] | none => fields
+    let fields := if o.resources.isEmpty then fields else fields ++ [("resources", rbmapNatToJson o.resources)]
+    let fields := match o.placedLocationCount with | some n => fields ++ [("placedLocationCount", jsonNat n)] | none => fields
+    let fields := match o.completedTrades with | some n => fields ++ [("completedTrades", jsonNat n)] | none => fields
+    Json.mkObj fields
+
+instance : ToJson MyStateView where
+  toJson m :=
+    let fields : List (String × Json) := [("state", Json.str m.state)]
+    let fields := if m.hand.isEmpty then fields else fields ++ [("hand", ToJson.toJson m.hand)]
+    let fields := if m.effects.isEmpty then fields else fields ++ [("effects", ToJson.toJson m.effects)]
+    let fields := match m.score with | some s => fields ++ [("score", jsonNat s)] | none => fields
+    let fields := if m.resources.isEmpty then fields else fields ++ [("resources", rbmapNatToJson m.resources)]
+    let fields := match m.actionPoints with | some ap => fields ++ [("actionPoints", jsonNat ap)] | none => fields
+    let fields := match m.actionPointsUsed with | some u => fields ++ [("actionPointsUsed", jsonNat u)] | none => fields
+    let fields := if m.visitedLocations.isEmpty then fields else fields ++ [("visitedLocations", ToJson.toJson m.visitedLocations)]
+    let fields := match m.placedLocationCount with | some n => fields ++ [("placedLocationCount", jsonNat n)] | none => fields
+    let fields := match m.completedTrades with | some n => fields ++ [("completedTrades", jsonNat n)] | none => fields
+    let fields := fields ++ m.extra.toList
+    Json.mkObj fields
+
+instance : ToJson SharedView where
+  toJson sv :=
+    let fields : List (String × Json) := [("deckSize", jsonNat sv.deckSize)]
+    let fields := if sv.discard.isEmpty then fields else fields ++ [("discard", ToJson.toJson sv.discard)]
+    let fields := if sv.boardStates.isEmpty then fields
+      else fields ++ [("boardStates", ToJson.toJson sv.boardStates)]
+    let fields := if sv.boardEdges.isEmpty then fields
+      else fields ++ [("boardEdges", Json.arr (sv.boardEdges.map fun (a, b) =>
+        Json.mkObj [("from", Json.str a), ("to", Json.str b)]).toArray)]
+    let fields := match sv.currentBoardState with
+      | some s => fields ++ [("currentBoardState", Json.str s)]
+      | none => fields
+    let fields := if sv.placedLocations.isEmpty then fields
+      else fields ++ [("placedLocations", ToJson.toJson sv.placedLocations)]
+    let fields := fields ++ sv.extra.toList
+    Json.mkObj fields
+
+instance : ToJson PlayerViewResult where
+  toJson pv := Json.mkObj [
+    ("gameId", Json.str pv.gameId),
+    ("round", jsonNat pv.round),
+    ("turnNumber", jsonNat pv.turnNumber),
+    ("currentPlayer", Json.str pv.currentPlayer),
+    ("myState", ToJson.toJson pv.myState),
+    ("opponents", ToJson.toJson pv.opponents),
+    ("shared", ToJson.toJson pv.shared)
+  ]
+
 instance : ToJson EngineResponse where
   toJson r :=
     let fields : List (String × Json) := [("success", Json.bool r.success)]
@@ -333,6 +392,7 @@ instance : ToJson EngineResponse where
     let fields := match r.availableActions with | some a => fields ++ [("availableActions", ToJson.toJson a)] | none => fields
     let fields := match r.winResult with | some w => fields ++ [("winResult", ToJson.toJson w)] | none => fields
     let fields := match r.state with | some s => fields ++ [("state", ToJson.toJson s)] | none => fields
+    let fields := match r.playerView with | some pv => fields ++ [("playerView", ToJson.toJson pv)] | none => fields
     Json.mkObj fields
 
 /-! ## EngineCommand JSON -/
@@ -375,6 +435,10 @@ instance : FromJson EngineCommand where
       let nextPlayerId ← (j.getObjValAs? String "nextPlayerId") <|> pure ""
       let isRoundEnd ← (j.getObjValAs? Bool "isRoundEnd") <|> pure false
       return .turnEnd state playerId nextPlayerId isRoundEnd
+    | "get_player_view" => do
+      let state ← j.getObjValAs? GameState "state"
+      let playerId ← j.getObjValAs? String "playerId"
+      return .getPlayerView state playerId
     | other => throw s!"Unknown command: {other}"
 
 end Playtest.Engine

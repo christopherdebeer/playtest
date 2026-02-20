@@ -38,6 +38,9 @@ def processCommand (cmd : EngineCommand) : EngineResponse :=
   | .turnEnd state pid nextPid isRoundEnd =>
     let state' := Mechanics.onTurnEnd state pid nextPid isRoundEnd
     { success := true, state := some state' }
+  | .getPlayerView state pid =>
+    let view := Mechanics.Visibility.getPlayerView state pid
+    { success := true, playerView := some view }
 
 /-- Read all stdin, parse command, process, write response. -/
 def engineMain : IO Unit := do

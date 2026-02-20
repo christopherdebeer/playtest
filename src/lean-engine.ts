@@ -127,8 +127,29 @@ function toEngineState(state: GameState): Record<string, unknown> {
     players: Object.fromEntries(
       Object.entries(state.players || {}).map(([pid, ps]) => [pid, {
         state: ps.state || 'active',
-        hand: ps.hand || [],
-        effects: ps.effects || [],
+        hand: (ps.hand || []).map((c: unknown) => {
+          const card = c as Record<string, unknown>;
+          return {
+            name: card.name,
+            type: card.type || '',
+            ...(card.id ? { id: card.id } : {}),
+            ...(card.suit ? { suit: card.suit } : {}),
+            ...(card.value !== undefined ? { value: card.value } : {}),
+            ...(card.subtype ? { subtype: card.subtype } : {}),
+            ...(card.effect ? { effect: card.effect } : {}),
+            ...(card.placeable !== undefined ? { placeable: card.placeable } : {}),
+            ...(card.targetMode ? { targetMode: card.targetMode } : {}),
+          };
+        }),
+        effects: (ps.effects || []).map((e: unknown) => {
+          const eff = e as Record<string, unknown>;
+          return {
+            type: eff.type || eff.effectType || '',
+            ...(eff.value !== undefined ? { value: eff.value } : {}),
+            duration: eff.duration ?? 0,
+            ...(eff.source ? { source: eff.source } : {}),
+          };
+        }),
         score: ps.score,
         resources: ps.resources || {},
         actionPoints: ps.actionPoints,
@@ -284,4 +305,57 @@ export function leanTurnEnd(
   });
 
   return response.state || null;
+}
+
+/**
+ * Get visibility-filtered player view using the Lean engine.
+ * Returns what a specific player can see (hides other players' hands, etc.)
+ */
+export function leanGetPlayerView(
+  state: GameState,
+  playerId: string
+): {
+  gameId: string;
+  round: number;
+  turnNumber: number;
+  currentPlayer: string;
+  myState: {
+    state: string;
+    hand: unknown[];
+    effects: unknown[];
+    score?: number;
+    resources?: Record<string, number>;
+    actionPoints?: number;
+    actionPointsUsed?: number;
+    visitedLocations?: string[];
+    placedLocationCount?: number;
+    completedTrades?: number;
+  };
+  opponents: Array<{
+    playerId: string;
+    state: string;
+    handSize: number;
+    effects?: unknown[];
+    score?: number;
+    resources?: Record<string, number>;
+    placedLocationCount?: number;
+    completedTrades?: number;
+  }>;
+  shared: {
+    deckSize: number;
+    discard?: unknown[];
+    boardStates?: string[];
+    boardEdges?: Array<{ from: string; to: string }>;
+    currentBoardState?: string;
+    placedLocations?: string[];
+  };
+} | null {
+  const response = callLeanEngine({
+    command: 'get_player_view',
+    state: toEngineState(state),
+    playerId,
+  });
+
+  if (!response.success) return null;
+  return (response as unknown as Record<string, unknown>).playerView as ReturnType<typeof leanGetPlayerView> || null;
 }

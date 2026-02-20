@@ -1191,6 +1191,13 @@ export interface PlayerView {
     state: string;
     hand: Card[];
     effects: Effect[];
+    score?: number;
+    resources?: Record<string, number>;
+    actionPoints?: number;
+    actionPointsUsed?: number;
+    visitedLocations?: string[];
+    placedLocationCount?: number;
+    completedTrades?: number;
   };
   opponents: OpponentView[];
   shared: Record<string, unknown>;
@@ -1201,6 +1208,10 @@ export interface OpponentView {
   state: string;
   handSize: number;
   effects: Effect[];
+  score?: number;
+  resources?: Record<string, number>;
+  placedLocationCount?: number;
+  completedTrades?: number;
 }
 
 export interface ActionResult {

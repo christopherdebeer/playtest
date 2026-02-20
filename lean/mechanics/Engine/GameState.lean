@@ -129,6 +129,58 @@ inductive EngineCommand where
   | initState (config : GameConfig) (playerIds : List String)
   | turnStart (state : GameState) (playerId : String) (isNewRound : Bool)
   | turnEnd (state : GameState) (playerId : String) (nextPlayerId : String) (isRoundEnd : Bool)
+  | getPlayerView (state : GameState) (playerId : String)
+
+/-! ## Player View (visibility-filtered state) -/
+
+/-- What an opponent looks like to the viewing player. -/
+structure OpponentView where
+  playerId : String
+  state : String := "active"
+  handSize : Nat := 0
+  effects : List Effect := []
+  score : Option Nat := none
+  resources : Lean.RBMap String Nat compare := .empty
+  placedLocationCount : Option Nat := none
+  completedTrades : Option Nat := none
+  deriving Inhabited
+
+/-- The viewing player's own state (full visibility). -/
+structure MyStateView where
+  state : String := "active"
+  hand : List Card := []
+  effects : List Effect := []
+  score : Option Nat := none
+  resources : Lean.RBMap String Nat compare := .empty
+  actionPoints : Option Nat := none
+  actionPointsUsed : Option Nat := none
+  visitedLocations : List String := []
+  placedLocationCount : Option Nat := none
+  completedTrades : Option Nat := none
+  extra : Lean.RBMap String Json compare := .empty
+  deriving Inhabited
+
+/-- Visibility-filtered shared state (hides deck contents). -/
+structure SharedView where
+  deckSize : Nat := 0
+  discard : List Card := []
+  boardStates : List String := []
+  boardEdges : List (String × String) := []
+  currentBoardState : Option String := none
+  placedLocations : List String := []
+  extra : Lean.RBMap String Json compare := .empty
+  deriving Inhabited
+
+/-- Complete player view — what a specific player can see. -/
+structure PlayerViewResult where
+  gameId : String := ""
+  round : Nat := 1
+  turnNumber : Nat := 1
+  currentPlayer : String := ""
+  myState : MyStateView := {}
+  opponents : List OpponentView := []
+  shared : SharedView := {}
+  deriving Inhabited
 
 /-- State changes returned by the engine. Matches TypeScript StateChanges. -/
 structure StateChanges where
@@ -175,6 +227,7 @@ structure EngineResponse where
   availableActions : Option (List AvailableAction) := none
   winResult : Option WinCheckResult := none
   state : Option GameState := none
+  playerView : Option PlayerViewResult := none
   deriving Inhabited
 
 /-! ## Helper accessors -/
