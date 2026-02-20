@@ -7,3 +7,12 @@ import Leaf.AuctionEnglish
 import Leaf.DeckBuilding
 import Leaf.WorkerPlacement
 import Leaf.WinConditions
+import Leaf.SetCollection
+import Leaf.CardMatching
+import Leaf.Tableau
+import Leaf.Contracts
+import Leaf.PushYourLuck
+import Leaf.Drafting
+import Leaf.Voting
+import Leaf.AreaControl
+import Leaf.Rondel

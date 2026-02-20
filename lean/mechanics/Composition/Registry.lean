@@ -204,4 +204,44 @@ def dynamicBoardMechanic : MechanicDescriptor :=
 def combatMechanic : MechanicDescriptor :=
   { slug := "combat", name := "Combat" }
 
+/-- Set collection requires cards. -/
+def setCollectionMechanic : MechanicDescriptor :=
+  { slug := "set-collection", name := "Set Collection", requires_ := ["cards"] }
+
+/-- Card matching requires cards. -/
+def cardMatchingMechanic : MechanicDescriptor :=
+  { slug := "card-matching", name := "Card Matching", requires_ := ["cards"] }
+
+/-- Tableau building requires cards. -/
+def tableauMechanic : MechanicDescriptor :=
+  { slug := "tableau", name := "Tableau", requires_ := ["cards"] }
+
+/-- Contracts require resources. -/
+def contractsMechanic : MechanicDescriptor :=
+  { slug := "contracts", name := "Contracts", requires_ := ["resources"] }
+
+/-- Push your luck requires dice. -/
+def pushYourLuckMechanic : MechanicDescriptor :=
+  { slug := "push-your-luck", name := "Push Your Luck", requires_ := ["dice"] }
+
+/-- Open drafting requires cards. -/
+def openDraftingMechanic : MechanicDescriptor :=
+  { slug := "open-drafting", name := "Open Drafting", requires_ := ["cards"] }
+
+/-- Closed drafting requires cards. -/
+def closedDraftingMechanic : MechanicDescriptor :=
+  { slug := "closed-drafting", name := "Closed Drafting", requires_ := ["cards"] }
+
+/-- Voting (standalone). -/
+def votingMechanic : MechanicDescriptor :=
+  { slug := "voting", name := "Voting" }
+
+/-- Area control requires board. -/
+def areaControlMechanic : MechanicDescriptor :=
+  { slug := "area-control", name := "Area Control", requires_ := ["board"] }
+
+/-- Rondel (standalone). -/
+def rondelMechanic : MechanicDescriptor :=
+  { slug := "rondel", name := "Rondel" }
+
 end Playtest.Composition

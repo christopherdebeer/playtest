@@ -33,7 +33,11 @@ def allMechanics : List MechanicDescriptor :=
     effectsMechanic, diceMechanic, visibilityMechanic,
     trickTakingMechanic, auctionMechanic, deckBuildingMechanic,
     workerPlacementMechanic, actionPointsMechanic, tradingMechanic,
-    simultaneousMechanic, dynamicBoardMechanic, combatMechanic ]
+    simultaneousMechanic, dynamicBoardMechanic, combatMechanic,
+    setCollectionMechanic, cardMatchingMechanic, tableauMechanic,
+    contractsMechanic, pushYourLuckMechanic, openDraftingMechanic,
+    closedDraftingMechanic, votingMechanic, areaControlMechanic,
+    rondelMechanic ]
 
 /-- Build a registry from all known mechanics. -/
 def mkRegistry : Registry :=
