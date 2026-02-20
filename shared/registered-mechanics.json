@@ -1438,8 +1438,12 @@
         "enabled": "boolean"
       },
       "hooks": [
+        "initPlayerState",
+        "onTurnStart",
         "onExecuteAction",
-        "initSharedState"
+        "getAvailableActions",
+        "initSharedState",
+        "getPlayerView"
       ]
     },
     "lean-verifier": {
