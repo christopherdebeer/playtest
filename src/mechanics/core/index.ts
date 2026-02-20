@@ -174,12 +174,3 @@ export {
   type VotingResult
 } from './social.js';
 
-// Auction types (Phase 8)
-export {
-  type AuctionStartPayload,
-  type AuctionEndPayload,
-  type BidPayload,
-  type CanBidPayload,
-  type GetMinimumBidPayload,
-  type AuctionHooks
-} from './auction-mechanic.js';
