@@ -1,0 +1,4 @@
+{"timestamp":"2026-02-20T00:40:43.993Z","event":"game_init","data":{"gameId":"aaote-1771548043981","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T00:41:04.999Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T00:41:45.223Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","card":"River Crossing","adjacentTo":"origin","totalLocations":1}}
+{"timestamp":"2026-02-20T00:45:50.281Z","event":"game_cancelled","round":1,"turnNumber":2,"data":{"reason":"restarting with fixed lean-executor"}}
