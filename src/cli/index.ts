@@ -57,8 +57,8 @@ import {
   getMechanicImplementationStatus
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
-import { getCardsState } from '../mechanics/core/index.js';
-import { drawCards } from '../mechanics/core/cards.js';
+// Card utility functions (inlined from deleted mechanics)
+import type { Card } from '../types/game.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
 
 const program = new Command();
@@ -818,8 +818,7 @@ program
   .description('[Player] Wait for turn and get available actions (optimized)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
-  .option('--lean', 'Get available actions from the Lean engine')
-  .action(async (game: string, options: { player: string; timeout: string; lean?: boolean }) => {
+  .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
       // Auto-register the player if not already registered
       let state = loadState(game);
@@ -833,59 +832,13 @@ program
       if (result.status === 'your_turn') {
         state = loadStateReadOnly(game); // Reload to get latest state
 
-        if (options.lean) {
-          // Lean engine path: get available actions from compiled Lean binary
-          const { leanGetAvailableActions, leanTurnStart, isLeanEngineAvailable } = await import('../lean-engine.js');
-          if (isLeanEngineAvailable()) {
-            // Run turn_start to initialize AP
-            const updatedState = leanTurnStart(state, options.player, state.turnNumber === 1);
-            if (updatedState) {
-              // Merge Lean turn_start state back
-              const leanState = updatedState as unknown as Record<string, unknown>;
-              const leanPlayers = leanState.players as Record<string, Record<string, unknown>> | undefined;
-              if (leanPlayers) {
-                for (const [pid, lps] of Object.entries(leanPlayers)) {
-                  if (state.players[pid]) {
-                    Object.assign(state.players[pid], lps);
-                  }
-                }
-              }
-              saveState(state);
-            }
-
-            const leanActions = leanGetAvailableActions(state, options.player);
-            const ps = state.players[options.player];
-            console.log(JSON.stringify({
-              ...result,
-              engine: 'lean',
-              actionPoints: ps?.actionPoints,
-              actionPointsUsed: ps?.actionPointsUsed,
-              actions: leanActions.map((a: GameAction) => ({
-                action: a,
-                enabled: true
-              }))
-            }));
-          } else {
-            // Fall back to TS engine
-            const actionsResult = getAvailableActions(state, options.player);
-            const { actions, ...otherFields } = actionsResult;
-            console.log(JSON.stringify({
-              ...result,
-              ...otherFields,
-              actions: actions.filter(a => a.enabled)
-            }));
-          }
-        } else {
-          const actionsResult = getAvailableActions(state, options.player);
-          // Spread all fields from actionsResult (includes mechanic-contributed fields)
-          // This is mechanic-agnostic: actionPoints, resources, etc. come through automatically
-          const { actions, ...otherFields } = actionsResult;
-          console.log(JSON.stringify({
-            ...result,
-            ...otherFields,
-            actions: actions.filter(a => a.enabled)
-          }));
-        }
+        const actionsResult = getAvailableActions(state, options.player);
+        const { actions, ...otherFields } = actionsResult;
+        console.log(JSON.stringify({
+          ...result,
+          ...otherFields,
+          actions: actions.filter(a => a.enabled)
+        }));
       } else {
         console.log(JSON.stringify(result));
       }
@@ -979,8 +932,7 @@ program
   .requiredOption('-a, --action <json>', 'Action JSON')
   .option('--wait', 'For resign actions: wait for GM adjudication result (Proposal 009)')
   .option('--wait-timeout <ms>', 'Adjudication wait timeout in milliseconds', '120000')
-  .option('--lean', 'Route mechanic execution through the Lean engine binary')
-  .action(async (game: string, options: { player: string; action: string; wait?: boolean; waitTimeout?: string; lean?: boolean }) => {
+  .action(async (game: string, options: { player: string; action: string; wait?: boolean; waitTimeout?: string }) => {
     try {
       const state = loadState(game);
 
@@ -1014,100 +966,6 @@ program
           return undefined as never;
         }
       })();
-
-      // Lean engine path: delegate to compiled Lean binary
-      if (options.lean) {
-        const { leanExecuteAction, isLeanEngineAvailable } = await import('../lean-engine.js');
-        if (!isLeanEngineAvailable()) {
-          console.log(JSON.stringify({
-            success: false,
-            error: 'Lean engine binary not found. Build with: cd lean && lake build lean-engine'
-          }));
-          process.exit(1);
-          return;
-        }
-
-        const leanResult = leanExecuteAction(state, options.player, action);
-        if (!leanResult.success) {
-          console.log(JSON.stringify({
-            success: false,
-            error: leanResult.error,
-            validation: leanResult.validation
-          }));
-          process.exit(1);
-          return;
-        }
-
-        // Apply Lean state changes to the game state
-        if (leanResult.state) {
-          // Merge Lean engine state back into the full game state
-          const leanState = leanResult.state as unknown as Record<string, unknown>;
-          const leanPlayers = leanState.players as Record<string, Record<string, unknown>> | undefined;
-          if (leanPlayers) {
-            for (const [pid, lps] of Object.entries(leanPlayers)) {
-              if (state.players[pid]) {
-                Object.assign(state.players[pid], lps);
-              }
-            }
-          }
-          if (leanState.shared) {
-            state.shared = { ...state.shared, ...(leanState.shared as Record<string, unknown>) };
-          }
-        }
-
-        // Advance turn if the Lean engine says so
-        if (leanResult.execution?.advanceTurn) {
-          advanceTurn(state);
-        }
-
-        // Log the action
-        if (leanResult.execution?.logMessage) {
-          logEvent(state, {
-            event: 'lean_action_executed',
-            player: options.player,
-            data: {
-              action,
-              message: leanResult.execution.logMessage,
-            },
-          });
-        }
-
-        // Check win conditions if needed
-        let gameOver = false;
-        let winner: string | undefined;
-        if (leanResult.execution?.checkWin) {
-          const { leanCheckWin } = await import('../lean-engine.js');
-          for (const pid of state.turnOrder) {
-            const winResult = leanCheckWin(state, pid);
-            if (winResult.won) {
-              gameOver = true;
-              winner = pid;
-              state.status = 'completed';
-              state.shared.winner = pid;
-              break;
-            }
-          }
-        }
-
-        saveState(state);
-        const updatedState = loadState(game);
-        const playerView = getPlayerView(updatedState, options.player);
-        const player = updatedState.players[options.player];
-
-        console.log(JSON.stringify({
-          success: true,
-          action,
-          engine: 'lean',
-          effect: leanResult.execution,
-          handSize: (player?.hand ?? []).length,
-          nextPlayer: updatedState.currentPlayer,
-          gameStatus: updatedState.status,
-          gameOver,
-          winner,
-          view: playerView
-        }));
-        return;
-      }
 
       // Step 1: Schema validation
       const schemaResult = validateActionSchema(action);
@@ -1613,21 +1471,28 @@ program
     try {
       const state = loadState(game);
       const count = parseInt(options.count, 10);
-      const cards = drawCards(state, options.player, count);
+      // Inline draw logic (was in deleted cards core mechanic)
+      const player = state.players[options.player];
+      if (!player) throw new Error(`Player ${options.player} not found`);
+      const deck = (state.shared.deck || []) as Card[];
+      const drawn = deck.splice(0, count);
+      if (!player.hand) player.hand = [];
+      player.hand.push(...drawn);
+      saveState(state);
 
       logEvent(state, {
         event: 'draw',
         round: state.round,
         turnNumber: state.turnNumber,
         player: options.player,
-        data: { count, cards: cards.map(c => c.name) }
+        data: { count, cards: drawn.map(c => c.name) }
       });
 
       console.log(JSON.stringify({
         success: true,
-        cards,
-        drawn: cards.length,
-        deckRemaining: getCardsState(state).deck.length
+        cards: drawn,
+        drawn: drawn.length,
+        deckRemaining: deck.length
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -1683,7 +1548,7 @@ program
   .action((game: string, options: { player: string; card: string; color?: string }) => {
     try {
       const state = loadState(game);
-      const card = playCardByName(state, options.player, options.card, options.color);
+      const card = playCardByName(state, options.player, options.card);
 
       if (!card) {
         throw new Error(`Card "${options.card}" not found in ${options.player}'s hand`);
@@ -1750,8 +1615,8 @@ program
             turnOrder: state.turnOrder,
             players: state.players,
             shared: state.shared,
-            deckSize: getCardsState(state).deck.length,
-            discardSize: getCardsState(state).discardPile.length
+            deckSize: ((state.shared.deck || []) as Card[]).length,
+            discardSize: ((state.shared.discard || state.shared.discardPile || []) as Card[]).length
           }
         }));
       }

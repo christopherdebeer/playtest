@@ -42,18 +42,35 @@ import type {
 } from '../types/game.js';
 import { parseRules, getPlayerCount } from './rules.js';
 
-// Mechanics hook system (incremental extraction)
-import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
+// Mechanics stub (all execution routes through Lean engine)
+import { mechanicRegistry } from '../mechanics/index.js';
 import type { ActionSchema } from '../mechanics/types.js';
 
-// Core services (trunk mechanics)
+// Lean engine (primary mechanic execution)
 import {
-  addToDiscard,
-  playCard,
-  removeFromHandByIndex,
-  applyDynamicTurnOrder,
-  setBoardState
-} from '../mechanics/core/index.js';
+  leanExecuteAction,
+  leanValidateAction,
+  leanGetAvailableActions,
+  leanCheckWin,
+  leanTurnStart,
+  leanTurnEnd,
+  isLeanEngineAvailable
+} from '../lean-engine.js';
+
+// Helper: merge Lean engine player state back into game state
+function mergeLeanPlayers(state: GameState, leanState: GameState | null): void {
+  if (!leanState) return;
+  const leanPlayers = (leanState as unknown as Record<string, unknown>).players as Record<string, Record<string, unknown>> | undefined;
+  if (leanPlayers) {
+    for (const [pid, lps] of Object.entries(leanPlayers)) {
+      if (state.players[pid]) Object.assign(state.players[pid], lps);
+    }
+  }
+  const leanShared = (leanState as unknown as Record<string, unknown>).shared as Record<string, unknown> | undefined;
+  if (leanShared) {
+    Object.assign(state.shared, leanShared);
+  }
+}
 
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -924,15 +941,24 @@ function endGameOnTimeout(state: GameState, endType: string): void {
     return;
   }
 
-  // Let mechanics determine timeout winner (timeout-winner mechanic handles role/condition logic)
-  const mechanicResult = mechanicRegistry.checkAllWinConditions(state, 'timeout');
+  // Let Lean engine determine timeout winner
+  let mechanicWinner: { winner: string; reason: string } | null = null;
+  if (isLeanEngineAvailable()) {
+    for (const pid of state.turnOrder) {
+      const result = leanCheckWin(state, pid, 'timeout');
+      if (result?.won) {
+        mechanicWinner = { winner: pid, reason: result.reason || 'Timeout win condition met' };
+        break;
+      }
+    }
+  }
 
   let winner: string | null;
   let reason: string;
 
-  if (mechanicResult) {
-    winner = mechanicResult.playerId;
-    reason = mechanicResult.reason;
+  if (mechanicWinner) {
+    winner = mechanicWinner.winner;
+    reason = mechanicWinner.reason;
   } else {
     // Fallback: highest score
     let highestScore = -Infinity;
@@ -989,23 +1015,25 @@ export function advanceTurn(state: GameState): void {
     }
   }
 
-  // At round start, let mechanics reorder turn order (e.g., turn-order-role, turn-order-stat-based)
-  if (isNewRound) {
-    applyDynamicTurnOrder(state, 'round_start');
+  // ============ Lean Engine: Turn lifecycle ============
+  // Route turn end/start through Lean engine for AP refresh, effect ticks, etc.
+  if (isLeanEngineAvailable()) {
+    // Turn end for previous player
+    const endState = leanTurnEnd(state, previousPlayer, state.turnOrder[nextIndex], isNewRound);
+    if (endState) {
+      mergeLeanPlayers(state, endState);
+    }
+
+    state.currentPlayer = state.turnOrder[nextIndex];
+
+    // Turn start for next player (refreshes AP, etc.)
+    const startState = leanTurnStart(state, state.currentPlayer, isNewRound);
+    if (startState) {
+      mergeLeanPlayers(state, startState);
+    }
+  } else {
+    state.currentPlayer = state.turnOrder[nextIndex];
   }
-
-  // ============ Mechanic Hooks: Turn end ============
-  // Run onTurnEnd hooks for the player whose turn just ended
-  // Effects mechanic decrements durations, fires onEffectRemoved hooks
-  const turnEndChanges = mechanicRegistry.onTurnEnd(state, previousPlayer, state.turnOrder[nextIndex], isNewRound);
-  applyStateChanges(state, turnEndChanges);
-
-  state.currentPlayer = state.turnOrder[nextIndex];
-
-  // ============ Mechanic Hooks: Turn start ============
-  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP, income)
-  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer, isNewRound);
-  applyStateChanges(state, turnStartChanges);
 
   saveState(state);
 }
@@ -1068,23 +1096,20 @@ function isMultiActionAllowed(state: GameState): boolean {
  * @param action - The action that was executed
  * @returns true if turn was advanced, false if player can continue
  */
-export function maybeAdvanceTurn(state: GameState, playerId: string, action: GameAction): boolean {
-  // Note: 'pass' is now handled by the pass mechanic via onExecuteAction
-  // which sets advanceTurn: true, so it's handled in executeAction's mechanic path
-
-  // Check if any mechanic wants to auto-end the turn (e.g., action points depleted)
-  const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
-
-  if (shouldEnd) {
+export function maybeAdvanceTurn(state: GameState, playerId: string, _action: GameAction): boolean {
+  // Auto-advance for single-action-per-round games (no action points).
+  if (!isMultiActionAllowed(state)) {
     advanceTurn(state);
     return true;
   }
 
-  // Auto-advance for single-action-per-round games (no action points).
-  // This function is only called after an action is executed, so always advance.
-  if (!isMultiActionAllowed(state)) {
-    advanceTurn(state);
-    return true;
+  // For multi-action games, check if AP depleted
+  const player = state.players[playerId];
+  if (player?.actionPoints !== undefined && player?.actionPointsUsed !== undefined) {
+    if (player.actionPointsUsed >= player.actionPoints) {
+      advanceTurn(state);
+      return true;
+    }
   }
 
   // Turn continues - save state but don't advance
@@ -1211,9 +1236,14 @@ export function roll(probability: number): { roll: number; success: boolean } {
  * are auto-derived from win_condition string during config normalization).
  */
 export function checkAllWinConditions(state: GameState): { winner: string; reason: string } | null {
-  const result = mechanicRegistry.checkAllWinConditions(state, 'action');
-  if (result) {
-    return { winner: result.playerId, reason: result.reason };
+  // Route through Lean engine for win condition checks
+  if (isLeanEngineAvailable()) {
+    for (const pid of state.turnOrder) {
+      const result = leanCheckWin(state, pid, 'action');
+      if (result?.won) {
+        return { winner: pid, reason: result.reason || 'Win condition met' };
+      }
+    }
   }
   return null;
 }
@@ -1224,36 +1254,27 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
 // drawCards moved to cards core mechanic (src/mechanics/core/cards.ts)
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  // Use core services for hand and discard operations (with playerId for hooks)
-  const card = removeFromHandByIndex(state, playerId, cardIndex);
-  if (!card) {
-    return null;
-  }
-
-  addToDiscard(state, [card], playerId);
+  const player = state.players[playerId];
+  if (!player || !player.hand || cardIndex < 0 || cardIndex >= player.hand.length) return null;
+  const [card] = player.hand.splice(cardIndex, 1);
+  const discard = (state.shared.discard || state.shared.discardPile || []) as Card[];
+  discard.push(card);
+  state.shared.discard = discard;
   saveState(state);
-
   return card;
 }
 
-export function playCardByName(state: GameState, playerId: string, cardName: string, declaredColor?: string): Card | null {
+export function playCardByName(state: GameState, playerId: string, cardName: string): Card | null {
   const player = state.players[playerId];
-  if (!player) {
-    throw new Error(`Player ${playerId} not found`);
-  }
-
-  // Use core service for card play (handles hand removal, discard, and onCardPlayed hook)
-  const playContext: Record<string, unknown> = {};
-  if (declaredColor) playContext.declaredColor = declaredColor;
-  const result = playCard(state, playerId, cardName, playContext);
-
-  if (!result.card) {
-    return null;
-  }
-
+  if (!player || !player.hand) return null;
+  const idx = player.hand.findIndex(c => c.name === cardName);
+  if (idx === -1) return null;
+  const [card] = player.hand.splice(idx, 1);
+  const discard = (state.shared.discard || state.shared.discardPile || []) as Card[];
+  discard.push(card);
+  state.shared.discard = discard;
   saveState(state);
-
-  return result.card;
+  return card;
 }
 
 // getPlacedCardsOnState and applyPlacedCardEffects moved to board-state mechanic
@@ -1267,8 +1288,8 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
 
 /**
  * Get all available actions for a player based on game rules and current state.
- * This function procedurally exposes what actions are possible, enabling
- * game-agnostic action discovery.
+ * Routes through the Lean engine for action discovery, with engine-level
+ * actions (pass, resign) always available.
  */
 export function getAvailableActions(state: GameState, playerId: string): AvailableActionsResult {
   const player = state.players[playerId];
@@ -1277,36 +1298,37 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   }
 
   const isCurrentPlayer = state.currentPlayer === playerId;
-  const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
-  const isYourTurn = isCurrentPlayer || canActNow;
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
-
-  // Check for blocking effects using mechanic registry
-  const isBlocked = mechanicRegistry.isPlayerBlocked(state, playerId);
-
-  // Collect all mechanic-provided actions (move, play_card, draw, place_card, etc.)
-  const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
-
   const actions: AvailableAction[] = [];
 
-  // === PASS action (only for currentPlayer) ===
-  // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
-  // those are deduplicated against this base entry.
-  // Validation is handled by the pass mechanic's preValidateAction hook.
-  actions.push({
-    type: 'pass',
-    description: 'Skip your turn without taking an action',
-    enabled: isCurrentPlayer,
-    reason: !isCurrentPlayer ? 'Not your turn' : undefined,
-    required: {},
-    optional: { reasoning: 'Why you are passing' },
-    examples: [{ type: 'pass' }]
-  });
+  // === Lean Engine: get mechanic-provided actions ===
+  if (isLeanEngineAvailable()) {
+    const leanActions = leanGetAvailableActions(state, playerId);
+    for (const la of leanActions) {
+      actions.push({
+        type: (la as GameAction).type,
+        description: `${(la as GameAction).type}`,
+        enabled: true,
+        required: {},
+        examples: [la as GameAction]
+      });
+    }
+  }
 
-  // trade_offer, trade_respond, bid, spend, collect_set, roll, bank, draft
-  // actions are now provided by their respective mechanics (getAvailableActions)
+  // === PASS action (if not already from Lean) ===
+  if (!actions.some(a => a.type === 'pass')) {
+    actions.push({
+      type: 'pass',
+      description: 'Skip your turn without taking an action',
+      enabled: isCurrentPlayer,
+      reason: !isCurrentPlayer ? 'Not your turn' : undefined,
+      required: {},
+      optional: { reasoning: 'Why you are passing' },
+      examples: [{ type: 'pass' }]
+    });
+  }
 
-  // === RESIGN action (always available regardless of turn) ===
+  // === RESIGN action (always available) ===
   actions.push({
     type: 'resign',
     description: 'Forfeit the game (requires gamemaster approval)',
@@ -1315,65 +1337,26 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
 
-  // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (pass, resign)
-  // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
-  const baseActionTypes = new Set(actions.map(a => a.type));
-  for (const mechanicAction of mechanicActions) {
-    // Skip mechanics that duplicate base actions already listed above
-    // Keep special categories like "victory" that add new functionality
-    if (baseActionTypes.has(mechanicAction.action.type) &&
-        !['victory', 'programming'].includes(mechanicAction.category || '')) continue;
-
-    // Let mechanics override enabled/reason; default to isYourTurn && !isBlocked
-    const defaultEnabled = isYourTurn && !isBlocked;
-    const enabled = mechanicAction.enabled !== undefined ? mechanicAction.enabled : defaultEnabled;
-    const reason = mechanicAction.reason !== undefined ? mechanicAction.reason :
-                   (!isYourTurn ? 'Not your turn' :
-                    isBlocked ? 'You are blocked this turn' :
-                    undefined);
-
-    // Use rich metadata from mechanic when available, fall back to extracted params
-    let required = mechanicAction.required;
-    if (!required) {
-      const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
-      required = {};
-      for (const [key, val] of Object.entries(actionParams)) {
-        required[key] = String(val);
-      }
-    }
-
-    const actionEntry: AvailableAction = {
-      type: mechanicAction.action.type,
-      description: mechanicAction.description || `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
-      enabled,
-      reason: !enabled ? reason : undefined,
-      required,
-      optional: mechanicAction.optional,
-      examples: mechanicAction.examples || [mechanicAction.action],
-      cards: mechanicAction.cards,
-      targets: mechanicAction.targets,
-    };
-
-    actions.push(actionEntry);
-  }
-
-  // Add resource and action point info to result
   const result: AvailableActionsResult = {
     playerId,
-    isYourTurn,
+    isYourTurn: isCurrentPlayer,
     currentState: player.state,
-    hand: [],  // Cards mechanic contributes hand via getPlayerView
+    hand: (player.hand ?? []).map(c => c.name),
     actions,
     placedCards,
     activeEffects: player.effects
   };
 
-  // Let mechanics contribute to player view
-  // resources (resources-mechanic), actionPoints (action-points), collectedSets (set-collection),
-  // power (variable-player-powers), rollAccumulator (push-your-luck), draftDisplay (open-drafting)
-  const mechanicView = mechanicRegistry.getPlayerView(state, playerId);
-  Object.assign(result, mechanicView);
+  // Add resource/AP info if present
+  if (player.actionPoints !== undefined) {
+    (result as Record<string, unknown>).actionPoints = player.actionPoints;
+  }
+  if (player.actionPointsUsed !== undefined) {
+    (result as Record<string, unknown>).actionPointsUsed = player.actionPointsUsed;
+  }
+  if (player.resources) {
+    (result as Record<string, unknown>).resources = player.resources;
+  }
 
   return result;
 }
@@ -1515,14 +1498,9 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
   return { valid: true, errors: [] };
 }
 
-// Validate action against a mechanic-provided schema (called from validateAction with state)
-function validateMechanicSchema(state: GameState, action: GameAction): string[] {
-  const schema = mechanicRegistry.getActionSchema(state, action);
-  if (!schema) return []; // No mechanic claims this action type — skip schema validation
-  return validateAgainstSchema(action as unknown as Record<string, unknown>, schema);
-}
+// Schema validation now handled by Lean engine
 
-// Validate action against game rules (basic engine-level validation)
+// Validate action against game rules (basic engine-level + Lean engine validation)
 export function validateAction(state: GameState, playerId: string, action: GameAction): ActionValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -1532,14 +1510,10 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     return { valid: false, errors: [`Player ${playerId} not found`] };
   }
 
-  // Check if it's the player's turn (or a mechanic grants out-of-turn access)
+  // Check if it's the player's turn
   // Resign is always allowed regardless of turn order
-  const isOutOfTurnAction = state.currentPlayer !== playerId;
-  if (isOutOfTurnAction && action.type !== 'resign') {
-    const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
-    if (!canActNow) {
-      return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
-    }
+  if (state.currentPlayer !== playerId && action.type !== 'resign') {
+    return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
   }
 
   // Check game status
@@ -1550,10 +1524,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   // Check for pending contest/resignation (with auto-adjudication timeout)
   const contestState = ensureContestState(state);
   if (contestState.pendingContest) {
-    // Check if contest has timed out and should be auto-adjudicated
     const wasAutoAdjudicated = checkAndAutoAdjudicateContest(state);
     if (!wasAutoAdjudicated) {
-      // Still pending - block the action
       const elapsed = Date.now() - new Date(contestState.pendingContest.timestamp).getTime();
       const remainingMs = AUTO_ADJUDICATION_TIMEOUT_MS - elapsed;
       const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
@@ -1562,43 +1534,29 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         errors: [`Cannot act while a contest is pending. Wait for adjudication (auto-adjudication in ${remainingSec}s).`]
       };
     }
-    // Auto-adjudicated - continue with validation
   }
   if (contestState.pendingResignation) {
-    // Check if resignation has timed out and should be auto-adjudicated
     const wasAutoAdjudicated = checkAndAutoAdjudicateResignation(state);
     if (!wasAutoAdjudicated) {
       return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
     }
   }
 
-  // Note: Blocking effects check moved to lose-a-turn mechanic
-
   // Prevent multiple actions per round unless multi-action is allowed (e.g., action-points)
-  // Out-of-turn actions (granted by canPlayerActNow) bypass this — mechanics track their own submission state
-  if (!isOutOfTurnAction && !isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
+  if (state.currentPlayer === playerId && !isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
     return {
       valid: false,
       errors: ['You have already acted this round. Wait for your next turn.']
     };
   }
 
-  // ============ Mechanic Hooks: Pre-validation ============
-  // Run preValidateAction hooks for all enabled mechanics
-  const preValidationResult = mechanicRegistry.preValidateAction(state, playerId, action);
-  if (!preValidationResult.valid) {
-    return {
-      valid: false,
-      errors: [preValidationResult.error || 'Action blocked by mechanic']
-    };
+  // ============ Lean Engine Validation ============
+  if (isLeanEngineAvailable()) {
+    const leanResult = leanValidateAction(state, playerId, action);
+    if (leanResult && !leanResult.valid) {
+      return { valid: false, errors: [leanResult.error || 'Action blocked by Lean engine'] };
+    }
   }
-
-  // ============ Mechanic Schema Validation ============
-  // Validate action fields against mechanic-provided schemas
-  const schemaErrors = validateMechanicSchema(state, action);
-  errors.push(...schemaErrors);
-
-  // play_card and draw validation moved to cards core mechanic (preValidateAction)
 
   if (action.type === 'pass') {
     warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
@@ -1611,7 +1569,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   };
 }
 
-// Execute an action directly (the core of the contest system)
+// Execute an action directly (routes through Lean engine)
 export function executeAction(state: GameState, playerId: string, action: GameAction): {
   success: boolean;
   effect?: { type: string; details?: Record<string, unknown> };
@@ -1624,27 +1582,43 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
     return { success: false, error: `Player ${playerId} not found` };
   }
 
-  // Run mechanic pre-validation hooks (e.g., board-state edge checks)
-  const preValidation = mechanicRegistry.preValidateAction(state, playerId, action);
-  if (!preValidation.valid) {
-    return { success: false, error: preValidation.error || 'Action blocked by mechanic' };
-  }
-
   const contestState = ensureContestState(state);
 
-  // ============ Mechanic Delegation: Let mechanics handle actions first ============
-  // Try to execute via mechanic hooks before falling back to built-in handling
-  const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
+  // ============ Engine-level: resign (not a game mechanic) ============
+  if (action.type === 'resign') {
+    const resignAction = action as ResignAction;
+    contestState.pendingResignation = {
+      player: playerId,
+      reason: resignAction.reason,
+      timestamp: new Date().toISOString()
+    };
+    saveState(state);
 
-  if (mechanicResult?.handled) {
-    // Mechanic handled the action - apply its state changes
-    if (mechanicResult.stateChanges) {
-      applyStateChanges(state, mechanicResult.stateChanges);
+    logEvent(state, {
+      event: 'resignation_submitted',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      player: playerId,
+      data: { reason: resignAction.reason }
+    });
+
+    return {
+      success: true,
+      effect: { type: 'resignation_pending', details: { reason: resignAction.reason } }
+    };
+  }
+
+  // ============ Lean Engine Execution ============
+  if (isLeanEngineAvailable()) {
+    const leanResult = leanExecuteAction(state, playerId, action);
+    if (!leanResult.success) {
+      return { success: false, error: leanResult.error || 'Lean engine execution failed' };
     }
 
-    // Run postExecuteAction hooks (e.g., deduct AP)
-    const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
-    applyStateChanges(state, postExecuteChanges);
+    // Merge Lean state changes back
+    if (leanResult.state) {
+      mergeLeanPlayers(state, leanResult.state);
+    }
 
     // Log the action
     logEvent(state, {
@@ -1654,12 +1628,12 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       player: playerId,
       data: {
         type: action.type,
-        ...mechanicResult.logData
+        message: leanResult.execution?.logMessage
       }
     });
 
-    // Check win condition if requested by a mechanic
-    if (mechanicResult.checkWin) {
+    // Check win conditions if requested
+    if (leanResult.execution?.checkWin) {
       const winCheck = checkAllWinConditions(state);
       if (winCheck) {
         state.status = 'pending_analysis';
@@ -1670,94 +1644,32 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           success: true,
           gameOver: true,
           winner: winCheck.winner,
-          effect: { type: action.type, details: mechanicResult.logData }
+          effect: { type: action.type }
         };
       }
     }
 
-    // Mark that player has acted this round (prevents multiple actions without action points)
-    // Only set this if the turn will actually end or be kept within same-round continuation
-    if (mechanicResult.advanceTurn !== false) {
-      player.lastActionRound = state.round;
-    }
+    // Mark that player has acted this round
+    player.lastActionRound = state.round;
 
-    // Handle turn advancement — three-value semantics:
-    //   advanceTurn: true  → always advance (pass, bank, bust)
-    //   advanceTurn: false → never advance (play_card, roll — await pass or AP depletion)
-    //   advanceTurn: undefined → auto-detect (non-AP: advance; AP: let AP handle it)
-    const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
-    if (shouldEnd) {
+    // Handle turn advancement
+    if (leanResult.execution?.advanceTurn) {
       advanceTurn(state);
-    } else if (mechanicResult.advanceTurn === false) {
-      saveState(state);
-    } else if (mechanicResult.advanceTurn === true) {
+    } else if (!isMultiActionAllowed(state)) {
+      // Single-action-per-round games always advance
       advanceTurn(state);
     } else {
-      // advanceTurn unset: auto-detect based on game type
-      if (!isMultiActionAllowed(state)) {
-        advanceTurn(state);
-      } else {
-        saveState(state);
-      }
+      saveState(state);
     }
 
     return {
       success: true,
-      effect: { type: action.type, details: mechanicResult.logData }
+      effect: { type: action.type, details: { message: leanResult.execution?.logMessage } }
     };
   }
 
-  // ============ Fallback: Built-in action handling ============
-  // Run postExecuteAction hooks for all enabled mechanics (e.g., deduct AP)
-  const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
-  applyStateChanges(state, postExecuteChanges);
-
-  try {
-    switch (action.type) {
-      // play_card, draw handled by cards core mechanic (onExecuteAction)
-      // pass handled by pass core mechanic (onExecuteAction)
-
-      case 'resign': {
-        const resignAction = action as ResignAction;
-        // Queue resignation for gamemaster adjudication
-        contestState.pendingResignation = {
-          player: playerId,
-          reason: resignAction.reason,
-          timestamp: new Date().toISOString()
-        };
-        saveState(state);
-
-        logEvent(state, {
-          event: 'resignation_submitted',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: { reason: resignAction.reason }
-        });
-
-        return {
-          success: true,
-          effect: {
-            type: 'resignation_pending',
-            details: { reason: resignAction.reason }
-          }
-        };
-      }
-
-      // move handled by board-state/grid-movement mechanics (onExecuteAction)
-      // place_card and place_location handled by place-card mechanic (onExecuteAction)
-
-      // trade_offer, trade_respond handled by trading mechanic (onExecuteAction)
-      // bid handled by auction-english mechanic (onExecuteAction)
-      // spend handled by resources mechanic (onExecuteAction)
-      // collect_set, roll, bank, draft handled by their respective mechanics (onExecuteAction)
-
-      default:
-        return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
-    }
-  } catch (e) {
-    return { success: false, error: (e as Error).message };
-  }
+  // No Lean engine available
+  return { success: false, error: `Lean engine not available. Build with: cd lean && lake build lean-engine` };
 }
 
 // validateSet moved to set-collection mechanic
@@ -1983,7 +1895,10 @@ export function adjudicateVictory(
     });
   } else {
     // Rejected - ROLL BACK the move, then advance turn
-    setBoardState(state, claim.player, claim.fromState); // Roll back to previous state
+    // Roll back to previous state
+    if (state.players[claim.player]) {
+      state.players[claim.player].state = claim.fromState;
+    }
 
     logEvent(state, {
       event: 'victory_rejected',
@@ -2021,17 +1936,13 @@ export function adjudicateVictory(
 
 // Reverse a previous action (for rejected contests)
 function reverseAction(state: GameState, lastAction: LastAction): boolean {
-  const action = lastAction.action;
   const playerId = lastAction.player;
   const player = state.players[playerId];
 
   if (!player) return false;
 
   try {
-    // Delegate to mechanics for action-specific undo (e.g., cards reverses play_card)
-    mechanicRegistry.reverseAction(state, playerId, action);
-
-    // Always reverse turn and save (mechanics only undo state changes)
+    // Reverse turn and save (contest reversal is best-effort)
     reverseTurn(state);
     saveState(state);
     return true;
