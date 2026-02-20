@@ -1,34 +1,38 @@
 /-
-  Bridge/Main.lean — CLI entry point for the Lean game verifier
+  Bridge/Main.lean — CLI entry point for the Lean game engine
 
   Protocol:
     ./lean-game <game> <cmd> <args...>
 
-  Examples:
+  GemCollector (validation only):
     ./lean-game gem-collector validate Alice mine cave
     ./lean-game gem-collector check-win Alice:3 Bob:1
-    ./lean-game gem-collector targets mine
-    ./lean-game gem-collector invariants Alice:3 Bob:1 max:20
+
+  AAOTE (full execution engine — state via stdin):
+    echo '{}' | ./lean-game aaote init 3 42
+    echo '<stateJson>' | ./lean-game aaote act player-1 place_location "Forest Clearing" origin
+    echo '<stateJson>' | ./lean-game aaote available player-1
+    echo '<stateJson>' | ./lean-game aaote check-win player-1
 
   Output: single-line JSON to stdout.
   Exit code: 0 on success, 1 on usage error.
-
-  The TS engine calls this binary from src/mechanics/lean-verifier.ts
-  via execSync. It maps GameState fields → CLI args and parses the
-  JSON response back into ValidationResult / WinCheckResult.
 -/
 import Bridge.GemCollector
+import Bridge.AAOTE
 
 open Playtest.Bridge
 
 def usage : String :=
   "Usage: lean-game <game> <cmd> <args...>\n" ++
-  "Games: gem-collector\n" ++
-  "Commands:\n" ++
+  "Games: gem-collector, aaote\n" ++
+  "Commands (gem-collector):\n" ++
   "  validate <player> <position> <target>  - Check if move is legal\n" ++
-  "  targets <position>                     - List valid move targets\n" ++
   "  check-win <name:gems>...               - Check win condition\n" ++
-  "  invariants <name:gems>... [max:N]      - Verify state invariants"
+  "Commands (aaote — reads state JSON from stdin):\n" ++
+  "  init <numPlayers> [<seed>]             - Initialize new game\n" ++
+  "  act <playerId> <actionType> <args...>  - Execute an action\n" ++
+  "  available <playerId>                   - List available actions\n" ++
+  "  check-win [<playerId>]                 - Check win conditions"
 
 def main (args : List String) : IO UInt32 := do
   match args with
@@ -36,8 +40,23 @@ def main (args : List String) : IO UInt32 := do
     IO.eprintln usage
     return 1
   | game :: rest =>
+    -- Read stdin (needed for AAOTE state round-tripping)
+    let stdin ← IO.getStdin
+    let stdinContent ← do
+      -- Try to read stdin (non-blocking for gem-collector which doesn't use it)
+      try
+        let content ← stdin.getLine
+        -- Read remaining lines
+        let mut allContent := content
+        while true do
+          let line ← stdin.getLine
+          if line.isEmpty then break
+          allContent := allContent ++ line
+        pure allContent
+      catch _ => pure ""
     let result := match game with
       | "gem-collector" => GemCollector.dispatch rest
+      | "aaote" => AAOTEBridge.dispatch stdinContent rest
       | _ => none
     match result with
     | some json =>

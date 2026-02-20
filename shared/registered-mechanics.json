@@ -1430,6 +1430,18 @@
         "cards"
       ]
     },
+    "lean-executor": {
+      "config_key": "lean_executor",
+      "since": "3.0.0",
+      "description": "Delegate game mechanic execution to the Lean 4 engine. Lean computes all state transitions.",
+      "config_schema": {
+        "enabled": "boolean"
+      },
+      "hooks": [
+        "onExecuteAction",
+        "initSharedState"
+      ]
+    },
     "lean-verifier": {
       "config_key": "lean_verifier",
       "since": "3.0.0",

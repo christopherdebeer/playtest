@@ -24,6 +24,9 @@ objectives:
   - { name: "The Enemy", count: 1, type: "enemy", condition: "Prevent all other players from completing objectives OR collect the 3 Forbidden Items" }
 
 mechanics:
+  # Lean 4 execution engine — Lean computes all state transitions
+  lean_executor: true
+
   # Action points system (Proposal 006: cost multiplied by count)
   action_points:
     points_per_turn: 3

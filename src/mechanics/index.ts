@@ -183,6 +183,7 @@ import { freeplayMechanic } from './freeplay.js';
 
 // Lean formal verification
 import { leanVerifierMechanic } from './lean-verifier.js';
+import { leanExecutorMechanic } from './lean-executor.js';
 
 // Phase 15: Category completers
 import { semiCooperativeGameMechanic } from './semi-cooperative-game.js';
@@ -415,6 +416,9 @@ mechanicRegistry.register(freeplayMechanic);
 
 // Register Lean formal verification (requires lean-game binary)
 mechanicRegistry.register(leanVerifierMechanic);
+
+// Register Lean execution engine (Lean computes state transitions)
+mechanicRegistry.register(leanExecutorMechanic);
 
 // Register Phase 15: Category completers
 mechanicRegistry.register(semiCooperativeGameMechanic);
