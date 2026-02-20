@@ -134,6 +134,7 @@ function toEngineState(state: GameState): Record<string, unknown> {
         actionPoints: ps.actionPoints,
         actionPointsUsed: ps.actionPointsUsed,
         visitedLocations: ps.visitedLocations || [],
+        placedLocationCount: ps.placedLocationCount,
         completedTrades: ps.completedTrades,
         currentBid: ps.currentBid,
       }])

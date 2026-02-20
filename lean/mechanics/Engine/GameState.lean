@@ -23,7 +23,10 @@ structure Card where
   id : Option String := none
   suit : Option String := none
   value : Option Nat := none
-  deriving Repr, BEq, DecidableEq, Inhabited
+  subtype : Option String := none
+  -- Extensible: game-specific card data (e.g., effect, terrain) as raw JSON
+  extra : Lean.RBMap String Json compare := .empty
+  deriving Inhabited
 
 /-! ## Effect -/
 
@@ -45,6 +48,7 @@ structure PlayerState where
   actionPoints : Option Nat := none
   actionPointsUsed : Option Nat := none
   visitedLocations : List String := []
+  placedLocationCount : Option Nat := none
   completedTrades : Option Nat := none
   currentBid : Option Nat := none
   -- Extensible: additional fields stored as raw JSON
@@ -61,6 +65,7 @@ structure SharedState where
   boardStates : List String := []
   boardEdges : List (String × String) := []
   currentBoardState : Option String := none
+  placedLocations : List String := []
   -- Extensible: game-specific shared state as raw JSON
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited
@@ -108,6 +113,7 @@ structure GameAction where
   target : Option String := none
   resource : Option String := none
   amount : Option Nat := none
+  adjacentTo : Option String := none
   -- Extensible fields as raw JSON
   extra : Lean.RBMap String Json compare := .empty
   deriving Inhabited

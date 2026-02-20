@@ -43,6 +43,7 @@ export interface PlayerState {
   powerId?: string;                       // Assigned player power ID
   completedTrades?: number;               // Number of completed trades (for The Trader objective)
   visitedLocations?: string[];            // Locations visited (for The Explorer objective)
+  placedLocationCount?: number;           // Number of locations placed (for The Builder objective)
 
   // Proposal 010: Hidden objectives for role-based games
   objective?: {

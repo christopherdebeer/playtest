@@ -55,6 +55,9 @@ instance : ToJson Card where
     let fields := match c.id with | some id => fields ++ [("id", Json.str id)] | none => fields
     let fields := match c.suit with | some s => fields ++ [("suit", Json.str s)] | none => fields
     let fields := match c.value with | some v => fields ++ [("value", jsonNat v)] | none => fields
+    let fields := match c.subtype with | some st => fields ++ [("subtype", Json.str st)] | none => fields
+    -- Merge extra fields (effect, terrain, etc.)
+    let fields := fields ++ c.extra.toList
     Json.mkObj fields
 
 instance : FromJson Card where
@@ -64,7 +67,17 @@ instance : FromJson Card where
     let id := j.getObjVal? "id" |>.toOption |>.bind (·.getStr?.toOption)
     let suit := j.getObjVal? "suit" |>.toOption |>.bind (·.getStr?.toOption)
     let value := j.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)
-    return { name, cardType, id, suit, value }
+    let subtype := j.getObjVal? "subtype" |>.toOption |>.bind (·.getStr?.toOption)
+    let knownFields : List String := ["name", "type", "id", "suit", "value", "subtype", "count"]
+    let extra ← match j with
+      | Json.obj kvs => do
+        let mut m : Lean.RBMap String Json compare := .empty
+        for ⟨k, v⟩ in kvs.toArray do
+          if !knownFields.contains k then
+            m := m.insert k v
+        pure m
+      | _ => pure .empty
+    return { name, cardType, id, suit, value, subtype, extra }
 
 /-! ## Effect JSON -/
 
@@ -94,6 +107,7 @@ instance : ToJson PlayerState where
     let fields := match ps.actionPoints with | some ap => fields ++ [("actionPoints", jsonNat ap)] | none => fields
     let fields := match ps.actionPointsUsed with | some u => fields ++ [("actionPointsUsed", jsonNat u)] | none => fields
     let fields := if ps.visitedLocations.isEmpty then fields else fields ++ [("visitedLocations", ToJson.toJson ps.visitedLocations)]
+    let fields := match ps.placedLocationCount with | some plc => fields ++ [("placedLocationCount", jsonNat plc)] | none => fields
     let fields := match ps.completedTrades with | some ct => fields ++ [("completedTrades", jsonNat ct)] | none => fields
     let fields := match ps.currentBid with | some b => fields ++ [("currentBid", jsonNat b)] | none => fields
     -- Merge extra fields
@@ -112,11 +126,12 @@ instance : FromJson PlayerState where
     let actionPoints := j.getObjVal? "actionPoints" |>.toOption |>.bind (·.getNat?.toOption)
     let actionPointsUsed := j.getObjVal? "actionPointsUsed" |>.toOption |>.bind (·.getNat?.toOption)
     let visitedLocations ← (j.getObjValAs? (List String) "visitedLocations") <|> pure []
+    let placedLocationCount := j.getObjVal? "placedLocationCount" |>.toOption |>.bind (·.getNat?.toOption)
     let completedTrades := j.getObjVal? "completedTrades" |>.toOption |>.bind (·.getNat?.toOption)
     let currentBid := j.getObjVal? "currentBid" |>.toOption |>.bind (·.getNat?.toOption)
     let knownFields : List String := ["state", "hand", "effects", "score", "resources",
-      "actionPoints", "actionPointsUsed", "visitedLocations", "completedTrades",
-      "currentBid", "agentId", "persona"]
+      "actionPoints", "actionPointsUsed", "visitedLocations", "placedLocationCount",
+      "completedTrades", "currentBid", "agentId", "persona"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
@@ -126,7 +141,7 @@ instance : FromJson PlayerState where
         pure m
       | _ => pure .empty
     return { state, hand, effects, score, resources, actionPoints, actionPointsUsed,
-             visitedLocations, completedTrades, currentBid, extra }
+             visitedLocations, placedLocationCount, completedTrades, currentBid, extra }
 
 /-! ## SharedState JSON -/
 
@@ -143,6 +158,8 @@ instance : ToJson SharedState where
     let fields := match ss.currentBoardState with
       | some s => fields ++ [("currentBoardState", Json.str s)]
       | none => fields
+    let fields := if ss.placedLocations.isEmpty then fields
+      else fields ++ [("placedLocations", ToJson.toJson ss.placedLocations)]
     let fields := fields ++ ss.extra.toList
     Json.mkObj fields
 
@@ -161,7 +178,9 @@ instance : FromJson SharedState where
         pure result
       | _ => pure []
     let currentBoardState := j.getObjVal? "currentBoardState" |>.toOption |>.bind (·.getStr?.toOption)
-    let knownFields : List String := ["deck", "discard", "boardStates", "boardEdges", "currentBoardState"]
+    let placedLocations ← (j.getObjValAs? (List String) "placedLocations") <|> pure []
+    let knownFields : List String := ["deck", "discard", "boardStates", "boardEdges",
+      "currentBoardState", "placedLocations"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
@@ -170,7 +189,7 @@ instance : FromJson SharedState where
             m := m.insert k v
         pure m
       | _ => pure .empty
-    return { deck, discard, boardStates, boardEdges, currentBoardState, extra }
+    return { deck, discard, boardStates, boardEdges, currentBoardState, placedLocations, extra }
 
 /-! ## GameConfig JSON -/
 
@@ -237,6 +256,7 @@ instance : ToJson GameAction where
     let fields := match a.target with | some t => fields ++ [("target", Json.str t)] | none => fields
     let fields := match a.resource with | some r => fields ++ [("resource", Json.str r)] | none => fields
     let fields := match a.amount with | some n => fields ++ [("amount", jsonNat n)] | none => fields
+    let fields := match a.adjacentTo with | some a => fields ++ [("adjacentTo", Json.str a)] | none => fields
     let fields := fields ++ a.extra.toList
     Json.mkObj fields
 
@@ -247,7 +267,8 @@ instance : FromJson GameAction where
     let target := j.getObjVal? "target" |>.toOption |>.bind (·.getStr?.toOption)
     let resource := j.getObjVal? "resource" |>.toOption |>.bind (·.getStr?.toOption)
     let amount := j.getObjVal? "amount" |>.toOption |>.bind (·.getNat?.toOption)
-    let knownFields : List String := ["type", "card", "target", "resource", "amount"]
+    let adjacentTo := j.getObjVal? "adjacentTo" |>.toOption |>.bind (·.getStr?.toOption)
+    let knownFields : List String := ["type", "card", "target", "resource", "amount", "adjacentTo"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
@@ -256,7 +277,7 @@ instance : FromJson GameAction where
             m := m.insert k v
         pure m
       | _ => pure .empty
-    return { actionType, card, target, resource, amount, extra }
+    return { actionType, card, target, resource, amount, adjacentTo, extra }
 
 /-! ## Response types JSON -/
 

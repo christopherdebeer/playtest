@@ -818,7 +818,8 @@ program
   .description('[Player] Wait for turn and get available actions (optimized)')
   .requiredOption('-p, --player <id>', 'Player ID')
   .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
-  .action(async (game: string, options: { player: string; timeout: string }) => {
+  .option('--lean', 'Get available actions from the Lean engine')
+  .action(async (game: string, options: { player: string; timeout: string; lean?: boolean }) => {
     try {
       // Auto-register the player if not already registered
       let state = loadState(game);
@@ -831,15 +832,60 @@ program
       // If it's our turn, also include available actions to save a round-trip
       if (result.status === 'your_turn') {
         state = loadStateReadOnly(game); // Reload to get latest state
-        const actionsResult = getAvailableActions(state, options.player);
-        // Spread all fields from actionsResult (includes mechanic-contributed fields)
-        // This is mechanic-agnostic: actionPoints, resources, etc. come through automatically
-        const { actions, ...otherFields } = actionsResult;
-        console.log(JSON.stringify({
-          ...result,
-          ...otherFields,
-          actions: actions.filter(a => a.enabled)
-        }));
+
+        if (options.lean) {
+          // Lean engine path: get available actions from compiled Lean binary
+          const { leanGetAvailableActions, leanTurnStart, isLeanEngineAvailable } = await import('../lean-engine.js');
+          if (isLeanEngineAvailable()) {
+            // Run turn_start to initialize AP
+            const updatedState = leanTurnStart(state, options.player, state.turnNumber === 1);
+            if (updatedState) {
+              // Merge Lean turn_start state back
+              const leanState = updatedState as unknown as Record<string, unknown>;
+              const leanPlayers = leanState.players as Record<string, Record<string, unknown>> | undefined;
+              if (leanPlayers) {
+                for (const [pid, lps] of Object.entries(leanPlayers)) {
+                  if (state.players[pid]) {
+                    Object.assign(state.players[pid], lps);
+                  }
+                }
+              }
+              saveState(state);
+            }
+
+            const leanActions = leanGetAvailableActions(state, options.player);
+            const ps = state.players[options.player];
+            console.log(JSON.stringify({
+              ...result,
+              engine: 'lean',
+              actionPoints: ps?.actionPoints,
+              actionPointsUsed: ps?.actionPointsUsed,
+              actions: leanActions.map((a: GameAction) => ({
+                action: a,
+                enabled: true
+              }))
+            }));
+          } else {
+            // Fall back to TS engine
+            const actionsResult = getAvailableActions(state, options.player);
+            const { actions, ...otherFields } = actionsResult;
+            console.log(JSON.stringify({
+              ...result,
+              ...otherFields,
+              actions: actions.filter(a => a.enabled)
+            }));
+          }
+        } else {
+          const actionsResult = getAvailableActions(state, options.player);
+          // Spread all fields from actionsResult (includes mechanic-contributed fields)
+          // This is mechanic-agnostic: actionPoints, resources, etc. come through automatically
+          const { actions, ...otherFields } = actionsResult;
+          console.log(JSON.stringify({
+            ...result,
+            ...otherFields,
+            actions: actions.filter(a => a.enabled)
+          }));
+        }
       } else {
         console.log(JSON.stringify(result));
       }
