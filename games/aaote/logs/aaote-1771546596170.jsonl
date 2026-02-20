@@ -1,0 +1,15 @@
+{"timestamp":"2026-02-20T00:16:36.185Z","event":"game_init","data":{"gameId":"aaote-1771546596170","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T00:17:30.937Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T00:18:08.137Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"place_location","card":"Mountain Pass","adjacentTo":"origin"},"message":"player-1 placed Mountain Pass"}}
+{"timestamp":"2026-02-20T00:18:09.153Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"move","target":"Mountain Pass"},"message":"player-1 moved from start to Mountain Pass"}}
+{"timestamp":"2026-02-20T00:18:10.132Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"draw"},"message":"player-1 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:18:35.004Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"draw"},"message":"player-2 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:18:35.839Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"draw"},"message":"player-2 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:18:36.663Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"pass"},"message":"player-2 passed"}}
+{"timestamp":"2026-02-20T00:18:38.403Z","event":"lean_action_executed","player":"player-3","data":{"action":{"type":"draw"},"message":"player-3 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:18:39.224Z","event":"lean_action_executed","player":"player-3","data":{"action":{"type":"draw"},"message":"player-3 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:19:16.702Z","event":"lean_action_executed","player":"player-3","data":{"action":{"type":"pass"},"message":"player-3 passed"}}
+{"timestamp":"2026-02-20T00:19:36.202Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"place_location","card":"River Crossing","adjacentTo":"Mountain Pass"},"message":"player-1 placed River Crossing"}}
+{"timestamp":"2026-02-20T00:19:37.216Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"move","target":"River Crossing"},"message":"player-1 moved from Mountain Pass to River Crossing"}}
+{"timestamp":"2026-02-20T00:19:38.205Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"trade_offer","card":"Map Fragment","target":"player-2"},"message":"player-1 traded Map Fragment to player-2"}}
+{"timestamp":"2026-02-20T00:21:22.521Z","event":"game_cancelled","round":2,"turnNumber":5,"data":{"reason":"done testing"}}

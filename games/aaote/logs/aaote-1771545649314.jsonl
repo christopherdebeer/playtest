@@ -1,0 +1,10 @@
+{"timestamp":"2026-02-20T00:00:49.329Z","event":"game_init","data":{"gameId":"aaote-1771545649314","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T00:01:33.370Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T00:11:28.525Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"place_location","card":"River Crossing","adjacentTo":"origin"},"message":"player-1 placed River Crossing"}}
+{"timestamp":"2026-02-20T00:11:41.723Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"move","target":"River Crossing"},"message":"player-1 moved from start to River Crossing"}}
+{"timestamp":"2026-02-20T00:11:53.819Z","event":"lean_action_executed","player":"player-1","data":{"action":{"type":"draw"},"message":"player-1 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:12:39.627Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"draw"},"message":"player-2 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:12:50.387Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"draw"},"message":"player-2 drew 1 card(s)"}}
+{"timestamp":"2026-02-20T00:13:11.013Z","event":"lean_action_executed","player":"player-2","data":{"action":{"type":"pass"},"message":"player-2 passed"}}
+{"timestamp":"2026-02-20T00:13:43.795Z","event":"lean_action_executed","player":"player-3","data":{"action":{"type":"play_card","card":"Shortcut"},"message":"player-3 played Shortcut"}}
+{"timestamp":"2026-02-20T00:16:18.470Z","event":"game_cancelled","round":1,"turnNumber":3,"data":{"reason":"testing"}}
