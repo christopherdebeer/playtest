@@ -1221,13 +1221,280 @@ def getPlayerView (gs : GameState) (viewerId : String) : PlayerViewResult :=
 
 end Visibility
 
+/-! ## Simultaneous Action Selection Mechanic -/
+
+namespace SimultaneousSelection
+
+/-- Check if SAS mechanic is enabled. -/
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "simultaneous_action_selection" ||
+  gs.isMechanicEnabled "simultaneous-action-selection"
+
+/-- Check if a player can act out of turn for SAS (select_action). -/
+def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  if actionType != "select_action" then false
+  else if !isEnabled gs then false
+  else
+    -- Check if player already submitted
+    match gs.shared.extra.find? "sas_selections" with
+    | some (Json.obj kvs) => kvs.toArray.all fun ⟨k, _⟩ => k != pid
+    | _ => true
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "select_action" then none
+  else if !isEnabled gs then none
+  else
+    -- Read the selected action from extra (normalize string and object formats)
+    let choice := match action.extra.find? "selectedAction" with
+      | some (Json.str s) => s
+      | some obj => match obj.getObjVal? "type" with
+        | .ok (Json.str s) => s
+        | _ => match obj.getObjVal? "action" with
+          | .ok (Json.str s) => s
+          | _ => ""
+      | none => match action.extra.find? "action" with
+        | some (Json.str s) => s
+        | _ => ""
+    -- Record selection in shared.extra.sas_selections
+    let currentSelections := match gs.shared.extra.find? "sas_selections" with
+      | some (Json.obj kvs) => kvs.toArray.toList.map fun ⟨k, v⟩ => (k, v)
+      | _ => []
+    let newSelections := currentSelections ++ [(pid, Json.str choice)]
+    let selectionsMap := newSelections.foldl (init := (Lean.RBMap.empty : Lean.RBMap String Json compare))
+      fun m (k, v) => m.insert k v
+    let shared' := { gs.shared with extra := gs.shared.extra.insert "sas_selections" (rbmapJsonToJson selectionsMap) }
+    let gs' := { gs with shared := shared' }
+    -- Check if all players have selected
+    let allSelected := gs.turnOrder.all fun p =>
+      newSelections.any fun (k, _) => k == p
+    if allSelected then
+      -- Resolve: apply action effects based on choices
+      let gs'' := newSelections.foldl (init := gs') fun acc (p, choiceJson) =>
+        let act := match choiceJson with | Json.str s => s | _ => ""
+        match act with
+        | "Scheme" => acc.modifyPlayer p fun ps =>
+            ps.setResource "gold" ((ps.getResource "gold") + 2)
+        | "Fortify" => acc.modifyPlayer p fun ps =>
+            ps.setResource "influence" ((ps.getResource "influence") + 2)
+        | "Subvert" =>
+          -- Subvert: +2 gold to player, -2 from collective treasury
+          let acc := acc.modifyPlayer p fun ps =>
+            ps.setResource "gold" ((ps.getResource "gold") + 2)
+          -- Deduct from semi-cooperative collective progress if present
+          let treasury := (acc.shared.extra.find? "collective_progress" |>.bind (·.getNat?.toOption)).getD 0
+          let newTreasury := if treasury ≥ 2 then treasury - 2 else 0
+          { acc with shared := { acc.shared with extra := acc.shared.extra.insert "collective_progress" (ToJson.toJson newTreasury) } }
+        | _ => acc
+      -- Reset selections for next round
+      let shared'' := { gs''.shared with extra := gs''.shared.extra.insert "sas_selections" (Json.mkObj []) }
+      let gs''' := { gs'' with shared := shared'' }
+      some (gs''', {
+        handled := true,
+        advanceTurn := true,
+        logMessage := some s!"All players selected. Actions resolved."
+      })
+    else
+      some (gs', {
+        handled := true,
+        logMessage := some s!"{pid} selected {choice}"
+      })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !isEnabled gs then []
+  else
+    let alreadySelected := match gs.shared.extra.find? "sas_selections" with
+      | some (Json.obj kvs) => kvs.toArray.any fun ⟨k, _⟩ => k == pid
+      | _ => false
+    if alreadySelected then []
+    else
+      [{ action := { actionType := "select_action" },
+         category := some "simultaneous",
+         priority := some 60 }]
+
+end SimultaneousSelection
+
+/-! ## Prisoner's Dilemma Mechanic -/
+
+namespace PrisonersDilemma
+
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "prisoners_dilemma" ||
+  gs.isMechanicEnabled "prisoners-dilemma"
+
+def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  if actionType != "dilemma_choice" then false
+  else if !isEnabled gs then false
+  else
+    match gs.shared.extra.find? "pd_choices" with
+    | some (Json.obj kvs) => kvs.toArray.all fun ⟨k, _⟩ => k != pid
+    | _ => true
+
+/-- Get PD payoff values from config. -/
+private def getPayoff (gs : GameState) (my other : String) : Nat :=
+  let key := s!"{my}_{other}"
+  match gs.config.engineMechanics.find? "prisoners_dilemma" with
+  | some cfg =>
+    match cfg.getObjVal? "payoff" with
+    | .ok payoffJson =>
+      (payoffJson.getObjVal? key |>.toOption |>.bind (·.getNat?.toOption)).getD
+        (match key with
+         | "cooperate_cooperate" => 3
+         | "cooperate_defect" => 0
+         | "defect_cooperate" => 5
+         | "defect_defect" => 1
+         | _ => 0)
+    | _ => match key with
+           | "cooperate_cooperate" => 3 | "cooperate_defect" => 0
+           | "defect_cooperate" => 5 | "defect_defect" => 1 | _ => 0
+  | none => match key with
+           | "cooperate_cooperate" => 3 | "cooperate_defect" => 0
+           | "defect_cooperate" => 5 | "defect_defect" => 1 | _ => 0
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "dilemma_choice" then none
+  else if !isEnabled gs then none
+  else
+    let choice := match action.extra.find? "choice" with
+      | some (Json.str s) => s
+      | _ => match action.extra.find? "selectedAction" with
+        | some (Json.str s) => s
+        | _ => "cooperate"
+    -- Record choice
+    let currentChoices := match gs.shared.extra.find? "pd_choices" with
+      | some (Json.obj kvs) => kvs.toArray.toList.map fun ⟨k, v⟩ => (k, v)
+      | _ => []
+    let newChoices := currentChoices ++ [(pid, Json.str choice)]
+    let choicesMap := newChoices.foldl (init := (Lean.RBMap.empty : Lean.RBMap String Json compare))
+      fun m (k, v) => m.insert k v
+    let shared' := { gs.shared with extra := gs.shared.extra.insert "pd_choices" (rbmapJsonToJson choicesMap) }
+    let gs' := { gs with shared := shared' }
+    -- Check if all players have chosen
+    let allChosen := gs.turnOrder.all fun p =>
+      newChoices.any fun (k, _) => k == p
+    if allChosen then
+      -- Resolve payoffs
+      let gs'' := gs.turnOrder.foldl (init := gs') fun acc p =>
+        let myChoice := match newChoices.find? (fun (k, _) => k == p) with
+          | some (_, Json.str s) => s | _ => "cooperate"
+        let totalScore := gs.turnOrder.foldl (init := 0) fun total opId =>
+          if opId == p then total
+          else
+            let opChoice := match newChoices.find? (fun (k, _) => k == opId) with
+              | some (_, Json.str s) => s | _ => "cooperate"
+            total + getPayoff acc myChoice opChoice
+        acc.modifyPlayer p fun ps =>
+          { ps with score := some ((ps.score.getD 0) + totalScore) }
+      -- Increment PD round counter
+      let pdRound := (gs''.shared.extra.find? "pd_round" |>.bind (·.getNat?.toOption)).getD 0
+      let newRound := pdRound + 1
+      let maxRounds := match gs''.config.engineMechanics.find? "prisoners_dilemma" with
+        | some cfg => (cfg.getObjVal? "rounds" |>.toOption |>.bind (·.getNat?.toOption)).getD 3
+        | none => 3
+      -- Reset choices, update round
+      let extraUpd := gs''.shared.extra.insert "pd_choices" (Json.mkObj [])
+      let extraUpd := extraUpd.insert "pd_round" (ToJson.toJson newRound)
+      let extraUpd := extraUpd.insert "pd_resolved" (Json.bool (newRound ≥ maxRounds))
+      let shared'' := { gs''.shared with extra := extraUpd }
+      let gs''' := { gs'' with shared := shared'' }
+      some (gs''', {
+        handled := true,
+        advanceTurn := true,
+        checkWin := newRound ≥ maxRounds,
+        logMessage := some s!"PD round {newRound}/{maxRounds} resolved."
+      })
+    else
+      some (gs', {
+        handled := true,
+        logMessage := some s!"{pid} chose {choice}"
+      })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !isEnabled gs then []
+  else
+    let alreadyChosen := match gs.shared.extra.find? "pd_choices" with
+      | some (Json.obj kvs) => kvs.toArray.any fun ⟨k, _⟩ => k == pid
+      | _ => false
+    let resolved := match gs.shared.extra.find? "pd_resolved" with
+      | some (Json.bool true) => true | _ => false
+    if alreadyChosen || resolved then []
+    else
+      [{ action := { actionType := "dilemma_choice" },
+         category := some "prisoners_dilemma",
+         priority := some 60 }]
+
+end PrisonersDilemma
+
+/-! ## Card Matching Mechanic (UNO-style) -/
+
+namespace CardMatching
+
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "card_matching" || gs.isMechanicEnabled "card-matching"
+
+/-- Get the current color from shared.extra. -/
+private def getCurrentColor (gs : GameState) : Option String :=
+  gs.shared.extra.find? "currentColor" |>.bind (·.getStr?.toOption)
+
+/-- Get the top card's effect from shared.extra. -/
+private def getTopCardEffect (gs : GameState) : Option Json :=
+  gs.shared.extra.find? "topCard" |>.bind (·.getObjVal? "effect" |>.toOption)
+
+/-- Check if a card matches current play (color or value match). -/
+def cardMatches (gs : GameState) (card : Card) : Bool :=
+  if !isEnabled gs then true
+  else
+    -- Wild cards always match
+    if card.cardType == "wild" then true
+    else
+      let currentColor := getCurrentColor gs
+      let cardColor := card.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+      match currentColor with
+      | none => true  -- No current color: any card matches
+      | some cc =>
+        -- Match by color
+        if cardColor == some cc then true
+        else
+          -- Match by value
+          let topEffect := getTopCardEffect gs
+          let topValue := topEffect |>.bind (·.getObjVal? "value" |>.toOption) |>.bind (·.getNat?.toOption)
+          let cardValue := card.extra.find? "effect" |>.bind (·.getObjVal? "value" |>.toOption) |>.bind (·.getNat?.toOption)
+          match topValue, cardValue with
+          | some tv, some cv => tv == cv
+          | _, _ =>
+            -- Match by effect type
+            let topType := topEffect |>.bind (·.getObjVal? "type" |>.toOption) |>.bind (·.getStr?.toOption)
+            let cardType := card.extra.find? "effect" |>.bind (·.getObjVal? "type" |>.toOption) |>.bind (·.getStr?.toOption)
+            match topType, cardType with
+            | some tt, some ct => tt == ct && tt != "none"
+            | _, _ => false
+
+/-- Update shared state after card play (set currentColor, topCard). -/
+def updateAfterPlay (gs : GameState) (card : Card) : GameState :=
+  if !isEnabled gs then gs
+  else
+    let cardColor := card.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+    let extra' := gs.shared.extra
+      |>.insert "topCard" (ToJson.toJson card)
+    let extra'' := match cardColor with
+      | some color => extra'.insert "currentColor" (Json.str color)
+      | none => extra'
+    { gs with shared := { gs.shared with extra := extra'' } }
+
+end CardMatching
+
 /-! ## Mechanic Router -/
+
+/-- Check if a player can act out-of-turn for specific action types. -/
+private def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  actionType == "resign" ||
+  actionType == "select_action" && SimultaneousSelection.canActOutOfTurn gs pid actionType ||
+  actionType == "dilemma_choice" && PrisonersDilemma.canActOutOfTurn gs pid actionType
 
 /-- Route a validation call through all enabled mechanics.
     Returns first failure, or valid if all pass. -/
 def validateAction (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
   -- Check it's the player's turn (unless out-of-turn action)
-  if gs.currentPlayer != pid && action.actionType != "pass" then
+  if gs.currentPlayer != pid && !canActOutOfTurn gs pid action.actionType then
     { valid := false, error := some s!"Not {pid}'s turn (current: {gs.currentPlayer})" }
   else
     -- Check if player is blocked by an effect
@@ -1235,7 +1502,21 @@ def validateAction (gs : GameState) (pid : String) (action : GameAction) : Valid
     if Effects.isBlocked ps && action.actionType != "pass" then
       { valid := false, error := some s!"{pid} is blocked and cannot act this turn. Pass instead." }
     else
+      -- Card matching validation (UNO-style)
+      let cardMatchCheck : ValidationResult :=
+        if CardMatching.isEnabled gs && action.actionType == "play_card" then
+          match action.extra.find? "card" with
+          | some (Json.str cardName) =>
+            let ps := gs.getPlayer pid
+            match ps.hand.find? (fun c => c.name == cardName) with
+            | some card =>
+              if CardMatching.cardMatches gs card then { valid := true }
+              else { valid := false, error := some s!"Card '{cardName}' does not match current play" }
+            | none => { valid := true }  -- Card existence checked by Cards.validate
+          | _ => { valid := true }
+        else { valid := true }
       let checks := [
+        cardMatchCheck,
         ActionPoints.validate gs pid action,
         Resources.validate gs pid action,
         Cards.validate gs pid action,
@@ -1261,6 +1542,8 @@ def executeAction (gs : GameState) (pid : String) (action : GameAction) : Engine
   else
     -- Try each mechanic until one handles it
     let handlers := [
+      SimultaneousSelection.execute gs pid action,
+      PrisonersDilemma.execute gs pid action,
       Pass.execute gs pid action,
       PlaceLocation.execute gs pid action,
       Cards.execute gs pid action,
@@ -1278,6 +1561,16 @@ def executeAction (gs : GameState) (pid : String) (action : GameAction) : Engine
     | none =>
       { success := false, error := some s!"No mechanic handled action type '{action.actionType}'" }
     | some (gs', execResult) =>
+      -- Post-execute hooks: card matching state update
+      let gs' := if action.actionType == "play_card" && CardMatching.isEnabled gs' then
+        match action.extra.find? "card" with
+        | some (Json.str cardName) =>
+          -- Find the played card (it should be in discard now)
+          match gs'.shared.discard.find? (fun c => c.name == cardName) with
+          | some card => CardMatching.updateAfterPlay gs' card
+          | none => gs'
+        | _ => gs'
+      else gs'
       -- Post-execute hooks: deduct action points
       let gs'' := ActionPoints.postExecute gs' pid action
       -- Check if turn should auto-end (0 AP remaining)
@@ -1305,7 +1598,9 @@ def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :
     let diceActions := Dice.getAvailableActions gs pid
     let passActions := Pass.getAvailableActions gs pid
     -- Filter by action points cost if AP mechanic is enabled
-    let allActions := cardActions ++ boardActions ++ placeActions ++ resourceActions ++
+    let sasActions := SimultaneousSelection.getAvailableActions gs pid
+    let pdActions := PrisonersDilemma.getAvailableActions gs pid
+    let allActions := sasActions ++ pdActions ++ cardActions ++ boardActions ++ placeActions ++ resourceActions ++
       tradeActions ++ discardActions ++ tableauActions ++ marketActions ++ diceActions ++ passActions
     if gs.isMechanicEnabled "action_points" || gs.isMechanicEnabled "action-points" then
       let ps := gs.getPlayer pid
@@ -1379,6 +1674,30 @@ private def parseCards (cardsJson : Json) : List Card :=
           | _ => .empty
         acc ++ List.replicate count { name, cardType := ctype, suit, value, subtype, extra : Card }
   | _ => []
+
+/-- Build shared.extra fields for mechanic-specific state initialization. -/
+private def buildSharedExtra (config : GameConfig) : Lean.RBMap String Json compare :=
+  let m : Lean.RBMap String Json compare := .empty
+  -- Semi-cooperative: initialize collective progress (treasury)
+  let m := match config.engineMechanics.find? "semi_cooperative_game" with
+    | some cfg =>
+      let treasury := (cfg.getObjVal? "starting_treasury" |>.toOption |>.bind (·.getNat?.toOption)).getD 20
+      m.insert "collective_progress" (ToJson.toJson treasury)
+    | none => m
+  -- SAS: initialize empty selections
+  let m := if config.mechanics.contains "simultaneous-action-selection" ||
+    config.engineMechanics.contains "simultaneous_action_selection"
+    then m.insert "sas_selections" (Json.mkObj [])
+    else m
+  -- PD: initialize round counter
+  let m := if config.mechanics.contains "prisoners-dilemma" ||
+    config.engineMechanics.contains "prisoners_dilemma"
+    then
+      let m := m.insert "pd_choices" (Json.mkObj [])
+      let m := m.insert "pd_round" (ToJson.toJson (0 : Nat))
+      m.insert "pd_resolved" (Json.bool false)
+    else m
+  m
 
 /-- Initialize game state from config. -/
 def initState (config : GameConfig) (playerIds : List String) : GameState :=
@@ -1459,6 +1778,8 @@ def initState (config : GameConfig) (playerIds : List String) : GameState :=
           (drawn, rest)
         else ([], remainingDeck)
     | none => ([], remainingDeck)
+  -- Initialize shared.extra with mechanic-specific state
+  let sharedExtra := buildSharedExtra config
   {
     config := config,
     players := playerMap,
@@ -1469,7 +1790,8 @@ def initState (config : GameConfig) (playerIds : List String) : GameState :=
       boardStates := boardStates,
       boardEdges := boardEdges,
       currentBoardState := boardStart,
-      market := market
+      market := market,
+      extra := sharedExtra
     }
   }
 

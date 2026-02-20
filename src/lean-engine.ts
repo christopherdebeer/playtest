@@ -184,10 +184,31 @@ function toEngineState(state: GameState): Record<string, unknown> {
         const card = c as Record<string, unknown>;
         return { name: card.name, type: card.type || '', ...card };
       }),
-      market: ((state.shared as Record<string, unknown>)?.market as unknown[] || []).map((c: unknown) => {
-        const card = c as Record<string, unknown>;
-        return { name: card.name, type: card.type || '', ...card };
-      }),
+      market: Array.isArray((state.shared as Record<string, unknown>)?.market)
+        ? ((state.shared as Record<string, unknown>).market as unknown[]).map((c: unknown) => {
+            const card = c as Record<string, unknown>;
+            return { name: card.name, type: card.type || '', ...card };
+          })
+        : [],
+      // Map TS-side shared state to Lean's shared.extra for mechanics
+      extra: {
+        ...((state.shared as Record<string, unknown>)?.extra as Record<string, unknown> || {}),
+        // SAS state → Lean reads shared.extra.sas_selections
+        ...((state.shared as Record<string, unknown>)?.simultaneousSelection
+          ? { sas_selections: ((state.shared as Record<string, unknown>).simultaneousSelection as Record<string, unknown>).selections || {} }
+          : {}),
+        // PD state → Lean reads shared.extra.pd_choices, pd_round, pd_resolved
+        ...((state.shared as Record<string, unknown>)?.prisonersDilemma
+          ? {
+              pd_choices: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).choices || {},
+              pd_round: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).round || 0,
+              pd_resolved: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).resolved || false,
+            }
+          : {}),
+        // Card matching state → Lean reads shared.extra.currentColor, topCard
+        ...(state.shared.currentColor !== undefined ? { currentColor: state.shared.currentColor } : {}),
+        ...(state.shared.topCard !== undefined ? { topCard: state.shared.topCard } : {}),
+      },
     },
   };
 }
@@ -277,6 +298,28 @@ export function leanCheckWin(
 }
 
 /**
+ * Transform engine_mechanics config so field names match what the Lean engine expects.
+ * E.g., game configs use "starting_amount" for resources but Lean expects "starting".
+ */
+function normalizeConfigForLean(engineMechanics: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...engineMechanics };
+
+  // Normalize resources: starting_amount → starting
+  if (Array.isArray(result.resources)) {
+    result.resources = (result.resources as Array<Record<string, unknown>>).map(r => {
+      const normalized = { ...r };
+      if (normalized.starting_amount !== undefined && normalized.starting === undefined) {
+        normalized.starting = normalized.starting_amount;
+        delete normalized.starting_amount;
+      }
+      return normalized;
+    });
+  }
+
+  return result;
+}
+
+/**
  * Initialize game state using the Lean engine.
  */
 export function leanInitState(
@@ -285,6 +328,9 @@ export function leanInitState(
 ): GameState | null {
   // Pass a seed derived from Math.random() so seeded tests get deterministic results
   const seed = Math.floor(Math.random() * 2147483647);
+  const normalizedMechanics = normalizeConfigForLean(
+    (config.engine_mechanics || {}) as Record<string, unknown>
+  );
   const response = callLeanEngine({
     command: 'init_state',
     config: {
@@ -292,7 +338,7 @@ export function leanInitState(
       max_rounds: config.max_rounds,
       max_turns: config.max_turns,
       mechanics: config.mechanics || [],
-      engine_mechanics: config.engine_mechanics || {},
+      engine_mechanics: normalizedMechanics,
     },
     playerIds,
     seed,

@@ -2,7 +2,597 @@
   "_comment": "Auto-generated from mechanic registry. Do not edit manually. Run: npm run generate:mechanics",
   "version": "4.0.0",
   "generatedBy": "scripts/generate-mechanics-registry.ts",
-  "mechanics": {},
+  "mechanics": {
+    "cards": {
+      "config_key": "cards",
+      "since": "3.0.0",
+      "hooks": [
+        "onCardDrawn",
+        "onCardPlayed",
+        "onCardDiscarded"
+      ],
+      "defines": "cards"
+    },
+    "resources": {
+      "config_key": "resources",
+      "since": "3.0.0",
+      "hooks": [
+        "onResourceGained",
+        "onResourceSpent"
+      ],
+      "defines": "resources"
+    },
+    "dice": {
+      "config_key": "dice",
+      "since": "3.0.0",
+      "hooks": [
+        "onDiceRolled"
+      ],
+      "defines": "dice"
+    },
+    "effects": {
+      "config_key": "effects",
+      "since": "3.0.0",
+      "hooks": [
+        "onEffectAdded",
+        "onEffectRemoved",
+        "onEffectExpired"
+      ],
+      "defines": "effects"
+    },
+    "board": {
+      "config_key": "board",
+      "since": "3.0.0",
+      "hooks": [
+        "onPlayerMoved"
+      ],
+      "defines": "board"
+    },
+    "social": {
+      "config_key": "social",
+      "since": "3.0.0",
+      "hooks": [
+        "onVoteTally",
+        "onNegotiationComplete"
+      ],
+      "defines": "social"
+    },
+    "pass": {
+      "config_key": "pass",
+      "since": "3.0.0",
+      "hooks": [
+        "onExecuteAction",
+        "describeAction"
+      ]
+    },
+    "board-state": {
+      "config_key": "board_state",
+      "since": "3.0.0",
+      "hooks": [
+        "preValidateAction",
+        "getAvailableActions"
+      ],
+      "requires": [
+        "board"
+      ]
+    },
+    "dice-rolling": {
+      "config_key": "dice_rolling",
+      "since": "3.0.0",
+      "hooks": [
+        "onDiceRolled"
+      ],
+      "requires": [
+        "dice"
+      ]
+    },
+    "catch-the-leader": {
+      "config_key": "catch_the_leader",
+      "since": "3.0.0",
+      "hooks": [
+        "onResourceGained"
+      ],
+      "requires": [
+        "resources"
+      ]
+    },
+    "voting": {
+      "config_key": "voting",
+      "since": "3.0.0",
+      "hooks": [
+        "onVoteTally"
+      ],
+      "requires": [
+        "social"
+      ]
+    },
+    "win-reach-state": {
+      "config_key": "win_reach_state",
+      "since": "3.0.0",
+      "hooks": [
+        "onCheckWin"
+      ]
+    },
+    "lose-a-turn": {
+      "config_key": "lose_a_turn",
+      "since": "3.0.0",
+      "hooks": [
+        "isPlayerBlocked"
+      ],
+      "requires": [
+        "effects"
+      ]
+    },
+    "freeplay": {
+      "config_key": "freeplay",
+      "since": "3.0.0",
+      "hooks": [
+        "canPlayerActNow"
+      ]
+    },
+    "push-your-luck": {
+      "config_key": "push_your_luck",
+      "since": "3.0.0",
+      "hooks": [
+        "getPlayerView"
+      ]
+    },
+    "action-points": {
+      "config_key": "action_points",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "income": {
+      "config_key": "income",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "set-collection": {
+      "config_key": "set_collection",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "auction": {
+      "config_key": "auction",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order": {
+      "config_key": "turn_order",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "variable-powers": {
+      "config_key": "variable_powers",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "open-drafting": {
+      "config_key": "open_drafting",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "simultaneous": {
+      "config_key": "simultaneous",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "grid": {
+      "config_key": "grid",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "trade": {
+      "config_key": "trade",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "hand-limit": {
+      "config_key": "hand_limit",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "card-type-rules": {
+      "config_key": "card_type_rules",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "timeout-winner": {
+      "config_key": "timeout_winner",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-score-threshold": {
+      "config_key": "win_score_threshold",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-empty-hand": {
+      "config_key": "win_empty_hand",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-elimination": {
+      "config_key": "win_elimination",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-timeout": {
+      "config_key": "win_timeout",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-end-game-bonuses": {
+      "config_key": "win_end_game_bonuses",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-king-of-the-hill": {
+      "config_key": "win_king_of_the_hill",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-victory-points-as-resource": {
+      "config_key": "win_victory_points_as_resource",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-highest-lowest-scoring": {
+      "config_key": "win_highest_lowest_scoring",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "closed-drafting": {
+      "config_key": "closed_drafting",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "trick-taking": {
+      "config_key": "trick_taking",
+      "since": "3.0.0",
+      "hooks": [],
+      "requires": [
+        "cards"
+      ]
+    },
+    "movement-points": {
+      "config_key": "movement_points",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "automatic-resource-growth": {
+      "config_key": "automatic_resource_growth",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "events": {
+      "config_key": "events",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "ladder-climbing": {
+      "config_key": "ladder_climbing",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "once-per-game-abilities": {
+      "config_key": "once_per_game_abilities",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "chaining": {
+      "config_key": "chaining",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-race": {
+      "config_key": "win_race",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "sudden-death-ending": {
+      "config_key": "sudden_death_ending",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "area-movement": {
+      "config_key": "area_movement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "deck-building": {
+      "config_key": "deck_building",
+      "since": "3.0.0",
+      "hooks": [],
+      "requires": [
+        "cards"
+      ]
+    },
+    "multi-use-cards": {
+      "config_key": "multi_use_cards",
+      "since": "3.0.0",
+      "hooks": [],
+      "requires": [
+        "cards"
+      ]
+    },
+    "point-to-point-movement": {
+      "config_key": "point_to_point_movement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "hidden-roles": {
+      "config_key": "hidden_roles",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "traitor-game": {
+      "config_key": "traitor_game",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "card-matching": {
+      "config_key": "card_matching",
+      "since": "3.0.0",
+      "hooks": [],
+      "requires": [
+        "cards"
+      ]
+    },
+    "probability-movement": {
+      "config_key": "probability_movement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "card-boosts": {
+      "config_key": "card_boosts",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "victory-declaration": {
+      "config_key": "victory_declaration",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "rerolling": {
+      "config_key": "rerolling",
+      "since": "3.0.0",
+      "hooks": [],
+      "requires": [
+        "dice"
+      ]
+    },
+    "turn-order-random": {
+      "config_key": "turn_order_random",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-stat-based": {
+      "config_key": "turn_order_stat_based",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-progressive": {
+      "config_key": "turn_order_progressive",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "hidden-victory-points": {
+      "config_key": "hidden_victory_points",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "negotiation": {
+      "config_key": "negotiation",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "communication-limits": {
+      "config_key": "communication_limits",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "roll-spin-move": {
+      "config_key": "roll_spin_move",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "different-dice-movement": {
+      "config_key": "different_dice_movement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-pass-order": {
+      "config_key": "turn_order_pass_order",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "hidden-movement": {
+      "config_key": "hidden_movement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "hidden-objectives": {
+      "config_key": "hidden_objectives",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "auction-sealed-bid": {
+      "config_key": "auction_sealed_bid",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "auction-once-around": {
+      "config_key": "auction_once_around",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "die-icon-resolution": {
+      "config_key": "die_icon_resolution",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-auction": {
+      "config_key": "turn_order_auction",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-claim": {
+      "config_key": "turn_order_claim",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-time-track": {
+      "config_key": "turn_order_time_track",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "turn-order-role": {
+      "config_key": "turn_order_role",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "deduction": {
+      "config_key": "deduction",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "memory": {
+      "config_key": "memory",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "targeted-clues": {
+      "config_key": "targeted_clues",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "roles-asymmetric-info": {
+      "config_key": "roles_asymmetric_info",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "player-judge": {
+      "config_key": "player_judge",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "i-cut-you-choose": {
+      "config_key": "i_cut_you_choose",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "bribery": {
+      "config_key": "bribery",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "critical-hits": {
+      "config_key": "critical_hits",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "zone-of-control": {
+      "config_key": "zone_of_control",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "ratio-crt": {
+      "config_key": "ratio_crt",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "force-commitment": {
+      "config_key": "force_commitment",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "area-impulse": {
+      "config_key": "area_impulse",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "chit-pull": {
+      "config_key": "chit_pull",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "secret-deployment": {
+      "config_key": "secret_deployment",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "kill-steal": {
+      "config_key": "kill_steal",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "worker-placement": {
+      "config_key": "worker_placement",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "different-worker-types": {
+      "config_key": "different_worker_types",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "auction-dutch": {
+      "config_key": "auction_dutch",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "simultaneous-action-selection": {
+      "config_key": "simultaneous_action_selection",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "market": {
+      "config_key": "market",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "tableau-building": {
+      "config_key": "tableau_building",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "action-programming": {
+      "config_key": "action_programming",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "cooperative": {
+      "config_key": "cooperative",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "contracts": {
+      "config_key": "contracts",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "loans": {
+      "config_key": "loans",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-finale-ending": {
+      "config_key": "win_finale_ending",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "win-single-loser": {
+      "config_key": "win_single_loser",
+      "since": "3.0.0",
+      "hooks": []
+    },
+    "player-elimination": {
+      "config_key": "player_elimination",
+      "since": "3.0.0",
+      "hooks": []
+    }
+  },
   "partial": {
     "hidden-roles": {
       "notes": "Basic role assignment works, but role revelation and special win conditions need GM adjudication",
