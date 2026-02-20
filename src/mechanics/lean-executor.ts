@@ -51,14 +51,22 @@ function findLeanBinary(): string | null {
 }
 
 /**
- * Map game name to Lean game ID.
+ * Map game name (slug or display name) to Lean game ID.
  */
 function leanGameId(gameName: string): string | null {
-  const normalized = gameName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
   const LEAN_GAMES: Record<string, string> = {
     'aaote': 'aaote',
   };
-  return LEAN_GAMES[normalized] ?? null;
+
+  // Direct slug match (e.g., "aaote")
+  const normalized = gameName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  if (LEAN_GAMES[normalized]) return LEAN_GAMES[normalized];
+
+  // Try extracting slug from display name (e.g., "AAOTE: An Agent of the Enemy" → "aaote")
+  const slug = gameName.toLowerCase().split(/[^a-z0-9]/)[0];
+  if (slug && LEAN_GAMES[slug]) return LEAN_GAMES[slug];
+
+  return null;
 }
 
 /**
@@ -313,7 +321,7 @@ export const leanExecutorMechanic: MechanicHooks = {
    * Initialize Lean-managed state when game starts.
    */
   initSharedState(ctx: SharedStateInitContext): SharedStateInitResult | null {
-    const gameId = leanGameId(ctx.config.name?.toLowerCase().replace(/[^a-z0-9]/g, '-') ?? '');
+    const gameId = leanGameId(ctx.config.name ?? '');
     if (!gameId) return null;
 
     const binary = findLeanBinary();

@@ -239,6 +239,10 @@ import { matchingMechanic } from './matching.js';
 import { interruptsMechanic } from './interrupts.js';
 import { scoreAndResetMechanic } from './score-and-reset.js';
 
+// Register Lean execution engine FIRST (takes priority over all other mechanics)
+// When lean-executor is enabled, it handles all action execution via the Lean binary.
+mechanicRegistry.register(leanExecutorMechanic);
+
 // Register all extracted mechanics
 mechanicRegistry.register(actionPointsMechanic);
 mechanicRegistry.register(incomeMechanic);
@@ -417,8 +421,6 @@ mechanicRegistry.register(freeplayMechanic);
 // Register Lean formal verification (requires lean-game binary)
 mechanicRegistry.register(leanVerifierMechanic);
 
-// Register Lean execution engine (Lean computes state transitions)
-mechanicRegistry.register(leanExecutorMechanic);
 
 // Register Phase 15: Category completers
 mechanicRegistry.register(semiCooperativeGameMechanic);

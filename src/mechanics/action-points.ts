@@ -56,6 +56,9 @@ export const actionPointsMechanic: MechanicHooks = {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return null;
 
+    // Skip when Lean executor handles AP validation
+    if (ctx.state.shared?.leanEnabled) return null;
+
     // Pass actions should always be allowed (let engine handle)
     if (action.type === 'pass') return null;
 
@@ -100,6 +103,9 @@ export const actionPointsMechanic: MechanicHooks = {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return null;
     if (ctx.player.actionPoints === undefined) return null;
+
+    // Skip when Lean executor handles AP management
+    if (ctx.state.shared?.leanEnabled) return null;
 
     // Skip for pass (end turn)
     if (action.type === 'pass') return null;
@@ -148,6 +154,9 @@ export const actionPointsMechanic: MechanicHooks = {
     const apConfig = ctx.config.engine_mechanics?.action_points;
     if (!apConfig) return false;
     if (ctx.player.actionPoints === undefined) return false;
+
+    // Skip when Lean executor handles turn management
+    if (ctx.state.shared?.leanEnabled) return false;
 
     // Auto-end turn when AP is 0 (and no rollover configured)
     // Don't auto-end if rollover is enabled - player may want to save AP
