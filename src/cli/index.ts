@@ -3041,4 +3041,304 @@ program
     }
   });
 
+// ============ Distributed Sync Commands ============
+// These commands bridge local playtest sessions with sync.parc.land rooms
+// for multi-machine distributed playtesting.
+
+const syncCmd = program
+  .command('sync')
+  .description('Distributed sync via sync.parc.land');
+
+syncCmd
+  .command('create <instance>')
+  .description('Create a sync room for a game instance and push initial state')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .action(async (instance: string, options: { url: string }) => {
+    try {
+      const { SyncAdapter } = await import('../sync/adapter.js');
+      const adapter = new SyncAdapter(options.url);
+
+      // Resolve instance
+      const state = loadStateReadOnly(instance);
+
+      // Create the room
+      const session = await adapter.createSession(state.gameId, state.gameName, {
+        players: state.turnOrder,
+        status: state.status,
+        round: state.round,
+      });
+
+      // Register coordinator as an agent
+      await adapter.joinSession(session.roomId, 'coordinator', 'coordinator', {
+        instanceId: state.gameId,
+      });
+
+      // Push current state
+      await adapter.pushState(state);
+
+      console.log(JSON.stringify({
+        success: true,
+        roomId: session.roomId,
+        instanceId: state.gameId,
+        gameName: state.gameName,
+        dashboardUrl: session.dashboardUrl,
+        message: `Sync room created. Share the room ID with remote agents.`,
+        joinCommand: `./playtest sync join ${session.roomId} --name <agent-name> --role <player|gamemaster>`,
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('join <roomId>')
+  .description('Join an existing sync room as a remote agent')
+  .requiredOption('--name <name>', 'Agent display name')
+  .requiredOption('--role <role>', 'Agent role (player, gamemaster, observer)')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .action(async (roomId: string, options: { name: string; role: string; url: string }) => {
+    try {
+      const { SyncAdapter } = await import('../sync/adapter.js');
+      const adapter = new SyncAdapter(options.url);
+
+      const agent = await adapter.joinSession(roomId, options.name, options.role);
+
+      // Pull current state to see what's happening
+      const state = await adapter.pullState();
+
+      console.log(JSON.stringify({
+        success: true,
+        agentId: agent.id,
+        roomId,
+        name: options.name,
+        role: options.role,
+        gameState: state ? {
+          instanceId: state.gameId,
+          gameName: state.gameName,
+          status: state.status,
+          round: state.round,
+          currentPlayer: state.currentPlayer,
+        } : null,
+        message: `Joined sync room as ${options.name} (${options.role}).`,
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('push <instance>')
+  .description('Push local game state to sync room')
+  .requiredOption('--room <roomId>', 'Sync room ID')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .action(async (instance: string, options: { room: string; url: string }) => {
+    try {
+      const { SyncAdapter } = await import('../sync/adapter.js');
+      const adapter = new SyncAdapter(options.url);
+      adapter['roomId'] = options.room;
+
+      const state = loadStateReadOnly(instance);
+      await adapter.pushState(state);
+
+      console.log(JSON.stringify({
+        success: true,
+        instanceId: state.gameId,
+        status: state.status,
+        round: state.round,
+        turnNumber: state.turnNumber,
+        currentPlayer: state.currentPlayer,
+        message: `State pushed to sync room ${options.room}.`,
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('pull <roomId>')
+  .description('Pull game state from sync room (prints state summary)')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .option('--save <instance>', 'Save pulled state to local instance')
+  .action(async (roomId: string, options: { url: string; save?: string }) => {
+    try {
+      const { SyncAdapter } = await import('../sync/adapter.js');
+      const adapter = new SyncAdapter(options.url);
+      adapter['roomId'] = roomId;
+
+      const state = await adapter.pullState();
+      if (!state) {
+        console.log(JSON.stringify({ success: false, error: 'No state found in sync room' }));
+        process.exit(1);
+        return;
+      }
+
+      // Optionally save to local disk
+      if (options.save) {
+        saveState(state);
+      }
+
+      console.log(JSON.stringify({
+        success: true,
+        instanceId: state.gameId,
+        gameName: state.gameName,
+        status: state.status,
+        round: state.round,
+        turnNumber: state.turnNumber,
+        currentPlayer: state.currentPlayer,
+        players: Object.fromEntries(
+          Object.entries(state.players).map(([id, p]) => [
+            id,
+            { state: p.state, registered: !!p.agentId },
+          ])
+        ),
+        saved: !!options.save,
+        message: options.save
+          ? `State pulled and saved locally.`
+          : `State pulled from sync room. Use --save to write to disk.`,
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('status <roomId>')
+  .description('Show sync room status: agents, recent messages, state version')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .option('--messages <n>', 'Number of recent messages to show', '10')
+  .action(async (roomId: string, options: { url: string; messages: string }) => {
+    try {
+      const { SyncClient } = await import('../sync/client.js');
+      const client = new SyncClient(options.url);
+
+      const [room, agents, messages] = await Promise.all([
+        client.getRoom(roomId),
+        client.listAgents(roomId),
+        client.pollMessages(roomId, { limit: parseInt(options.messages, 10) }),
+      ]);
+
+      // Get current game status
+      let gameStatus: unknown = null;
+      try {
+        const stateResult = await client.getState(roomId, { scope: '_shared', key: 'game_status' });
+        const entry = Array.isArray(stateResult) ? stateResult[0] : stateResult;
+        gameStatus = entry?.value;
+      } catch { /* no state yet */ }
+
+      let turnInfo: unknown = null;
+      try {
+        const turnResult = await client.getState(roomId, { scope: '_shared', key: 'current_turn' });
+        const entry = Array.isArray(turnResult) ? turnResult[0] : turnResult;
+        turnInfo = entry?.value;
+      } catch { /* no state yet */ }
+
+      console.log(JSON.stringify({
+        success: true,
+        room: {
+          id: room.id,
+          created: room.created_at,
+          meta: room.meta,
+        },
+        dashboardUrl: client.dashboardUrl(roomId),
+        gameStatus,
+        turn: turnInfo,
+        agents: agents.map(a => ({
+          id: a.id,
+          name: a.name,
+          role: a.role,
+          joined: a.joined_at,
+        })),
+        recentMessages: messages.map(m => ({
+          id: m.id,
+          from: m.from_agent,
+          kind: m.kind,
+          body: typeof m.body === 'string' ? m.body : JSON.stringify(m.body).slice(0, 200),
+          at: m.created_at,
+        })),
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('watch <roomId>')
+  .description('Watch a sync room for changes (polls and prints updates)')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .option('--kind <kind>', 'Filter by message kind (action, turn, event, chat)')
+  .option('--interval <ms>', 'Poll interval in milliseconds', '2000')
+  .action(async (roomId: string, options: { url: string; kind?: string; interval: string }) => {
+    try {
+      const { SyncAdapter } = await import('../sync/adapter.js');
+      const adapter = new SyncAdapter(options.url);
+      adapter['roomId'] = roomId;
+
+      const intervalMs = parseInt(options.interval, 10);
+      console.error(`Watching sync room ${roomId} (Ctrl+C to stop)...`);
+      console.error(`Dashboard: ${options.url}/?room=${roomId}`);
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const messages = await adapter.pollMessages(options.kind);
+        for (const msg of messages) {
+          console.log(JSON.stringify({
+            id: msg.id,
+            from: msg.from_agent,
+            kind: msg.kind,
+            body: msg.body,
+            at: msg.created_at,
+          }));
+        }
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+syncCmd
+  .command('send <roomId>')
+  .description('Send a message to a sync room')
+  .requiredOption('--kind <kind>', 'Message kind (action, event, chat, etc)')
+  .requiredOption('--body <json>', 'Message body as JSON')
+  .option('--from <agentId>', 'Sender agent ID')
+  .option('--to <agentId>', 'Recipient agent ID')
+  .option('--url <url>', 'Sync server URL', 'https://sync.parc.land')
+  .action(async (roomId: string, options: { kind: string; body: string; from?: string; to?: string; url: string }) => {
+    try {
+      const { SyncClient } = await import('../sync/client.js');
+      const client = new SyncClient(options.url);
+
+      let body: unknown;
+      try {
+        body = JSON.parse(options.body);
+      } catch {
+        body = { text: options.body };
+      }
+
+      const msg = await client.postMessage(roomId, {
+        from: options.from,
+        to: options.to,
+        kind: options.kind,
+        body,
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        messageId: msg.id,
+        kind: msg.kind,
+        roomId: msg.room_id,
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
 program.parse();
