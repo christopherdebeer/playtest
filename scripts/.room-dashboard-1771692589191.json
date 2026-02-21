@@ -1,0 +1,129 @@
+{
+  "roomId": "room_1771692589191_c0b742r",
+  "created": "2026-02-21T16:49:49.191Z",
+  "agentRoster": [
+    {
+      "id": "gamemaster-qrqmr",
+      "name": "GameMaster",
+      "role": "gamemaster",
+      "joinedAt": "2026-02-21T16:49:49.193Z"
+    },
+    {
+      "id": "player-qvb27",
+      "name": "Alice",
+      "role": "player",
+      "joinedAt": "2026-02-21T16:49:49.193Z"
+    },
+    {
+      "id": "player-aztn8",
+      "name": "Bob",
+      "role": "player",
+      "joinedAt": "2026-02-21T16:49:49.193Z"
+    },
+    {
+      "id": "player-kjlus",
+      "name": "Charlie",
+      "role": "player",
+      "joinedAt": "2026-02-21T16:49:49.193Z"
+    },
+    {
+      "id": "observer-8h0q1",
+      "name": "Observer",
+      "role": "observer",
+      "joinedAt": "2026-02-21T16:49:49.193Z"
+    }
+  ],
+  "messageCount": 15,
+  "recentMessages": [
+    {
+      "id": "msg_1771692599202_ujiv0",
+      "from": "gamemaster-qrqmr",
+      "fromName": "GameMaster",
+      "kind": "game:prompt",
+      "content": "Alice, your turn. What do you do?",
+      "timestamp": "2026-02-21T16:49:59.202Z"
+    },
+    {
+      "id": "msg_1771692603203_r0zzr",
+      "from": "player-qvb27",
+      "fromName": "Alice",
+      "kind": "player:action",
+      "content": "Draw 2 cards, move forward 3 spaces",
+      "timestamp": "2026-02-21T16:50:03.203Z"
+    },
+    {
+      "id": "msg_1771692607703_tzy35",
+      "from": "gamemaster-qrqmr",
+      "fromName": "GameMaster",
+      "kind": "game:resolve",
+      "content": "Alice's action resolved. Bob, your turn.",
+      "timestamp": "2026-02-21T16:50:07.704Z"
+    },
+    {
+      "id": "msg_1771692613206_snprg",
+      "from": "player-aztn8",
+      "fromName": "Bob",
+      "kind": "player:action",
+      "content": "Build a structure on space 5",
+      "timestamp": "2026-02-21T16:50:13.206Z"
+    },
+    {
+      "id": "msg_1771692619207_w0lls",
+      "from": "gamemaster-qrqmr",
+      "fromName": "GameMaster",
+      "kind": "game:resolve",
+      "content": "Bob's action resolved. Charlie, your turn.",
+      "timestamp": "2026-02-21T16:50:19.207Z"
+    },
+    {
+      "id": "msg_1771692626208_3vrrc",
+      "from": "player-kjlus",
+      "fromName": "Charlie",
+      "kind": "player:action",
+      "content": "Trade with Alice for rare card",
+      "timestamp": "2026-02-21T16:50:26.208Z"
+    },
+    {
+      "id": "msg_1771692633709_isoht",
+      "from": "observer-8h0q1",
+      "fromName": "Observer",
+      "kind": "observation",
+      "content": "Round 1: 3 player actions, 1 trade interaction",
+      "timestamp": "2026-02-21T16:50:33.709Z"
+    },
+    {
+      "id": "msg_1771692641710_mmdku",
+      "from": "gamemaster-qrqmr",
+      "fromName": "GameMaster",
+      "kind": "game:prompt",
+      "content": "Round 2 begins. Alice, your turn again.",
+      "timestamp": "2026-02-21T16:50:41.710Z"
+    },
+    {
+      "id": "msg_1771692650711_bqf2c",
+      "from": "player-qvb27",
+      "fromName": "Alice",
+      "kind": "player:action",
+      "content": "Play special card: Double turn",
+      "timestamp": "2026-02-21T16:50:50.711Z"
+    },
+    {
+      "id": "msg_1771692660212_q6kxg",
+      "from": "player-qvb27",
+      "fromName": "Alice",
+      "kind": "player:action",
+      "content": "Draw 3 cards with bonus",
+      "timestamp": "2026-02-21T16:51:00.212Z"
+    }
+  ],
+  "sharedState": {
+    "gameState": "active",
+    "players": [
+      "Alice",
+      "Bob",
+      "Charlie"
+    ],
+    "round": 2,
+    "turn": 1
+  }
+}
