@@ -733,7 +733,7 @@ end Discard
 namespace Tableau
 
 def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
-  if action.actionType != "play_to_tableau" then { valid := true }
+  if action.actionType != "play_to_tableau" && action.actionType != "add_to_tableau" then { valid := true }
   else
     match action.card with
     | none => { valid := false, error := some "play_to_tableau requires 'card' field" }
@@ -744,7 +744,7 @@ def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationR
       | some _ => { valid := true }
 
 def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
-  if action.actionType != "play_to_tableau" then none
+  if action.actionType != "play_to_tableau" && action.actionType != "add_to_tableau" then none
   else do
     let cardName ← action.card
     let ps := gs.getPlayer pid
@@ -809,7 +809,7 @@ private def getCurrency (gs : GameState) : String :=
 
 def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
   match action.actionType with
-  | "buy_card" =>
+  | "buy_card" | "buy_market" =>
     match action.card with
     | none => { valid := false, error := some "buy_card requires 'card' field" }
     | some cardName =>
@@ -834,7 +834,7 @@ def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationR
 
 def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
   match action.actionType with
-  | "buy_card" => do
+  | "buy_card" | "buy_market" => do
     let cardName ← action.card
     let card ← gs.shared.market.find? (·.name == cardName)
     let price := getCardPrice gs cardName
@@ -1095,7 +1095,10 @@ def checkHighestScoring (gs : GameState) (pid : String) (trigger : String) : Win
     let isGameEnd := trigger == "round_end" || trigger == "turn_limit" ||
       (match gs.config.maxRounds with
        | some maxR => gs.round > maxR
-       | none => false)
+       | none => false) ||
+      -- Check shared.extra gameOver flag (set by PD, etc.)
+      (match gs.shared.extra.find? "gameOver" with
+       | some (Json.bool true) => true | _ => false)
     if !isGameEnd then { won := false }
     else
       let ps := gs.getPlayer pid
@@ -1296,6 +1299,7 @@ def execute (gs : GameState) (pid : String) (action : GameAction) : Option (Game
     else
       some (gs', {
         handled := true,
+        advanceTurn := true,
         logMessage := some s!"{pid} selected {choice}"
       })
 
@@ -1394,6 +1398,8 @@ def execute (gs : GameState) (pid : String) (action : GameAction) : Option (Game
       let extraUpd := gs''.shared.extra.insert "pd_choices" (Json.mkObj [])
       let extraUpd := extraUpd.insert "pd_round" (ToJson.toJson newRound)
       let extraUpd := extraUpd.insert "pd_resolved" (Json.bool (newRound ≥ maxRounds))
+      -- Set gameOver flag so win condition checks can trigger
+      let extraUpd := if newRound ≥ maxRounds then extraUpd.insert "gameOver" (Json.bool true) else extraUpd
       let shared'' := { gs''.shared with extra := extraUpd }
       let gs''' := { gs'' with shared := shared'' }
       some (gs''', {
@@ -1405,6 +1411,7 @@ def execute (gs : GameState) (pid : String) (action : GameAction) : Option (Game
     else
       some (gs', {
         handled := true,
+        advanceTurn := true,
         logMessage := some s!"{pid} chose {choice}"
       })
 
@@ -1505,15 +1512,15 @@ def validateAction (gs : GameState) (pid : String) (action : GameAction) : Valid
       -- Card matching validation (UNO-style)
       let cardMatchCheck : ValidationResult :=
         if CardMatching.isEnabled gs && action.actionType == "play_card" then
-          match action.extra.find? "card" with
-          | some (Json.str cardName) =>
+          match action.card with
+          | some cardName =>
             let ps := gs.getPlayer pid
             match ps.hand.find? (fun c => c.name == cardName) with
             | some card =>
               if CardMatching.cardMatches gs card then { valid := true }
               else { valid := false, error := some s!"Card '{cardName}' does not match current play" }
             | none => { valid := true }  -- Card existence checked by Cards.validate
-          | _ => { valid := true }
+          | none => { valid := true }
         else { valid := true }
       let checks := [
         cardMatchCheck,
@@ -1563,13 +1570,13 @@ def executeAction (gs : GameState) (pid : String) (action : GameAction) : Engine
     | some (gs', execResult) =>
       -- Post-execute hooks: card matching state update
       let gs' := if action.actionType == "play_card" && CardMatching.isEnabled gs' then
-        match action.extra.find? "card" with
-        | some (Json.str cardName) =>
+        match action.card with
+        | some cardName =>
           -- Find the played card (it should be in discard now)
           match gs'.shared.discard.find? (fun c => c.name == cardName) with
           | some card => CardMatching.updateAfterPlay gs' card
           | none => gs'
-        | _ => gs'
+        | none => gs'
       else gs'
       -- Post-execute hooks: deduct action points
       let gs'' := ActionPoints.postExecute gs' pid action
@@ -1780,6 +1787,20 @@ def initState (config : GameConfig) (playerIds : List String) : GameState :=
     | none => ([], remainingDeck)
   -- Initialize shared.extra with mechanic-specific state
   let sharedExtra := buildSharedExtra config
+  -- Card matching init: flip top card from deck to set currentColor/topCard
+  let (finalDeck, sharedExtra) :=
+    if config.mechanics.contains "card-matching" || config.engineMechanics.contains "card_matching" then
+      match finalDeck.head? with
+      | some topCard =>
+        let rest := finalDeck.drop 1
+        let color := topCard.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+        let extra := sharedExtra.insert "topCard" (ToJson.toJson topCard)
+        let extra := match color with
+          | some c => extra.insert "currentColor" (Json.str c)
+          | none => extra
+        (rest, extra)
+      | none => (finalDeck, sharedExtra)
+    else (finalDeck, sharedExtra)
   {
     config := config,
     players := playerMap,

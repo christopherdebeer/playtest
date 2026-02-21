@@ -179,6 +179,7 @@ function toEngineState(state: GameState): Record<string, unknown> {
     turnNumber: state.turnNumber || 1,
     status: state.status || 'in_progress',
     shared: {
+      // Spread all shared state fields — Lean's FromJson puts unknown fields into extra RBMap
       ...(state.shared || {}),
       deck: ((state.shared as Record<string, unknown>)?.deck as unknown[] || []).map((c: unknown) => {
         const card = c as Record<string, unknown>;
@@ -190,25 +191,6 @@ function toEngineState(state: GameState): Record<string, unknown> {
             return { name: card.name, type: card.type || '', ...card };
           })
         : [],
-      // Map TS-side shared state to Lean's shared.extra for mechanics
-      extra: {
-        ...((state.shared as Record<string, unknown>)?.extra as Record<string, unknown> || {}),
-        // SAS state → Lean reads shared.extra.sas_selections
-        ...((state.shared as Record<string, unknown>)?.simultaneousSelection
-          ? { sas_selections: ((state.shared as Record<string, unknown>).simultaneousSelection as Record<string, unknown>).selections || {} }
-          : {}),
-        // PD state → Lean reads shared.extra.pd_choices, pd_round, pd_resolved
-        ...((state.shared as Record<string, unknown>)?.prisonersDilemma
-          ? {
-              pd_choices: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).choices || {},
-              pd_round: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).round || 0,
-              pd_resolved: ((state.shared as Record<string, unknown>).prisonersDilemma as Record<string, unknown>).resolved || false,
-            }
-          : {}),
-        // Card matching state → Lean reads shared.extra.currentColor, topCard
-        ...(state.shared.currentColor !== undefined ? { currentColor: state.shared.currentColor } : {}),
-        ...(state.shared.topCard !== undefined ? { topCard: state.shared.topCard } : {}),
-      },
     },
   };
 }

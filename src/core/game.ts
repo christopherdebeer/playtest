@@ -59,33 +59,9 @@ import {
   isLeanEngineAvailable
 } from '../lean-engine.js';
 
-// ============ Action Type Mapping (bridge between game configs and Lean engine) ============
-// Game configs may use different action type names than the Lean engine.
-// These maps translate between the two.
-const ACTION_TO_LEAN: Record<string, string> = {
-  'add_to_tableau': 'play_to_tableau',
-  'buy_market': 'buy_card',
-};
-const ACTION_FROM_LEAN: Record<string, string> = {
-  'play_to_tableau': 'add_to_tableau',
-  'buy_card': 'buy_market',
-};
-
-function mapActionToLean(action: GameAction): GameAction {
-  const mapped = ACTION_TO_LEAN[action.type];
-  if (!mapped) return action;
-  // Create a new action with the mapped type via Object.assign to preserve the discriminated union
-  const result = { ...action } as unknown as Record<string, unknown>;
-  result.type = mapped;
-  return result as unknown as GameAction;
-}
-
-function mapActionFromLean(type: string): string {
-  return ACTION_FROM_LEAN[type] || type;
-}
-
 // ============ Out-of-Turn Mechanics ============
-// Some games allow actions from non-current players (simultaneous selection, PD, resign)
+// Lean engine handles action aliases (buy_market↔buy_card, add_to_tableau↔play_to_tableau)
+// directly, so no TS-side mapping is needed.
 
 function canPlayerActNow(state: GameState, playerId: string, actionType: string): boolean {
   // Resign is always allowed
@@ -95,14 +71,15 @@ function canPlayerActNow(state: GameState, playerId: string, actionType: string)
   if (state.currentPlayer === playerId) return true;
 
   const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+  const shared = state.shared as Record<string, unknown>;
 
   // Simultaneous action selection: all players can submit select_action
-  if (actionType === 'select_action' && (em.simultaneous_action_selection || state.shared.simultaneousSelection)) {
+  if (actionType === 'select_action' && (em.simultaneous_action_selection || shared.sas_selections !== undefined)) {
     return true;
   }
 
   // Prisoner's dilemma: all players can submit dilemma_choice
-  if (actionType === 'dilemma_choice' && (em.prisoners_dilemma || state.shared.prisonersDilemma)) {
+  if (actionType === 'dilemma_choice' && (em.prisoners_dilemma || shared.pd_choices !== undefined)) {
     return true;
   }
 
@@ -699,32 +676,38 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
       // Merge Lean-initialized shared state
       shared = (leanState.shared as Record<string, unknown>) || {};
 
-      // Shuffle the deck using Math.random (which can be externally seeded for determinism)
-      if (Array.isArray(shared.deck) && shared.deck.length > 0) {
-        const deck = shared.deck as Card[];
-        for (let i = deck.length - 1; i > 0; i--) {
+      // Shuffle: collect ALL cards (deck + dealt hands + topCard from Lean), shuffle, re-deal
+      if (Array.isArray(shared.deck) && (shared.deck as Card[]).length > 0) {
+        const allCards: Card[] = [...(shared.deck as Card[])];
+        // Add back cards Lean dealt to players
+        for (const pid of turnOrder) {
+          if (players[pid]?.hand?.length) {
+            allCards.push(...players[pid].hand);
+          }
+        }
+        // Add back topCard if Lean card-matching init flipped one
+        if (shared.topCard) {
+          allCards.push(shared.topCard as Card);
+          delete shared.topCard;
+          delete shared.currentColor;
+        }
+        // Shuffle all cards using Math.random (externally seedable for determinism)
+        for (let i = allCards.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [deck[i], deck[j]] = [deck[j], deck[i]];
+          [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
         }
         // Re-deal hands from shuffled deck
         const cardsConfig = config.engine_mechanics?.cards as { starting_hand?: number } | undefined;
         const startingHand = cardsConfig?.starting_hand ?? 0;
+        let deckIndex = 0;
         if (startingHand > 0) {
-          let deckIndex = 0;
           for (const pid of turnOrder) {
-            const leanPlayers = leanState.players as unknown as Record<string, Record<string, unknown>>;
-            const leanPlayer = leanPlayers?.[pid];
-            if (leanPlayer) {
-              const hand = deck.slice(deckIndex, deckIndex + startingHand);
-              deckIndex += startingHand;
-              leanPlayer.hand = hand;
-              if (players[pid]) {
-                players[pid].hand = hand;
-              }
-            }
+            const hand = allCards.slice(deckIndex, deckIndex + startingHand);
+            deckIndex += startingHand;
+            players[pid].hand = hand;
           }
-          shared.deck = deck.slice(deckIndex);
         }
+        shared.deck = allCards.slice(deckIndex);
       }
     }
   }
@@ -777,22 +760,9 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     shared.pendingTrades = shared.pendingTrades || [];
   }
 
-  // SAS, PD, semi-cooperative, hidden roles — handled by Lean engine in shared.extra
-  // Map Lean's shared.extra fields to TS-visible fields for backward compatibility
-  const extra = (shared.extra || {}) as Record<string, unknown>;
-  if (extra.sas_selections !== undefined) {
-    shared.simultaneousSelection = { selections: extra.sas_selections, phase: 'selecting', resolved: false };
-  }
-  if (extra.pd_choices !== undefined) {
-    shared.prisonersDilemma = {
-      round: (extra.pd_round as number) || 0,
-      choices: extra.pd_choices || {},
-      resolved: (extra.pd_resolved as boolean) || false,
-    };
-  }
-  if (extra.collective_progress !== undefined) {
-    shared.semiCooperative = { collectiveProgress: extra.collective_progress as number };
-  }
+  // SAS, PD, semi-cooperative — handled by Lean engine
+  // Lean-canonical state: sas_selections, pd_choices, pd_round, pd_resolved,
+  // collective_progress are all at the top level of shared (via extra RBMap)
 
   // Apply personas and fill any uninitialized players
   for (let i = 1; i <= playerCount; i++) {
@@ -1533,8 +1503,7 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       let targets = la.targets;
       let cards = la.cards;
 
-      // Map action type from Lean to game-expected type
-      const actionType = mapActionFromLean(la.action.type);
+      const actionType = la.action.type;
 
       // Augment move actions with board targets if not provided by Lean
       if (actionType === 'move' && !targets) {
@@ -1551,29 +1520,29 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
         }
       }
 
-      const mappedAction = { ...la.action } as unknown as Record<string, unknown>;
-      mappedAction.type = actionType;
       actions.push({
         type: actionType as GameAction['type'],
         description: la.description || `${actionType}`,
         enabled: la.enabled !== false,
         required: {},
-        examples: [mappedAction as unknown as GameAction],
+        examples: [la.action as unknown as GameAction],
         ...(targets ? { targets } : {}),
         ...(cards ? { cards } : {}),
       });
     }
   }
 
-  // === Out-of-turn actions for non-current players ===
-  if (!isCurrentPlayer) {
+  // === Out-of-turn actions (SAS/PD) for ALL players ===
+  // Lean-canonical state: sas_selections, pd_choices, pd_resolved at shared top level
+  {
     const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
 
-    // Simultaneous Action Selection: show select_action
-    if (em.simultaneous_action_selection || state.shared.simultaneousSelection) {
-      const sas = state.shared.simultaneousSelection as { selections?: Record<string, string> } | undefined;
-      const alreadySelected = sas?.selections && playerId in sas.selections;
-      if (!alreadySelected) {
+    // Simultaneous Action Selection: show select_action if not already selected
+    if (em.simultaneous_action_selection || shared.sas_selections !== undefined) {
+      const selections = shared.sas_selections as Record<string, string> | undefined;
+      const alreadySelected = selections && typeof selections === 'object' && playerId in selections;
+      if (!alreadySelected && !actions.some(a => a.type === 'select_action')) {
         actions.push({
           type: 'select_action' as GameAction['type'],
           description: 'Choose your action for this round',
@@ -1584,11 +1553,12 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
       }
     }
 
-    // Prisoner's Dilemma: show dilemma_choice
-    if (em.prisoners_dilemma || state.shared.prisonersDilemma) {
-      const pd = state.shared.prisonersDilemma as { choices?: Record<string, string>; resolved?: boolean } | undefined;
-      const alreadyChosen = pd?.choices && playerId in pd.choices;
-      if (!alreadyChosen && !pd?.resolved) {
+    // Prisoner's Dilemma: show dilemma_choice if not already chosen
+    if (em.prisoners_dilemma || shared.pd_choices !== undefined) {
+      const choices = shared.pd_choices as Record<string, string> | undefined;
+      const resolved = shared.pd_resolved as boolean | undefined;
+      const alreadyChosen = choices && typeof choices === 'object' && playerId in choices;
+      if (!alreadyChosen && !resolved && !actions.some(a => a.type === 'dilemma_choice')) {
         actions.push({
           type: 'dilemma_choice' as GameAction['type'],
           description: 'Choose cooperate or defect',
@@ -1600,47 +1570,13 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     }
   }
 
-  // === Current player: add SAS and PD actions too ===
-  if (isCurrentPlayer) {
-    const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
-
-    if (em.simultaneous_action_selection || state.shared.simultaneousSelection) {
-      const sas = state.shared.simultaneousSelection as { selections?: Record<string, string> } | undefined;
-      if (!sas?.selections || !(playerId in sas.selections)) {
-        if (!actions.some(a => a.type === 'select_action')) {
-          actions.push({
-            type: 'select_action' as GameAction['type'],
-            description: 'Choose your action for this round',
-            enabled: true,
-            required: {},
-            examples: [{ type: 'select_action', selectedAction: 'Scheme' } as unknown as GameAction]
-          });
-        }
-      }
-    }
-
-    if (em.prisoners_dilemma || state.shared.prisonersDilemma) {
-      const pd = state.shared.prisonersDilemma as { choices?: Record<string, string>; resolved?: boolean } | undefined;
-      if (!pd?.choices || !(playerId in pd.choices)) {
-        if (!actions.some(a => a.type === 'dilemma_choice') && !pd?.resolved) {
-          actions.push({
-            type: 'dilemma_choice' as GameAction['type'],
-            description: 'Choose cooperate or defect',
-            enabled: true,
-            required: {},
-            examples: [{ type: 'dilemma_choice', choice: 'cooperate' } as unknown as GameAction]
-          });
-        }
-      }
-    }
-  }
-
   // === PASS action (if not already from Lean) ===
   if (!actions.some(a => a.type === 'pass')) {
     // For out-of-turn players in SAS/PD games, pass should be disabled
     const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
     const hasSasOrPd = em.simultaneous_action_selection || em.prisoners_dilemma ||
-      state.shared.simultaneousSelection || state.shared.prisonersDilemma;
+      shared.sas_selections !== undefined || shared.pd_choices !== undefined;
     const passEnabled = isCurrentPlayer || !hasSasOrPd;
 
     actions.push({
@@ -1655,8 +1591,9 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   } else if (!isCurrentPlayer) {
     // Disable pass for non-current players in SAS/PD games
     const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
     const hasSasOrPd = em.simultaneous_action_selection || em.prisoners_dilemma ||
-      state.shared.simultaneousSelection || state.shared.prisonersDilemma;
+      shared.sas_selections !== undefined || shared.pd_choices !== undefined;
     if (hasSasOrPd) {
       const passAction = actions.find(a => a.type === 'pass');
       if (passAction) {
@@ -1889,9 +1826,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
 
   // ============ Lean Engine Validation ============
   if (isLeanEngineAvailable()) {
-    // Map action type for Lean (e.g., add_to_tableau → play_to_tableau)
-    const leanAction = mapActionToLean(action);
-    const leanResult = leanValidateAction(state, playerId, leanAction);
+    const leanResult = leanValidateAction(state, playerId, action);
     if (leanResult && !leanResult.valid) {
       return { valid: false, errors: [leanResult.error || 'Action blocked by Lean engine'] };
     }
@@ -1947,46 +1882,16 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
     };
   }
 
-  // Map action type for Lean engine (e.g., add_to_tableau → play_to_tableau)
-  const leanAction = mapActionToLean(action);
-
   // ============ Lean Engine Execution ============
   if (isLeanEngineAvailable()) {
-    const leanResult = leanExecuteAction(state, playerId, leanAction);
+    const leanResult = leanExecuteAction(state, playerId, action);
     if (!leanResult.success) {
       return { success: false, error: leanResult.error || 'Lean engine execution failed' };
     }
 
-    // Merge Lean state changes back
+    // Merge Lean state changes back (players + shared state)
     if (leanResult.state) {
       mergeLeanPlayers(state, leanResult.state);
-
-      // Sync Lean shared.extra back to TS-visible fields for observability
-      const leanShared = (leanResult.state as unknown as Record<string, unknown>).shared as Record<string, unknown> | undefined;
-      const leanExtra = leanShared?.extra as Record<string, unknown> | undefined;
-      if (leanExtra) {
-        // Sync SAS state
-        if (leanExtra.sas_selections !== undefined) {
-          const sas = state.shared.simultaneousSelection as Record<string, unknown> | undefined;
-          if (sas) { sas.selections = leanExtra.sas_selections; }
-        }
-        // Sync PD state
-        if (leanExtra.pd_choices !== undefined || leanExtra.pd_round !== undefined) {
-          const pd = state.shared.prisonersDilemma as Record<string, unknown> | undefined;
-          if (pd) {
-            pd.choices = leanExtra.pd_choices || {};
-            if (leanExtra.pd_round !== undefined) pd.round = leanExtra.pd_round;
-            if (leanExtra.pd_resolved !== undefined) pd.resolved = leanExtra.pd_resolved;
-          }
-        }
-        // Sync card matching state
-        if (leanExtra.currentColor !== undefined) {
-          state.shared.currentColor = leanExtra.currentColor;
-        }
-        if (leanExtra.topCard !== undefined) {
-          state.shared.topCard = leanExtra.topCard;
-        }
-      }
     }
 
     // Log the action

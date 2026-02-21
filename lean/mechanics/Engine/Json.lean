@@ -188,13 +188,17 @@ instance : FromJson SharedState where
     let placedLocations ← (j.getObjValAs? (List String) "placedLocations") <|> pure []
     let market ← (j.getObjValAs? (List Card) "market") <|> pure []
     let knownFields : List String := ["deck", "discard", "boardStates", "boardEdges",
-      "currentBoardState", "placedLocations", "market"]
+      "currentBoardState", "placedLocations", "market", "extra"]
     let extra ← match j with
       | Json.obj kvs => do
         let mut m : Lean.RBMap String Json compare := .empty
         for ⟨k, v⟩ in kvs.toArray do
           if !knownFields.contains k then
             m := m.insert k v
+        -- Unwrap nested "extra" key (TS may send mechanic state under shared.extra)
+        if let .ok (Json.obj innerKvs) := j.getObjVal? "extra" then
+          for ⟨ik, iv⟩ in innerKvs.toArray do
+            m := m.insert ik iv
         pure m
       | _ => pure .empty
     return { deck, discard, boardStates, boardEdges, currentBoardState, placedLocations, market, extra }
