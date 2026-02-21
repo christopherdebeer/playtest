@@ -51,7 +51,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "game:setup",
-    "content": "Game initialized. Waiting for players..."
+    "body": "Game initialized. Waiting for players..."
   }'
 ```
 
@@ -66,7 +66,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "game:start",
-    "content": "Game started! Round 1 begins."
+    "body": "Game started! Round 1 begins."
   }'
 
 # Prompt player (repeat for each player)
@@ -75,7 +75,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "game:prompt",
-    "content": "Alice, your turn. What do you do?"
+    "body": "Alice, your turn. What do you do?"
   }'
 ```
 
@@ -87,7 +87,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "game:resolve",
-    "content": "Action resolved. Bob, your turn."
+    "body": "Action resolved. Bob, your turn."
   }'
 ```
 
@@ -140,7 +140,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "game:ready",
-    "content": "'${PLAYER_NAME}' is ready!"
+    "body": "'${PLAYER_NAME}' is ready!"
   }'
 ```
 
@@ -167,7 +167,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "player:action",
-    "content": "Draw 2 cards, move forward 3 spaces"
+    "body": "Draw 2 cards, move forward 3 spaces"
   }'
 ```
 
@@ -240,7 +240,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "observation",
-    "content": "Analysis: Observed 15 messages, 3 player actions, perfect turn order maintained"
+    "body": "Analysis: Observed 15 messages, 3 player actions, perfect turn order maintained"
   }'
 ```
 
@@ -263,7 +263,7 @@ curl -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${AGENT_ID}'",
     "kind": "observation",
-    "content": "Verification complete: Message ordering ✓, State consistency ✓, Turn management ✓, Causal chains ✓"
+    "body": "Verification complete: Message ordering ✓, State consistency ✓, Turn management ✓, Causal chains ✓"
   }'
 ```
 
@@ -293,11 +293,13 @@ Content-Type: application/json
 {
   "agent_id": "agent-xxx",
   "kind": "game:setup|game:start|game:prompt|player:action|game:resolve|observation",
-  "content": "message text"
+  "body": "message text"
 }
 
-Response: { "message_id": "msg-xxx", "timestamp": "...", ... }
+Response: { "id": 1, "room_id": "room-xxx", "kind": "...", "body": "...", "created_at": "..." }
 ```
+
+**IMPORTANT**: Use `body` field, not `content`!
 
 ### Get Messages
 ```bash
@@ -310,7 +312,7 @@ Response: [
     "message_id": "msg-xxx",
     "agent_id": "agent-xxx",
     "kind": "game:prompt",
-    "content": "...",
+    "body": "...",
     "timestamp": "2026-02-21T16:50:00.000Z"
   },
   ...
@@ -375,7 +377,7 @@ curl -s -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${GM_ID}'",
     "kind": "game:setup",
-    "content": "Game initialized"
+    "body": "Game initialized"
   }' | jq
 
 # 3. Start
@@ -386,7 +388,7 @@ curl -s -X POST "${API}/rooms/${ROOM_ID}/messages" \
   -d '{
     "agent_id": "'${GM_ID}'",
     "kind": "game:start",
-    "content": "Game started! Round 1 begins."
+    "body": "Game started! Round 1 begins."
   }' | jq
 
 # 4. Update state
