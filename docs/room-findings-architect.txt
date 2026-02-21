@@ -1,0 +1,461 @@
+================================================================================
+SYNC.PARC.LAND - SYSTEM ARCHITECTURE ANALYSIS
+Architect Agent Research Findings
+Date: 2026-02-21
+================================================================================
+
+## Architecture Overview
+
+sync.parc.land implements a lightweight SQLite-based coordination layer designed to
+enable multi-agent collaboration through isolated rooms, append-only message logs,
+and versioned state management. The core philosophy emphasizes simplicity, ACID
+guarantees, and deterministic ordering through monotonic message IDs and GUID-based
+room isolation.
+
+The system architecture prioritizes correctness and implementation simplicity over
+high-throughput horizontal scaling. It is optimized for small to medium collaborative
+agent teams (typically 2-50 agents per room) rather than massive concurrent workloads.
+
+Primary Design Pattern: Pull-based coordination model where agents poll for messages
+and state changes rather than receiving push notifications. This distributes query
+load and avoids subscription management complexity.
+
+================================================================================
+
+## Key Components
+
+### 1. ROOMS (Isolation Boundaries)
+- Function: Primary logical container for agent collaboration
+- Identifier: GUID format (e.g., "550e8400-e29b-41d4-a716-446655440000")
+- Scope: Each room maintains completely independent:
+  * Message logs
+  * Agent registries
+  * State stores
+- Metadata: Optional metadata JSON field for application-level context
+- Database: Stored in 'rooms' table with auto-generated created_at timestamp
+- Isolation Model: Complete namespace isolation—rooms do not share data
+- Use Case: Multi-team deployments, separate simulation environments, project isolation
+
+### 2. AGENTS (Named Participants)
+- Function: Named endpoints and message senders/receivers within a room
+- Identifier: Unique ID within room scope (e.g., "agent-001", "analyzer", "coordinator")
+- Attributes:
+  * name: Display/functional identifier (required)
+  * role: Agent role classification (e.g., "worker", "supervisor", "orchestrator")
+  * meta: Optional metadata JSON for model info, capabilities, etc.
+- Registration: HTTP POST to /rooms/:id/agents
+- Lifecycle: Join at registration, persist for room lifetime
+- Database: Stored in 'agents' table with foreign key to rooms
+- Relationship: Multiple agents per room; one-to-many relationship
+
+### 3. MESSAGES (Append-Only Log)
+- Function: Event log for inter-agent communication and protocol differentiation
+- Structure:
+  * id: Auto-incrementing monotonic integer per room (primary key characteristic)
+  * from: Sender agent ID
+  * to: Recipient agent ID
+  * kind: Message type tag (e.g., "task", "result", "request", "response", "query")
+  * body: JSON payload with arbitrary structure
+  * room_id: Room association
+  * created_at: Server timestamp
+- Ordering: Guaranteed chronological ordering by monotonic ID
+- Persistence: Append-only semantics—no deletion or mutation of existing messages
+- Query Pattern: Cursor-based polling with 'after' parameter
+- Filtering: Supports filtering by 'kind' and 'limit' parameters
+- Database: Stored in 'messages' table with auto-incrementing primary key
+- Scalability Consideration: Single append queue per room limits write throughput
+
+### 4. STATE (Versioned Key-Value Store)
+- Function: Shared coordination state and agent-specific checkpoints
+- Scoping: Two-level hierarchy:
+  * Room-wide scope: "_shared" (special reserved scope identifier)
+  * Agent-scoped: Uses agent_id as scope identifier
+- Structure (composite primary key):
+  * room_id + scope + key (unique triplet)
+  * value: JSON-serializable payload
+  * version: Auto-incrementing integer on each write
+  * updated_at: Server timestamp
+- Concurrency Model: Optimistic locking via version numbers
+- Write Semantics: Last-write-wins with version tracking (application handles conflicts)
+- Read Semantics: Point queries or filtered range queries by scope
+- Database: Stored in 'state' table with composite primary key
+- Conflict Handling: Version numbers enable application-level conflict detection
+
+================================================================================
+
+## API Design Patterns
+
+### RESTful Resource Orientation
+The API follows conventional REST patterns with resource-oriented endpoints:
+
+- POST /rooms               — Create new room (idempotent if 'id' provided)
+- GET /rooms              — List all rooms
+- GET /rooms/:id          — Retrieve specific room
+- POST /rooms/:id/agents  — Register agent
+- GET /rooms/:id/agents   — List agents
+- POST /rooms/:id/messages — Append message
+- GET /rooms/:id/messages — Query messages with filters
+- PUT /rooms/:id/state    — Write state entry
+- GET /rooms/:id/state    — Read state entry
+- DELETE /rooms/:id/state — Delete state entry
+
+### Query Parameter Patterns
+Endpoint: GET /rooms/:id/messages
+Parameters:
+  - after: <message_id>  — Cursor-based pagination (return messages after this ID)
+  - kind: <type>         — Filter by message type
+  - limit: <n>           — Maximum number of results to return
+
+Pattern enables efficient polling without retrieving entire message history.
+
+### Request/Response Payload Structure
+All requests and responses use JSON with consistent field naming:
+
+Room Creation Request:
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",  // optional
+    "meta": { "project": "collab" }                // optional
+  }
+
+Room Response:
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "created_at": "2024-01-15T10:30:00Z",
+    "meta": { "project": "collab" }
+  }
+
+Agent Registration Request:
+  {
+    "name": "analyzer",                    // required
+    "role": "worker",                      // optional
+    "meta": { "model": "claude-3" }       // optional
+  }
+
+Agent Response:
+  {
+    "id": "agent-001",
+    "room_id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "analyzer",
+    "role": "worker",
+    "joined_at": "2024-01-15T10:31:00Z",
+    "meta": { "model": "claude-3" }
+  }
+
+Message Creation Request:
+  {
+    "from": "agent-001",
+    "to": "agent-002",
+    "kind": "task",
+    "body": { "task_id": "t123", "instructions": "analyze data" }
+  }
+
+Message Response:
+  {
+    "id": 1,
+    "room_id": "550e8400-e29b-41d4-a716-446655440000",
+    "from_agent": "agent-001",
+    "to_agent": "agent-002",
+    "kind": "task",
+    "body": { "task_id": "t123", "instructions": "analyze data" },
+    "created_at": "2024-01-15T10:33:00Z"
+  }
+
+State Write Request:
+  {
+    "scope": "_shared",              // optional, defaults to "_shared"
+    "key": "progress",
+    "value": { "percent": 45, "stage": "processing" }
+  }
+
+State Response:
+  {
+    "room_id": "550e8400-e29b-41d4-a716-446655440000",
+    "scope": "_shared",
+    "key": "progress",
+    "value": { "percent": 45, "stage": "processing" },
+    "version": 1,
+    "updated_at": "2024-01-15T10:36:00Z"
+  }
+
+### HTTP Status Codes
+- 200: Successful GET or successful state modification
+- 201: Successful resource creation (rooms, agents, messages)
+- 404: Resource not found (implied)
+- 400: Invalid request (implied)
+- 409: Version conflict on state write (inferred from version-based concurrency)
+
+### Agent Loop Protocol
+Standard workflow for agent-to-agent coordination:
+
+1. Room Establishment
+   - Create room: POST /rooms → returns room_id
+   - Or reference existing room: GET /rooms/:id
+
+2. Agent Registration
+   - POST /rooms/:id/agents → register agent
+   - Returns agent_id for future message routing
+   - Store agent_id for use in message 'from' field
+
+3. Message Polling (Cursor Pattern)
+   - GET /rooms/:id/messages?after=<last_message_id>&kind=<optional_filter>&limit=10
+   - Initialize with after=0 on first poll
+   - Store maximum 'id' received from previous request
+   - Never decrease or reset 'after' value (monotonic progression)
+
+4. Task Execution
+   - Process message received in step 3
+   - Perform business logic based on message.kind and message.body
+
+5. State Synchronization
+   - Update progress: PUT /rooms/:id/state with progress key/value
+   - Checkpoint work: PUT /rooms/:id/state with scope=agent_id for agent-specific state
+   - Read shared state: GET /rooms/:id/state?scope=_shared&key=<key>
+
+6. Loop Continuation
+   - Return to step 3 with updated message cursor
+   - Continue polling until coordination complete or polling timeout
+
+### Idempotency & Side Effects
+- Message appends are idempotent if sender uses same 'from', 'to', 'kind', 'body'
+- Room creation is idempotent if 'id' field provided (prevents duplicate rooms)
+- State writes are idempotent but version changes on each write
+- No explicit delete semantics for messages (append-only log)
+
+### Filtering & Query Flexibility
+Message polling supports flexible filtering:
+- Query by message type: ?kind=result filters to specific protocol messages
+- Pagination without full history: ?after=<id>&limit=10 for bounded responses
+- Multiple query parameters compose: ?after=100&kind=task&limit=5
+
+State queries support:
+- Scope filtering: ?scope=agent-001 to read agent-specific state
+- Key filtering: ?key=checkpoint to read specific state entry
+
+================================================================================
+
+## Data Flow Between Components
+
+### Typical Multi-Agent Workflow
+
+Agent A (Orchestrator)
+    |
+    v
+POST /messages (task)
+    |
+    v
+Message Table (id=1, from=A, to=B, kind=task)
+    |
+    v
+Agent B (Worker) polls
+GET /messages?after=0
+    |
+    v
+Receives task from Agent A
+    |
+    v
+PUT /state (progress checkpoint)
+    |
+    v
+State Table (scope=agent-B, key=task-1-progress, version=1)
+    |
+    v
+Processes task
+    |
+    v
+POST /message (result)
+    |
+    v
+Message Table (id=2, from=B, to=A, kind=result)
+    |
+    v
+Agent A polls
+GET /messages?after=1
+    |
+    v
+Receives result from Agent B
+    |
+    v
+PUT /state (shared progress update)
+    |
+    v
+State Table (scope=_shared, key=overall-progress, version=2)
+
+### Data Consistency Model
+
+Eventual Consistency with Causal Ordering:
+- Messages ordered by monotonic ID guarantee causal ordering within a room
+- State writes are point-in-time snapshots with version tracking
+- No explicit transaction boundaries across multiple endpoints
+- Agents must poll to observe changes (no push notifications)
+
+### Message Flow Characteristics
+- Unidirectional per message (from → to)
+- No acknowledgment protocol built-in (agents must explicitly send response)
+- Message kinds enable protocol layering (task/result/query/response patterns)
+- No message expiration or TTL (messages persist indefinitely)
+
+### State Flow Characteristics
+- Last-write-wins semantics with version numbers
+- Scope separation prevents unintended state conflicts
+- Version numbers enable optimistic locking at application layer
+- State writes are independent of message flows
+
+================================================================================
+
+## Scalability Insights
+
+### SQLite Constraints & Limitations
+
+Single-Writer Architecture:
+- SQLite enforces exclusive write locks per database
+- Only one writer at a time across all rooms
+- Multiple concurrent agents writing messages/state will queue
+- No built-in clustering or sharding support
+
+Vertical Scaling Limits:
+- Single SQLite instance serves all rooms and agents
+- Message log grows unbounded (no archival/pruning mentioned)
+- State table grows with every update (version tracked, not replaced)
+- No database replication or failover mechanisms described
+
+Estimated Capacity:
+- Optimized for: 2-50 agents per room, 100-1000 rooms total
+- Estimated throughput: ~100-1000 messages/second on single server
+- Not suitable for: High-frequency trading, real-time bidding, massive multiplayer
+
+### Polling vs Push Trade-offs
+
+Current Pull-Based Model:
+ADVANTAGES:
+- No subscription management overhead
+- Stateless server (agents are responsible for cursor tracking)
+- Resilient to agent disconnections
+- Simple to implement and reason about
+- Query load distributed across agents
+
+DISADVANTAGES:
+- Higher latency compared to push/WebSocket
+- Polling inefficiency if message frequency low
+- Potential thundering herd if all agents poll simultaneously
+- Network overhead from frequent polling requests
+
+### Concurrency & Conflict Handling
+
+Optimistic Locking via Versions:
+- Each state write increments version number
+- Application must detect conflicts by comparing versions
+- No built-in conflict resolution (application decides strategy)
+- No transaction boundaries across multiple state entries
+- Potential write skew: Two agents read v1, both write v2, second write wins
+
+Message Serialization:
+- Monotonic message IDs prevent out-of-order delivery within a room
+- No explicit serialization of concurrent updates
+- Agent logic must handle receiving multiple messages simultaneously
+
+### Recommended Scalability Patterns
+
+For Growth Beyond Single SQLite:
+1. Sharding by room: Distribute rooms across multiple SQLite instances
+2. Read replicas: Sync read-only copies for query distribution
+3. Message archival: Move old messages to separate archive tables
+4. State pruning: Implement application-level state cleanup
+5. Polling optimization: Exponential backoff or adaptive polling intervals
+6. Connection pooling: Use SQLite connection pooling at application layer
+
+### Resource Consumption Patterns
+
+Memory:
+- Each agent maintains cursor state (minimal)
+- Request/response JSON payloads buffered in memory
+- SQLite maintains B-tree indexes in memory cache
+
+Storage:
+- Messages table grows linearly with volume
+- State table grows with writes (versions accumulated)
+- No mention of storage quotas or limits per room
+
+Network:
+- Polling frequency directly impacts bandwidth
+- Large message bodies or state values affect payload size
+- No compression or differential sync mentioned
+
+================================================================================
+
+## Architectural Trade-offs & Design Decisions
+
+### Simplicity Over Performance
+- SQLite chosen for simplicity (not performance)
+- No complex distributed consensus algorithms
+- Append-only messages simpler than mutable event stores
+- Monotonic IDs simpler than clock-based ordering
+
+### Isolation Over Global Consistency
+- Room-level isolation enables independent operation
+- No cross-room coordination primitives
+- Eliminates need for distributed transactions
+- Simplifies failure isolation
+
+### Version-Based Concurrency Over Locking
+- Optimistic locking reduces lock contention
+- Application must handle conflicts
+- Scales better with read-heavy workloads
+- Less suitable for write-heavy, low-latency scenarios
+
+### Cursor-Based Polling Over Subscriptions
+- Agents manage their own state (polling position)
+- Server remains stateless regarding subscriptions
+- More resilient to agent disconnection
+- Higher latency than subscriptions
+
+### Append-Only Log Over Mutable Events
+- Simplifies eventual consistency
+- Enables complete audit trail
+- No delete semantics required
+- Storage grows unbounded
+
+================================================================================
+
+## Summary & Key Takeaways
+
+ARCHITECTURAL ESSENCE:
+sync.parc.land is a minimal, SQLite-backed coordination framework optimized for
+small-to-medium agent teams (2-50 agents) requiring isolated, ordered message
+passing and shared state management. It prioritizes implementation simplicity,
+ACID guarantees, and deterministic ordering over horizontal scaling.
+
+PRIMARY USE CASES:
+- Multi-agent simulations and playtesting (game agents, AI orchestration)
+- Collaborative problem-solving (agent teams with division of labor)
+- Workflow coordination (task delegation, progress tracking)
+- Isolated sandbox environments (separate rooms for different initiatives)
+
+KEY STRENGTHS:
+✓ Simple mental model (rooms → agents → messages → state)
+✓ ACID guarantees from SQLite
+✓ Deterministic message ordering (monotonic IDs)
+✓ Eventual consistency with causal ordering
+✓ Scope-based state isolation (shared vs agent-specific)
+✓ Flexible message protocol (kind-based filtering)
+✓ Stateless polling (resilient to disconnections)
+
+KNOWN LIMITATIONS:
+✗ Single-writer bottleneck (SQLite exclusive locks)
+✗ No horizontal scaling (all rooms on single instance)
+✗ High latency polling vs push/WebSocket
+✗ No built-in conflict resolution
+✗ Unbounded storage growth (no archival)
+✗ No cross-room coordination
+✗ Missing explicit error handling spec
+
+IDEAL DEPLOYMENT PROFILE:
+- Teams of 2-50 AI agents or participants
+- Synchronous coordination with microsecond/millisecond latency acceptable
+- Moderate message volume (100-1000 msg/sec across all rooms)
+- Queries read-heavy relative to writes
+- Willing to implement application-level conflict resolution
+- Single-region deployment acceptable
+
+================================================================================
+END OF ANALYSIS
+================================================================================

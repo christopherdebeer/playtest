@@ -1,0 +1,237 @@
+# Sync.Parc.Land - Researcher Findings
+## Multi-Agent Collaboration Platform
+
+### Overview
+Sync provides a lightweight SQLite-based persistence layer enabling multi-agent collaboration through room-based isolation, message logging, and versioned state management. It functions as a coordination backbone for distributed agents to collaborate asynchronously.
+
+---
+
+## Core Features & Capabilities
+
+1. **Room-Based Isolation**
+   - GUID-scoped containers for independent agent groups
+   - Provides secure, isolated environments for agent collaboration
+   - Supports multiple concurrent rooms with independent state
+
+2. **Agent Registration & Metadata**
+   - Named participant registration within rooms
+   - Support for roles and metadata attachment
+   - Enables identification and routing of messages to specific agents
+
+3. **Message Logging (Append-Only)**
+   - Immutable, monotonically-indexed communication channel
+   - Supports efficient pagination via cursor-based polling
+   - Enables audit trails of all agent interactions
+   - Integer primary keys for deterministic ordering
+
+4. **Versioned State Management**
+   - Two-level scoped key-value storage:
+     * Shared state (room-level, accessible by all agents)
+     * Per-agent state (agent-level, agent-specific data)
+   - Optimistic concurrency control with automatic version incrementing
+   - Prevents concurrent write conflicts through version tracking
+   - Enables efficient state synchronization
+
+5. **Live Dashboarding**
+   - Web UI for real-time room monitoring
+   - Visibility into active agents, messages, and state
+   - Accessible via `https://sync.parc.land/`
+
+6. **RESTful API**
+   - Simple JSON-based REST endpoints
+   - Operates against base URL: `https://sync.parc.land/`
+   - Lightweight, protocol-agnostic communication
+
+---
+
+## Real-World Use Cases
+
+1. **Multi-Agent Collaboration Frameworks**
+   - Coordinate behavior between multiple independent AI agents
+   - Gamemaster-player systems (e.g., playtesting games with parallel agents)
+   - Distributed team simulations
+
+2. **Task Coordination & Orchestration**
+   - Distribute work across multiple agents
+   - Track progress through message logs
+   - Maintain shared task state and per-agent assignments
+   - Complex workflow management with audit trails
+
+3. **Protocol-Agnostic Agent Communication**
+   - Enable different agent types to communicate without tight coupling
+   - Message kind tagging for protocol differentiation
+   - Flexible payload structures supporting various agent architectures
+
+4. **Real-Time State Synchronization**
+   - Maintain consensus across distributed participants
+   - Efficient polling reduces unnecessary traffic
+   - Monotonic message IDs enable incremental updates
+
+5. **Audit & Compliance**
+   - Immutable message logs provide complete audit trails
+   - Time-ordered records of all interactions
+   - Suitable for regulated environments requiring accountability
+
+6. **Game and Simulation Playtesting**
+   - Multi-player game testing with AI agents
+   - Turn-based and asynchronous game mechanics
+   - Parallel agent operations with coordinated state
+
+---
+
+## Integration Patterns
+
+### Standard Agent Loop Pattern
+
+Developers integrate Sync following this polling-based pattern:
+
+1. **Room Creation/Joining**
+   - Create or join a GUID-identified room
+   - Room isolation ensures data separation
+
+2. **Agent Registration**
+   - Register named agent with metadata
+   - Establishes identity within the room
+
+3. **Message Polling (Cursor-Based)**
+   - Poll for messages using cursor position
+   - Cursor-based pagination ensures efficiency
+   - Only fetch messages since last seen ID
+
+4. **Message Processing & Response**
+   - Process received messages by kind/type
+   - Generate responses with typed payloads
+   - Post responses back to room message log
+
+5. **State Management**
+   - Update shared state for room-level data
+   - Update per-agent state for agent-specific data
+   - Use version tracking for optimistic concurrency
+
+### Scope Segmentation Best Practice
+
+- **Shared Scope**: Store room-level variables (shared configuration, game state)
+- **Per-Agent Scope**: Store agent-specific data (instructions, local state, metrics)
+- Enables clean separation of concerns and data isolation
+
+### Message Structure
+
+- **Message Kind Tagging**: Use kind field for protocol differentiation
+  - Supports multiple message types in single room
+  - Enables extensible message schemas
+- **Typed Payloads**: JSON structures for message data
+- **Monotonic Ordering**: Integer-based message IDs for deterministic ordering
+
+---
+
+## Best Practices
+
+1. **Efficient Polling**
+   - Always use cursor-based pagination
+   - Poll at appropriate intervals (not too frequent to waste resources)
+   - Maintain cursor state to only process new messages
+   - Use monotonic message IDs for incremental updates
+
+2. **Optimistic Concurrency Control**
+   - Always track and check version numbers
+   - Implement retry logic for version conflicts
+   - Version auto-increments on each update
+   - Enables safe concurrent state mutations
+
+3. **Message Kind Organization**
+   - Use consistent, namespaced message kinds (e.g., "agent.action", "game.state")
+   - Document all supported message kinds
+   - Enables protocol flexibility without schema changes
+
+4. **State Scope Strategy**
+   - Use shared scope for configuration and coordination
+   - Use per-agent scope for internal state and private data
+   - Avoid storing large objects in state (use messages for data flow)
+   - Keep state focused on coordination, not transient data
+
+5. **Error Handling & Retry Logic**
+   - Implement exponential backoff for polling failures
+   - Handle version conflicts gracefully (retry with new state)
+   - Log all message processing failures
+   - Implement circuit breakers for cascading failures
+
+6. **Monitoring & Observability**
+   - Use live dashboarding to monitor room health
+   - Track message volume and processing rates
+   - Monitor state update conflicts (version mismatches)
+   - Set up alerts for stalled agents or high error rates
+
+7. **Scalability Considerations**
+   - Room isolation enables horizontal scaling
+   - SQLite backend suitable for moderate scale
+   - Consider message archival for long-running rooms
+   - Poll intervals should increase with room size
+
+8. **Data Management**
+   - Keep message payloads reasonably sized
+   - Archive or purge old messages for long-running scenarios
+   - Implement state compaction to reduce storage
+   - Use append-only logs for audit compliance
+
+---
+
+## Documentation Quality & Completeness
+
+### Strengths
+- **Clear and concise**: Well-organized documentation
+- **Endpoint specifications**: Complete API reference
+- **Schema definitions**: Clear data models
+- **Code examples**: Typical agent loop patterns included
+- **Core concepts**: Foundational architecture well-explained
+- **Practical patterns**: Shows real integration approaches
+
+### Gaps
+- **Error handling documentation**: Limited details on failure scenarios
+- **Production deployment**: Minimal guidance on scaling/ops
+- **SDK availability**: No mention of language-specific SDKs
+- **Rate limiting**: No documented limits or quotas
+- **Security**: Limited security/authentication details
+- **Troubleshooting**: Minimal troubleshooting guide
+
+---
+
+## Technical Architecture
+
+### Data Model
+- **SQLite Backend**: Lightweight, serverless persistence
+- **Core Tables**:
+  * `rooms`: Room definitions and metadata
+  * `agents`: Agent registrations with metadata
+  * `messages`: Append-only message log (auto-incrementing PKs)
+  * `state`: Versioned key-value storage
+
+### Key Design Decisions
+- **Append-Only Message Log**: Enables audit trails and efficient pagination
+- **Monotonic Message IDs**: Integer PKs support cursor-based pagination
+- **Compound State Keys**: (room_id, scope, key) tuple for flexible scoping
+- **Automatic Version Incrementing**: Conflict detection without explicit locks
+- **RESTful Architecture**: Simple HTTP interface, easy integration
+
+### Performance Characteristics
+- **Message Polling**: O(n) pagination with cursor, efficient for sparse updates
+- **State Updates**: O(1) with version increment, no full reads needed
+- **Room Isolation**: Independent data sets support parallel scaling
+
+---
+
+## Pricing & Availability
+No pricing information or availability details provided in documentation. The service appears to be a hosted offering at sync.parc.land with no apparent cost barriers mentioned.
+
+---
+
+## Summary
+
+Sync.Parc.Land is a well-designed coordination platform for multi-agent systems. Its core strength lies in:
+1. **Simple, elegant design** - RESTful API with minimal complexity
+2. **Built for collaboration** - Room isolation with shared + per-agent state
+3. **Audit-ready** - Immutable message logs for accountability
+4. **Efficient polling** - Cursor-based pagination avoids unnecessary data transfer
+5. **Conflict handling** - Optimistic concurrency with automatic versioning
+
+The platform is particularly well-suited for AI agent orchestration, game playtesting, distributed simulations, and any scenario requiring asynchronous multi-party coordination with audit trails.
+

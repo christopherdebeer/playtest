@@ -1,0 +1,479 @@
+================================================================================
+EXPLORER AGENT FINDINGS: sync.parc.land Analysis
+================================================================================
+Date: 2026-02-21
+Platform: sync.parc.land - Lightweight SQLite-based Agent Collaboration System
+================================================================================
+
+## User Interface & Dashboard
+
+### Dashboard Access
+- Access via: https://sync.parc.land/?room=<ROOM_ID>
+- Provides live-updating real-time view of room activity
+- Designed as a developer-focused dashboard with dark monospace aesthetic
+
+### Dashboard Layout & Components
+
+**Header Section**
+- Title displays "agent-sync · playtest"
+- Room identifier clearly shown (e.g., "playtest-explorer")
+- Connection status indicator in top-right corner
+
+**Status Indicator**
+- Circular color-coded dot showing connection health:
+  * Green: Active connection
+  * Yellow: Stale connection
+  * Red: Disconnected
+- Adjacent polling indicator shows: "polling · [message count] msgs"
+- Real-time message count updates
+
+**Agents Panel**
+- Dedicated section displaying connected agents as rounded rectangular badges
+- Each agent badge shows:
+  * Agent name (blue text)
+  * Agent role (gray text)
+- Default state shows "no agents" when empty
+- Agents panel updates in real-time as agents join/leave
+
+**Messages Section**
+- Scrollable message feed (occupies ~50% of viewport height)
+- Each message displays:
+  * Sender name (blue, left-aligned)
+  * Message kind label (small dark background tag for categorization)
+  * Recipient indicator with arrow (for direct messages)
+  * Message body content
+  * Timestamp (right-aligned, gray text)
+- UX Features:
+  * Smooth scrolling behavior
+  * Auto-scrolls to latest message
+  * Brief flash animation on new message arrival
+  * Append-only feed structure
+
+**State Table**
+- Data table showing versioned key-value storage
+- Columns:
+  * Scope (highlighted yellow) - "_shared" or agent ID
+  * Key (highlighted green) - state key name
+  * Value - stored data
+  * Version - auto-incrementing version number
+- Horizontal dividers between rows for clarity
+- Updates in real-time as state changes
+
+### Visual Design
+- Dark color scheme for reduced eye strain
+- Monospace typography throughout (developer-focused)
+- Clear visual hierarchy with color coding
+- Efficient use of space for information density
+
+### Navigation & Discoverability
+- Simple URL-parameter based navigation (?room=)
+- No complex menu structures
+- Direct access to room monitoring
+- Real-time updates without page refresh required
+
+================================================================================
+
+## Getting Started Workflow
+
+### Step 1: Create a Room
+- **Endpoint**: POST /rooms
+- **Optional Fields**:
+  * id (custom room identifier)
+  * meta (metadata object)
+- **Response**: 201 Created with room details
+
+### Step 2: Register as an Agent
+- **Endpoint**: POST /rooms/:id/agents
+- **Required Fields**:
+  * name (agent identifier)
+- **Optional Fields**:
+  * id (custom agent ID)
+  * role (assigned role, e.g., "gamemaster", "player")
+  * meta (agent metadata)
+- **Response**: 201 Created with agent details
+
+### Step 3: View Room in Dashboard
+- **Action**: Append ?room=<ROOM_ID> to base URL
+- **Benefit**: Live-updating interface shows all activity
+- **Real-time**: Agents panel, messages, and state update automatically
+
+### Step 4: Poll for Incoming Messages
+- **Endpoint**: GET /rooms/:id/messages
+- **Parameters**:
+  * after (optional) - cursor position (message ID) to poll after
+  * kind (optional) - filter by message type
+  * limit (optional) - limit result count
+- **Best Practice**: Store highest message ID seen, pass as 'after' parameter on next poll
+- **Efficiency**: Uses cursor-based pagination to avoid reprocessing
+
+### Step 5: Respond to Messages
+- **Endpoint**: POST /rooms/:id/messages
+- **Required Fields**:
+  * from (your agent ID)
+  * to (recipient agent ID or broadcast)
+  * kind (message type tag: "message", "task", "result", etc.)
+  * body (message content/payload)
+- **Response**: 201 Created with message details and assigned ID
+
+### Step 6: Update Shared State
+- **Endpoint**: PUT /rooms/:id/state
+- **Fields**:
+  * scope (optional, defaults to "_shared") - "_shared" or agent ID
+  * key (state key name)
+  * value (any data value)
+- **Auto-versioning**: Version number auto-increments on each write
+- **Use Case**: Share data across agents or store per-agent state
+
+### Step 7: Read State Values
+- **Endpoint**: GET /rooms/:id/state
+- **Query Parameters**:
+  * scope (required) - "_shared" or agent ID
+  * key (required) - state key to retrieve
+- **Response**: Current value and version number
+
+### Step 8: Remove State Entries
+- **Endpoint**: DELETE /rooms/:id/state
+- **Query Parameters**:
+  * scope (required)
+  * key (required)
+- **Response**: 200 OK on successful deletion
+
+### Step 9: Continue Polling Loop
+- Repeat steps 4-7 in regular intervals
+- Implement exponential backoff or keep-alive patterns for production
+- Monitor connection status indicator in dashboard
+
+================================================================================
+
+## API Endpoint Guide
+
+### Core API Structure
+- **Base URL**: https://sync.parc.land/
+- **Protocol**: RESTful HTTP/HTTPS
+- **Response Format**: JSON
+- **Status Codes**: Standard HTTP (201 Created, 200 OK, etc.)
+
+### Room Management Endpoints
+
+**POST /rooms** - Create a Room
+- Purpose: Initialize a new collaboration workspace
+- Request:
+  ```
+  {
+    "id": "custom-room-id" (optional),
+    "meta": { /* custom metadata */ } (optional)
+  }
+  ```
+- Response: 201 Created
+- Use Case: Start a new playtest session, game instance, or collaboration space
+
+**GET /rooms** - List All Rooms
+- Purpose: Enumerate available collaboration workspaces
+- Response: 200 OK with array of room objects
+- Use Case: Dashboard, room browser, analytics
+
+**GET /rooms/:id** - Get Room Details
+- Purpose: Retrieve specific room information
+- Response: 200 OK with room object
+- Use Case: Verify room existence, check metadata
+
+### Agent Management Endpoints
+
+**POST /rooms/:id/agents** - Register an Agent
+- Purpose: Register a participant in the room
+- Request:
+  ```
+  {
+    "name": "player1" (required),
+    "id": "custom-agent-id" (optional),
+    "role": "player" (optional),
+    "meta": { /* custom metadata */ } (optional)
+  }
+  ```
+- Response: 201 Created with assigned agent ID and role
+- Use Case: Player/agent joins game, bot registers for collaboration
+
+**GET /rooms/:id/agents** - List Room Agents
+- Purpose: Retrieve roster of all agents in a room
+- Response: 200 OK with array of agent objects
+- Use Case: Display participants, check if specific agent registered, validate agent count
+
+### Message Endpoints
+
+**POST /rooms/:id/messages** - Post a Message
+- Purpose: Send a message to another agent or broadcast
+- Request:
+  ```
+  {
+    "from": "agent-id" (required),
+    "to": "recipient-id-or-broadcast" (required),
+    "kind": "message|task|result|event" (required),
+    "body": { /* any data structure */ } (required)
+  }
+  ```
+- Response: 201 Created with auto-assigned monotonic message ID
+- Message ID: Useful for cursor-based polling
+- Use Case: Game moves, task assignments, event notifications, inter-agent communication
+
+**GET /rooms/:id/messages** - Poll Messages
+- Purpose: Retrieve new messages since last poll
+- Query Parameters:
+  * after=<MESSAGE_ID> (optional) - retrieve messages AFTER this ID (pagination cursor)
+  * kind=<TYPE> (optional) - filter by message type
+  * limit=<NUMBER> (optional) - limit number of results
+- Response: 200 OK with array of messages, ordered by ID
+- Efficiency: Cursor-based pagination with monotonically increasing IDs prevents reprocessing
+- Use Case: Agent receives tasks, player receives game state updates, polling loop
+
+### State Endpoints
+
+**PUT /rooms/:id/state** - Set/Update State
+- Purpose: Store or modify a versioned key-value pair
+- Request:
+  ```
+  {
+    "scope": "_shared" (optional, defaults to "_shared"),
+    "key": "game_round" (required),
+    "value": 5 (required, any JSON-serializable type)
+  }
+  ```
+- Response: 200 OK with updated version number
+- Dual-level scoping:
+  * "_shared" scope: room-wide shared state (game board, shared variables)
+  * Agent ID scope: per-agent state (inventory, personal preferences)
+- Auto-versioning: Version counter increments on each write (optimistic concurrency control)
+- Use Case: Track game round, player inventory, shared board state, configuration values
+
+**GET /rooms/:id/state** - Retrieve State
+- Purpose: Read a stored state value
+- Query Parameters:
+  * scope=<SCOPE_ID> (required) - "_shared" or agent ID
+  * key=<KEY_NAME> (required) - state key to retrieve
+- Response: 200 OK with value and current version number
+- Use Case: Player checks inventory, game reads current round, agent verifies shared state
+
+**DELETE /rooms/:id/state** - Remove State Entry
+- Purpose: Delete a state key-value pair
+- Query Parameters:
+  * scope=<SCOPE_ID> (required)
+  * key=<KEY_NAME> (required)
+- Response: 200 OK on successful deletion
+- Use Case: Cleanup after game ends, remove temporary state
+
+### Response Codes & Error Handling
+- **201 Created**: Resource successfully created (rooms, agents, messages)
+- **200 OK**: Successful retrieval or modification (GET, DELETE, PUT success)
+- **Standard HTTP codes**: 404 Not Found, 400 Bad Request, 500 Server Error (not detailed in docs)
+
+================================================================================
+
+## Developer Experience
+
+### Documentation Quality
+- **Strengths**:
+  * Clear endpoint reference with URL paths and HTTP methods
+  * Parameter descriptions with required/optional indicators
+  * Real-world workflow (7-step typical agent loop) provided
+  * Endpoint organization by feature (rooms, agents, messages, state)
+  * Status code documentation included
+
+- **Gaps**:
+  * No code examples or sample implementations provided
+  * No SDK or library references
+  * Limited explanation of design rationale
+  * Missing error response examples
+  * No rate limiting or performance guidelines documented
+  * No authentication/authorization details mentioned
+
+### API Design Quality
+- **Strengths**:
+  * RESTful conventions followed (POST for create, GET for read, PUT for update, DELETE for remove)
+  * Consistent endpoint URL patterns (/rooms/:id/resource)
+  * Simple, predictable query parameters
+  * Monotonically increasing message IDs support efficient polling
+  * Versioning on state supports optimistic concurrency patterns
+  * Flexible message "kind" tagging allows protocol evolution without breaking changes
+
+- **Considerations**:
+  * No explicit authentication mechanism mentioned (open by default?)
+  * No explicit rate limiting mentioned
+  * State versioning requires client-side conflict resolution
+  * Cursor-based pagination requires client to maintain state
+
+### Integration Ease
+- **Straightforward**: Standard HTTP client libraries (fetch, axios, requests, etc.) sufficient
+- **No SDKs**: Developers implement HTTP calls directly
+- **Minimal dependencies**: Only HTTP client and JSON parsing required
+- **Platform agnostic**: Works with any HTTP-capable language/framework
+
+### Workflow Clarity
+- **Typical Agent Loop documented**: 3-step initialization clearly explained
+- **Message polling pattern**: Cursor-based approach easy to understand
+- **State management**: Scoping (shared vs. per-agent) clearly delineated
+- **Dashboard accessibility**: Simple URL parameter makes monitoring easy
+
+### Developer Onboarding
+- **Quick start**: POSTing to /rooms to create a workspace takes seconds
+- **No setup required**: No database initialization, authentication setup, or configuration files
+- **Immediate feedback**: Dashboard visible immediately with ?room= parameter
+- **Iteration friendly**: Easy to create test rooms and agents for experimentation
+
+### Potential Improvements for DX
+- Code examples in Python, JavaScript, Go showing complete agent loop
+- OpenAPI/Swagger specification for auto-generated client libraries
+- Simple SDK for common languages (JavaScript, Python at minimum)
+- Rate limiting and quota documentation
+- Connection retry strategies and best practices guide
+- Batch message operations for efficiency
+- WebSocket support for real-time notifications instead of polling
+
+================================================================================
+
+## Integration with Playtest Framework
+
+### Current Alignment
+The sync.parc.land platform is HIGHLY ALIGNED with the playtest framework's architecture:
+
+**Parallel Agent Architecture**
+- Playtest uses "parallel Claude agents (gamemaster + players)"
+- sync.parc.land provides agent registration and message routing
+- Perfect fit for gamemaster-player communication patterns
+
+**Room-based Isolation**
+- Playtest likely requires isolated test sessions
+- Each playtest can use a unique GUID-identified room
+- Automatic workspace isolation for concurrent playtests
+
+**Message-passing Communication**
+- Playtest agents communicate through structured messages
+- sync.parc.land's kind-tagged messages support different message types:
+  * "game_state_update" - board state changes
+  * "move_request" - player move prompts
+  * "move_response" - player submitted moves
+  * "game_event" - rule violations, card effects, etc.
+  * "agent_thought" - reasoning/decision logging
+
+**State Management for Game State**
+- Use "_shared" scope for game board, rules, round counter
+- Use agent-scoped state for player hands, private information, decision logs
+- Version tracking supports detecting stale information
+
+### Implementation Opportunities
+
+**1. Game Session Management**
+- Create room for each playtest session
+- Register gamemaster agent (role: "gamemaster")
+- Register player agents (role: "player", with player number or type)
+- Dashboard (?room=playtest_123) provides live monitoring of session
+
+**2. Move/Action Flow**
+- Gamemaster polls for player messages (kind: "move_submission")
+- Gamemaster applies rules, updates shared state (game_board, current_round)
+- Gamemaster sends state update to players (kind: "game_state_update")
+- Players receive and process state, decide next move
+- Loop continues until game ends
+
+**3. Decision Logging & Analysis**
+- Store agent reasoning in agent-scoped state
+- Messages log decision rationale (kind: "decision_log" in body)
+- Post-game analysis can review message history and state evolution
+- Debugging aid: see exact sequence of state changes with versions
+
+**4. Parallel Playtest Execution**
+- Run multiple rooms simultaneously (room IDs = playtest IDs)
+- Monitor multiple sessions via dashboard tabs
+- Aggregate statistics across room state values
+- Scale testing by spawning new rooms on demand
+
+**5. Testing Different Game Variants**
+- Store game rules/variant config in _shared state
+- Register rules version number
+- Compare agent behavior across rule variants using state history
+- Message kind tagging enables tracking rule interpretations
+
+### Recommended Architecture Integration
+
+```
+Playtest Framework → sync.parc.land Integration
+├── Session Setup Phase
+│   ├── POST /rooms → creates unique playtest room (GUID)
+│   ├── POST /rooms/{id}/agents → register gamemaster
+│   └── POST /rooms/{id}/agents → register players
+├── Game Loop Phase
+│   ├── Agents GET /rooms/{id}/messages?after=<cursor>
+│   ├── Process messages, apply game logic
+│   ├── PUT /rooms/{id}/state → update game board, round counter
+│   └── POST /rooms/{id}/messages → send state updates/prompts
+├── Monitoring Phase
+│   └── Developers access https://sync.parc.land/?room={id}
+└── Analysis Phase
+    ├── GET /rooms/{id}/messages → full message history
+    ├── GET /rooms/{id}/agents → final agent roster
+    └── GET /rooms/{id}/state → final game state snapshot
+```
+
+### Specific Use Cases for Playtest
+
+**1. Game Rules Testing**
+- Use _shared state to store rule variant flags
+- Track which rules agents encounter in messages (kind: "rule_check")
+- Compare agent behavior across rule variants
+
+**2. Decision Quality Analysis**
+- Log agent reasoning in agent-scoped state
+- Message body contains decision rationale
+- Analyze decision quality by comparing move sequences
+
+**3. Game Balance Analysis**
+- Store win/loss stats in _shared state
+- Track game length, turns, resource usage
+- Compare across multiple playtest runs (multiple rooms)
+
+**4. Real-time Monitoring**
+- Game developers watch dashboard while agents play
+- Spot unusual behavior, infinite loops, crashes
+- See message flow, state mutations in real-time
+
+**5. Deterministic Replay & Debugging**
+- Message append-only log enables exact replay
+- Store each state version, messages show what changed
+- Perfect for debugging agent decision issues
+
+### Performance Considerations for Playtest
+
+- **Message Volume**: Typical game might be 10-100 messages per session. sync.parc.land cursor-based polling is efficient.
+- **State Complexity**: Game board stored as single JSON value. Versioning overhead minimal.
+- **Agent Count**: Usually 2-4 agents per game. Simple roster management.
+- **Concurrent Sessions**: Each playtest = separate room. Scale horizontally.
+- **Polling Interval**: Game loop update frequency (100ms-1s) suitable for HTTP polling.
+
+### Enhancement Suggestions
+
+1. **Export Functions**: Allow exporting room history/state as JSON for offline analysis
+2. **State Snapshots**: Endpoint to get all state at specific point in time
+3. **Message Filtering API**: Filter message history by sender, kind, timestamp range
+4. **Bulk Operations**: POST multiple messages at once, PUT multiple state values
+5. **WebSocket Support**: Real-time push instead of polling for faster feedback
+6. **Persistent Storage**: Archive completed rooms for long-term analysis
+7. **Role-based Filtering**: Only show messages agents are supposed to see (fog of war)
+
+================================================================================
+
+SUMMARY
+
+sync.parc.land is a lightweight, well-designed agent collaboration platform that
+aligns perfectly with the playtest framework's architecture. The RESTful API with
+cursor-based message polling, versioned state management, and real-time dashboard
+make it ideal for managing game simulation sessions.
+
+The main strengths are simplicity, clarity of API design, and effective real-time
+monitoring capability. Primary opportunity is enriching the developer experience
+with code examples and client libraries.
+
+For the playtest framework, sync.parc.land provides a robust foundation for:
+- Orchestrating parallel gamemaster + player agents
+- Tracking game state evolution across multiple simultaneous sessions
+- Monitoring and debugging agent behavior in real-time
+- Analyzing game balance, agent decision quality, and rule interpretation
+
+================================================================================
