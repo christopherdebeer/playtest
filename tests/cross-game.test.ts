@@ -15,7 +15,14 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import { GameTestHarness } from './harness.js';
-import { getCardsState } from '../src/mechanics/core/cards.js';
+import type { GameState, Card } from '../src/types/game.js';
+
+/** Inline: access cards shared state (deck/discard). */
+function getCardsState(state: GameState): { deck: Card[]; discardPile: Card[] } {
+  if (!state.shared.deck) state.shared.deck = [];
+  if (!state.shared.discardPile) state.shared.discardPile = [];
+  return state.shared as unknown as { deck: Card[]; discardPile: Card[] };
+}
 
 let harness: GameTestHarness | null = null;
 
