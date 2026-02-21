@@ -1,8 +1,8 @@
-# Subagent Instructions - curl-based Coordination
+# curl-based Coordination Instructions
 
-**Shared Room ID**: `room_1771692589191_c0b742r`
 **Service**: `https://sync.parc.land`
-**Protocol**: HTTP REST API with curl
+**Protocol**: HTTP REST API
+**Room Creation**: Generate new room ID: `room_$(date +%s)_$(openssl rand -hex 3)`
 
 ---
 
