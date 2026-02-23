@@ -47,21 +47,31 @@ A coordination service for multi-agent collaboration through shared rooms with:
 ### Wait Conditions (Explorer-B)
 - **Blocking wait is the core primitive** — CEL conditions evaluated server-side
 - **Agent status visible during wait** — `waiting_on` shows the expression, observable by others
-- **Include param** bundles state/agents to avoid extra round-trips
+- **Include param** bundles state/agents to avoid extra round-trips; **values are properly typed** (numbers, arrays, objects) in wait responses
 - **25s max timeout** fits HTTP keep-alive windows well
+- **Timeout responses are bare** — `include` data only returned when `triggered=true`
 - **Issues:** ~1s polling granularity. No webhook/push alternative.
 
 ### CEL Expressions (Explorer-B + Coordinator)
 - **Learnable from examples** — agents construct expressions without prior CEL knowledge
-- **Rich operators** — ternary, string ops, boolean logic, numeric comparisons, `in` for maps
+- **Rich operators** — `==`, `!=`, `<`, `>`, `&&`, `||`, `!`, `+`, `-`, `*`, `%`, ternary `?:`, `in`, `.`, `[]`
+- **Collection functions work** — `size()`, `filter()`, `map()`, `exists()`, `exists_one()`, `all()`
+- **String functions** — `startsWith()`, `endsWith()`, `contains()`, `matches()` (regex)
+- **Type functions** — `has()` (dot-notation only), `int()`, `double()`, `string()`, `timestamp()`
 - **Error messages are excellent** — caret points to the error in the expression
-- **`has()` uses macro syntax** — `has(obj.field)` not `has(obj, "field")`
+- **Every eval response includes `context_keys`** — shows available scopes, agents, message counts (great for debugging)
+- **Gotcha: double/int mismatch** — `state._shared.counter + 1` fails; must use `+ 1.0` or `int(val) + 1`
+- **Gotcha: `has()` limitation** — `has(map["key"])` errors; must use `"key" in map` instead
+- **Bug: list concat crashes server** — `[1,2] + [3,4]` returns 500 (BigInt serialization error)
+- **Bug: `type()`, `duration()` return `{}`** — not JSON-serializable
 - **Issues:** Quote escaping in CEL within JSON is awkward for LLMs. No dynamic agent enumeration.
 
-### Computed Views (Claude-Opus)
-- **`_view` scope stores CEL expressions** that resolve on read
-- **Referenceable** in waits, writes, and other expressions
+### Computed Views (Claude-Opus + Explorer-B)
+- **`_view` scope stores CEL expressions** that resolve on read — stored as `{_cel_expr: "..."}`, response includes `resolved_value`
+- **Referenceable** in waits, writes, and other expressions — `state._view.view_name` resolves dynamically
+- **Composable** — views can reference other views (meta-views)
 - **Creates reactive derived state** without polling — elegant
+- **Use case:** Perfect for derived conditions like "all players ready", "game over", multi-scope checks
 
 ### Messages & Tasks (Explorer-C)
 - **Atomic claiming** prevents races — 409 if already claimed
@@ -82,6 +92,7 @@ A coordination service for multi-agent collaboration through shared rooms with:
 **Issues (by severity):**
 - **P1:** 3 endpoints leak raw SQLite stack traces as 500s (missing value, missing body, foreign key violations)
 - **P1:** Malformed JSON silently parsed as empty object instead of rejected
+- **P1:** List concatenation in CEL (`[1,2] + [3,4]`) crashes server (BigInt serialization)
 - **P2:** Duplicate agent registration silently overwrites (UPSERT, no conflict detection)
 - **P2:** Heartbeat succeeds for nonexistent agents (creates phantom records)
 - **P2:** Nonexistent room reads return 200 with empty array (should be 404)
@@ -151,3 +162,6 @@ Emergent minimal agent loop (learned by the agents through using the system):
 10. **CEL introspection** — `/context` endpoint that dumps the full CEL context for debugging
 11. **Batch write atomicity** — option for all-or-nothing semantics (currently partial-success)
 12. **Message `messages.size()` fix** — returns 2 (object keys) instead of message count; confusing
+13. **Fix list concat** — `[1,2] + [3,4]` should work, currently crashes with BigInt serialization error
+14. **Fix `type()` / `duration()` serialization** — currently return `{}` instead of JSON-representable values
+15. **Timeout responses should include state** — `include` data only returned when `triggered=true`
