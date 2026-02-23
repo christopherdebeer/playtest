@@ -1,8 +1,9 @@
 # sync.parc.land — Multi-Agent Exploration Report
 
 **Room:** `playtest-explore-sync` | **Dashboard:** https://sync.parc.land/?room=playtest-explore-sync
-**Method:** 7 concurrent agents explored the API, coordinating through the system itself
-**Agents:** explorer-a (state), explorer-b (wait/CEL), explorer-c (messages), explorer-d (errors), explorer-e (coordination), claude-opus (protocol), coordinator (orchestration)
+**Method:** 8 agents explored the API concurrently, coordinating through the system itself
+**Agents:** explorer-a (state), explorer-b (wait/CEL), explorer-c (messages), explorer-d (errors), explorer-e (coordination), claude-opus (protocol), coordinator (orchestration), + 1 anonymous (auto-registered by explorer-d)
+**Stats:** 48 messages, 10 state scopes, 8 computed views, ~200+ API calls
 
 ## Verdict
 
@@ -37,9 +38,11 @@ A coordination service for multi-agent collaboration through shared rooms with:
 
 ### State Management (Explorer-A)
 - **CAS works excellently** — conflict responses include current state for retry
-- **Scoped state** provides clean agent/shared/view separation
+- **`if_version: 0`** acts as "create only if not exists" — useful primitive
+- **Scoped state** provides clean agent/shared/view separation with no ACLs (any agent can write any scope)
 - **Atomic increments** via `"increment": true` avoid version conflicts for counters
-- **Issues:** Values stored as strings not native types. No partial update/merge. Missing-value writes return 500.
+- **Batch writes are NOT truly atomic** — partial-success semantics; conflicting writes silently skipped while others succeed, response still `ok: true`
+- **Issues:** Values stored as strings not native types. No partial update/merge. Missing-value writes return 500 with leaked sqlite trace. Non-numeric values treated as 0 for increments.
 
 ### Wait Conditions (Explorer-B)
 - **Blocking wait is the core primitive** — CEL conditions evaluated server-side
@@ -67,11 +70,22 @@ A coordination service for multi-agent collaboration through shared rooms with:
 - **`from`/`to` fields** exist but query filters for them are ignored server-side
 - **Issues:** Must filter client-side for from/to/reply_to. No unclaim for failed tasks. No message deletion/expiry. `messages` in CEL is summary only (`{count, unclaimed}`), not queryable.
 
-### Error Handling (Explorer-D)
+### Error Handling (Explorer-D) — Grade: B-
+13 tests across 8 categories. Conflict handling is production-quality; input validation has gaps.
+
+**Strengths:**
 - **409 for CAS conflicts** includes current state — enables clean retry
 - **409 for precondition failures** includes the failed expression
+- **409 for claim conflicts** reveals current claimant
 - **CEL errors** have source-pointed messages with caret
-- **Issues:** Duplicate room creation returns 500 (sqlite constraint) instead of 409. Some malformed input gives 500 instead of 400.
+
+**Issues (by severity):**
+- **P1:** 3 endpoints leak raw SQLite stack traces as 500s (missing value, missing body, foreign key violations)
+- **P1:** Malformed JSON silently parsed as empty object instead of rejected
+- **P2:** Duplicate agent registration silently overwrites (UPSERT, no conflict detection)
+- **P2:** Heartbeat succeeds for nonexistent agents (creates phantom records)
+- **P2:** Nonexistent room reads return 200 with empty array (should be 404)
+- **P3:** Re-claiming own task returns 409 (not idempotent)
 
 ## Discovered Protocol
 
@@ -120,9 +134,20 @@ Emergent minimal agent loop (learned by the agents through using the system):
 
 ## Recommendations
 
-1. **Idempotent room creation** — `PUT /rooms/:id` upsert instead of 500 on duplicate
-2. **Native types** — return numbers as numbers, not strings
-3. **Dynamic agent enumeration** — `agents.list` or `"id" in agents` CEL function
-4. **Message query filters** — fix `from`, `to`, `reply_to` filters (currently ignored)
-5. **Task release** — unclaim mechanism for failed/abandoned tasks
-6. **CEL introspection** — `/context` endpoint that dumps the full CEL context for debugging
+### P1 — Input Validation
+1. **Add validation layer** before DB — catch missing `value`/`body` fields with 400, not sqlite 500
+2. **Reject malformed JSON** instead of silently parsing as empty object
+3. **Return 404 for nonexistent rooms** instead of 200-empty or 500-foreign-key
+
+### P2 — API Ergonomics
+4. **Idempotent room creation** — `PUT /rooms/:id` upsert instead of 500 on duplicate
+5. **Native types** — return numbers as numbers, not strings
+6. **Fix message query filters** — `from`, `to`, `reply_to` filters are silently ignored
+7. **Conflict-aware agent registration** — return 409 on duplicate instead of silent overwrite
+8. **Task release** — unclaim mechanism for failed/abandoned tasks
+
+### P3 — Power Features
+9. **Dynamic agent enumeration** — `agents.list` or iterable agents in CEL
+10. **CEL introspection** — `/context` endpoint that dumps the full CEL context for debugging
+11. **Batch write atomicity** — option for all-or-nothing semantics (currently partial-success)
+12. **Message `messages.size()` fix** — returns 2 (object keys) instead of message count; confusing
