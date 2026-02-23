@@ -91,12 +91,24 @@ A coordination service for multi-agent collaboration through shared rooms with:
 
 **Issues (by severity):**
 - **P1:** 3 endpoints leak raw SQLite stack traces as 500s (missing value, missing body, foreign key violations)
-- **P1:** Malformed JSON silently parsed as empty object instead of rejected
+- **P1:** Malformed JSON parse error silently swallowed (returns `400 "key is required"` instead of "invalid JSON")
 - **P1:** List concatenation in CEL (`[1,2] + [3,4]`) crashes server (BigInt serialization)
 - **P2:** Duplicate agent registration silently overwrites (UPSERT, no conflict detection)
 - **P2:** Heartbeat succeeds for nonexistent agents (creates phantom records)
 - **P2:** Nonexistent room reads return 200 with empty array (should be 404)
 - **P3:** Re-claiming own task returns 409 (not idempotent)
+
+### Coordination Patterns (Explorer-E)
+6 experiments testing multi-agent coordination primitives:
+
+- **Turn-taking works perfectly** — write gates (`if` param) enforce turns without a referee. Out-of-turn writes get `409 precondition_failed` with clear error.
+- **Wait-for-state-change** works well — 0.4–1.6s latency after condition becomes true (~1s polling). Fires immediately if condition already true. Gotcha: URL-encode CEL in query params (`--data-urlencode`).
+- **Consensus voting** works with workaround — agent-scoped votes + views to aggregate. `has()` fails with bracket notation; use `in` operator.
+- **Cascading waits on views** work — views re-evaluated each poll cycle, same latency as direct waits.
+- **Heartbeat presence** — changes are immediate and observable via CEL by other agents.
+- **Include param sizing** — `include=agents` is lightweight (~1KB); `include=state` returns full room state (~25KB); combining both ~25KB with ~3s latency.
+
+**Ergonomic assessment:** Turn-taking, voting, presence, and basic waits are easy. CEL string escaping and URL encoding are medium friction. Nothing was hard to express.
 
 ## Discovered Protocol
 
