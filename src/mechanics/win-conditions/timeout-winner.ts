@@ -172,7 +172,8 @@ export const timeoutWinnerMechanic: MechanicHooks = {
     // Only respond to timeout trigger
     if (ctx.trigger !== 'timeout') return null;
 
-    const config = ctx.config.engine_mechanics?.win_timeout as TimeoutWinnerConfig | undefined;
+    // Support both config key names: win_timeout (mechanic slug) and timeout_winner (RULES.md convention)
+    const config = (ctx.config.engine_mechanics?.win_timeout ?? ctx.config.engine_mechanics?.timeout_winner) as TimeoutWinnerConfig | undefined;
     const maxRounds = ctx.config.max_rounds;
 
     // If not configured, don't handle (let other mechanics or default handle it)

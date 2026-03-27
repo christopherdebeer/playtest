@@ -64,8 +64,8 @@ This returns the game rules and configuration. Read them carefully to understand
 ```
 while game not over:
     1. Call: ./playtest player:turn {INSTANCE_ID} -p {PLAYER_ID}
-       - This blocks until your turn AND returns available actions!
-       - One command instead of two = faster gameplay
+       - Blocks up to 60s, then returns. Game activity streams to stderr while you wait.
+       - Returns available actions when it's your turn!
 
     2. Parse the JSON response:
        - If status is "your_turn":
@@ -73,6 +73,9 @@ while game not over:
          - Look at "hand" to see your cards
          - Execute: ./playtest player:act {INSTANCE_ID} -p {PLAYER_ID} -a '<action>'
          - If action fails with validation error, READ the error and fix your action
+
+       - If status is "timeout":
+         - This is normal! It's not your turn yet. Just re-call player:turn.
 
        - If status is "game_over":
          - Exit

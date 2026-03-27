@@ -38,7 +38,11 @@ import {
   listGameInstances,
   submitAnalysis,
   skipAnalysis,
-  submitAnalysisMarkdown
+  submitAnalysisMarkdown,
+  resolveIntervention,
+  checkAndAutoResolveIntervention,
+  readRecentEvents,
+  formatActivityStream
 } from '../core/game.js';
 import type { PendingAction, GameAction, ContestState, OperatorHint } from '../types/game.js';
 import { waitForTurn } from '../core/turns.js';
@@ -224,11 +228,11 @@ program
 
 program
   .command('register <game>')
-  .description('Register an agent as gamemaster or player. Returns rules on successful registration.')
-  .requiredOption('-r, --role <role>', 'Role: gamemaster or player')
+  .description('Register an agent as gamemaster, player, or mechanic. Returns rules on successful registration.')
+  .requiredOption('-r, --role <role>', 'Role: gamemaster, player, or mechanic')
   .requiredOption('-a, --agent-id <id>', 'Agent ID')
   .option('-p, --player <id>', 'Player ID (auto-assigned if not specified)')
-  .action((game: string, options: { role: 'gamemaster' | 'player'; agentId: string; player?: string }) => {
+  .action((game: string, options: { role: 'gamemaster' | 'player' | 'mechanic'; agentId: string; player?: string }) => {
     try {
       const result = registerAgent(game, options.role, options.agentId, options.player);
       // Return full rules and config on successful registration
@@ -773,7 +777,7 @@ program
   .command('player:wait <game>')
   .description('[Player] Wait for your turn (blocking)')
   .requiredOption('-p, --player <id>', 'Player ID')
-  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = infinite, default 60000)', '60000')
   .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
       // Auto-register the player if not already registered
@@ -797,9 +801,7 @@ program
       const result = await waitForTurn(game, options.player, parseInt(options.timeout, 10));
       console.log(JSON.stringify(result));
 
-      if (result.status === 'timeout') {
-        process.exit(124); // Standard timeout exit code
-      }
+      // Timeout is normal — agent should re-call. Exit 0.
       if (result.status === 'game_not_found') {
         process.exit(1); // Game was reset or doesn't exist
       }
@@ -817,7 +819,7 @@ program
   .command('player:turn <game>')
   .description('[Player] Wait for turn and get available actions (optimized)')
   .requiredOption('-p, --player <id>', 'Player ID')
-  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = infinite, default 60000)', '60000')
   .action(async (game: string, options: { player: string; timeout: string }) => {
     try {
       // Auto-register the player if not already registered
@@ -844,9 +846,7 @@ program
         console.log(JSON.stringify(result));
       }
 
-      if (result.status === 'timeout') {
-        process.exit(124);
-      }
+      // Timeout is normal — agent should re-call. Exit 0.
       if (result.status === 'game_not_found') {
         process.exit(1);
       }
@@ -1282,7 +1282,7 @@ program
 program
   .command('gm:pending <game>')
   .description('[GM] Wait for pending contest, resignation, victory claim, or analysis needed')
-  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = no timeout)', '0')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = infinite, default 60000)', '60000')
   .action(async (game: string, options: { timeout: string }) => {
     try {
       // Auto-register the gamemaster if not already registered
@@ -1308,6 +1308,9 @@ program
       const timeout = parseInt(options.timeout, 10);
       const startTime = Date.now();
       const pollInterval = 100; // Reduced from 500ms for faster response
+      let lastEventTimestamp: string | undefined;
+      let lastActivityPrint = 0;
+      const ACTIVITY_INTERVAL = 5000; // Print activity every 5s
 
       // Poll for pending action, contest, or resignation
       // Uses lock-free reads for polling; only acquires lock for legacy pendingAction writes
@@ -1329,7 +1332,7 @@ program
             winner: state.shared.winner,
             endReason: state.shared.endReason,
             round: state.round,
-        turnNumber: state.turnNumber,
+            turnNumber: state.turnNumber,
             gameId: state.gameId
           }));
           return;
@@ -1350,7 +1353,7 @@ program
             status: 'contest_pending',
             contest: contestState.pendingContest,
             round: state.round,
-        turnNumber: state.turnNumber,
+            turnNumber: state.turnNumber,
             currentPlayer: state.currentPlayer
           }));
           return;
@@ -1398,20 +1401,420 @@ program
           }
         }
 
+        // Stream game activity to stderr so the agent can see progress
+        const now = Date.now();
+        if (now - lastActivityPrint >= ACTIVITY_INTERVAL) {
+          const events = readRecentEvents(state.log, lastEventTimestamp, 10);
+          if (events.length > 0) {
+            const stream = formatActivityStream(events);
+            process.stderr.write(`--- Game Activity (R${state.round}/T${state.turnNumber}, current: ${state.currentPlayer}) ---\n${stream}\n`);
+            lastEventTimestamp = events[events.length - 1].timestamp;
+          }
+          lastActivityPrint = now;
+        }
+
         // Wait before polling again
         await new Promise(resolve => setTimeout(resolve, pollInterval));
       }
 
+      // On timeout, provide clear guidance
+      const state = loadStateReadOnly(game);
       console.log(JSON.stringify({
         status: 'timeout',
-        message: 'No action received within timeout'
+        message: 'Nothing needs GM attention yet. Re-call gm:pending to continue waiting.',
+        round: state.round,
+        turnNumber: state.turnNumber,
+        currentPlayer: state.currentPlayer,
+        gameStatus: state.status
       }));
-      process.exit(124);
+      // Exit 0 on timeout — this is normal, agent should re-call
     } catch (e) {
       console.log(JSON.stringify({
         status: 'error',
         error: (e as Error).message
       }));
+      process.exit(1);
+    }
+  });
+
+// ============ Mechanic Agent Commands ============
+
+program
+  .command('mechanic:pending <game>')
+  .description('[Mechanic] Wait for pending intervention (unhandled effect)')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds (0 = infinite, default 60000)', '60000')
+  .action(async (game: string, options: { timeout: string }) => {
+    try {
+      // Auto-register the mechanic agent if not already registered
+      {
+        const state = loadState(game);
+        if (!state.shared.mechanicAgentId) {
+          try {
+            registerAgent(game, 'mechanic', 'agent-mechanic');
+          } catch (regError) {
+            // Ignore if already registered
+          }
+        }
+      }
+
+      const timeout = parseInt(options.timeout, 10);
+      const startTime = Date.now();
+      const pollInterval = 100;
+      let lastEventTimestamp: string | undefined;
+      let lastActivityPrint = 0;
+      const ACTIVITY_INTERVAL = 5000; // Print activity every 5s
+
+      while (timeout === 0 || Date.now() - startTime < timeout) {
+        const state = loadStateReadOnly(game);
+
+        if (state.status === 'completed') {
+          console.log(JSON.stringify({ status: 'game_over', winner: state.shared.winner }));
+          return;
+        }
+
+        if (state.status === 'pending_analysis' || state.status === 'cancelled') {
+          console.log(JSON.stringify({ status: 'game_over', reason: state.status }));
+          return;
+        }
+
+        // Check for pending intervention
+        const contestState = ensureContestState(state);
+        if (contestState.pendingIntervention) {
+          console.log(JSON.stringify({
+            status: 'intervention_pending',
+            intervention: contestState.pendingIntervention,
+            round: state.round,
+            turnNumber: state.turnNumber,
+            currentPlayer: state.currentPlayer
+          }));
+          return;
+        }
+
+        // Stream game activity to stderr so the agent can see progress
+        const now = Date.now();
+        if (now - lastActivityPrint >= ACTIVITY_INTERVAL) {
+          const events = readRecentEvents(state.log, lastEventTimestamp, 10);
+          if (events.length > 0) {
+            const stream = formatActivityStream(events);
+            process.stderr.write(`--- Game Activity (R${state.round}/T${state.turnNumber}, current: ${state.currentPlayer}) ---\n${stream}\n`);
+            lastEventTimestamp = events[events.length - 1].timestamp;
+          }
+          lastActivityPrint = now;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+
+      // On timeout, provide clear guidance
+      const state = loadStateReadOnly(game);
+      console.log(JSON.stringify({
+        status: 'timeout',
+        message: 'No intervention needed yet. Re-call mechanic:pending to continue waiting.',
+        round: state.round,
+        turnNumber: state.turnNumber,
+        currentPlayer: state.currentPlayer,
+        gameStatus: state.status
+      }));
+      // Exit 0 on timeout — this is normal, agent should re-call
+    } catch (e) {
+      console.log(JSON.stringify({ status: 'error', error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:resolve <game>')
+  .description('[Mechanic] Resolve a pending intervention, optionally applying state mutations atomically')
+  .option('--apply', 'Apply the effect (make state changes)')
+  .option('--skip', 'Skip the effect (no state changes needed)')
+  .requiredOption('-r, --reason <text>', 'Description of changes made or reason for skipping')
+  .option('-a, --agent <id>', 'Agent ID that resolved this', 'agent-mechanic')
+  .option('-m, --mutations <json>', 'Atomic state mutations (JSON array). Each entry: {"player":"player-1", ...mutation fields}. Mutation fields: "state" (position), "score" (number), "addEffect" (effect obj), "removeEffect" (type string), "setResource" ({"name":"x","value":n}), "addCards" ([card objs]), "removeCard" ("card name")')
+  .action((game: string, options: { apply?: boolean; skip?: boolean; reason: string; agent: string; mutations?: string }) => {
+    try {
+      if (!options.apply && !options.skip) {
+        console.log(JSON.stringify({ success: false, error: 'Must specify --apply or --skip' }));
+        process.exit(1);
+        return;
+      }
+
+      const state = loadState(game);
+
+      // Apply inline mutations atomically before resolving
+      const allChanges: string[] = [];
+      if (options.mutations) {
+        const mutations = JSON.parse(options.mutations) as Array<Record<string, unknown>>;
+        for (const mut of mutations) {
+          const playerId = mut.player as string;
+          if (!playerId) {
+            console.log(JSON.stringify({ success: false, error: 'Each mutation must have a "player" field' }));
+            process.exit(1);
+            return;
+          }
+          const player = state.players[playerId];
+          if (!player) {
+            console.log(JSON.stringify({ success: false, error: `Player ${playerId} not found` }));
+            process.exit(1);
+            return;
+          }
+
+          if (mut.state !== undefined) {
+            player.state = mut.state as string;
+            allChanges.push(`${playerId}: state → ${mut.state}`);
+          }
+          if (mut.score !== undefined) {
+            player.score = Number(mut.score);
+            allChanges.push(`${playerId}: score → ${player.score}`);
+          }
+          if (mut.addEffect) {
+            const effect = mut.addEffect as Record<string, unknown>;
+            player.effects.push({
+              type: effect.type as string,
+              value: effect.value as number | undefined,
+              duration: (effect.duration as number) ?? 1,
+              source: effect.source as string | undefined
+            });
+            allChanges.push(`${playerId}: +effect ${effect.type}`);
+          }
+          if (mut.removeEffect) {
+            const before = player.effects.length;
+            player.effects = player.effects.filter(e => e.type !== mut.removeEffect);
+            allChanges.push(`${playerId}: -effect ${mut.removeEffect} (removed ${before - player.effects.length})`);
+          }
+          if (mut.setResource) {
+            const res = mut.setResource as { name: string; value: number };
+            if (!player.resources) player.resources = {};
+            player.resources[res.name] = res.value;
+            allChanges.push(`${playerId}: resource ${res.name} → ${res.value}`);
+          }
+          if (mut.addCards) {
+            const cards = mut.addCards as Array<{ name: string }>;
+            if (!player.hand) player.hand = [];
+            player.hand.push(...(cards as typeof player.hand));
+            allChanges.push(`${playerId}: +cards ${cards.map(c => c.name).join(', ')}`);
+          }
+          if (mut.removeCard) {
+            if (player.hand) {
+              const idx = player.hand.findIndex(c => c.name === (mut.removeCard as string));
+              if (idx >= 0) {
+                player.hand.splice(idx, 1);
+                allChanges.push(`${playerId}: -card ${mut.removeCard}`);
+              }
+            }
+          }
+        }
+
+        // Log the mutations
+        if (allChanges.length > 0) {
+          logEvent(state, {
+            event: 'mechanic_state_update',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            data: { changes: allChanges, atomic: true }
+          });
+        }
+      }
+
+      const resolution = options.apply ? 'applied' : 'skipped';
+      const fullReason = allChanges.length > 0
+        ? `${options.reason} [mutations: ${allChanges.join('; ')}]`
+        : options.reason;
+      const result = resolveIntervention(state, resolution, fullReason, options.agent);
+
+      if (!result.success) {
+        console.log(JSON.stringify({ success: false, error: result.error }));
+        process.exit(1);
+        return;
+      }
+
+      // Single atomic save — mutations + resolution together
+      saveState(state);
+
+      console.log(JSON.stringify({
+        success: true,
+        resolution,
+        reason: options.reason,
+        mutations: allChanges.length > 0 ? allChanges : undefined,
+        currentPlayer: state.currentPlayer,
+        round: state.round,
+        turnNumber: state.turnNumber
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:state <game>')
+  .description('[Mechanic] Get full game state (for reasoning about effects)')
+  .action((game: string) => {
+    try {
+      const state = loadStateReadOnly(game);
+      const contestState = ensureContestState(state);
+
+      console.log(JSON.stringify({
+        gameId: state.gameId,
+        status: state.status,
+        round: state.round,
+        turnNumber: state.turnNumber,
+        currentPlayer: state.currentPlayer,
+        turnOrder: state.turnOrder,
+        players: Object.fromEntries(
+          Object.entries(state.players).map(([pid, ps]) => [pid, {
+            state: ps.state,
+            hand: ps.hand,
+            effects: ps.effects,
+            score: ps.score,
+            resources: ps.resources
+          }])
+        ),
+        shared: state.shared,
+        pendingIntervention: contestState.pendingIntervention,
+        interventionHistory: contestState.interventionHistory
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:update <game>')
+  .description('[Mechanic] Apply specific state mutations to resolve an effect')
+  .requiredOption('-p, --player <id>', 'Player ID to update')
+  .option('-s, --state <value>', 'Set player board state (position)')
+  .option('--score <n>', 'Set player score')
+  .option('--add-effect <json>', 'Add an effect to player (JSON: {"type":"x","duration":1})')
+  .option('--remove-effect <type>', 'Remove effects of this type from player')
+  .option('--set-resource <json>', 'Set resource value (JSON: {"name":"gold","value":10})')
+  .option('--add-cards <json>', 'Add cards to player hand (JSON: [{"name":"Card"}])')
+  .option('--remove-card <name>', 'Remove card from player hand by name')
+  .action((game: string, options: {
+    player: string;
+    state?: string;
+    score?: string;
+    addEffect?: string;
+    removeEffect?: string;
+    setResource?: string;
+    addCards?: string;
+    removeCard?: string;
+  }) => {
+    try {
+      const gameState = loadState(game);
+      const player = gameState.players[options.player];
+      if (!player) {
+        throw new Error(`Player ${options.player} not found`);
+      }
+
+      const changes: string[] = [];
+
+      if (options.state !== undefined) {
+        player.state = options.state;
+        changes.push(`state → ${options.state}`);
+      }
+
+      if (options.score !== undefined) {
+        player.score = parseInt(options.score, 10);
+        changes.push(`score → ${player.score}`);
+      }
+
+      if (options.addEffect) {
+        const effect = JSON.parse(options.addEffect);
+        player.effects.push({
+          type: effect.type,
+          value: effect.value,
+          duration: effect.duration ?? 1,
+          source: effect.source
+        });
+        changes.push(`+effect: ${effect.type}`);
+      }
+
+      if (options.removeEffect) {
+        const before = player.effects.length;
+        player.effects = player.effects.filter(e => e.type !== options.removeEffect);
+        changes.push(`-effect: ${options.removeEffect} (removed ${before - player.effects.length})`);
+      }
+
+      if (options.setResource) {
+        const res = JSON.parse(options.setResource);
+        if (!player.resources) player.resources = {};
+        player.resources[res.name] = res.value;
+        changes.push(`resource ${res.name} → ${res.value}`);
+      }
+
+      if (options.addCards) {
+        const cards = JSON.parse(options.addCards);
+        if (!player.hand) player.hand = [];
+        player.hand.push(...cards);
+        changes.push(`+cards: ${cards.map((c: { name: string }) => c.name).join(', ')}`);
+      }
+
+      if (options.removeCard) {
+        if (player.hand) {
+          const idx = player.hand.findIndex(c => c.name === options.removeCard);
+          if (idx >= 0) {
+            player.hand.splice(idx, 1);
+            changes.push(`-card: ${options.removeCard}`);
+          }
+        }
+      }
+
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_state_update',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        player: options.player,
+        data: { changes }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        player: options.player,
+        changes,
+        newState: {
+          state: player.state,
+          effects: player.effects,
+          score: player.score,
+          resources: player.resources,
+          handSize: (player.hand || []).length
+        }
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('mechanic:shared <game>')
+  .description('[Mechanic] Update shared game state')
+  .requiredOption('-k, --key <key>', 'Shared state key to set')
+  .requiredOption('-v, --value <json>', 'Value to set (JSON)')
+  .action((game: string, options: { key: string; value: string }) => {
+    try {
+      const gameState = loadState(game);
+      const value = JSON.parse(options.value);
+
+      gameState.shared[options.key] = value;
+      saveState(gameState);
+
+      logEvent(gameState, {
+        event: 'mechanic_shared_update',
+        round: gameState.round,
+        turnNumber: gameState.turnNumber,
+        data: { key: options.key, value }
+      });
+
+      console.log(JSON.stringify({
+        success: true,
+        key: options.key,
+        value
+      }));
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, error: (e as Error).message }));
       process.exit(1);
     }
   });

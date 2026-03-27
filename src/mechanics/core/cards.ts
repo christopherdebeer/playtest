@@ -223,13 +223,36 @@ export const cardsMechanic: MechanicHooks = {
     // No deck configured - nothing to initialize
     if (!deckConfig) return null;
 
-    // Build and shuffle deck
-    const deck = shuffleDeck(buildDeck(deckConfig));
+    // Build deck, separating forbidden items (subtype: "forbidden" / effect.type: "enemy_item")
+    const allCards = buildDeck(deckConfig);
+    const regularCards: Card[] = [];
+    const forbiddenCards: Card[] = [];
+    for (const card of allCards) {
+      if (card.effect?.type === 'enemy_item') {
+        forbiddenCards.push(card);
+      } else {
+        regularCards.push(card);
+      }
+    }
+
+    // Shuffle regular cards, then insert forbidden items into bottom half
+    const shuffledRegular = shuffleDeck(regularCards);
+    let deck: Card[];
+    if (forbiddenCards.length > 0) {
+      const midpoint = Math.ceil(shuffledRegular.length / 2);
+      const topHalf = shuffledRegular.slice(0, midpoint);
+      const bottomHalf = shuffledRegular.slice(midpoint);
+      // Shuffle forbidden items into the bottom half
+      const bottomWithForbidden = shuffleDeck([...bottomHalf, ...forbiddenCards]);
+      deck = [...topHalf, ...bottomWithForbidden];
+    } else {
+      deck = shuffledRegular;
+    }
 
     // Get starting hand size
     const startingCards = cardsConfig?.starting_hand ?? (config as { starting_cards?: number }).starting_cards ?? 0;
 
-    // Pre-deal hands (stored temporarily for initPlayerState)
+    // Pre-deal hands from the TOP of deck (forbidden items are in bottom half, so never in starting hands)
     const _startingHands: Record<string, Card[]> = {};
     for (const playerId of playerIds) {
       if (startingCards > 0 && deck.length >= startingCards) {

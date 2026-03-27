@@ -1,7 +1,7 @@
 // Turn management - handles blocking waits for player turns
 
 import { watch, existsSync, type FSWatcher } from 'fs';
-import { loadState, loadStateReadOnly, getStateFile, getPlayerView, ensureContestState, resolveGameInstance } from './game.js';
+import { loadState, loadStateReadOnly, getStateFile, getPlayerView, ensureContestState, resolveGameInstance, readRecentEvents, formatActivityStream } from './game.js';
 import type { WaitResult, GameState, ContestState, LastAction, OperatorHint } from '../types/game.js';
 import { mechanicRegistry } from '../mechanics/index.js';
 
@@ -51,8 +51,9 @@ function getActiveHintsForPlayer(
   });
 }
 
-const DEFAULT_TIMEOUT = 0; // 0 = no timeout (block indefinitely)
+const DEFAULT_TIMEOUT = 60000; // 60s default — agents should re-call on timeout
 const POLL_INTERVAL = 100; // Check every 100ms (reduced from 500ms for faster response)
+const ACTIVITY_INTERVAL = 5000; // Print activity stream every 5s
 
 export async function waitForTurn(
   gameNameOrInstanceId: string,
@@ -97,10 +98,24 @@ export async function waitForTurn(
       return;
     }
 
+    // Activity streaming state
+    let lastEventTimestamp: string | undefined;
+    let lastActivityPrint = 0;
+
     // Timeout handler (only if timeout > 0)
     const timeout = timeoutMs > 0 ? setTimeout(() => {
       cleanup();
-      resolve({ status: 'timeout' });
+      // Provide rich timeout result with current game state
+      try {
+        const state = loadStateReadOnly(instanceId || gameName);
+        resolve({
+          status: 'timeout',
+          gameState: getPlayerView(state, playerId),
+          error: `Not ${playerId}'s turn yet (current: ${state.currentPlayer}). Re-call to continue waiting.`
+        } as ExtendedWaitResult);
+      } catch {
+        resolve({ status: 'timeout' });
+      }
     }, timeoutMs) : null;
 
     // Cleanup function
@@ -145,6 +160,12 @@ export async function waitForTurn(
         // Get contest state
         const contestState = ensureContestState(state);
 
+        // Block turns while a mechanic intervention is pending
+        // The mechanic agent must resolve the unhandled effect first
+        if (contestState.pendingIntervention) {
+          return; // Keep waiting until intervention resolved
+        }
+
         // Check if it's this player's turn (or mechanics allow out-of-turn action)
         // Uses canPlayerActNow hook from mechanic registry
         const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
@@ -164,6 +185,20 @@ export async function waitForTurn(
             }
           });
           return;
+        }
+
+        // Stream game activity to stderr so the agent can see progress while waiting
+        const now = Date.now();
+        if (now - lastActivityPrint >= ACTIVITY_INTERVAL) {
+          try {
+            const events = readRecentEvents(state.log, lastEventTimestamp, 10);
+            if (events.length > 0) {
+              const stream = formatActivityStream(events);
+              process.stderr.write(`--- Game Activity (R${state.round}/T${state.turnNumber}, current: ${state.currentPlayer}, you: ${playerId}) ---\n${stream}\n`);
+              lastEventTimestamp = events[events.length - 1].timestamp;
+            }
+          } catch { /* ignore errors reading activity log */ }
+          lastActivityPrint = now;
         }
 
         // Not our turn, keep waiting
