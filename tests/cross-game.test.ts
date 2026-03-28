@@ -543,13 +543,16 @@ describe('aaote', () => {
     expect(harness.state.currentPlayer).toBe('player-2');
   });
 
-  it('AP exhaustion ends turn', () => {
+  it('multi-action AP: draws do not advance turn, pass does', () => {
     harness = GameTestHarness.create('aaote', 3, { seed: 1 });
     harness.start();
-    // 3 AP: draw (1) x 3 = 0 AP
+    // 3 AP: draw (1) x 2 = 1 AP remaining (hand limit: 7, starting: 5 → max 2 draws)
     harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-1'); // still has AP
     harness.step('player-1', { type: 'draw', count: 1 });
-    harness.step('player-1', { type: 'draw', count: 1 });
+    expect(harness.state.currentPlayer).toBe('player-1'); // still has AP
+    // Pass advances turn even with AP remaining
+    harness.step('player-1', { type: 'pass' });
     expect(harness.state.currentPlayer).toBe('player-2');
   });
 });
@@ -579,12 +582,15 @@ describe('battle-forge', () => {
     expect(market.prices).toBeDefined();
   });
 
-  it('buy_market action available', () => {
+  it('commodity market initialized with prices', () => {
     harness = GameTestHarness.create('battle-forge', 2, { seed: 1 });
     harness.start();
-    const acts = harness.getActions('player-1');
-    const buyAction = acts.actions.find((a: { type: string }) => a.type === 'buy_market');
-    expect(buyAction).toBeDefined();
+    // Battle-forge uses commodity market (not card market), so market is an object with prices
+    const market = harness.state.shared.market as { prices: Record<string, number>; commodities: unknown[] };
+    expect(market).toBeDefined();
+    expect(market.prices).toBeDefined();
+    expect(market.prices.ore).toBeDefined();
+    expect(market.commodities.length).toBeGreaterThan(0);
   });
 
   it('draw costs 1 AP', () => {
@@ -639,11 +645,11 @@ describe('alliance', () => {
     expect(coop.threatLevel).toBe(0);
   });
 
-  it('add_to_tableau action available', () => {
+  it('play_to_tableau action available (tableau mechanic)', () => {
     harness = GameTestHarness.create('alliance', 2, { seed: 1 });
     harness.start();
     const acts = harness.getActions('player-1');
-    const tableauAction = acts.actions.find((a: { type: string }) => a.type === 'add_to_tableau');
+    const tableauAction = acts.actions.find((a: { type: string }) => a.type === 'play_to_tableau');
     expect(tableauAction).toBeDefined();
   });
 

@@ -1,0 +1,3 @@
+{"timestamp":"2026-02-20T09:53:16.283Z","event":"game_init","data":{"gameId":"aaote-1771581196279","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T09:53:27.150Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T09:53:47.414Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"pass","message":"player-1 passed"}}

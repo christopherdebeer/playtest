@@ -1,0 +1,1819 @@
+/-
+  Engine/Mechanics.lean — Concrete mechanic implementations.
+
+  Each mechanic is a module that provides:
+  - `validate` : Check if an action is legal
+  - `execute`  : Apply an action and return state changes
+  - `getAvailableActions` : List legal actions for a player
+  - `onTurnStart` / `onTurnEnd` : Lifecycle hooks
+  - `checkWin` : Win condition check
+
+  These are concrete functions on GameState — the executable counterpart
+  of the abstract typeclasses in Core/Abstract/.
+-/
+
+import Engine.Json
+
+namespace Playtest.Engine.Mechanics
+
+open Playtest.Engine
+open Lean (Json ToJson)
+
+/-- Helper: create a single-player state change entry. -/
+private def mkPlayerChange (pid : String) (changes : List (String × Json)) :
+    Lean.RBMap String (Lean.RBMap String Json compare) compare :=
+  let inner := changes.foldl (init := (Lean.RBMap.empty : Lean.RBMap String Json compare))
+    fun m (k, v) => m.insert k v
+  (Lean.RBMap.empty : Lean.RBMap String (Lean.RBMap String Json compare) compare).insert pid inner
+
+/-- Helper: get the action point cost for an action type from config. -/
+private def getActionCost (gs : GameState) (actionType : String) : Nat :=
+  let apConfig := gs.config.engineMechanics.find? "action_points"
+  match apConfig with
+  | some cfg =>
+    match cfg.getObjVal? "action_costs" with
+    | .ok (Json.obj kvs) =>
+      let found := kvs.toArray.find? fun ⟨k, _⟩ => k == actionType
+      match found with
+      | some ⟨_, v⟩ => v.getNat?.toOption |>.getD 1
+      | none => 1
+    | _ => 1
+  | none => 1
+
+/-- Helper: get the hand limit from config. -/
+private def getHandLimit (gs : GameState) : Option Nat :=
+  match gs.config.engineMechanics.find? "hand_limit" with
+  | some cfg => cfg.getNat?.toOption
+  | none => none
+
+/-- Helper: get the starting tile name from grid config. -/
+private def getStartingTile (gs : GameState) : String :=
+  match gs.config.engineMechanics.find? "grid" with
+  | some cfg => (cfg.getObjVal? "starting_tile" |>.toOption |>.bind (·.getStr?.toOption)).getD "origin"
+  | none => "origin"
+
+/-- Helper: get all valid location names on the grid (starting tile + placed). -/
+private def getValidLocations (gs : GameState) : List String :=
+  let startingTile := getStartingTile gs
+  [startingTile] ++ gs.shared.placedLocations
+
+/-- Helper: check if a visibility rule hides an info type from a viewer.
+    Config format: visibility: { hand: "self", role: "self", score: "all", ... } -/
+private def isInfoHidden (gs : GameState) (infoType : String) (viewerId ownerId : String) : Bool :=
+  if viewerId == ownerId then false  -- always see own info
+  else
+    match gs.config.engineMechanics.find? "visibility" with
+    | none => false  -- no visibility config = everything public
+    | some cfg =>
+      match cfg.getObjVal? infoType with
+      | .ok (Json.str "self") => true        -- only self can see
+      | .ok (Json.str "hidden") => true      -- hidden from all others
+      | .ok (Json.str "all") => false        -- visible to all
+      | .ok (Json.str "public") => false
+      | _ => false  -- default: public
+
+/-! ## Effects Mechanic -/
+
+namespace Effects
+
+/-- Tick all effects for a player: decrease durations, remove expired.
+    Duration 0 = permanent (never expires). -/
+def tickEffects (ps : PlayerState) : PlayerState × List Effect :=
+  let (remaining, expired) := ps.effects.foldl (init := ([], []))
+    fun (rem, exp) eff =>
+      if eff.duration == 0 then
+        -- Permanent effect: never expires
+        (rem ++ [eff], exp)
+      else if eff.duration ≤ 1 then
+        -- Expires this tick
+        (rem, exp ++ [eff])
+      else
+        -- Decrement duration
+        (rem ++ [{ eff with duration := eff.duration - 1 }], exp)
+  ({ ps with effects := remaining }, expired)
+
+/-- Apply a card's effect to the game state when played. Reads effect from card.extra. -/
+def applyCardEffect (gs : GameState) (pid : String) (card : Card) : GameState × Option String :=
+  -- Read effect from card.extra
+  let effectJson := card.extra.find? "effect"
+  match effectJson with
+  | none => (gs, none)
+  | some ej =>
+    let effectType := (ej.getObjVal? "type" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+    match effectType with
+    | "probability_boost" | "probability_penalty" =>
+      -- These are informational — the GM interprets them. We just log.
+      let value := (ej.getObjVal? "value" |>.toOption |>.bind fun v =>
+        match v with | Json.num n => some (toString n) | _ => none).getD "?"
+      (gs, some s!"Effect: {effectType} ({value})")
+    | "skip" =>
+      -- Add skip effect to target (next player) or self-target
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          -- Default: next player in turn order
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let eff : Effect := { effectType := "skip", duration := 1, source := some pid }
+      let gs' := gs.modifyPlayer target fun tps =>
+        { tps with effects := tps.effects ++ [eff] }
+      (gs', some s!"Skip applied to {target}")
+    | "draw" =>
+      -- Force target to draw N cards
+      let drawCount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let tps := gs.getPlayer target
+      let drawn := gs.shared.deck.take drawCount
+      let tps' := { tps with hand := tps.hand ++ drawn }
+      let shared' := { gs.shared with deck := gs.shared.deck.drop drawCount }
+      let gs' := { gs.setPlayer target tps' with shared := shared' }
+      (gs', some s!"{target} forced to draw {drawn.length}")
+    | "reverse" =>
+      -- Reverse turn order
+      let gs' := { gs with turnOrder := gs.turnOrder.reverse }
+      (gs', some s!"Turn order reversed")
+    | "force_discard" =>
+      -- Target discards N cards (from front of hand for simplicity)
+      let discardCount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let tps := gs.getPlayer target
+      let discarded := tps.hand.take discardCount
+      let tps' := { tps with hand := tps.hand.drop discardCount }
+      let shared' := { gs.shared with discard := gs.shared.discard ++ discarded }
+      let gs' := { gs.setPlayer target tps' with shared := shared' }
+      (gs', some s!"{target} forced to discard {discarded.length}")
+    | "block_turn" =>
+      -- Add blocked effect with duration
+      let duration := (ej.getObjVal? "duration" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let target := match card.extra.find? "target" with
+        | some (Json.str t) => t
+        | _ =>
+          let idx := gs.turnOrder.indexOf pid
+          let nextIdx := (idx + 1) % gs.turnOrder.length
+          gs.turnOrder.get? nextIdx |>.getD pid
+      let eff : Effect := { effectType := "blocked", duration := duration, source := some pid }
+      let gs' := gs.modifyPlayer target fun tps =>
+        { tps with effects := tps.effects ++ [eff] }
+      (gs', some s!"{target} blocked for {duration} turn(s)")
+    | "add_score" =>
+      -- Add score to player
+      let amount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      let gs' := gs.modifyPlayer pid fun ps =>
+        { ps with score := some ((ps.score.getD 0) + amount) }
+      (gs', some s!"{pid} gained {amount} score")
+    | "add_resource" =>
+      -- Add resource to player
+      let resName := (ej.getObjVal? "resource" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+      let amount := (ej.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+      if resName.isEmpty then (gs, none)
+      else
+        let gs' := gs.modifyPlayer pid fun ps =>
+          ps.setResource resName ((ps.getResource resName) + amount)
+        (gs', some s!"{pid} gained {amount} {resName}")
+    | _ =>
+      -- Unknown effect type — log it for GM interpretation
+      (gs, some s!"Effect: {effectType} (GM interprets)")
+
+/-- Check if a player is blocked (has a "blocked" or "skip" effect). -/
+def isBlocked (ps : PlayerState) : Bool :=
+  ps.effects.any fun e => e.effectType == "blocked" || e.effectType == "skip"
+
+end Effects
+
+/-! ## Resource Mechanic -/
+
+namespace Resources
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "spend" then { valid := true }
+  else
+    match action.resource, action.amount with
+    | some resName, some amount =>
+      let ps := gs.getPlayer pid
+      let current := ps.getResource resName
+      if amount ≤ current then { valid := true }
+      else { valid := false, error := some s!"Insufficient {resName}: have {current}, need {amount}" }
+    | none, _ => { valid := false, error := some "spend action requires 'resource' field" }
+    | _, none => { valid := false, error := some "spend action requires 'amount' field" }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "spend" then none
+  else match action.resource, action.amount with
+  | some resName, some amount =>
+    let ps := gs.getPlayer pid
+    let current := ps.getResource resName
+    if amount ≤ current then
+      let ps' := ps.setResource resName (current - amount)
+      let targetMsg := match action.target with
+        | some t => s!" for {t}"
+        | none => ""
+      let gs' := gs.setPlayer pid ps'
+      some (gs', {
+        handled := true,
+        stateChanges := {
+          playerStateChanges := mkPlayerChange pid
+            [("resources", Json.mkObj [(resName, ToJson.toJson (current - amount))])]
+        },
+        logMessage := some s!"{pid} spent {amount} {resName}{targetMsg}",
+        checkWin := true
+      })
+    else none
+  | _, _ => none
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  let ps := gs.getPlayer pid
+  ps.resources.toList.filterMap fun (name, amount) =>
+    if amount > 0 then
+      some {
+        action := { actionType := "spend", resource := some name, amount := some 1 },
+        category := some "resources"
+      }
+    else none
+
+end Resources
+
+/-! ## Cards Mechanic (with card type rules, hand limit, and effect resolution) -/
+
+namespace Cards
+
+/-- Check card type rules — e.g., items can't be played, locations must use place_location. -/
+private def checkCardTypeRules (gs : GameState) (card : Card) : ValidationResult :=
+  match gs.config.engineMechanics.find? "card_type_rules" with
+  | none => { valid := true }
+  | some rules =>
+    match rules.getObjVal? card.cardType with
+    | .ok typeRule =>
+      let playable := (typeRule.getObjVal? "playable" |>.toOption |>.bind
+        fun v => match v with | Json.bool b => some b | _ => none).getD true
+      if !playable then
+        let hint := if card.cardType == "item" then " Items are held in hand until used or traded."
+          else if card.cardType == "location" then " Use place_location action instead."
+          else ""
+        { valid := false, error := some s!"Cannot play \"{card.name}\". Cards of type \"{card.cardType}\" cannot be played.{hint}" }
+      else { valid := true }
+    | .error _ => { valid := true }
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  match action.actionType with
+  | "play_card" =>
+    match action.card with
+    | none => { valid := false, error := some "play_card requires 'card' field" }
+    | some cardName =>
+      let ps := gs.getPlayer pid
+      match ps.hand.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not in hand" }
+      | some card => checkCardTypeRules gs card
+  | "draw" =>
+    -- Check hand limit
+    let ps := gs.getPlayer pid
+    match getHandLimit gs with
+    | some limit =>
+      if ps.hand.length ≥ limit then
+        { valid := false, error := some s!"Cannot draw: hand is at limit ({limit} cards)" }
+      else { valid := true }
+    | none => { valid := true }
+  | _ => { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  match action.actionType with
+  | "play_card" => do
+    let cardName ← action.card
+    let ps := gs.getPlayer pid
+    let card ← ps.hand.find? (·.name == cardName)
+    -- Remove card from hand and discard
+    let ps' := { ps with hand := ps.hand.filter (·.name != cardName) }
+    let shared' := { gs.shared with discard := gs.shared.discard ++ [card] }
+    let gs' := { gs.setPlayer pid ps' with shared := shared' }
+    -- Apply card effect
+    let (gs'', effectMsg) := Effects.applyCardEffect gs' pid card
+    let logMsg := match effectMsg with
+      | some msg => s!"{pid} played {cardName}. {msg}"
+      | none => s!"{pid} played {cardName}"
+    some (gs'', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+            [("hand", ToJson.toJson (gs''.getPlayer pid).hand),
+             ("effects", ToJson.toJson (gs''.getPlayer pid).effects),
+             ("score", ToJson.toJson ((gs''.getPlayer pid).score.getD 0))],
+        sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare).insert
+            "discard" (ToJson.toJson gs''.shared.discard)
+      },
+      logMessage := some logMsg,
+      checkWin := true
+    })
+  | "draw" =>
+    let count := action.amount.getD 1
+    let ps := gs.getPlayer pid
+    -- Respect hand limit
+    let actualCount := match getHandLimit gs with
+      | some limit =>
+        let room := if limit > ps.hand.length then limit - ps.hand.length else 0
+        min count room
+      | none => count
+    let available := gs.shared.deck.take actualCount
+    if available.isEmpty then none
+    else
+      let ps' := { ps with hand := ps.hand ++ available }
+      let shared' := { gs.shared with deck := gs.shared.deck.drop actualCount }
+      let gs' := { gs.setPlayer pid ps' with shared := shared' }
+      some (gs', {
+        handled := true,
+        stateChanges := {
+          playerStateChanges := mkPlayerChange pid
+            [("hand", ToJson.toJson ps'.hand)]
+        },
+        logMessage := some s!"{pid} drew {available.length} card(s)"
+      })
+  | _ => none
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  let ps := gs.getPlayer pid
+  -- Only event cards can be played (check card_type_rules)
+  let playableCards := ps.hand.filter fun card =>
+    match checkCardTypeRules gs card with
+    | { valid := true, .. } => true
+    | _ => false
+  let playActions := playableCards.map fun card => {
+    action := { actionType := "play_card", card := some card.name : GameAction },
+    category := some "cards" : AvailableAction
+  }
+  -- Draw action (check hand limit)
+  let drawAction : List AvailableAction :=
+    if !gs.shared.deck.isEmpty then
+      match getHandLimit gs with
+      | some limit =>
+        if ps.hand.length < limit then
+          [{ action := { actionType := "draw" }, category := some "cards" }]
+        else []
+      | none => [{ action := { actionType := "draw" }, category := some "cards" }]
+    else []
+  playActions ++ drawAction
+
+end Cards
+
+/-! ## Board / Grid Mechanic (supports both fixed graphs and dynamic location grids) -/
+
+namespace Board
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "move" then { valid := true }
+  else match action.target with
+  | none => { valid := false, error := some "move action requires 'target' field" }
+  | some targetLoc =>
+    -- Dynamic grid mode: check against placedLocations
+    let validLocations := getValidLocations gs
+    if validLocations.length > 1 || !gs.shared.boardStates.isEmpty then
+      -- Grid-based movement (AAOTE style)
+      if !gs.shared.boardStates.isEmpty then
+        -- Fixed-graph mode: use boardEdges
+        let ps := gs.getPlayer pid
+        let hasEdge := gs.shared.boardEdges.any fun (from_, to_) =>
+          from_ == ps.state && to_ == targetLoc
+        if hasEdge then { valid := true }
+        else { valid := false, error := some s!"No path from '{ps.state}' to '{targetLoc}'" }
+      else
+        -- Dynamic grid mode: any placed location is reachable (simplified adjacency)
+        if validLocations.contains targetLoc then { valid := true }
+        else { valid := false, error := some s!"Location '{targetLoc}' does not exist on the grid. Valid locations: {String.intercalate ", " validLocations}" }
+    else
+      { valid := false, error := some "No locations to move to. Place locations first!" }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "move" then none
+  else do
+    let target ← action.target
+    let ps := gs.getPlayer pid
+    let ps' := { ps with
+      state := target
+      visitedLocations := if ps.visitedLocations.contains target then ps.visitedLocations
+                          else ps.visitedLocations ++ [target]
+    }
+    let gs' := gs.setPlayer pid ps'
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("state", Json.str target),
+           ("visitedLocations", ToJson.toJson ps'.visitedLocations)]
+      },
+      logMessage := some s!"{pid} moved from {ps.state} to {target}",
+      checkWin := true
+    })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  let ps := gs.getPlayer pid
+  if !gs.shared.boardStates.isEmpty then
+    -- Fixed-graph mode
+    let reachable := gs.shared.boardEdges.filterMap fun (from_, to_) =>
+      if from_ == ps.state then some to_ else none
+    reachable.map fun target => {
+      action := { actionType := "move", target := some target },
+      category := some "movement"
+    }
+  else
+    -- Dynamic grid mode: can move to any placed location (simplified)
+    let validLocations := getValidLocations gs
+    let reachable := validLocations.filter (· != ps.state)
+    reachable.map fun target => {
+      action := { actionType := "move", target := some target },
+      category := some "movement"
+    }
+
+end Board
+
+/-! ## Place Location Mechanic -/
+
+namespace PlaceLocation
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "place_location" then { valid := true }
+  else
+    -- Check card exists in hand
+    match action.card with
+    | none => { valid := false, error := some "place_location requires 'card' field" }
+    | some cardName =>
+      let ps := gs.getPlayer pid
+      match ps.hand.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not in hand" }
+      | some card =>
+        -- Check card is a location type
+        if card.cardType != "location" then
+          { valid := false, error := some s!"Card \"{cardName}\" is not a location card. Only location cards can be placed on the grid." }
+        else
+          -- Check adjacentTo is a valid existing location
+          match action.adjacentTo with
+          | none => { valid := false, error := some "place_location requires 'adjacentTo' field" }
+          | some adjTo =>
+            let validLocations := getValidLocations gs
+            if validLocations.contains adjTo then { valid := true }
+            else { valid := false, error := some s!"Invalid adjacentTo target \"{adjTo}\". Must be an existing location: {String.intercalate ", " validLocations}" }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "place_location" then none
+  else do
+    let cardName ← action.card
+    let ps := gs.getPlayer pid
+    let _card ← ps.hand.find? (·.name == cardName)
+    -- Remove card from hand
+    let ps' := { ps with
+      hand := ps.hand.filter (·.name != cardName),
+      placedLocationCount := some ((ps.placedLocationCount.getD 0) + 1)
+    }
+    -- Add to placed locations
+    let placedLocations' := gs.shared.placedLocations ++ [cardName]
+    let shared' := { gs.shared with placedLocations := placedLocations' }
+    let gs' := { gs.setPlayer pid ps' with shared := shared' }
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("hand", ToJson.toJson ps'.hand),
+           ("placedLocationCount", ToJson.toJson (ps'.placedLocationCount.getD 0))],
+        sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare).insert
+          "placedLocations" (ToJson.toJson placedLocations')
+      },
+      logMessage := some s!"{pid} placed {cardName}",
+      checkWin := true
+    })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  -- Only if grid mechanic is enabled
+  if !gs.isMechanicEnabled "grid" && !gs.isMechanicEnabled "place-location" then []
+  else
+    let ps := gs.getPlayer pid
+    let locationCards := ps.hand.filter (·.cardType == "location")
+    if locationCards.isEmpty then []
+    else
+      let validTargets := getValidLocations gs
+      if validTargets.isEmpty then []
+      else
+        locationCards.foldl (init := []) fun acc card =>
+          acc ++ validTargets.map fun adjTo => {
+            action := { actionType := "place_location", card := some card.name,
+                        adjacentTo := some adjTo : GameAction },
+            category := some "placement",
+            priority := some 35 : AvailableAction
+          }
+
+end PlaceLocation
+
+/-! ## Action Points Mechanic -/
+
+namespace ActionPoints
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if !gs.isMechanicEnabled "action_points" && !gs.isMechanicEnabled "action-points" then { valid := true }
+  else
+    -- Pass always costs 0
+    if action.actionType == "pass" then { valid := true }
+    else
+      let ps := gs.getPlayer pid
+      let cost := getActionCost gs action.actionType
+      match ps.actionPoints with
+      | some ap =>
+        if ap ≥ cost then { valid := true }
+        else { valid := false, error := some s!"Not enough action points: have {ap}, need {cost} for {action.actionType}" }
+      | none => { valid := true }
+
+def onTurnStart (gs : GameState) (pid : String) : GameState :=
+  if !gs.isMechanicEnabled "action_points" && !gs.isMechanicEnabled "action-points" then gs
+  else
+    let apConfig := gs.config.engineMechanics.find? "action_points"
+    let pointsPerTurn := match apConfig with
+      | some cfg => (cfg.getObjVal? "points_per_turn" |>.toOption |>.bind (·.getNat?.toOption)).getD 3
+      | none => 3
+    gs.modifyPlayer pid fun ps =>
+      { ps with actionPoints := some pointsPerTurn, actionPointsUsed := some 0 }
+
+def postExecute (gs : GameState) (pid : String) (action : GameAction) : GameState :=
+  if !gs.isMechanicEnabled "action_points" && !gs.isMechanicEnabled "action-points" then gs
+  else
+    let cost := getActionCost gs action.actionType
+    gs.modifyPlayer pid fun ps =>
+      { ps with
+        actionPoints := ps.actionPoints.map fun ap => if ap ≥ cost then ap - cost else 0
+        actionPointsUsed := ps.actionPointsUsed.map (· + cost)
+      }
+
+def shouldAutoEndTurn (gs : GameState) (pid : String) : Bool :=
+  if !gs.isMechanicEnabled "action_points" && !gs.isMechanicEnabled "action-points" then false
+  else
+    let ps := gs.getPlayer pid
+    match ps.actionPoints with
+    | some ap => ap == 0
+    | none => false
+
+end ActionPoints
+
+/-! ## Pass Mechanic -/
+
+namespace Pass
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "pass" then none
+  else some (gs, {
+    handled := true,
+    advanceTurn := true,
+    logMessage := some s!"{pid} passed"
+  })
+
+def getAvailableActions (_gs : GameState) (_pid : String) : List AvailableAction :=
+  [{ action := { actionType := "pass" }, category := some "general", priority := some 0 }]
+
+end Pass
+
+/-! ## Trade Mechanic -/
+
+namespace Trade
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "trade_offer" then { valid := true }
+  else
+    -- Check target player
+    match action.target with
+    | none => { valid := false, error := some "trade_offer requires 'target' (target player)" }
+    | some targetPid =>
+      if !gs.players.contains targetPid then
+        { valid := false, error := some s!"Target player '{targetPid}' not found" }
+      else if targetPid == pid then
+        { valid := false, error := some "Cannot trade with yourself" }
+      else
+        -- Check offering card exists and is an item
+        match action.card with
+        | none => { valid := false, error := some "trade_offer requires 'card' (item to offer)" }
+        | some cardName =>
+          let ps := gs.getPlayer pid
+          match ps.hand.find? (·.name == cardName) with
+          | none => { valid := false, error := some s!"Card '{cardName}' not in hand" }
+          | some card =>
+            -- Check trade config — items only?
+            let itemOnly := match gs.config.engineMechanics.find? "trade" with
+              | some cfg => (cfg.getObjVal? "item_types_only" |>.toOption |>.bind
+                  fun v => match v with | Json.bool b => some b | _ => none).getD true
+              | none => true
+            if itemOnly && card.cardType != "item" then
+              { valid := false, error := some s!"Only items can be traded, not {card.cardType} cards" }
+            else { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "trade_offer" then none
+  else do
+    let cardName ← action.card
+    let targetPid ← action.target
+    let ps := gs.getPlayer pid
+    let _card ← ps.hand.find? (·.name == cardName)
+    -- For now, simplified: auto-accept gifts (one-sided trades)
+    -- Remove card from offering player
+    let card := (ps.hand.find? (·.name == cardName)).getD { name := cardName }
+    let ps' := { ps with hand := ps.hand.filter (·.name != cardName) }
+    -- Add card to target player
+    let targetPs := gs.getPlayer targetPid
+    let targetPs' := { targetPs with hand := targetPs.hand ++ [card] }
+    -- Update completed trades counter
+    let ps'' := { ps' with completedTrades := some ((ps'.completedTrades.getD 0) + 1) }
+    let gs' := gs.setPlayer pid ps'' |>.setPlayer targetPid targetPs'
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges :=
+          let inner1 : Lean.RBMap String Json compare := Lean.RBMap.empty
+            |>.insert "hand" (ToJson.toJson ps''.hand)
+            |>.insert "completedTrades" (ToJson.toJson (ps''.completedTrades.getD 0))
+          let inner2 : Lean.RBMap String Json compare := Lean.RBMap.empty
+            |>.insert "hand" (ToJson.toJson targetPs'.hand)
+          (Lean.RBMap.empty : Lean.RBMap String (Lean.RBMap String Json compare) compare)
+            |>.insert pid inner1
+            |>.insert targetPid inner2
+      },
+      logMessage := some s!"{pid} traded {cardName} to {targetPid}",
+      checkWin := true
+    })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !gs.isMechanicEnabled "trade" && !gs.isMechanicEnabled "trading" then []
+  else
+    let ps := gs.getPlayer pid
+    let items := ps.hand.filter (·.cardType == "item")
+    if items.isEmpty then []
+    else
+      let otherPlayers := gs.turnOrder.filter (· != pid)
+      items.foldl (init := []) fun acc card =>
+        acc ++ otherPlayers.map fun target => {
+          action := { actionType := "trade_offer", card := some card.name,
+                      target := some target : GameAction },
+          category := some "trading",
+          priority := some 20 : AvailableAction
+        }
+
+end Trade
+
+/-! ## Score Mechanic -/
+
+namespace Score
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "add_score" then none
+  else
+    let amount := action.amount.getD 1
+    let gs' := gs.modifyPlayer pid fun ps =>
+      { ps with score := some ((ps.score.getD 0) + amount) }
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("score", ToJson.toJson ((gs'.getPlayer pid).score.getD 0))]
+      },
+      logMessage := some s!"{pid} gained {amount} score",
+      checkWin := true
+    })
+
+def getAvailableActions (_gs : GameState) (_pid : String) : List AvailableAction := []
+
+end Score
+
+/-! ## Discard Mechanic -/
+
+namespace Discard
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "discard_card" then { valid := true }
+  else
+    match action.card with
+    | none => { valid := false, error := some "discard_card requires 'card' field" }
+    | some cardName =>
+      let ps := gs.getPlayer pid
+      match ps.hand.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not in hand" }
+      | some _ => { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "discard_card" then none
+  else do
+    let cardName ← action.card
+    let ps := gs.getPlayer pid
+    let card ← ps.hand.find? (·.name == cardName)
+    let ps' := { ps with hand := ps.hand.filter (·.name != cardName) }
+    let shared' := { gs.shared with discard := gs.shared.discard ++ [card] }
+    let gs' := { gs.setPlayer pid ps' with shared := shared' }
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("hand", ToJson.toJson ps'.hand)],
+        sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare).insert
+          "discard" (ToJson.toJson gs'.shared.discard)
+      },
+      logMessage := some s!"{pid} discarded {cardName}"
+    })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  let ps := gs.getPlayer pid
+  ps.hand.map fun card => {
+    action := { actionType := "discard_card", card := some card.name : GameAction },
+    category := some "cards",
+    priority := some 5 : AvailableAction
+  }
+
+end Discard
+
+/-! ## Tableau Mechanic (play cards to persistent zone) -/
+
+namespace Tableau
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  if action.actionType != "play_to_tableau" && action.actionType != "add_to_tableau" then { valid := true }
+  else
+    match action.card with
+    | none => { valid := false, error := some "play_to_tableau requires 'card' field" }
+    | some cardName =>
+      let ps := gs.getPlayer pid
+      match ps.hand.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not in hand" }
+      | some _ => { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "play_to_tableau" && action.actionType != "add_to_tableau" then none
+  else do
+    let cardName ← action.card
+    let ps := gs.getPlayer pid
+    let card ← ps.hand.find? (·.name == cardName)
+    let ps' := { ps with
+      hand := ps.hand.filter (·.name != cardName),
+      tableau := ps.tableau ++ [card]
+    }
+    let gs' := gs.setPlayer pid ps'
+    -- Apply card effect if any
+    let (gs'', effectMsg) := Effects.applyCardEffect gs' pid card
+    let logMsg := match effectMsg with
+      | some msg => s!"{pid} played {cardName} to tableau. {msg}"
+      | none => s!"{pid} played {cardName} to tableau"
+    some (gs'', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("hand", ToJson.toJson (gs''.getPlayer pid).hand),
+           ("tableau", ToJson.toJson (gs''.getPlayer pid).tableau)]
+      },
+      logMessage := some logMsg,
+      checkWin := true
+    })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !gs.isMechanicEnabled "tableau_building" && !gs.isMechanicEnabled "set_collection"
+     && !gs.isMechanicEnabled "worker_placement" then []
+  else
+    let ps := gs.getPlayer pid
+    ps.hand.map fun card => {
+      action := { actionType := "play_to_tableau", card := some card.name : GameAction },
+      category := some "tableau",
+      priority := some 30 : AvailableAction
+    }
+
+end Tableau
+
+/-! ## Market / Draft Mechanic -/
+
+namespace Market
+
+/-- Get price of a card from market config. Default 1. -/
+private def getCardPrice (gs : GameState) (cardName : String) : Nat :=
+  match gs.config.engineMechanics.find? "market" with
+  | some cfg =>
+    -- Check card_prices map first
+    match cfg.getObjVal? "card_prices" with
+    | .ok (Json.obj kvs) =>
+      let found := kvs.toArray.find? fun ⟨k, _⟩ => k == cardName
+      match found with
+      | some ⟨_, v⟩ => v.getNat?.toOption |>.getD 1
+      | none => (cfg.getObjVal? "default_price" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+    | _ => (cfg.getObjVal? "default_price" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+  | none => 1
+
+/-- Get the currency resource used for purchases. -/
+private def getCurrency (gs : GameState) : String :=
+  match gs.config.engineMechanics.find? "market" with
+  | some cfg => (cfg.getObjVal? "currency" |>.toOption |>.bind (·.getStr?.toOption)).getD "gold"
+  | none => "gold"
+
+def validate (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  match action.actionType with
+  | "buy_card" | "buy_market" =>
+    match action.card with
+    | none => { valid := false, error := some "buy_card requires 'card' field" }
+    | some cardName =>
+      -- Check card is in market
+      match gs.shared.market.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not available in market" }
+      | some _ =>
+        let price := getCardPrice gs cardName
+        let currency := getCurrency gs
+        let ps := gs.getPlayer pid
+        let balance := ps.getResource currency
+        if balance ≥ price then { valid := true }
+        else { valid := false, error := some s!"Not enough {currency}: have {balance}, need {price}" }
+  | "draft_card" =>
+    match action.card with
+    | none => { valid := false, error := some "draft_card requires 'card' field" }
+    | some cardName =>
+      match gs.shared.market.find? (·.name == cardName) with
+      | none => { valid := false, error := some s!"Card '{cardName}' not available in market" }
+      | some _ => { valid := true }
+  | _ => { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  match action.actionType with
+  | "buy_card" | "buy_market" => do
+    let cardName ← action.card
+    let card ← gs.shared.market.find? (·.name == cardName)
+    let price := getCardPrice gs cardName
+    let currency := getCurrency gs
+    let ps := gs.getPlayer pid
+    let ps' := { ps with
+      hand := ps.hand ++ [card],
+      resources := ps.resources.insert currency (ps.getResource currency - price)
+    }
+    -- Remove first matching card from market (by name)
+    let market' := match gs.shared.market.findIdx? (·.name == cardName) with
+      | some n =>
+        let before := gs.shared.market.take n
+        let after := gs.shared.market.drop (n + 1)
+        before ++ after
+      | none => gs.shared.market
+    let shared' := { gs.shared with market := market' }
+    let gs' := { gs.setPlayer pid ps' with shared := shared' }
+    -- Refill market from deck if configured
+    let gs'' := match gs.config.engineMechanics.find? "market" with
+      | some cfg =>
+        let marketSize := (cfg.getObjVal? "size" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+        if marketSize > 0 && gs'.shared.market.length < marketSize && !gs'.shared.deck.isEmpty then
+          let refill := gs'.shared.deck.take (marketSize - gs'.shared.market.length)
+          { gs' with shared := { gs'.shared with
+            market := gs'.shared.market ++ refill,
+            deck := gs'.shared.deck.drop refill.length } }
+        else gs'
+      | none => gs'
+    some (gs'', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("hand", ToJson.toJson (gs''.getPlayer pid).hand),
+           ("resources", rbmapNatToJson (gs''.getPlayer pid).resources)],
+        sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare)
+          |>.insert "market" (ToJson.toJson gs''.shared.market)
+      },
+      logMessage := some s!"{pid} bought {cardName} for {price} {currency}",
+      checkWin := true
+    })
+  | "draft_card" => do
+    let cardName ← action.card
+    let card ← gs.shared.market.find? (·.name == cardName)
+    let ps := gs.getPlayer pid
+    let ps' := { ps with hand := ps.hand ++ [card] }
+    let market' := match gs.shared.market.findIdx? (·.name == cardName) with
+      | some n =>
+        let before := gs.shared.market.take n
+        let after := gs.shared.market.drop (n + 1)
+        before ++ after
+      | none => gs.shared.market
+    let shared' := { gs.shared with market := market' }
+    let gs' := { gs.setPlayer pid ps' with shared := shared' }
+    some (gs', {
+      handled := true,
+      stateChanges := {
+        playerStateChanges := mkPlayerChange pid
+          [("hand", ToJson.toJson ps'.hand)],
+        sharedStateChanges := (Lean.RBMap.empty : Lean.RBMap String Json compare)
+          |>.insert "market" (ToJson.toJson gs'.shared.market)
+      },
+      logMessage := some s!"{pid} drafted {cardName}",
+      advanceTurn := true
+    })
+  | _ => none
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !gs.isMechanicEnabled "market" && !gs.isMechanicEnabled "drafting" then []
+  else
+    let ps := gs.getPlayer pid
+    let currency := getCurrency gs
+    let balance := ps.getResource currency
+    gs.shared.market.map fun card =>
+      let price := getCardPrice gs card.name
+      let canAfford := balance ≥ price
+      if gs.isMechanicEnabled "drafting" then
+        { action := { actionType := "draft_card", card := some card.name : GameAction },
+          category := some "market",
+          priority := some 40 : AvailableAction }
+      else
+        { action := { actionType := "buy_card", card := some card.name : GameAction },
+          category := some "market",
+          enabled := canAfford,
+          reason := if canAfford then none else some s!"Need {price} {currency}",
+          priority := some 40 : AvailableAction }
+
+end Market
+
+/-! ## Dice Mechanic -/
+
+namespace Dice
+
+def validate (gs : GameState) (_pid : String) (action : GameAction) : ValidationResult :=
+  match action.actionType with
+  | "roll_dice" => { valid := true }
+  | "reroll" =>
+    if !gs.isMechanicEnabled "dice_rolling" then
+      { valid := false, error := some "Dice rolling not enabled" }
+    else { valid := true }
+  | _ => { valid := true }
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  match action.actionType with
+  | "roll_dice" =>
+    -- Read dice result from action.extra (provided by external RNG / GM)
+    let result : List Nat := match action.extra.find? "result" with
+      | some (Json.arr vals) => vals.toList.filterMap (·.getNat?.toOption)
+      | some v => match v.getNat?.toOption with | some n => [n] | none => []
+      | _ => []
+    if result.isEmpty then none
+    else
+      let ps := gs.getPlayer pid
+      let ps' := { ps with diceResult := result }
+      let gs' := gs.setPlayer pid ps'
+      some (gs', {
+        handled := true,
+        stateChanges := {
+          playerStateChanges := mkPlayerChange pid
+            [("diceResult", ToJson.toJson result)]
+        },
+        logMessage := some s!"{pid} rolled {result}",
+        checkWin := true
+      })
+  | "reroll" =>
+    -- Reroll: same as roll but preserves context that it's a reroll
+    let result : List Nat := match action.extra.find? "result" with
+      | some (Json.arr vals) => vals.toList.filterMap (·.getNat?.toOption)
+      | some v => match v.getNat?.toOption with | some n => [n] | none => []
+      | _ => []
+    if result.isEmpty then none
+    else
+      let ps := gs.getPlayer pid
+      let ps' := { ps with diceResult := result }
+      let gs' := gs.setPlayer pid ps'
+      some (gs', {
+        handled := true,
+        stateChanges := {
+          playerStateChanges := mkPlayerChange pid
+            [("diceResult", ToJson.toJson result)]
+        },
+        logMessage := some s!"{pid} rerolled → {result}"
+      })
+  | _ => none
+
+def getAvailableActions (gs : GameState) (_pid : String) : List AvailableAction :=
+  if !gs.isMechanicEnabled "dice_rolling" then []
+  else
+    [{ action := { actionType := "roll_dice" : GameAction },
+       category := some "dice",
+       priority := some 50 : AvailableAction }]
+
+end Dice
+
+/-! ## Income Mechanic (auto-gain resources on turn/round start) -/
+
+namespace Income
+
+/-- Apply income to a player based on config.
+    Config format: engine_mechanics.income = { per_turn: { gold: 2 }, per_round: { food: 1 } }
+    Or: engine_mechanics.income = { sources: [{ resource: "gold", amount: 2, timing: "turn_start" }] } -/
+def applyIncome (gs : GameState) (pid : String) (timing : String) : GameState :=
+  match gs.config.engineMechanics.find? "income" with
+  | none => gs
+  | some cfg =>
+    -- Check simple per_turn / per_round format
+    let timingKey := if timing == "turn_start" then "per_turn" else "per_round"
+    let gs' := match cfg.getObjVal? timingKey with
+      | .ok (Json.obj kvs) =>
+        kvs.toArray.foldl (init := gs) fun acc ⟨resName, resVal⟩ =>
+          let amount := resVal.getNat?.toOption |>.getD 0
+          if amount > 0 then
+            acc.modifyPlayer pid fun ps =>
+              ps.setResource resName ((ps.getResource resName) + amount)
+          else acc
+      | _ => gs
+    -- Check sources array format
+    match cfg.getObjVal? "sources" with
+    | .ok (Json.arr sources) =>
+      sources.toList.foldl (init := gs') fun acc srcJson =>
+        let srcTiming := (srcJson.getObjVal? "timing" |>.toOption |>.bind (·.getStr?.toOption)).getD "turn_start"
+        if srcTiming != timing then acc
+        else
+          let resName := (srcJson.getObjVal? "resource" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+          let amount := (srcJson.getObjVal? "amount" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+          if resName.isEmpty || amount == 0 then acc
+          else
+            acc.modifyPlayer pid fun ps =>
+              ps.setResource resName ((ps.getResource resName) + amount)
+    | _ => gs'
+
+end Income
+
+/-! ## Win Condition Mechanics -/
+
+namespace WinConditions
+
+def checkScoreThreshold (gs : GameState) (pid : String) : WinCheckResult :=
+  match gs.config.engineMechanics.find? "win_score_threshold" with
+  | none => { won := false }
+  | some cfg =>
+    let threshold := (cfg.getObjVal? "threshold" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+    let ps := gs.getPlayer pid
+    let score := ps.score.getD 0
+    if score ≥ threshold then
+      { won := true, reason := some s!"Reached score threshold: {score} ≥ {threshold}" }
+    else { won := false }
+
+def checkEmptyHand (gs : GameState) (pid : String) : WinCheckResult :=
+  if !gs.isMechanicEnabled "win_empty_hand" then { won := false }
+  else
+    let ps := gs.getPlayer pid
+    if ps.hand.isEmpty then
+      { won := true, reason := some s!"{pid} emptied their hand" }
+    else { won := false }
+
+def checkReachState (gs : GameState) (pid : String) : WinCheckResult :=
+  match gs.config.engineMechanics.find? "win_reach_state" with
+  | none => { won := false }
+  | some cfg =>
+    let targetState := (cfg.getObjVal? "target_state" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+    let ps := gs.getPlayer pid
+    if ps.state == targetState then
+      { won := true, reason := some s!"{pid} reached {targetState}" }
+    else { won := false }
+
+/-- Race win: first player to reach a resource/score threshold. -/
+def checkRace (gs : GameState) (pid : String) : WinCheckResult :=
+  match gs.config.engineMechanics.find? "win_race" with
+  | none => { won := false }
+  | some cfg =>
+    let resource := (cfg.getObjVal? "resource" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+    let threshold := (cfg.getObjVal? "threshold" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+    if resource.isEmpty || threshold == 0 then { won := false }
+    else
+      let ps := gs.getPlayer pid
+      let value := ps.getResource resource
+      if value ≥ threshold then
+        { won := true, reason := some s!"{pid} reached {value} {resource} (threshold: {threshold})" }
+      else { won := false }
+
+/-- Elimination: player wins when all opponents are eliminated. -/
+def checkElimination (gs : GameState) (pid : String) : WinCheckResult :=
+  if !gs.isMechanicEnabled "win_elimination" then { won := false }
+  else
+    let activePlayers := gs.turnOrder.filter fun opId =>
+      (gs.getPlayer opId).state == "active" || (gs.getPlayer opId).state == "start"
+    if activePlayers.length == 1 && activePlayers.contains pid then
+      { won := true, reason := some s!"{pid} is the last player standing" }
+    else { won := false }
+
+/-- Highest scoring: when game ends (max rounds/turns), highest score wins.
+    This is checked at game end (trigger = "round_end" or "turn_limit"). -/
+def checkHighestScoring (gs : GameState) (pid : String) (trigger : String) : WinCheckResult :=
+  if !gs.isMechanicEnabled "win_highest_scoring" then { won := false }
+  else
+    -- Only trigger on game end conditions
+    let isGameEnd := trigger == "round_end" || trigger == "turn_limit" ||
+      (match gs.config.maxRounds with
+       | some maxR => gs.round > maxR
+       | none => false) ||
+      -- Check shared.extra gameOver flag (set by PD, etc.)
+      (match gs.shared.extra.find? "gameOver" with
+       | some (Json.bool true) => true | _ => false)
+    if !isGameEnd then { won := false }
+    else
+      let ps := gs.getPlayer pid
+      let myScore := ps.score.getD 0
+      let otherScores := gs.turnOrder.filter (· != pid) |>.map fun opId =>
+        (gs.getPlayer opId).score.getD 0
+      if otherScores.all (· ≤ myScore) then
+        { won := true, reason := some s!"{pid} wins with highest score: {myScore}" }
+      else { won := false }
+
+/-- Single loser: last player remaining loses (reverse elimination).
+    E.g., UNO - first to empty hand triggers end, others lose. -/
+def checkSingleLoser (gs : GameState) (pid : String) : WinCheckResult :=
+  if !gs.isMechanicEnabled "win_single_loser" then { won := false }
+  else
+    -- Check if any opponent has triggered the "loss" condition
+    -- For now: player with most cards in hand at game end loses
+    let ps := gs.getPlayer pid
+    let myHandSize := ps.hand.length
+    let otherHandSizes := gs.turnOrder.filter (· != pid) |>.map fun opId =>
+      (gs.getPlayer opId).hand.length
+    if otherHandSizes.any (· > myHandSize) then
+      { won := false }  -- Someone has more cards, unclear winner
+    else { won := false }  -- Not triggered
+
+def checkMaxTurns (gs : GameState) : Option WinCheckResult :=
+  match gs.config.maxTurns with
+  | some maxT =>
+    if gs.turnNumber > maxT then
+      -- Check timeout_winner config
+      match gs.config.engineMechanics.find? "timeout_winner" with
+      | some cfg =>
+        let winType := (cfg.getObjVal? "type" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+        if winType == "role" then
+          let role := (cfg.getObjVal? "role" |>.toOption |>.bind (·.getStr?.toOption)).getD ""
+          some { won := true, reason := some s!"Turn limit reached. {role} wins by timeout." }
+        else
+          some { won := true, reason := some "Turn limit reached." }
+      | none => some { won := true, reason := some "Turn limit reached." }
+    else none
+  | none => none
+
+def checkAll (gs : GameState) (pid : String) (trigger : String := "action") : WinCheckResult :=
+  -- Check turn limit first
+  match checkMaxTurns gs with
+  | some result => result
+  | none =>
+    -- Check all win conditions in priority order
+    let checks := [
+      checkScoreThreshold gs pid,
+      checkEmptyHand gs pid,
+      checkReachState gs pid,
+      checkRace gs pid,
+      checkElimination gs pid,
+      checkHighestScoring gs pid trigger
+    ]
+    match checks.find? (·.won) with
+    | some result => result
+    | none => { won := false }
+
+end WinConditions
+
+/-! ## Visibility / Player View -/
+
+namespace Visibility
+
+/-- Build the player view for a specific player.
+    Applies visibility rules to hide information. -/
+def getPlayerView (gs : GameState) (viewerId : String) : PlayerViewResult :=
+  let myPs := gs.getPlayer viewerId
+  let myView : MyStateView := {
+    state := myPs.state,
+    hand := myPs.hand,
+    effects := myPs.effects,
+    score := myPs.score,
+    resources := myPs.resources,
+    actionPoints := myPs.actionPoints,
+    actionPointsUsed := myPs.actionPointsUsed,
+    visitedLocations := myPs.visitedLocations,
+    placedLocationCount := myPs.placedLocationCount,
+    completedTrades := myPs.completedTrades,
+    tableau := myPs.tableau,
+    diceResult := myPs.diceResult,
+    extra := myPs.extra
+  }
+  let opponents := gs.turnOrder.filter (· != viewerId) |>.map fun opId =>
+    let opPs := gs.getPlayer opId
+    let showScore := !isInfoHidden gs "score" viewerId opId
+    let showResources := !isInfoHidden gs "resources" viewerId opId
+    let showEffects := !isInfoHidden gs "effects" viewerId opId
+    {
+      playerId := opId,
+      state := opPs.state,
+      handSize := opPs.hand.length,
+      effects := if showEffects then opPs.effects else [],
+      score := if showScore then opPs.score else none,
+      resources := if showResources then opPs.resources else .empty,
+      placedLocationCount := opPs.placedLocationCount,
+      completedTrades := opPs.completedTrades,
+      tableau := opPs.tableau
+      : OpponentView
+    }
+  -- Shared view: hide deck contents (only show size), keep discard visible
+  let sharedView : SharedView := {
+    deckSize := gs.shared.deck.length,
+    discard := gs.shared.discard,
+    boardStates := gs.shared.boardStates,
+    boardEdges := gs.shared.boardEdges,
+    currentBoardState := gs.shared.currentBoardState,
+    placedLocations := gs.shared.placedLocations,
+    market := gs.shared.market,
+    extra := gs.shared.extra
+  }
+  {
+    gameId := gs.gameId,
+    round := gs.round,
+    turnNumber := gs.turnNumber,
+    currentPlayer := gs.currentPlayer,
+    myState := myView,
+    opponents := opponents,
+    shared := sharedView
+  }
+
+end Visibility
+
+/-! ## Simultaneous Action Selection Mechanic -/
+
+namespace SimultaneousSelection
+
+/-- Check if SAS mechanic is enabled. -/
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "simultaneous_action_selection" ||
+  gs.isMechanicEnabled "simultaneous-action-selection"
+
+/-- Check if a player can act out of turn for SAS (select_action). -/
+def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  if actionType != "select_action" then false
+  else if !isEnabled gs then false
+  else
+    -- Check if player already submitted
+    match gs.shared.extra.find? "sas_selections" with
+    | some (Json.obj kvs) => kvs.toArray.all fun ⟨k, _⟩ => k != pid
+    | _ => true
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "select_action" then none
+  else if !isEnabled gs then none
+  else
+    -- Read the selected action from extra (normalize string and object formats)
+    let choice := match action.extra.find? "selectedAction" with
+      | some (Json.str s) => s
+      | some obj => match obj.getObjVal? "type" with
+        | .ok (Json.str s) => s
+        | _ => match obj.getObjVal? "action" with
+          | .ok (Json.str s) => s
+          | _ => ""
+      | none => match action.extra.find? "action" with
+        | some (Json.str s) => s
+        | _ => ""
+    -- Record selection in shared.extra.sas_selections
+    let currentSelections := match gs.shared.extra.find? "sas_selections" with
+      | some (Json.obj kvs) => kvs.toArray.toList.map fun ⟨k, v⟩ => (k, v)
+      | _ => []
+    let newSelections := currentSelections ++ [(pid, Json.str choice)]
+    let selectionsMap := newSelections.foldl (init := (Lean.RBMap.empty : Lean.RBMap String Json compare))
+      fun m (k, v) => m.insert k v
+    let shared' := { gs.shared with extra := gs.shared.extra.insert "sas_selections" (rbmapJsonToJson selectionsMap) }
+    let gs' := { gs with shared := shared' }
+    -- Check if all players have selected
+    let allSelected := gs.turnOrder.all fun p =>
+      newSelections.any fun (k, _) => k == p
+    if allSelected then
+      -- Resolve: apply action effects based on choices
+      let gs'' := newSelections.foldl (init := gs') fun acc (p, choiceJson) =>
+        let act := match choiceJson with | Json.str s => s | _ => ""
+        match act with
+        | "Scheme" => acc.modifyPlayer p fun ps =>
+            ps.setResource "gold" ((ps.getResource "gold") + 2)
+        | "Fortify" => acc.modifyPlayer p fun ps =>
+            ps.setResource "influence" ((ps.getResource "influence") + 2)
+        | "Subvert" =>
+          -- Subvert: +2 gold to player, -2 from collective treasury
+          let acc := acc.modifyPlayer p fun ps =>
+            ps.setResource "gold" ((ps.getResource "gold") + 2)
+          -- Deduct from semi-cooperative collective progress if present
+          let treasury := (acc.shared.extra.find? "collective_progress" |>.bind (·.getNat?.toOption)).getD 0
+          let newTreasury := if treasury ≥ 2 then treasury - 2 else 0
+          { acc with shared := { acc.shared with extra := acc.shared.extra.insert "collective_progress" (ToJson.toJson newTreasury) } }
+        | _ => acc
+      -- Reset selections for next round
+      let shared'' := { gs''.shared with extra := gs''.shared.extra.insert "sas_selections" (Json.mkObj []) }
+      let gs''' := { gs'' with shared := shared'' }
+      some (gs''', {
+        handled := true,
+        advanceTurn := true,
+        logMessage := some s!"All players selected. Actions resolved."
+      })
+    else
+      some (gs', {
+        handled := true,
+        advanceTurn := true,
+        logMessage := some s!"{pid} selected {choice}"
+      })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !isEnabled gs then []
+  else
+    let alreadySelected := match gs.shared.extra.find? "sas_selections" with
+      | some (Json.obj kvs) => kvs.toArray.any fun ⟨k, _⟩ => k == pid
+      | _ => false
+    if alreadySelected then []
+    else
+      [{ action := { actionType := "select_action" },
+         category := some "simultaneous",
+         priority := some 60 }]
+
+end SimultaneousSelection
+
+/-! ## Prisoner's Dilemma Mechanic -/
+
+namespace PrisonersDilemma
+
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "prisoners_dilemma" ||
+  gs.isMechanicEnabled "prisoners-dilemma"
+
+def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  if actionType != "dilemma_choice" then false
+  else if !isEnabled gs then false
+  else
+    match gs.shared.extra.find? "pd_choices" with
+    | some (Json.obj kvs) => kvs.toArray.all fun ⟨k, _⟩ => k != pid
+    | _ => true
+
+/-- Get PD payoff values from config. -/
+private def getPayoff (gs : GameState) (my other : String) : Nat :=
+  let key := s!"{my}_{other}"
+  match gs.config.engineMechanics.find? "prisoners_dilemma" with
+  | some cfg =>
+    match cfg.getObjVal? "payoff" with
+    | .ok payoffJson =>
+      (payoffJson.getObjVal? key |>.toOption |>.bind (·.getNat?.toOption)).getD
+        (match key with
+         | "cooperate_cooperate" => 3
+         | "cooperate_defect" => 0
+         | "defect_cooperate" => 5
+         | "defect_defect" => 1
+         | _ => 0)
+    | _ => match key with
+           | "cooperate_cooperate" => 3 | "cooperate_defect" => 0
+           | "defect_cooperate" => 5 | "defect_defect" => 1 | _ => 0
+  | none => match key with
+           | "cooperate_cooperate" => 3 | "cooperate_defect" => 0
+           | "defect_cooperate" => 5 | "defect_defect" => 1 | _ => 0
+
+def execute (gs : GameState) (pid : String) (action : GameAction) : Option (GameState × ExecutionResult) :=
+  if action.actionType != "dilemma_choice" then none
+  else if !isEnabled gs then none
+  else
+    let choice := match action.extra.find? "choice" with
+      | some (Json.str s) => s
+      | _ => match action.extra.find? "selectedAction" with
+        | some (Json.str s) => s
+        | _ => "cooperate"
+    -- Record choice
+    let currentChoices := match gs.shared.extra.find? "pd_choices" with
+      | some (Json.obj kvs) => kvs.toArray.toList.map fun ⟨k, v⟩ => (k, v)
+      | _ => []
+    let newChoices := currentChoices ++ [(pid, Json.str choice)]
+    let choicesMap := newChoices.foldl (init := (Lean.RBMap.empty : Lean.RBMap String Json compare))
+      fun m (k, v) => m.insert k v
+    let shared' := { gs.shared with extra := gs.shared.extra.insert "pd_choices" (rbmapJsonToJson choicesMap) }
+    let gs' := { gs with shared := shared' }
+    -- Check if all players have chosen
+    let allChosen := gs.turnOrder.all fun p =>
+      newChoices.any fun (k, _) => k == p
+    if allChosen then
+      -- Resolve payoffs
+      let gs'' := gs.turnOrder.foldl (init := gs') fun acc p =>
+        let myChoice := match newChoices.find? (fun (k, _) => k == p) with
+          | some (_, Json.str s) => s | _ => "cooperate"
+        let totalScore := gs.turnOrder.foldl (init := 0) fun total opId =>
+          if opId == p then total
+          else
+            let opChoice := match newChoices.find? (fun (k, _) => k == opId) with
+              | some (_, Json.str s) => s | _ => "cooperate"
+            total + getPayoff acc myChoice opChoice
+        acc.modifyPlayer p fun ps =>
+          { ps with score := some ((ps.score.getD 0) + totalScore) }
+      -- Increment PD round counter
+      let pdRound := (gs''.shared.extra.find? "pd_round" |>.bind (·.getNat?.toOption)).getD 0
+      let newRound := pdRound + 1
+      let maxRounds := match gs''.config.engineMechanics.find? "prisoners_dilemma" with
+        | some cfg => (cfg.getObjVal? "rounds" |>.toOption |>.bind (·.getNat?.toOption)).getD 3
+        | none => 3
+      -- Reset choices, update round
+      let extraUpd := gs''.shared.extra.insert "pd_choices" (Json.mkObj [])
+      let extraUpd := extraUpd.insert "pd_round" (ToJson.toJson newRound)
+      let extraUpd := extraUpd.insert "pd_resolved" (Json.bool (newRound ≥ maxRounds))
+      -- Set gameOver flag so win condition checks can trigger
+      let extraUpd := if newRound ≥ maxRounds then extraUpd.insert "gameOver" (Json.bool true) else extraUpd
+      let shared'' := { gs''.shared with extra := extraUpd }
+      let gs''' := { gs'' with shared := shared'' }
+      some (gs''', {
+        handled := true,
+        advanceTurn := true,
+        checkWin := newRound ≥ maxRounds,
+        logMessage := some s!"PD round {newRound}/{maxRounds} resolved."
+      })
+    else
+      some (gs', {
+        handled := true,
+        advanceTurn := true,
+        logMessage := some s!"{pid} chose {choice}"
+      })
+
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  if !isEnabled gs then []
+  else
+    let alreadyChosen := match gs.shared.extra.find? "pd_choices" with
+      | some (Json.obj kvs) => kvs.toArray.any fun ⟨k, _⟩ => k == pid
+      | _ => false
+    let resolved := match gs.shared.extra.find? "pd_resolved" with
+      | some (Json.bool true) => true | _ => false
+    if alreadyChosen || resolved then []
+    else
+      [{ action := { actionType := "dilemma_choice" },
+         category := some "prisoners_dilemma",
+         priority := some 60 }]
+
+end PrisonersDilemma
+
+/-! ## Card Matching Mechanic (UNO-style) -/
+
+namespace CardMatching
+
+def isEnabled (gs : GameState) : Bool :=
+  gs.isMechanicEnabled "card_matching" || gs.isMechanicEnabled "card-matching"
+
+/-- Get the current color from shared.extra. -/
+private def getCurrentColor (gs : GameState) : Option String :=
+  gs.shared.extra.find? "currentColor" |>.bind (·.getStr?.toOption)
+
+/-- Get the top card's effect from shared.extra. -/
+private def getTopCardEffect (gs : GameState) : Option Json :=
+  gs.shared.extra.find? "topCard" |>.bind (·.getObjVal? "effect" |>.toOption)
+
+/-- Check if a card matches current play (color or value match). -/
+def cardMatches (gs : GameState) (card : Card) : Bool :=
+  if !isEnabled gs then true
+  else
+    -- Wild cards always match
+    if card.cardType == "wild" then true
+    else
+      let currentColor := getCurrentColor gs
+      let cardColor := card.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+      match currentColor with
+      | none => true  -- No current color: any card matches
+      | some cc =>
+        -- Match by color
+        if cardColor == some cc then true
+        else
+          -- Match by value
+          let topEffect := getTopCardEffect gs
+          let topValue := topEffect |>.bind (·.getObjVal? "value" |>.toOption) |>.bind (·.getNat?.toOption)
+          let cardValue := card.extra.find? "effect" |>.bind (·.getObjVal? "value" |>.toOption) |>.bind (·.getNat?.toOption)
+          match topValue, cardValue with
+          | some tv, some cv => tv == cv
+          | _, _ =>
+            -- Match by effect type
+            let topType := topEffect |>.bind (·.getObjVal? "type" |>.toOption) |>.bind (·.getStr?.toOption)
+            let cardType := card.extra.find? "effect" |>.bind (·.getObjVal? "type" |>.toOption) |>.bind (·.getStr?.toOption)
+            match topType, cardType with
+            | some tt, some ct => tt == ct && tt != "none"
+            | _, _ => false
+
+/-- Update shared state after card play (set currentColor, topCard). -/
+def updateAfterPlay (gs : GameState) (card : Card) : GameState :=
+  if !isEnabled gs then gs
+  else
+    let cardColor := card.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+    let extra' := gs.shared.extra
+      |>.insert "topCard" (ToJson.toJson card)
+    let extra'' := match cardColor with
+      | some color => extra'.insert "currentColor" (Json.str color)
+      | none => extra'
+    { gs with shared := { gs.shared with extra := extra'' } }
+
+end CardMatching
+
+/-! ## Mechanic Router -/
+
+/-- Check if a player can act out-of-turn for specific action types. -/
+private def canActOutOfTurn (gs : GameState) (pid : String) (actionType : String) : Bool :=
+  actionType == "resign" ||
+  actionType == "select_action" && SimultaneousSelection.canActOutOfTurn gs pid actionType ||
+  actionType == "dilemma_choice" && PrisonersDilemma.canActOutOfTurn gs pid actionType
+
+/-- Route a validation call through all enabled mechanics.
+    Returns first failure, or valid if all pass. -/
+def validateAction (gs : GameState) (pid : String) (action : GameAction) : ValidationResult :=
+  -- Check it's the player's turn (unless out-of-turn action)
+  if gs.currentPlayer != pid && !canActOutOfTurn gs pid action.actionType then
+    { valid := false, error := some s!"Not {pid}'s turn (current: {gs.currentPlayer})" }
+  else
+    -- Check if player is blocked by an effect
+    let ps := gs.getPlayer pid
+    if Effects.isBlocked ps && action.actionType != "pass" then
+      { valid := false, error := some s!"{pid} is blocked and cannot act this turn. Pass instead." }
+    else
+      -- Card matching validation (UNO-style)
+      let cardMatchCheck : ValidationResult :=
+        if CardMatching.isEnabled gs && action.actionType == "play_card" then
+          match action.card with
+          | some cardName =>
+            let ps := gs.getPlayer pid
+            match ps.hand.find? (fun c => c.name == cardName) with
+            | some card =>
+              if CardMatching.cardMatches gs card then { valid := true }
+              else { valid := false, error := some s!"Card '{cardName}' does not match current play" }
+            | none => { valid := true }  -- Card existence checked by Cards.validate
+          | none => { valid := true }
+        else { valid := true }
+      let checks := [
+        cardMatchCheck,
+        ActionPoints.validate gs pid action,
+        Resources.validate gs pid action,
+        Cards.validate gs pid action,
+        Board.validate gs pid action,
+        PlaceLocation.validate gs pid action,
+        Trade.validate gs pid action,
+        Discard.validate gs pid action,
+        Tableau.validate gs pid action,
+        Market.validate gs pid action,
+        Dice.validate gs pid action
+      ]
+      match checks.find? (!·.valid) with
+      | some failure => failure
+      | none => { valid := true }
+
+/-- Route an action execution through mechanics.
+    First mechanic to handle it wins (like TypeScript registry). -/
+def executeAction (gs : GameState) (pid : String) (action : GameAction) : EngineResponse :=
+  -- First validate
+  let validation := validateAction gs pid action
+  if !validation.valid then
+    { success := false, validation := some validation }
+  else
+    -- Try each mechanic until one handles it
+    let handlers := [
+      SimultaneousSelection.execute gs pid action,
+      PrisonersDilemma.execute gs pid action,
+      Pass.execute gs pid action,
+      PlaceLocation.execute gs pid action,
+      Cards.execute gs pid action,
+      Board.execute gs pid action,
+      Resources.execute gs pid action,
+      Trade.execute gs pid action,
+      Score.execute gs pid action,
+      Discard.execute gs pid action,
+      Tableau.execute gs pid action,
+      Market.execute gs pid action,
+      Dice.execute gs pid action
+    ]
+    let results := handlers.filterMap fun x => x
+    match results.head? with
+    | none =>
+      { success := false, error := some s!"No mechanic handled action type '{action.actionType}'" }
+    | some (gs', execResult) =>
+      -- Post-execute hooks: card matching state update
+      let gs' := if action.actionType == "play_card" && CardMatching.isEnabled gs' then
+        match action.card with
+        | some cardName =>
+          -- Find the played card (it should be in discard now)
+          match gs'.shared.discard.find? (fun c => c.name == cardName) with
+          | some card => CardMatching.updateAfterPlay gs' card
+          | none => gs'
+        | none => gs'
+      else gs'
+      -- Post-execute hooks: deduct action points
+      let gs'' := ActionPoints.postExecute gs' pid action
+      -- Check if turn should auto-end (0 AP remaining)
+      let autoEnd := ActionPoints.shouldAutoEndTurn gs'' pid
+      let execResult' := if autoEnd then { execResult with advanceTurn := true } else execResult
+      { success := true,
+        execution := some execResult',
+        state := some gs'' }
+
+/-- Get all available actions for a player. -/
+def getAvailableActions (gs : GameState) (pid : String) : List AvailableAction :=
+  -- If player is blocked, only pass is available
+  let ps := gs.getPlayer pid
+  if Effects.isBlocked ps then
+    Pass.getAvailableActions gs pid
+  else
+    let cardActions := Cards.getAvailableActions gs pid
+    let boardActions := Board.getAvailableActions gs pid
+    let placeActions := PlaceLocation.getAvailableActions gs pid
+    let resourceActions := if gs.isMechanicEnabled "resources" then Resources.getAvailableActions gs pid else []
+    let tradeActions := Trade.getAvailableActions gs pid
+    let discardActions := Discard.getAvailableActions gs pid
+    let tableauActions := Tableau.getAvailableActions gs pid
+    let marketActions := Market.getAvailableActions gs pid
+    let diceActions := Dice.getAvailableActions gs pid
+    let passActions := Pass.getAvailableActions gs pid
+    -- Filter by action points cost if AP mechanic is enabled
+    let sasActions := SimultaneousSelection.getAvailableActions gs pid
+    let pdActions := PrisonersDilemma.getAvailableActions gs pid
+    let allActions := sasActions ++ pdActions ++ cardActions ++ boardActions ++ placeActions ++ resourceActions ++
+      tradeActions ++ discardActions ++ tableauActions ++ marketActions ++ diceActions ++ passActions
+    if gs.isMechanicEnabled "action_points" || gs.isMechanicEnabled "action-points" then
+      let ps := gs.getPlayer pid
+      match ps.actionPoints with
+      | some ap =>
+        allActions.filter fun a =>
+          let cost := getActionCost gs a.action.actionType
+          ap ≥ cost
+      | none => allActions
+    else allActions
+
+/-- Check win conditions for a player. -/
+def checkWin (gs : GameState) (pid : String) (trigger : String) : WinCheckResult :=
+  WinConditions.checkAll gs pid trigger
+
+/-- Handle turn start lifecycle: refresh AP, tick effects, income. -/
+def onTurnStart (gs : GameState) (pid : String) (isNewRound : Bool) : GameState :=
+  -- Tick effects for the player whose turn is starting
+  let gs' := gs.modifyPlayer pid fun ps =>
+    let (ps', _expired) := Effects.tickEffects ps
+    ps'
+  -- Refresh action points
+  let gs'' := ActionPoints.onTurnStart gs' pid
+  -- Apply per-turn income
+  let gs''' := Income.applyIncome gs'' pid "turn_start"
+  -- Apply per-round income on new rounds
+  if isNewRound then Income.applyIncome gs''' pid "round_start"
+  else gs'''
+
+/-- Handle turn end lifecycle: tick effects for ending player. -/
+def onTurnEnd (gs : GameState) (pid : String) (_nextPid : String) (_isRoundEnd : Bool) : GameState :=
+  -- Currently effects are ticked on turn start. Turn end is a hook point
+  -- for future mechanics (income, upkeep, etc.)
+  gs.modifyPlayer pid fun ps => ps
+
+/-- Helper: expand board edge config where from/to can be arrays.
+    Input: { from: ["A","B"], to: ["X","Y"] } → [(A,X),(A,Y),(B,X),(B,Y)] -/
+private def expandBoardEdges (edgesJson : Json) : List (String × String) :=
+  match edgesJson with
+  | Json.arr edges => edges.toList.foldl (init := []) fun acc e =>
+      let froms : List String := match e.getObjVal? "from" with
+        | .ok (Json.str s) => [s]
+        | .ok (Json.arr arr) => arr.toList.filterMap (·.getStr?.toOption)
+        | _ => []
+      let tos : List String := match e.getObjVal? "to" with
+        | .ok (Json.str s) => [s]
+        | .ok (Json.arr arr) => arr.toList.filterMap (·.getStr?.toOption)
+        | _ => []
+      acc ++ (froms.foldl (init := []) fun inner f =>
+        inner ++ tos.map fun t => (f, t))
+  | _ => []
+
+/-- Parse card definitions from config, preserving extra fields (effect, etc.). -/
+private def parseCards (cardsJson : Json) : List Card :=
+  match cardsJson with
+  | Json.arr cards => cards.toList.foldl (init := []) fun acc cardJson =>
+      match (cardJson.getObjValAs? String "name").toOption with
+      | none => acc
+      | some name =>
+        let ctype := (cardJson.getObjValAs? String "type" <|> pure "").toOption |>.getD ""
+        let count := (cardJson.getObjVal? "count" |>.toOption |>.bind (·.getNat?.toOption)).getD 1
+        let suit := cardJson.getObjVal? "suit" |>.toOption |>.bind (·.getStr?.toOption)
+        let value := cardJson.getObjVal? "value" |>.toOption |>.bind (·.getNat?.toOption)
+        let subtype := cardJson.getObjVal? "subtype" |>.toOption |>.bind (·.getStr?.toOption)
+        -- Preserve all extra fields (effect, placeable, targetMode, terrain, etc.)
+        let knownFields : List String := ["name", "type", "count", "suit", "value", "subtype"]
+        let extra : Lean.RBMap String Json compare := match cardJson with
+          | Json.obj kvs =>
+            kvs.toArray.foldl (init := .empty) fun m ⟨k, v⟩ =>
+              if !knownFields.contains k then m.insert k v else m
+          | _ => .empty
+        acc ++ List.replicate count { name, cardType := ctype, suit, value, subtype, extra : Card }
+  | _ => []
+
+/-- Build shared.extra fields for mechanic-specific state initialization. -/
+private def buildSharedExtra (config : GameConfig) : Lean.RBMap String Json compare :=
+  let m : Lean.RBMap String Json compare := .empty
+  -- Semi-cooperative: initialize collective progress (treasury)
+  let m := match config.engineMechanics.find? "semi_cooperative_game" with
+    | some cfg =>
+      let treasury := (cfg.getObjVal? "starting_treasury" |>.toOption |>.bind (·.getNat?.toOption)).getD 20
+      m.insert "collective_progress" (ToJson.toJson treasury)
+    | none => m
+  -- SAS: initialize empty selections
+  let m := if config.mechanics.contains "simultaneous-action-selection" ||
+    config.engineMechanics.contains "simultaneous_action_selection"
+    then m.insert "sas_selections" (Json.mkObj [])
+    else m
+  -- PD: initialize round counter
+  let m := if config.mechanics.contains "prisoners-dilemma" ||
+    config.engineMechanics.contains "prisoners_dilemma"
+    then
+      let m := m.insert "pd_choices" (Json.mkObj [])
+      let m := m.insert "pd_round" (ToJson.toJson (0 : Nat))
+      m.insert "pd_resolved" (Json.bool false)
+    else m
+  m
+
+/-- Initialize game state from config. -/
+def initState (config : GameConfig) (playerIds : List String) : GameState :=
+  -- Parse cards from config
+  let deck : List Card := match config.engineMechanics.find? "cards" with
+    | some cfg =>
+      match cfg.getObjVal? "deck" with
+      | .ok deckJson => parseCards deckJson
+      | _ => []
+    | none => []
+  -- Starting hand size
+  let startingHand := match config.engineMechanics.find? "cards" with
+    | some cfg => (cfg.getObjVal? "starting_hand" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+    | none => 0
+  -- Board states
+  let boardStates := match config.engineMechanics.find? "board" with
+    | some cfg =>
+      match cfg.getObjVal? "states" with
+      | .ok (Json.arr states) => states.toList.filterMap (·.getStr?.toOption)
+      | _ => []
+    | none => []
+  -- Board edges (with array expansion)
+  let boardEdges := match config.engineMechanics.find? "board" with
+    | some cfg =>
+      match cfg.getObjVal? "edges" with
+      | .ok edgesJson => expandBoardEdges edgesJson
+      | _ => []
+    | none => []
+  -- Board start state
+  let boardStart := match config.engineMechanics.find? "board" with
+    | some cfg =>
+      (cfg.getObjVal? "start" |>.toOption |>.bind (·.getStr?.toOption))
+      |>.orElse fun _ => boardStates.head?
+    | none => boardStates.head?
+  -- Grid starting tile
+  let gridStart := match config.engineMechanics.find? "grid" with
+    | some cfg => (cfg.getObjVal? "starting_tile" |>.toOption |>.bind (·.getStr?.toOption))
+    | none => none
+  -- Determine starting state for players
+  let startState := (boardStart.orElse fun _ => gridStart).getD "start"
+  -- Starting score
+  let startingScore := match config.engineMechanics.find? "starting_score" with
+    | some cfg => cfg.getNat?.toOption
+    | none => none
+  -- Deal cards to players
+  let (playerMap, remainingDeck) := playerIds.foldl (init := (Lean.RBMap.empty, deck))
+    fun (players, currentDeck) pid =>
+      let hand := currentDeck.take startingHand
+      let rest := currentDeck.drop startingHand
+      let resources := match config.engineMechanics.find? "resources" with
+        | some (Json.arr resList) =>
+          resList.toList.foldl (init := Lean.RBMap.empty) fun m resJson =>
+            let name := (resJson.getObjValAs? String "name" |>.toOption).getD ""
+            let starting := (resJson.getObjVal? "starting" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+            if name.isEmpty then m else m.insert name starting
+        | _ => .empty
+      let ps : PlayerState := {
+        state := startState,
+        hand := hand,
+        resources := resources,
+        score := startingScore
+      }
+      (players.insert pid ps, rest)
+  -- Parse market cards from config
+  let (market, finalDeck) := match config.engineMechanics.find? "market" with
+    | some cfg =>
+      -- Market can have its own card definitions
+      let marketCards := match cfg.getObjVal? "cards" with
+        | .ok cardsJson => parseCards cardsJson
+        | _ => []
+      if !marketCards.isEmpty then (marketCards, remainingDeck)
+      else
+        -- Or populate from deck
+        let marketSize := (cfg.getObjVal? "size" |>.toOption |>.bind (·.getNat?.toOption)).getD 0
+        if marketSize > 0 then
+          let drawn := remainingDeck.take marketSize
+          let rest := remainingDeck.drop marketSize
+          (drawn, rest)
+        else ([], remainingDeck)
+    | none => ([], remainingDeck)
+  -- Initialize shared.extra with mechanic-specific state
+  let sharedExtra := buildSharedExtra config
+  -- Card matching init: flip top card from deck to set currentColor/topCard
+  let (finalDeck, sharedExtra) :=
+    if config.mechanics.contains "card-matching" || config.engineMechanics.contains "card_matching" then
+      match finalDeck.head? with
+      | some topCard =>
+        let rest := finalDeck.drop 1
+        let color := topCard.extra.find? "effect" |>.bind (·.getObjVal? "color" |>.toOption) |>.bind (·.getStr?.toOption)
+        let extra := sharedExtra.insert "topCard" (ToJson.toJson topCard)
+        let extra := match color with
+          | some c => extra.insert "currentColor" (Json.str c)
+          | none => extra
+        (rest, extra)
+      | none => (finalDeck, sharedExtra)
+    else (finalDeck, sharedExtra)
+  {
+    config := config,
+    players := playerMap,
+    turnOrder := playerIds,
+    currentPlayer := playerIds.head?.getD "",
+    shared := {
+      deck := finalDeck,
+      boardStates := boardStates,
+      boardEdges := boardEdges,
+      currentBoardState := boardStart,
+      market := market,
+      extra := sharedExtra
+    }
+  }
+
+end Playtest.Engine.Mechanics

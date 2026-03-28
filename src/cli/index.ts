@@ -57,8 +57,8 @@ import {
   getMechanicImplementationStatus
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
-import { getCardsState } from '../mechanics/core/index.js';
-import { drawCards } from '../mechanics/core/cards.js';
+// Card utility functions (inlined from deleted mechanics)
+import type { Card } from '../types/game.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
 
 const program = new Command();
@@ -831,9 +831,8 @@ program
       // If it's our turn, also include available actions to save a round-trip
       if (result.status === 'your_turn') {
         state = loadStateReadOnly(game); // Reload to get latest state
+
         const actionsResult = getAvailableActions(state, options.player);
-        // Spread all fields from actionsResult (includes mechanic-contributed fields)
-        // This is mechanic-agnostic: actionPoints, resources, etc. come through automatically
         const { actions, ...otherFields } = actionsResult;
         console.log(JSON.stringify({
           ...result,
@@ -1472,21 +1471,28 @@ program
     try {
       const state = loadState(game);
       const count = parseInt(options.count, 10);
-      const cards = drawCards(state, options.player, count);
+      // Inline draw logic (was in deleted cards core mechanic)
+      const player = state.players[options.player];
+      if (!player) throw new Error(`Player ${options.player} not found`);
+      const deck = (state.shared.deck || []) as Card[];
+      const drawn = deck.splice(0, count);
+      if (!player.hand) player.hand = [];
+      player.hand.push(...drawn);
+      saveState(state);
 
       logEvent(state, {
         event: 'draw',
         round: state.round,
         turnNumber: state.turnNumber,
         player: options.player,
-        data: { count, cards: cards.map(c => c.name) }
+        data: { count, cards: drawn.map(c => c.name) }
       });
 
       console.log(JSON.stringify({
         success: true,
-        cards,
-        drawn: cards.length,
-        deckRemaining: getCardsState(state).deck.length
+        cards: drawn,
+        drawn: drawn.length,
+        deckRemaining: deck.length
       }));
     } catch (e) {
       console.log(JSON.stringify({
@@ -1542,7 +1548,7 @@ program
   .action((game: string, options: { player: string; card: string; color?: string }) => {
     try {
       const state = loadState(game);
-      const card = playCardByName(state, options.player, options.card, options.color);
+      const card = playCardByName(state, options.player, options.card);
 
       if (!card) {
         throw new Error(`Card "${options.card}" not found in ${options.player}'s hand`);
@@ -1609,8 +1615,8 @@ program
             turnOrder: state.turnOrder,
             players: state.players,
             shared: state.shared,
-            deckSize: getCardsState(state).deck.length,
-            discardSize: getCardsState(state).discardPile.length
+            deckSize: ((state.shared.deck || []) as Card[]).length,
+            discardSize: ((state.shared.discard || state.shared.discardPile || []) as Card[]).length
           }
         }));
       }

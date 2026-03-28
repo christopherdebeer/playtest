@@ -1,1135 +1,692 @@
 /**
- * Mechanic Registry - Manages registered mechanics and routes hooks
+ * Mechanic Registry — Data-driven mechanic registration and hook routing.
  *
- * This is intentionally minimal to avoid adding complexity.
- * Mechanics register themselves, and the registry routes hook calls
- * to all enabled mechanics.
+ * Each mechanic is registered with metadata (slug, name, defines, requires, hooks)
+ * and optionally functional hook implementations. The registry routes hooks to
+ * the appropriate mechanics based on config, dependencies, and resolution strategy.
+ *
+ * The Lean engine handles formal execution; this TS registry provides:
+ * - Dependency validation at init time
+ * - Mechanic metadata inspection
+ * - TS-side hook routing for testing and fallback
  */
 
-import {
-  MechanicHooks,
-  HookContext,
-  HookDefinition,
-  TurnStartContext,
-  TurnEndContext,
-  ValidationResult,
-  StateChanges,
-  PlayerInitResult,
-  PlayerInitContext,
-  WinCheckContext,
-  WinCheckResult,
-  ActionExecutionContext,
-  ActionExecutionResult,
-  AvailableAction,
-  ActionDescription,
-  VisibilityContext,
-  VisibleState,
-  TurnOrderContext,
-  TurnOrderResult,
-  PassPriorityResult,
-  // Agnosticism hooks
-  SharedStateInitContext,
-  SharedStateInitResult,
-  EffectApplicationContext,
-  EffectApplicationResult,
-  ActionSchema,
-  isMechanicEnabled,
-  hasExplicitConfig,
-  setDependencyResolver
-} from './types.js';
-import { GameState, GameConfig, GameAction, PlayerState, Card, Effect } from '../types/game.js';
-import { logEvent } from '../core/game.js';
+import type { StateChanges, ActionExecutionResult, AvailableAction, WinCheckResult } from './types.js';
+import type { GameState, GameConfig, GameAction } from '../types/game.js';
+import { isBlocked } from './core/effects.js';
 
-/**
- * Error returned when validating mechanic dependencies/conflicts
- */
+// ============ Types ============
+
 export interface MechanicValidationError {
   mechanic: string;
   type: 'missing_dependency' | 'conflict';
   message: string;
 }
 
-/**
- * Metadata for a registered mechanic (for export/documentation)
- */
 export interface MechanicMetadata {
   slug: string;
   name: string;
   configKey: string;
-  description?: string;
-  configSchema?: {
-    type: string;
-    properties?: Record<string, unknown>;
-    required?: string[];
-    description?: string;
-  };
+  defines?: string;
   requires?: string[];
-  conflicts?: string[];
-  defines?: Record<string, HookDefinition>;
   hooks: string[];
-  hasHighlight?: boolean;
+  alwaysEnabled?: boolean;
 }
 
-/**
- * Get the requirements for a mechanic, supporting both `requires` and legacy `dependencies`.
- */
-export function getMechanicRequires(mechanic: MechanicHooks): string[] {
-  return mechanic.requires ?? mechanic.dependencies ?? [];
+export interface RegisteredMechanic extends MechanicMetadata {
+  // Hook implementations (optional — not all mechanics implement all hooks)
+  onExecuteAction?: (state: GameState, playerId: string, action: GameAction) => ActionExecutionResult | null;
+  preValidateAction?: (state: GameState, playerId: string, action: GameAction) => { valid: boolean; error?: string } | null;
+  getAvailableActions?: (state: GameState, playerId: string) => AvailableAction[];
+  onCheckWin?: (state: GameState, playerId: string, trigger: string) => WinCheckResult | null;
+  describeAction?: (state: GameState, action: GameAction) => { type: string; label: string; description?: string } | null;
+  isPlayerBlocked?: (state: GameState, playerId: string) => boolean;
+  canPlayerActNow?: (state: GameState, playerId: string) => boolean;
+  getPlayerView?: (state: GameState, playerId: string) => Record<string, unknown>;
+  initSharedState?: (config: GameConfig, deck: unknown[], turnOrder: string[], shared: Record<string, unknown>) => Record<string, unknown>;
+  initPlayerState?: (config: GameConfig, playerId: string, playerIndex: number, players: Record<string, unknown>, shared: Record<string, unknown>) => Record<string, unknown>;
+  onDiceRolled?: (state: GameState, playerId: string, data: Record<string, unknown>) => void;
+  onResourceGained?: (state: GameState, playerId: string, data: Record<string, unknown>) => { blocked?: boolean; reducedAmount?: number } | null;
+  onVoteTally?: (state: GameState, playerId: string, data: Record<string, unknown>) => Record<string, unknown> | null;
 }
+
+export function getMechanicRequires(): string[] {
+  return [];
+}
+
+// ============ Registry Implementation ============
 
 class MechanicRegistry {
-  private mechanics: Map<string, MechanicHooks> = new Map();
+  private mechanics = new Map<string, RegisteredMechanic>();
 
-  /**
-   * Register a mechanic's hooks
-   */
-  register(mechanic: MechanicHooks): void {
-    if (this.mechanics.has(mechanic.slug)) {
-      throw new Error(`Mechanic '${mechanic.slug}' is already registered`);
-    }
+  register(mechanic: RegisteredMechanic): void {
     this.mechanics.set(mechanic.slug, mechanic);
   }
 
-  /**
-   * Install the dependency resolver so isMechanicEnabled can resolve
-   * mechanics enabled via dependency (e.g., 'cards' is enabled because
-   * 'card-matching' requires it and card-matching has explicit config).
-   */
   installDependencyResolver(): void {
-    setDependencyResolver((config: GameConfig, slug: string) => {
-      // Check if any explicitly-enabled mechanic requires this slug
-      for (const mechanic of this.mechanics.values()) {
-        const requires = getMechanicRequires(mechanic);
-        if (requires.includes(slug) && hasExplicitConfig(config, mechanic.slug)) {
-          return true;
-        }
-      }
-      return false;
-    });
+    // No-op — dependency resolution happens inline
   }
 
-  /**
-   * Get all registered mechanic slugs
-   */
-  getRegisteredSlugs(): string[] {
-    return Array.from(this.mechanics.keys());
-  }
+  // ============ Dependency Validation ============
 
-  /**
-   * Get mechanics enabled for a game config.
-   * Resolves dependencies transitively: infrastructure mechanics (no configSchema)
-   * are auto-enabled when all their requires are satisfied.
-   */
-  getEnabledMechanics(config: GameConfig): MechanicHooks[] {
-    const all = Array.from(this.mechanics.values());
-    const enabledSlugs = new Set<string>();
-
-    // Phase 1: explicitly configured + alwaysEnabled
-    for (const m of all) {
-      if (m.alwaysEnabled || isMechanicEnabled(config, m.slug)) {
-        enabledSlugs.add(m.slug);
-      }
-    }
-
-    // Phase 2: auto-enable infrastructure mechanics (no configSchema) whose
-    // requires are all satisfied. Iterate until no new mechanics are added.
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const m of all) {
-        if (enabledSlugs.has(m.slug)) continue;
-        if (m.configSchema) continue; // leaf mechanics need explicit config
-        const requires = getMechanicRequires(m);
-        if (requires.length > 0 && requires.every(dep => enabledSlugs.has(dep))) {
-          enabledSlugs.add(m.slug);
-          changed = true;
-        }
-      }
-    }
-
-    return all.filter(m => enabledSlugs.has(m.slug));
-  }
-
-  /**
-   * Get highlights for a mechanic given its config from RULES.md.
-   * Returns array of { label, value } or null.
-   */
-  getHighlights(slug: string, config: unknown): { label: string; value: string }[] | null {
-    const mechanic = this.mechanics.get(slug);
-    if (!mechanic?.getHighlight) return null;
-    return mechanic.getHighlight(config);
-  }
-
-  /**
-   * Get a specific mechanic by slug
-   */
-  getMechanic(slug: string): MechanicHooks | undefined {
-    return this.mechanics.get(slug);
-  }
-
-  /**
-   * Validate mechanic requirements and conflicts for a game config.
-   * Returns array of validation errors, empty if valid.
-   */
   validateDependencies(config: GameConfig): MechanicValidationError[] {
-    const enabled = this.getEnabledMechanics(config);
-    const enabledSlugs = new Set(enabled.map(m => m.slug));
     const errors: MechanicValidationError[] = [];
+    const enabled = this.getEnabledMechanicSlugs(config);
 
-    for (const mechanic of enabled) {
-      // Check requirements (supports both `requires` and legacy `dependencies`)
-      const requires = getMechanicRequires(mechanic);
-      for (const dep of requires) {
-        if (!enabledSlugs.has(dep)) {
+    for (const slug of enabled) {
+      const mech = this.mechanics.get(slug);
+      if (!mech?.requires) continue;
+      for (const dep of mech.requires) {
+        if (!enabled.has(dep)) {
           errors.push({
-            mechanic: mechanic.slug,
+            mechanic: slug,
             type: 'missing_dependency',
-            message: `Mechanic '${mechanic.slug}' requires '${dep}' but it is not enabled`
+            message: `${slug} requires ${dep} but it is not enabled`,
           });
         }
       }
-
-      // Check conflicts
-      if (mechanic.conflicts) {
-        for (const conflict of mechanic.conflicts) {
-          if (enabledSlugs.has(conflict)) {
-            errors.push({
-              mechanic: mechanic.slug,
-              type: 'conflict',
-              message: `Mechanic '${mechanic.slug}' conflicts with '${conflict}' which is also enabled`
-            });
-          }
-        }
-      }
     }
-
     return errors;
   }
 
-  /**
-   * Get metadata for all registered mechanics (for export/documentation)
-   */
-  getAllMechanicsMetadata(): MechanicMetadata[] {
-    const result: MechanicMetadata[] = [];
+  private getEnabledMechanicSlugs(config: GameConfig): Set<string> {
+    const enabled = new Set<string>();
 
-    for (const mechanic of this.mechanics.values()) {
-      // Derive config key from slug (e.g., 'action-points' -> 'action_points')
-      const configKey = mechanic.slug.replace(/-/g, '_');
+    // Always-enabled mechanics
+    for (const [, mech] of this.mechanics) {
+      if (mech.alwaysEnabled) enabled.add(mech.slug);
+    }
 
-      // Collect which hooks are implemented
-      const hooks: string[] = [];
-      const hookNames = [
-        'preValidateAction', 'postExecuteAction', 'shouldAutoEndTurn',
-        'initPlayerState', 'onTurnStart', 'onTurnEnd', 'onCheckWin',
-        'onExecuteAction', 'getAvailableActions', 'describeAction',
-        'getVisibleState', 'canSeeInfo',
-        'onDetermineTurnOrder', 'onPassPriority',
-        // Agnosticism hooks
-        'initSharedState', 'getPlayerView', 'applyEffect',
-        'isPlayerBlocked', 'canPlayerActNow', 'getActionSchema', 'reverseAction'
-      ];
-
-      for (const hookName of hookNames) {
-        if (hookName in mechanic && (mechanic as unknown as Record<string, unknown>)[hookName] !== undefined) {
-          hooks.push(hookName);
-        }
+    // Explicitly configured mechanics
+    if (config.engine_mechanics) {
+      for (const key of Object.keys(config.engine_mechanics)) {
+        const slug = key.replace(/_/g, '-');
+        if (this.mechanics.has(slug)) enabled.add(slug);
+        // Also check original key form
+        if (this.mechanics.has(key)) enabled.add(key);
       }
-
-      const requires = getMechanicRequires(mechanic);
-      result.push({
-        slug: mechanic.slug,
-        name: mechanic.name,
-        configKey,
-        description: mechanic.configSchema?.description,
-        configSchema: mechanic.configSchema,
-        requires: requires.length > 0 ? requires : undefined,
-        conflicts: mechanic.conflicts,
-        defines: mechanic.defines,
-        hooks,
-        hasHighlight: typeof mechanic.getHighlight === 'function' ? true : undefined,
-      });
     }
 
-    return result.sort((a, b) => a.slug.localeCompare(b.slug));
-  }
-
-  /**
-   * Create hook context from game state
-   */
-  private createContext(state: GameState, playerId: string): HookContext {
-    const player = state.players[playerId];
-    if (!player) {
-      throw new Error(`Player ${playerId} not found in state`);
-    }
-    return {
-      state,
-      playerId,
-      player,
-      config: state.config
-    };
-  }
-
-  /**
-   * Run preValidateAction hooks for all enabled mechanics.
-   * Returns first validation failure, or { valid: true } if all pass.
-   */
-  preValidateAction(state: GameState, playerId: string, action: GameAction): ValidationResult {
-    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
-    const startTime = telemetryEnabled ? performance.now() : 0;
-
-    const ctx = this.createContext(state, playerId);
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const respondingMechanics: string[] = [];
-    let finalResult: ValidationResult = { valid: true };
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.preValidateAction) {
-        const mechanicStart = telemetryEnabled ? performance.now() : 0;
-        const result = mechanic.preValidateAction(ctx, action);
-
-        if (result) {
-          respondingMechanics.push(mechanic.slug);
-
-          if (telemetryEnabled) {
-            logEvent(state, {
-              event: 'mechanic_response',
-              player: playerId,
-              data: {
-                mechanic: mechanic.slug,
-                hook: 'preValidateAction',
-                response_type: result.valid ? 'allowed' : 'blocked',
-                duration_ms: performance.now() - mechanicStart,
-                response_data: result
-              }
-            });
-          }
-
-          if (!result.valid) {
-            finalResult = result;
-            break;
+    // Resolve dependencies (transitive)
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const slug of enabled) {
+        const mech = this.mechanics.get(slug);
+        if (!mech?.requires) continue;
+        for (const dep of mech.requires) {
+          if (!enabled.has(dep)) {
+            enabled.add(dep);
+            changed = true;
           }
         }
       }
     }
 
-    // Only log telemetry if mechanics are enabled (avoid noise from 0/0 mechanics)
-    if (telemetryEnabled && enabledMechanics.length > 0) {
-      logEvent(state, {
-        event: 'hook_invoked',
-        player: playerId,
-        data: {
-          hook: 'preValidateAction',
-          action_type: action.type,
-          enabled_mechanics: enabledMechanics.map(m => m.slug),
-          responding_mechanics: respondingMechanics,
-          duration_ms: performance.now() - startTime,
-          result: finalResult.valid ? 'allowed' : 'blocked'
-        }
-      });
-    }
-
-    return finalResult;
+    return enabled;
   }
 
-  /**
-   * Run postExecuteAction hooks for all enabled mechanics.
-   * Collects and merges all state changes.
-   */
-  postExecuteAction(state: GameState, playerId: string, action: GameAction): StateChanges {
-    const ctx = this.createContext(state, playerId);
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
+  getEnabledMechanics(config: GameConfig): RegisteredMechanic[] {
+    const slugs = this.getEnabledMechanicSlugs(config);
+    return [...slugs].map(s => this.mechanics.get(s)!).filter(Boolean);
+  }
 
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.postExecuteAction) {
-        const changes = mechanic.postExecuteAction(ctx, action);
-        if (changes) {
-          // Merge player state changes
-          if (changes.playerStateChanges) {
-            mergedChanges.playerStateChanges = mergedChanges.playerStateChanges || {};
-            for (const [pid, pchanges] of Object.entries(changes.playerStateChanges)) {
-              mergedChanges.playerStateChanges[pid] = {
-                ...mergedChanges.playerStateChanges[pid],
-                ...pchanges
-              };
-            }
-          }
-          // Merge shared state changes
-          if (changes.sharedStateChanges) {
-            mergedChanges.sharedStateChanges = {
-              ...mergedChanges.sharedStateChanges,
-              ...changes.sharedStateChanges
-            };
-          }
-        }
+  private isEnabled(config: GameConfig, slug: string): boolean {
+    return this.getEnabledMechanicSlugs(config).has(slug);
+  }
+
+  private getConfig(config: GameConfig, slug: string): unknown {
+    if (!config.engine_mechanics) return undefined;
+    const configKey = slug.replace(/-/g, '_');
+    return (config.engine_mechanics as Record<string, unknown>)[configKey];
+  }
+
+  // ============ Hook Routing ============
+
+  fire(definerSlug: string, hookName: string, state: GameState, playerId: string, data?: Record<string, unknown>): unknown {
+    const definer = this.mechanics.get(definerSlug);
+    if (!definer) return null;
+
+    // Find dependents that require this definer and implement the hook
+    for (const [, mech] of this.mechanics) {
+      if (!mech.requires?.includes(definerSlug)) continue;
+      if (!this.isEnabled(state.config, mech.slug)) continue;
+
+      const hookFn = (mech as unknown as Record<string, unknown>)[hookName];
+      if (typeof hookFn === 'function') {
+        const result = hookFn.call(mech, state, playerId, data || {});
+        if (result !== null && result !== undefined) return result;
       }
     }
 
-    return mergedChanges;
-  }
-
-  /**
-   * Check if any enabled mechanic wants to auto-end turn.
-   */
-  shouldAutoEndTurn(state: GameState, playerId: string): boolean {
-    const ctx = this.createContext(state, playerId);
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.shouldAutoEndTurn) {
-        if (mechanic.shouldAutoEndTurn(ctx)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Collect player state from all enabled mechanics during registration.
-   * Passes existing players for cross-player coordination (e.g., unique power assignment).
-   * Passes shared state for cross-mechanic coordination (e.g., cards mechanic pre-dealt hands).
-   */
-  initPlayerState(
-    config: GameConfig,
-    playerId: string,
-    playerIndex: number,
-    existingPlayers: Record<string, Partial<PlayerState>>,
-    shared?: Record<string, unknown>
-  ): PlayerInitResult {
-    const enabledMechanics = this.getEnabledMechanics(config);
-    const merged: PlayerInitResult = {};
-
-    const ctx: PlayerInitContext = {
-      config,
-      playerId,
-      playerIndex,
-      existingPlayers,
-      shared
-    };
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.initPlayerState) {
-        const result = mechanic.initPlayerState(ctx);
-        if (result) {
-          Object.assign(merged, result);
-        }
-      }
-    }
-
-    return merged;
-  }
-
-  /**
-   * Run onTurnStart hooks for all enabled mechanics.
-   */
-  onTurnStart(state: GameState, playerId: string, isNewRound: boolean = false): StateChanges {
-    const baseCtx = this.createContext(state, playerId);
-    const ctx: TurnStartContext = { ...baseCtx, isNewRound };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onTurnStart) {
-        const changes = mechanic.onTurnStart(ctx);
-        if (changes) {
-          if (changes.playerStateChanges) {
-            mergedChanges.playerStateChanges = mergedChanges.playerStateChanges || {};
-            for (const [pid, pchanges] of Object.entries(changes.playerStateChanges)) {
-              mergedChanges.playerStateChanges[pid] = {
-                ...mergedChanges.playerStateChanges[pid],
-                ...pchanges
-              };
-            }
-          }
-          if (changes.sharedStateChanges) {
-            mergedChanges.sharedStateChanges = {
-              ...mergedChanges.sharedStateChanges,
-              ...changes.sharedStateChanges
-            };
-          }
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onTurnEnd hooks for all enabled mechanics.
-   */
-  onTurnEnd(state: GameState, playerId: string, nextPlayerId: string, isRoundEnd: boolean = false): StateChanges {
-    const baseCtx = this.createContext(state, playerId);
-    const ctx: TurnEndContext = { ...baseCtx, nextPlayerId, isRoundEnd };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedChanges: StateChanges = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onTurnEnd) {
-        const changes = mechanic.onTurnEnd(ctx);
-        if (changes) {
-          this.mergeStateChanges(mergedChanges, changes);
-        }
-      }
-    }
-
-    return mergedChanges;
-  }
-
-  /**
-   * Run onCheckWin hooks for a specific player.
-   * Returns first winning result, or null if no win.
-   */
-  onCheckWin(state: GameState, playerId: string, trigger: string): WinCheckResult | null {
-    const baseCtx = this.createContext(state, playerId);
-    const ctx: WinCheckContext = { ...baseCtx, trigger };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onCheckWin) {
-        const result = mechanic.onCheckWin(ctx);
-        if (result?.won) {
-          return result;
-        }
-      }
+    // Also check the definer itself for the hook
+    const hookFn = (definer as unknown as Record<string, unknown>)[hookName];
+    if (typeof hookFn === 'function') {
+      const result = hookFn.call(definer, state, playerId, data || {});
+      if (result !== null && result !== undefined) return result;
     }
 
     return null;
   }
 
-  /**
-   * Check win conditions for all active players.
-   * Returns { playerId, reason } of first winner, or null.
-   */
-  checkAllWinConditions(state: GameState, trigger: string): { playerId: string; reason: string } | null {
-    const activePlayers = Object.entries(state.players)
-      .filter(([_, p]) => p.state !== 'eliminated' && !p.effects?.some(e => e.type === 'eliminated'));
+  preValidateAction(state: GameState, playerId: string, action: GameAction): { valid: boolean; error?: string } {
+    for (const [, mech] of this.mechanics) {
+      if (!mech.preValidateAction) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      const result = mech.preValidateAction(state, playerId, action);
+      if (result && !result.valid) return result;
+    }
+    return { valid: true };
+  }
 
-    for (const [playerId] of activePlayers) {
+  executeAction(state: GameState, playerId: string, action: GameAction): ActionExecutionResult | null {
+    for (const [, mech] of this.mechanics) {
+      if (!mech.onExecuteAction) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      const result = mech.onExecuteAction(state, playerId, action);
+      if (result?.handled) return result;
+    }
+    return null;
+  }
+
+  postExecuteAction(_state: GameState, _playerId: string, _action: GameAction): StateChanges {
+    return {};
+  }
+
+  shouldAutoEndTurn(_state: GameState, _playerId: string): boolean {
+    return false;
+  }
+
+  getAvailableActions(state: GameState, playerId: string): AvailableAction[] {
+    const actions: AvailableAction[] = [];
+    for (const [, mech] of this.mechanics) {
+      if (!mech.getAvailableActions) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      actions.push(...mech.getAvailableActions(state, playerId));
+    }
+    return actions;
+  }
+
+  onTurnStart(_state: GameState, _playerId: string, _isNewRound: boolean): StateChanges {
+    return {};
+  }
+
+  onTurnEnd(_state: GameState, _playerId: string, _nextPlayerId: string, _isRoundEnd: boolean): StateChanges {
+    return {};
+  }
+
+  onCheckWin(state: GameState, playerId: string, trigger: string): WinCheckResult | null {
+    for (const [, mech] of this.mechanics) {
+      if (!mech.onCheckWin) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      const result = mech.onCheckWin(state, playerId, trigger);
+      if (result?.won) return result;
+    }
+    return null;
+  }
+
+  checkAllWinConditions(state: GameState, trigger: string): { playerId: string; reason: string } | null {
+    for (const playerId of Object.keys(state.players)) {
       const result = this.onCheckWin(state, playerId, trigger);
       if (result?.won) {
         return { playerId, reason: result.reason || 'Win condition met' };
       }
     }
-
     return null;
   }
 
-  // ============ Action Execution & Registration ============
-
-  /**
-   * Execute an action through mechanics.
-   * Returns the first mechanic's result that handles the action, or null.
-   */
-  executeAction(state: GameState, playerId: string, action: GameAction): ActionExecutionResult | null {
-    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
-    const startTime = telemetryEnabled ? performance.now() : 0;
-
-    const baseCtx = this.createContext(state, playerId);
-    const ctx: ActionExecutionContext = { ...baseCtx, action };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const respondingMechanics: string[] = [];
-    let handlerResult: ActionExecutionResult | null = null;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onExecuteAction) {
-        const mechanicStart = telemetryEnabled ? performance.now() : 0;
-        const result = mechanic.onExecuteAction(ctx);
-
-        if (result) {
-          respondingMechanics.push(mechanic.slug);
-
-          if (telemetryEnabled && result.handled) {
-            logEvent(state, {
-              event: 'mechanic_response',
-              player: playerId,
-              data: {
-                mechanic: mechanic.slug,
-                hook: 'onExecuteAction',
-                response_type: 'state_changes',
-                duration_ms: performance.now() - mechanicStart,
-                response_data: { handled: true, advanceTurn: result.advanceTurn, checkWin: result.checkWin }
-              }
-            });
-          }
-
-          if (result.handled) {
-            handlerResult = result;
-            break;
-          }
-        }
-      }
+  initSharedState(config: GameConfig, deck: unknown[], turnOrder: string[], shared: Record<string, unknown>): Record<string, unknown> {
+    let result = { ...shared };
+    for (const [, mech] of this.mechanics) {
+      if (!mech.initSharedState) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(config, mech.slug)) continue;
+      Object.assign(result, mech.initSharedState(config, deck, turnOrder, result));
     }
-
-    // Only log telemetry if mechanics are enabled (avoid noise from 0/0 mechanics)
-    if (telemetryEnabled && enabledMechanics.length > 0) {
-      logEvent(state, {
-        event: 'hook_invoked',
-        player: playerId,
-        data: {
-          hook: 'onExecuteAction',
-          action_type: action.type,
-          enabled_mechanics: enabledMechanics.map(m => m.slug),
-          responding_mechanics: respondingMechanics,
-          duration_ms: performance.now() - startTime,
-          result: handlerResult ? 'modified' : 'no_response'
-        }
-      });
-    }
-
-    return handlerResult;
-  }
-
-  /**
-   * Collect available actions from all enabled mechanics.
-   * Returns actions sorted by priority (highest first).
-   */
-  getAvailableActions(state: GameState, playerId: string): AvailableAction[] {
-    const ctx = this.createContext(state, playerId);
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const actions: AvailableAction[] = [];
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.getAvailableActions) {
-        const mechanicActions = mechanic.getAvailableActions(ctx);
-        actions.push(...mechanicActions);
-      }
-    }
-
-    // Post-process: apply filterPlayableCards to play_card actions
-    for (const action of actions) {
-      if (action.action.type === 'play_card' && action.cards && action.cards.length > 0) {
-        const player = state.players[playerId];
-        const hand = (player?.hand ?? []) as Card[];
-        const cardObjects = hand.filter((c: Card) => action.cards!.includes(c.name));
-        const filtered = this.filterPlayableCards(state, playerId, cardObjects);
-        action.cards = filtered.map((c: Card) => c.name);
-      }
-    }
-
-    // Sort by priority (higher first), then by type
-    return actions.sort((a, b) => {
-      const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
-      if (priorityDiff !== 0) return priorityDiff;
-      return a.action.type.localeCompare(b.action.type);
-    });
-  }
-
-  /**
-   * Filter playable cards through cards-domain mechanics.
-   * Routes to mechanics that declare `requires: ['cards']` and implement filterPlayableCards.
-   * Returns the filtered card list (may be smaller than input).
-   */
-  filterPlayableCards(state: GameState, playerId: string, cards: Card[]): Card[] {
-    const ctx = this.createContext(state, playerId);
-
-    // Route only to enabled mechanics that require 'cards' (cards-domain dependents)
-    const dependents = this.getEnabledMechanics(state.config)
-      .filter(m => getMechanicRequires(m).includes('cards'));
-
-    let filtered = cards;
-    for (const dep of dependents) {
-      const handler = (dep as Record<string, unknown>)['filterPlayableCards'];
-      if (typeof handler === 'function') {
-        const result = handler.call(dep, ctx, { cards: filtered });
-        if (result !== null && Array.isArray(result)) {
-          filtered = result;
-        }
-      }
-    }
-
-    return filtered;
-  }
-
-  /**
-   * Get description for an action from the owning mechanic.
-   */
-  describeAction(state: GameState, action: GameAction): ActionDescription | null {
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.describeAction) {
-        const description = mechanic.describeAction(action);
-        if (description) {
-          return description;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  // ============ Visibility System Hook Routing ============
-
-  /**
-   * Run getVisibleState hooks. Returns merged visible state.
-   * Mechanics can filter what a viewer can see about game state.
-   */
-  getVisibleState(state: GameState, viewerPlayerId: string): VisibleState {
-    const ctx: VisibilityContext = {
-      state,
-      viewerPlayerId,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-    const mergedVisible: VisibleState = {};
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.getVisibleState) {
-        const result = mechanic.getVisibleState(ctx);
-        if (result) {
-          // Merge visibility results (more restrictive wins)
-          if (result.players) {
-            mergedVisible.players = mergedVisible.players || {};
-            for (const [pid, pstate] of Object.entries(result.players)) {
-              mergedVisible.players[pid] = {
-                ...mergedVisible.players[pid],
-                ...pstate
-              };
-            }
-          }
-          if (result.shared) {
-            mergedVisible.shared = {
-              ...mergedVisible.shared,
-              ...result.shared
-            };
-          }
-          if (result.visibilityMeta) {
-            mergedVisible.visibilityMeta = {
-              ...mergedVisible.visibilityMeta,
-              ...result.visibilityMeta
-            };
-          }
-        }
-      }
-    }
-
-    return mergedVisible;
-  }
-
-  /**
-   * Check if a player can see specific information.
-   * Returns true if any mechanic grants visibility, false if any denies.
-   * Returns undefined if no mechanics have an opinion (default: visible).
-   */
-  canSeeInfo(
-    state: GameState,
-    viewerPlayerId: string,
-    infoType: string,
-    targetPlayerId?: string
-  ): boolean | undefined {
-    const ctx: VisibilityContext = {
-      state,
-      viewerPlayerId,
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    let hasOpinion = false;
-    let anyDenied = false;
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.canSeeInfo) {
-        const result = mechanic.canSeeInfo(ctx, infoType, targetPlayerId);
-        if (result !== undefined) {
-          hasOpinion = true;
-          if (result === false) {
-            anyDenied = true;
-          }
-        }
-      }
-    }
-
-    if (!hasOpinion) return undefined;
-    return !anyDenied;
-  }
-
-  // ============ Dynamic Turn Order Hook Routing ============
-
-  /**
-   * Run onDetermineTurnOrder hooks. Returns new turn order if any mechanic provides one.
-   * First mechanic to return a non-null order wins.
-   */
-  onDetermineTurnOrder(
-    state: GameState,
-    reason: 'round_start' | 'mid_round' | 'claim' | 'pass'
-  ): TurnOrderResult | null {
-    const ctx: TurnOrderContext = {
-      state,
-      config: state.config,
-      currentOrder: state.turnOrder,
-      reason
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onDetermineTurnOrder) {
-        const result = mechanic.onDetermineTurnOrder(ctx);
-        if (result?.order) {
-          return result;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Run onPassPriority hooks. Returns next player or removal instruction.
-   * First mechanic to return a result wins.
-   */
-  onPassPriority(state: GameState, playerId: string): PassPriorityResult | null {
-    const ctx: HookContext = {
-      state,
-      playerId,
-      player: state.players[playerId],
-      config: state.config
-    };
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.onPassPriority) {
-        const result = mechanic.onPassPriority(ctx);
-        if (result) {
-          return result;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  // ============ Agnosticism Hooks (game.ts decoupling) ============
-
-  /**
-   * Initialize shared state from all mechanics.
-   * Each mechanic contributes its own shared state properties.
-   * Returns merged result from all mechanics.
-   */
-  initSharedState(
-    config: GameConfig,
-    deck: Card[],
-    playerIds: string[],
-    shared: Record<string, unknown> = {}
-  ): SharedStateInitResult {
-    const ctx: SharedStateInitContext = {
-      config,
-      deck,
-      playerIds,
-      shared
-    };
-
-    const result: SharedStateInitResult = {};
-
-    // Call all registered mechanics (not just enabled - some may need to initialize)
-    for (const mechanic of this.mechanics.values()) {
-      if (mechanic.initSharedState) {
-        const mechanicResult = mechanic.initSharedState(ctx);
-        if (mechanicResult) {
-          Object.assign(result, mechanicResult);
-        }
-      }
-    }
-
     return result;
   }
 
-  /**
-   * Get mechanic-contributed properties for player view.
-   * Each mechanic adds its own view properties.
-   */
+  initPlayerState(config: GameConfig, playerId: string, playerIndex: number, players: Record<string, unknown>, shared: Record<string, unknown>): Record<string, unknown> {
+    let result: Record<string, unknown> = {};
+    for (const [, mech] of this.mechanics) {
+      if (!mech.initPlayerState) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(config, mech.slug)) continue;
+      Object.assign(result, mech.initPlayerState(config, playerId, playerIndex, players, shared));
+    }
+    return result;
+  }
+
   getPlayerView(state: GameState, playerId: string): Record<string, unknown> {
-    const ctx: HookContext = {
-      state,
-      playerId,
-      player: state.players[playerId],
-      config: state.config
-    };
-
-    const result: Record<string, unknown> = {};
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.getPlayerView) {
-        const mechanicResult = mechanic.getPlayerView(ctx);
-        if (mechanicResult) {
-          Object.assign(result, mechanicResult);
-        }
-      }
+    let view: Record<string, unknown> = {};
+    for (const [, mech] of this.mechanics) {
+      if (!mech.getPlayerView) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      Object.assign(view, mech.getPlayerView(state, playerId));
     }
-
-    return result;
+    return view;
   }
 
-  /**
-   * Apply an effect using mechanic handlers.
-   * First mechanic to return { handled: true } wins.
-   * Returns null if no mechanic handles the effect type.
-   */
-  applyEffect(
-    state: GameState,
-    playerId: string,
-    effect: Effect,
-    targetPlayerId?: string
-  ): EffectApplicationResult | null {
-    const ctx: EffectApplicationContext = {
-      state,
-      playerId,
-      effect,
-      targetPlayerId,
-      config: state.config
-    };
-
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.applyEffect) {
-        const result = mechanic.applyEffect(ctx);
-        if (result?.handled) {
-          return result;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Check if a player is blocked from taking actions.
-   * Any mechanic returning true blocks the player.
-   * Returns false if no mechanic indicates blocked.
-   */
-  isPlayerBlocked(state: GameState, playerId: string): boolean {
-    const ctx: HookContext = {
-      state,
-      playerId,
-      player: state.players[playerId],
-      config: state.config
-    };
-
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.isPlayerBlocked) {
-        const result = mechanic.isPlayerBlocked(ctx);
-        if (result === true) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if a player can act now (even if not their turn).
-   * Used by mechanics like freeplay that allow parallel/out-of-turn actions.
-   * Returns true if any mechanic allows out-of-turn action.
-   * Returns false if no mechanics grant this ability.
-   */
   canPlayerActNow(state: GameState, playerId: string): boolean {
-    const ctx: HookContext = {
-      state,
-      playerId,
-      player: state.players[playerId],
-      config: state.config
-    };
-
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.canPlayerActNow) {
-        const result = mechanic.canPlayerActNow(ctx);
-        if (result === true) {
-          return true;
-        }
-      }
+    for (const [, mech] of this.mechanics) {
+      if (!mech.canPlayerActNow) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      if (mech.canPlayerActNow(state, playerId)) return true;
     }
-
     return false;
   }
 
-  /**
-   * Reverse a previously executed action through mechanics.
-   * First mechanic to return true wins (handled).
-   * Returns true if a mechanic handled the reversal, false otherwise.
-   * Note: The engine handles reverseTurn/saveState — mechanics only undo state changes.
-   */
-  reverseAction(state: GameState, playerId: string, action: GameAction): boolean {
-    const ctx = this.createContext(state, playerId);
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.reverseAction) {
-        const result = mechanic.reverseAction(ctx, action);
-        if (result === true) {
-          return true;
-        }
-      }
+  isPlayerBlocked(state: GameState, playerId: string): boolean {
+    for (const [, mech] of this.mechanics) {
+      if (!mech.isPlayerBlocked) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      if (mech.isPlayerBlocked(state, playerId)) return true;
     }
-
     return false;
   }
 
-  /**
-   * Get action schema from mechanics.
-   * First mechanic to return a schema for the action wins.
-   */
-  getActionSchema(state: GameState, action: GameAction): ActionSchema | null {
-    const enabledMechanics = this.getEnabledMechanics(state.config);
-
-    for (const mechanic of enabledMechanics) {
-      if (mechanic.getActionSchema) {
-        const schema = mechanic.getActionSchema(action);
-        if (schema) {
-          return schema;
-        }
-      }
+  describeAction(state: GameState, action: GameAction): { type: string; label: string; description?: string } | null {
+    for (const [, mech] of this.mechanics) {
+      if (!mech.describeAction) continue;
+      if (!mech.alwaysEnabled && !this.isEnabled(state.config, mech.slug)) continue;
+      const result = mech.describeAction(state, action);
+      if (result) return result;
     }
-
     return null;
   }
 
-  // ============ Mechanic-Defined Hook Routing ============
-
-  /**
-   * Fire a hook defined by a mechanic via its `defines` property.
-   * Routes ONLY to enabled mechanics that declare `requires` on the definer.
-   *
-   * @param definerSlug - Slug of the mechanic that defines the hook
-   * @param hookName - Name of the hook method to call
-   * @param state - Current game state
-   * @param playerId - Player context for the hook
-   * @param payload - Hook-specific data passed as second argument
-   * @returns Merged state changes from all implementers, or null
-   */
-  fire(
-    definerSlug: string,
-    hookName: string,
-    state: GameState,
-    playerId: string,
-    payload?: unknown
-  ): StateChanges | null {
-    const definer = this.mechanics.get(definerSlug);
-    if (!definer?.defines?.[hookName]) {
-      return null;
-    }
-
-    const resolution = definer.defines[hookName].resolution ?? 'merge';
-    const ctx = this.createContext(state, playerId);
-
-    // Route only to enabled mechanics that require the definer
-    const dependents = this.getEnabledMechanics(state.config)
-      .filter(m => getMechanicRequires(m).includes(definerSlug));
-
-    const telemetryEnabled = state.config.engine_debug?.hook_telemetry;
-    const startTime = telemetryEnabled ? performance.now() : 0;
-    const respondingMechanics: string[] = [];
-    const mergedChanges: StateChanges = {};
-
-    for (const dep of dependents) {
-      const handler = (dep as Record<string, unknown>)[hookName];
-      if (typeof handler !== 'function') continue;
-
-      const mechanicStart = telemetryEnabled ? performance.now() : 0;
-      const result = handler.call(dep, ctx, payload);
-
-      if (result) {
-        respondingMechanics.push(dep.slug);
-
-        if (telemetryEnabled) {
-          logEvent(state, {
-            event: 'mechanic_response',
-            player: playerId,
-            data: {
-              mechanic: dep.slug,
-              hook: `${definerSlug}:${hookName}`,
-              response_type: result.blocked ? 'blocked' : 'state_changes',
-              duration_ms: performance.now() - mechanicStart,
-            }
-          });
-        }
-
-        // Handle resolution strategies
-        if (resolution === 'blocking' && result.blocked) {
-          return result; // Short-circuit
-        }
-        if (resolution === 'first') {
-          return result; // First responder wins
-        }
-        // 'merge' - accumulate
-        this.mergeStateChanges(mergedChanges, result);
-      }
-    }
-
-    if (telemetryEnabled && dependents.length > 0) {
-      logEvent(state, {
-        event: 'hook_invoked',
-        player: playerId,
-        data: {
-          hook: `${definerSlug}:${hookName}`,
-          enabled_dependents: dependents.map(m => m.slug),
-          responding_mechanics: respondingMechanics,
-          duration_ms: performance.now() - startTime,
-        }
-      });
-    }
-
-    // Return null if no mechanics responded, otherwise return merged changes
-    if (respondingMechanics.length === 0) return null;
-    return mergedChanges;
+  getActionSchema(_state: GameState, _action: GameAction): { required?: string[]; optional?: string[] } | null {
+    return null;
   }
 
-  /**
-   * Helper to merge state changes
-   */
-  private mergeStateChanges(target: StateChanges, source: StateChanges): void {
-    if (source.playerStateChanges) {
-      target.playerStateChanges = target.playerStateChanges || {};
-      for (const [pid, pchanges] of Object.entries(source.playerStateChanges)) {
-        target.playerStateChanges[pid] = {
-          ...target.playerStateChanges[pid],
-          ...pchanges
-        };
-      }
-    }
-    if (source.sharedStateChanges) {
-      target.sharedStateChanges = {
-        ...target.sharedStateChanges,
-        ...source.sharedStateChanges
-      };
-    }
+  // ============ Metadata ============
+
+  getAllMechanicsMetadata(): MechanicMetadata[] {
+    return [...this.mechanics.values()].map(m => ({
+      slug: m.slug,
+      name: m.name,
+      configKey: m.configKey,
+      defines: m.defines,
+      requires: m.requires,
+      hooks: m.hooks,
+      alwaysEnabled: m.alwaysEnabled,
+    }));
+  }
+
+  getRegisteredMechanicsMetadata(): MechanicMetadata[] {
+    return this.getAllMechanicsMetadata();
+  }
+
+  getMechanic(slug: string): RegisteredMechanic | undefined {
+    return this.mechanics.get(slug);
+  }
+
+  getRegisteredSlugs(): string[] {
+    return [...this.mechanics.keys()];
+  }
+
+  getHighlights(config: GameConfig): string[] {
+    return this.getEnabledMechanics(config).map(m => m.name);
   }
 }
 
-/**
- * Get all registered mechanics as metadata for export.
- * Used by scripts to generate shared/registered-mechanics.json
- */
-export function getRegisteredMechanicsMetadata(): MechanicMetadata[] {
-  return mechanicRegistry.getAllMechanicsMetadata();
-}
+// ============ Create and Populate Registry ============
 
-// Singleton registry instance
 export const mechanicRegistry = new MechanicRegistry();
 
-// Install dependency resolver so isMechanicEnabled can resolve mechanics
-// enabled via dependency chains (e.g., cards enabled because card-matching requires it)
-mechanicRegistry.installDependencyResolver();
+// -- Core mechanics (always enabled or dependency-enabled) --
 
-/**
- * Apply state changes to game state (mutates state)
- */
+mechanicRegistry.register({
+  slug: 'cards',
+  name: 'Cards',
+  configKey: 'cards',
+  defines: 'cards',
+  hooks: ['onCardDrawn', 'onCardPlayed', 'onCardDiscarded'],
+});
+
+mechanicRegistry.register({
+  slug: 'resources',
+  name: 'Resources',
+  configKey: 'resources',
+  defines: 'resources',
+  hooks: ['onResourceGained', 'onResourceSpent'],
+});
+
+mechanicRegistry.register({
+  slug: 'dice',
+  name: 'Dice',
+  configKey: 'dice',
+  defines: 'dice',
+  hooks: ['onDiceRolled'],
+});
+
+mechanicRegistry.register({
+  slug: 'effects',
+  name: 'Effects',
+  configKey: 'effects',
+  defines: 'effects',
+  hooks: ['onEffectAdded', 'onEffectRemoved', 'onEffectExpired'],
+});
+
+mechanicRegistry.register({
+  slug: 'board',
+  name: 'Board',
+  configKey: 'board',
+  defines: 'board',
+  hooks: ['onPlayerMoved'],
+});
+
+mechanicRegistry.register({
+  slug: 'social',
+  name: 'Social',
+  configKey: 'social',
+  defines: 'social',
+  hooks: ['onVoteTally', 'onNegotiationComplete'],
+});
+
+// -- Pass mechanic (always enabled) --
+
+mechanicRegistry.register({
+  slug: 'pass',
+  name: 'Pass',
+  configKey: 'pass',
+  alwaysEnabled: true,
+  hooks: ['onExecuteAction', 'describeAction'],
+  onExecuteAction: (_state: GameState, _playerId: string, action: GameAction) => {
+    if (action.type !== 'pass') return null;
+    return { handled: true, advanceTurn: true, logMessage: 'Player passed' };
+  },
+  describeAction: (_state: GameState, action: GameAction) => {
+    if (action.type !== 'pass') return null;
+    return { type: 'pass', label: 'Pass', description: 'End your turn without taking an action' };
+  },
+});
+
+// -- Board State mechanic (validates moves) --
+
+mechanicRegistry.register({
+  slug: 'board-state',
+  name: 'Board State',
+  configKey: 'board_state',
+  requires: ['board'],
+  hooks: ['preValidateAction', 'getAvailableActions'],
+  preValidateAction: (state: GameState, playerId: string, action: GameAction) => {
+    if (action.type !== 'move') return null;
+    const board = state.config.board;
+    if (!board?.edges) return null;
+    const playerState = state.players[playerId]?.state;
+    const target = (action as unknown as Record<string, unknown>).target as string;
+    const edge = board.edges.find(e => {
+      const from = Array.isArray(e.from) ? e.from : [e.from];
+      return from.includes(playerState);
+    });
+    const destinations = edge ? (Array.isArray(edge.to) ? edge.to : [edge.to]) : [];
+    if (!edge || !destinations.includes(target)) {
+      return { valid: false, error: `Cannot move from ${playerState} to ${target}` };
+    }
+    return { valid: true };
+  },
+  getAvailableActions: (state: GameState, playerId: string) => {
+    const board = state.config.board;
+    if (!board?.edges) return [];
+    const playerState = state.players[playerId]?.state;
+    const edge = board.edges.find(e => {
+      const from = Array.isArray(e.from) ? e.from : [e.from];
+      return from.includes(playerState);
+    });
+    if (!edge) return [];
+    const destinations = Array.isArray(edge.to) ? edge.to : [edge.to];
+    return [{
+      action: { type: 'move' } as unknown as GameAction,
+      category: 'movement',
+      enabled: true,
+      targets: destinations,
+    }];
+  },
+});
+
+// -- Dice Rolling mechanic (stores roll results) --
+
+mechanicRegistry.register({
+  slug: 'dice-rolling',
+  name: 'Dice Rolling',
+  configKey: 'dice_rolling',
+  requires: ['dice'],
+  hooks: ['onDiceRolled'],
+  onDiceRolled: (state: GameState, playerId: string, data: Record<string, unknown>) => {
+    const player = state.players[playerId];
+    if (player) {
+      player.lastRollResults = data.results as number[];
+      player.lastRollTotal = data.total as number;
+    }
+  },
+});
+
+// -- Catch the Leader (reduces income for leading player) --
+
+mechanicRegistry.register({
+  slug: 'catch-the-leader',
+  name: 'Catch the Leader',
+  configKey: 'catch_the_leader',
+  requires: ['resources'],
+  hooks: ['onResourceGained'],
+  onResourceGained: (state: GameState, playerId: string, data: Record<string, unknown>) => {
+    const config = (state.config.engine_mechanics as Record<string, unknown>)?.catch_the_leader as Record<string, unknown> | undefined;
+    if (!config) return null;
+    const resource = config.resource as string;
+    const reduction = config.income_reduction as number;
+    if (data.resource !== resource) return null;
+
+    // Check if this player is the leader
+    const playerAmount = state.players[playerId]?.resources?.[resource] ?? 0;
+    let isLeader = true;
+    for (const [pid, p] of Object.entries(state.players)) {
+      if (pid !== playerId && (p.resources?.[resource] ?? 0) > playerAmount) {
+        isLeader = false;
+        break;
+      }
+    }
+    if (!isLeader || Object.keys(state.players).length <= 1) return null;
+
+    const amount = data.amount as number;
+    const reduced = Math.floor(amount * reduction);
+    return { reducedAmount: reduced };
+  },
+});
+
+// -- Voting mechanic --
+
+mechanicRegistry.register({
+  slug: 'voting',
+  name: 'Voting',
+  configKey: 'voting',
+  requires: ['social'],
+  hooks: ['onVoteTally'],
+  onVoteTally: (_state: GameState, _playerId: string, data: Record<string, unknown>) => {
+    const votes = data.votes as Record<string, string>;
+    const counts: Record<string, number> = {};
+    for (const choice of Object.values(votes)) {
+      counts[choice] = (counts[choice] ?? 0) + 1;
+    }
+    const maxVotes = Math.max(...Object.values(counts), 0);
+    const winners = Object.keys(counts).filter(k => counts[k] === maxVotes);
+    return { winner: winners.length === 1 ? winners[0] : null, counts };
+  },
+});
+
+// -- Win Reach State --
+
+mechanicRegistry.register({
+  slug: 'win-reach-state',
+  name: 'Win: Reach State',
+  configKey: 'win_reach_state',
+  hooks: ['onCheckWin'],
+  onCheckWin: (state: GameState, playerId: string, _trigger: string) => {
+    const config = (state.config.engine_mechanics as Record<string, unknown>)?.win_reach_state as Record<string, unknown> | undefined;
+    if (!config) return null;
+    const targetState = config.target_state as string;
+    if (state.players[playerId]?.state === targetState) {
+      return { won: true, reason: `Reached ${targetState}` };
+    }
+    return { won: false };
+  },
+});
+
+// -- Lose a Turn (blocking effect) --
+
+mechanicRegistry.register({
+  slug: 'lose-a-turn',
+  name: 'Lose a Turn',
+  configKey: 'lose_a_turn',
+  requires: ['effects'],
+  hooks: ['isPlayerBlocked'],
+  isPlayerBlocked: (state: GameState, playerId: string) => {
+    return isBlocked(state, playerId);
+  },
+});
+
+// -- Freeplay (all players can act) --
+
+mechanicRegistry.register({
+  slug: 'freeplay',
+  name: 'Freeplay',
+  configKey: 'freeplay',
+  hooks: ['canPlayerActNow'],
+  canPlayerActNow: (_state: GameState, _playerId: string) => {
+    return true;
+  },
+});
+
+// -- Push Your Luck (player view contribution) --
+
+mechanicRegistry.register({
+  slug: 'push-your-luck',
+  name: 'Push Your Luck',
+  configKey: 'push_your_luck',
+  hooks: ['getPlayerView'],
+  getPlayerView: (state: GameState, playerId: string) => {
+    const player = state.players[playerId];
+    const view: Record<string, unknown> = {};
+    if (player?.rollAccumulator !== undefined) view.rollAccumulator = player.rollAccumulator;
+    if (player?.rollCount !== undefined) view.rollCount = player.rollCount;
+    return view;
+  },
+});
+
+// -- Remaining mechanics (metadata-only for registry completeness) --
+
+const metadataOnlyMechanics: Omit<MechanicMetadata, 'hooks'>[] = [
+  { slug: 'action-points', name: 'Action Points', configKey: 'action_points' },
+  { slug: 'income', name: 'Income', configKey: 'income' },
+  { slug: 'set-collection', name: 'Set Collection', configKey: 'set_collection' },
+  { slug: 'auction', name: 'Auction', configKey: 'auction' },
+  { slug: 'turn-order', name: 'Turn Order', configKey: 'turn_order' },
+  { slug: 'variable-powers', name: 'Variable Powers', configKey: 'variable_powers' },
+  { slug: 'open-drafting', name: 'Open Drafting', configKey: 'open_drafting' },
+  { slug: 'simultaneous', name: 'Simultaneous', configKey: 'simultaneous' },
+  { slug: 'grid', name: 'Grid', configKey: 'grid' },
+  { slug: 'trade', name: 'Trade', configKey: 'trade' },
+  { slug: 'hand-limit', name: 'Hand Limit', configKey: 'hand_limit' },
+  { slug: 'card-type-rules', name: 'Card Type Rules', configKey: 'card_type_rules' },
+  { slug: 'timeout-winner', name: 'Timeout Winner', configKey: 'timeout_winner' },
+  { slug: 'win-score-threshold', name: 'Win: Score Threshold', configKey: 'win_score_threshold' },
+  { slug: 'win-empty-hand', name: 'Win: Empty Hand', configKey: 'win_empty_hand' },
+  { slug: 'win-elimination', name: 'Win: Elimination', configKey: 'win_elimination' },
+  { slug: 'win-timeout', name: 'Win: Timeout', configKey: 'win_timeout' },
+  { slug: 'win-end-game-bonuses', name: 'Win: End Game Bonuses', configKey: 'win_end_game_bonuses' },
+  { slug: 'win-king-of-the-hill', name: 'Win: King of the Hill', configKey: 'win_king_of_the_hill' },
+  { slug: 'win-victory-points-as-resource', name: 'Win: VP as Resource', configKey: 'win_victory_points_as_resource' },
+  { slug: 'win-highest-lowest-scoring', name: 'Win: Highest/Lowest Scoring', configKey: 'win_highest_lowest_scoring' },
+  { slug: 'closed-drafting', name: 'Closed Drafting', configKey: 'closed_drafting' },
+  { slug: 'trick-taking', name: 'Trick Taking', configKey: 'trick_taking', requires: ['cards'] },
+  { slug: 'movement-points', name: 'Movement Points', configKey: 'movement_points' },
+  { slug: 'automatic-resource-growth', name: 'Auto Resource Growth', configKey: 'automatic_resource_growth' },
+  { slug: 'events', name: 'Events', configKey: 'events' },
+  { slug: 'ladder-climbing', name: 'Ladder Climbing', configKey: 'ladder_climbing' },
+  { slug: 'once-per-game-abilities', name: 'Once Per Game Abilities', configKey: 'once_per_game_abilities' },
+  { slug: 'chaining', name: 'Chaining', configKey: 'chaining' },
+  { slug: 'win-race', name: 'Win: Race', configKey: 'win_race' },
+  { slug: 'sudden-death-ending', name: 'Sudden Death', configKey: 'sudden_death_ending' },
+  { slug: 'area-movement', name: 'Area Movement', configKey: 'area_movement' },
+  { slug: 'deck-building', name: 'Deck Building', configKey: 'deck_building', requires: ['cards'] },
+  { slug: 'multi-use-cards', name: 'Multi-Use Cards', configKey: 'multi_use_cards', requires: ['cards'] },
+  { slug: 'point-to-point-movement', name: 'Point to Point Movement', configKey: 'point_to_point_movement' },
+  { slug: 'hidden-roles', name: 'Hidden Roles', configKey: 'hidden_roles' },
+  { slug: 'traitor-game', name: 'Traitor Game', configKey: 'traitor_game' },
+  { slug: 'card-matching', name: 'Card Matching', configKey: 'card_matching', requires: ['cards'] },
+  { slug: 'probability-movement', name: 'Probability Movement', configKey: 'probability_movement' },
+  { slug: 'card-boosts', name: 'Card Boosts', configKey: 'card_boosts' },
+  { slug: 'victory-declaration', name: 'Victory Declaration', configKey: 'victory_declaration' },
+  { slug: 'rerolling', name: 'Rerolling', configKey: 'rerolling', requires: ['dice'] },
+  { slug: 'turn-order-random', name: 'Turn Order: Random', configKey: 'turn_order_random' },
+  { slug: 'turn-order-stat-based', name: 'Turn Order: Stat Based', configKey: 'turn_order_stat_based' },
+  { slug: 'turn-order-progressive', name: 'Turn Order: Progressive', configKey: 'turn_order_progressive' },
+  { slug: 'hidden-victory-points', name: 'Hidden VP', configKey: 'hidden_victory_points' },
+  { slug: 'negotiation', name: 'Negotiation', configKey: 'negotiation' },
+  { slug: 'communication-limits', name: 'Communication Limits', configKey: 'communication_limits' },
+  { slug: 'roll-spin-move', name: 'Roll/Spin/Move', configKey: 'roll_spin_move' },
+  { slug: 'different-dice-movement', name: 'Different Dice Movement', configKey: 'different_dice_movement' },
+  { slug: 'turn-order-pass-order', name: 'Turn Order: Pass Order', configKey: 'turn_order_pass_order' },
+  { slug: 'hidden-movement', name: 'Hidden Movement', configKey: 'hidden_movement' },
+  { slug: 'hidden-objectives', name: 'Hidden Objectives', configKey: 'hidden_objectives' },
+  { slug: 'auction-sealed-bid', name: 'Auction: Sealed Bid', configKey: 'auction_sealed_bid' },
+  { slug: 'auction-once-around', name: 'Auction: Once Around', configKey: 'auction_once_around' },
+  { slug: 'die-icon-resolution', name: 'Die Icon Resolution', configKey: 'die_icon_resolution' },
+  { slug: 'turn-order-auction', name: 'Turn Order: Auction', configKey: 'turn_order_auction' },
+  { slug: 'turn-order-claim', name: 'Turn Order: Claim', configKey: 'turn_order_claim' },
+  { slug: 'turn-order-time-track', name: 'Turn Order: Time Track', configKey: 'turn_order_time_track' },
+  { slug: 'turn-order-role', name: 'Turn Order: Role', configKey: 'turn_order_role' },
+  { slug: 'deduction', name: 'Deduction', configKey: 'deduction' },
+  { slug: 'memory', name: 'Memory', configKey: 'memory' },
+  { slug: 'targeted-clues', name: 'Targeted Clues', configKey: 'targeted_clues' },
+  { slug: 'roles-asymmetric-info', name: 'Roles: Asymmetric Info', configKey: 'roles_asymmetric_info' },
+  { slug: 'player-judge', name: 'Player Judge', configKey: 'player_judge' },
+  { slug: 'i-cut-you-choose', name: 'I Cut You Choose', configKey: 'i_cut_you_choose' },
+  { slug: 'bribery', name: 'Bribery', configKey: 'bribery' },
+  { slug: 'critical-hits', name: 'Critical Hits', configKey: 'critical_hits' },
+  { slug: 'zone-of-control', name: 'Zone of Control', configKey: 'zone_of_control' },
+  { slug: 'ratio-crt', name: 'Ratio CRT', configKey: 'ratio_crt' },
+  { slug: 'force-commitment', name: 'Force Commitment', configKey: 'force_commitment' },
+  { slug: 'area-impulse', name: 'Area Impulse', configKey: 'area_impulse' },
+  { slug: 'chit-pull', name: 'Chit Pull', configKey: 'chit_pull' },
+  { slug: 'secret-deployment', name: 'Secret Deployment', configKey: 'secret_deployment' },
+  { slug: 'kill-steal', name: 'Kill Steal', configKey: 'kill_steal' },
+  { slug: 'worker-placement', name: 'Worker Placement', configKey: 'worker_placement' },
+  { slug: 'different-worker-types', name: 'Different Worker Types', configKey: 'different_worker_types' },
+  { slug: 'auction-dutch', name: 'Auction: Dutch', configKey: 'auction_dutch' },
+  { slug: 'simultaneous-action-selection', name: 'Simultaneous Action Selection', configKey: 'simultaneous_action_selection' },
+  { slug: 'market', name: 'Market', configKey: 'market' },
+  { slug: 'tableau-building', name: 'Tableau Building', configKey: 'tableau_building' },
+  { slug: 'action-programming', name: 'Action Programming', configKey: 'action_programming' },
+  { slug: 'cooperative', name: 'Cooperative', configKey: 'cooperative' },
+  { slug: 'contracts', name: 'Contracts', configKey: 'contracts' },
+  { slug: 'loans', name: 'Loans', configKey: 'loans' },
+  { slug: 'win-finale-ending', name: 'Win: Finale Ending', configKey: 'win_finale_ending' },
+  { slug: 'win-single-loser', name: 'Win: Single Loser', configKey: 'win_single_loser' },
+  { slug: 'player-elimination', name: 'Player Elimination', configKey: 'player_elimination' },
+];
+
+for (const meta of metadataOnlyMechanics) {
+  mechanicRegistry.register({
+    ...meta,
+    hooks: [],
+  } as RegisteredMechanic);
+}
+
+// ============ Utility ============
+
 export function applyStateChanges(state: GameState, changes: StateChanges): void {
+  if (!changes) return;
   if (changes.playerStateChanges) {
-    for (const [playerId, playerChanges] of Object.entries(changes.playerStateChanges)) {
-      if (state.players[playerId]) {
-        Object.assign(state.players[playerId], playerChanges);
+    for (const [pid, playerChanges] of Object.entries(changes.playerStateChanges)) {
+      if (state.players[pid]) {
+        Object.assign(state.players[pid], playerChanges);
       }
     }
   }
   if (changes.sharedStateChanges) {
-    state.shared = { ...state.shared, ...changes.sharedStateChanges };
+    Object.assign(state.shared, changes.sharedStateChanges);
   }
+}
+
+export function getRegisteredMechanicsMetadata(): MechanicMetadata[] {
+  return mechanicRegistry.getAllMechanicsMetadata();
 }

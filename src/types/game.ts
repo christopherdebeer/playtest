@@ -43,6 +43,7 @@ export interface PlayerState {
   powerId?: string;                       // Assigned player power ID
   completedTrades?: number;               // Number of completed trades (for The Trader objective)
   visitedLocations?: string[];            // Locations visited (for The Explorer objective)
+  placedLocationCount?: number;           // Number of locations placed (for The Builder objective)
 
   // Proposal 010: Hidden objectives for role-based games
   objective?: {
@@ -1190,6 +1191,13 @@ export interface PlayerView {
     state: string;
     hand: Card[];
     effects: Effect[];
+    score?: number;
+    resources?: Record<string, number>;
+    actionPoints?: number;
+    actionPointsUsed?: number;
+    visitedLocations?: string[];
+    placedLocationCount?: number;
+    completedTrades?: number;
   };
   opponents: OpponentView[];
   shared: Record<string, unknown>;
@@ -1200,6 +1208,10 @@ export interface OpponentView {
   state: string;
   handSize: number;
   effects: Effect[];
+  score?: number;
+  resources?: Record<string, number>;
+  placedLocationCount?: number;
+  completedTrades?: number;
 }
 
 export interface ActionResult {

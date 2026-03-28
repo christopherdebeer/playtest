@@ -42,18 +42,67 @@ import type {
 } from '../types/game.js';
 import { parseRules, getPlayerCount } from './rules.js';
 
-// Mechanics hook system (incremental extraction)
-import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
+// Mechanics stub (all execution routes through Lean engine)
+import { mechanicRegistry } from '../mechanics/index.js';
 import type { ActionSchema } from '../mechanics/types.js';
 
-// Core services (trunk mechanics)
+// Lean engine (primary mechanic execution)
 import {
-  addToDiscard,
-  playCard,
-  removeFromHandByIndex,
-  applyDynamicTurnOrder,
-  setBoardState
-} from '../mechanics/core/index.js';
+  leanExecuteAction,
+  leanValidateAction,
+  leanGetAvailableActions,
+  leanCheckWin,
+  leanTurnStart,
+  leanTurnEnd,
+  leanInitState,
+  leanGetPlayerView,
+  isLeanEngineAvailable
+} from '../lean-engine.js';
+
+// ============ Out-of-Turn Mechanics ============
+// Lean engine handles action aliases (buy_market↔buy_card, add_to_tableau↔play_to_tableau)
+// directly, so no TS-side mapping is needed.
+
+function canPlayerActNow(state: GameState, playerId: string, actionType: string): boolean {
+  // Resign is always allowed
+  if (actionType === 'resign') return true;
+
+  // Current player can always act
+  if (state.currentPlayer === playerId) return true;
+
+  const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+  const shared = state.shared as Record<string, unknown>;
+
+  // Simultaneous action selection: all players can submit select_action
+  if (actionType === 'select_action' && (em.simultaneous_action_selection || shared.sas_selections !== undefined)) {
+    return true;
+  }
+
+  // Prisoner's dilemma: all players can submit dilemma_choice
+  if (actionType === 'dilemma_choice' && (em.prisoners_dilemma || shared.pd_choices !== undefined)) {
+    return true;
+  }
+
+  return false;
+}
+
+// Card matching and simultaneous mechanics (SAS, PD) are handled by the Lean engine.
+// The TS bridge only initializes shared state structures and syncs Lean results back.
+
+// Helper: merge Lean engine player state back into game state
+function mergeLeanPlayers(state: GameState, leanState: GameState | null): void {
+  if (!leanState) return;
+  const leanPlayers = (leanState as unknown as Record<string, unknown>).players as Record<string, Record<string, unknown>> | undefined;
+  if (leanPlayers) {
+    for (const [pid, lps] of Object.entries(leanPlayers)) {
+      if (state.players[pid]) Object.assign(state.players[pid], lps);
+    }
+  }
+  const leanShared = (leanState as unknown as Record<string, unknown>).shared as Record<string, unknown> | undefined;
+  if (leanShared) {
+    Object.assign(state.shared, leanShared);
+  }
+}
 
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -602,62 +651,149 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
     turnOrder.push(`player-${i}`);
   }
 
-  // ============ Mechanic Hooks: Shared state initialization (FIRST) ============
-  // Cards mechanic builds deck, shuffles, deals starting hands, creates discard pile
-  // All card setup moved from game.ts to cards mechanic's initSharedState
-  const shared: Record<string, unknown> = {};
-  const mechanicSharedState = mechanicRegistry.initSharedState(config, [], turnOrder, shared);
-  Object.assign(shared, mechanicSharedState);
-
-  // Create player slots
+  // ============ Lean Engine: State initialization ============
+  // Lean engine handles: deck building, shuffling, dealing, board setup, resources
+  let shared: Record<string, unknown> = {};
   const players: Record<string, PlayerState> = {};
-  for (let i = 1; i <= playerCount; i++) {
-    const playerId = `player-${i}`;
 
-    // Assign persona if specified
-    // - undefined or "random" = assign random at registration
-    // - empty string "" = no persona (explicit opt-out)
-    // - any other string = specific persona slug
-    const assignedPersona = options?.personas?.[playerId];
-    let persona: string | undefined;
-    if (assignedPersona === '') {
-      persona = '_none_';  // Marker for explicit no-persona
-    } else if (assignedPersona && assignedPersona !== 'random') {
-      persona = assignedPersona;
-    }
-    // else undefined = random assignment at registration
+  if (isLeanEngineAvailable()) {
+    const leanState = leanInitState(config, turnOrder);
+    if (leanState) {
+      // Merge Lean-initialized player states
+      for (const pid of turnOrder) {
+        const leanPlayers = leanState.players as unknown as Record<string, Record<string, unknown>>;
+        const leanPlayer = leanPlayers?.[pid] || {};
+        players[pid] = {
+          state: (leanPlayer.state as string) || 'start',
+          hand: (leanPlayer.hand as Card[]) || [],
+          effects: (leanPlayer.effects as PlayerState['effects']) || [],
+          score: (leanPlayer.score as number) ?? 0,
+          resources: (leanPlayer.resources as Record<string, number>) || {},
+          ...(leanPlayer.actionPoints !== undefined ? { actionPoints: leanPlayer.actionPoints as number } : {}),
+          ...(leanPlayer.visitedLocations ? { visitedLocations: leanPlayer.visitedLocations as string[] } : {}),
+        } as PlayerState;
+      }
+      // Merge Lean-initialized shared state
+      shared = (leanState.shared as Record<string, unknown>) || {};
 
-    // ============ Mechanic Hooks: Player initialization ============
-    // Get initial player state from all enabled mechanics
-    // Pass existing players for cross-player coordination (e.g., unique power assignment)
-    // Pass shared state for cross-mechanic coordination (e.g., cards mechanic pre-dealt hands)
-    const playerIndex = i - 1;
-    const mechanicState = mechanicRegistry.initPlayerState(config, playerId, playerIndex, players, shared);
-
-    // Initialize score from starting_state if configured
-    const startingState = (config as { starting_state?: { score?: number } }).starting_state;
-    const startingScore = startingState?.score ?? 0;
-
-    players[playerId] = {
-      state: 'start',
-      effects: [],
-      persona,
-      score: startingScore
-    };
-
-    // Apply all mechanic-provided state (hand, resources, actionPoints, powerId, etc.)
-    // Mechanics can override defaults like 'state' (board-state sets starting position)
-    // 'resources' now set by resources mechanic via initPlayerState
-    const protectedKeys = new Set(['effects', 'persona', 'score']);
-    for (const [key, value] of Object.entries(mechanicState)) {
-      if (value !== undefined && !protectedKeys.has(key)) {
-        (players[playerId] as unknown as Record<string, unknown>)[key] = value;
+      // Shuffle: collect ALL cards (deck + dealt hands + topCard from Lean), shuffle, re-deal
+      if (Array.isArray(shared.deck) && (shared.deck as Card[]).length > 0) {
+        const allCards: Card[] = [...(shared.deck as Card[])];
+        // Add back cards Lean dealt to players
+        for (const pid of turnOrder) {
+          if (players[pid]?.hand?.length) {
+            allCards.push(...players[pid].hand);
+          }
+        }
+        // Add back topCard if Lean card-matching init flipped one
+        if (shared.topCard) {
+          allCards.push(shared.topCard as Card);
+          delete shared.topCard;
+          delete shared.currentColor;
+        }
+        // Shuffle all cards using Math.random (externally seedable for determinism)
+        for (let i = allCards.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
+        }
+        // Re-deal hands from shuffled deck
+        const cardsConfig = config.engine_mechanics?.cards as { starting_hand?: number } | undefined;
+        const startingHand = cardsConfig?.starting_hand ?? 0;
+        let deckIndex = 0;
+        if (startingHand > 0) {
+          for (const pid of turnOrder) {
+            const hand = allCards.slice(deckIndex, deckIndex + startingHand);
+            deckIndex += startingHand;
+            players[pid].hand = hand;
+          }
+        }
+        shared.deck = allCards.slice(deckIndex);
       }
     }
   }
 
-  // Clean up temporary state from cards mechanic
-  delete shared._startingHands;
+  // ============ Initialize game-specific shared state from config ============
+  const em = (config.engine_mechanics || {}) as Record<string, unknown>;
+
+  // Card matching (UNO): flip top card to establish currentColor
+  if (config.mechanics?.includes('card-matching')) {
+    const deck = shared.deck as Card[] | undefined;
+    if (deck && deck.length > 0) {
+      // Flip top card to discard to establish the starting color
+      const topCard = deck.shift()!;
+      shared.topCard = topCard;
+      shared.discardPile = [topCard];
+      // Extract color from card's effect
+      const effect = (topCard as unknown as Record<string, unknown>).effect as Record<string, unknown> | undefined;
+      if (effect?.color) {
+        shared.currentColor = effect.color;
+      }
+    }
+  }
+
+  // Cooperative shared state (alliance) — not yet in Lean
+  const cooperativeConfig = em.cooperative_actions as Record<string, unknown> | undefined;
+  if (cooperativeConfig) {
+    const sharedPool = cooperativeConfig.shared_pool as Record<string, number> | undefined;
+    shared.cooperative = { sharedPool: sharedPool || {}, threatLevel: 0 };
+  }
+
+  // Worker placement (battle-forge) — not yet in Lean
+  const workerConfig = em.worker_placement as Record<string, unknown> | undefined;
+  if (workerConfig?.spaces) {
+    shared.workerSpaces = (workerConfig.spaces as Array<Record<string, unknown>>).map(s => ({ ...s, occupants: [] }));
+  }
+
+  // Market commodities (battle-forge) — not yet in Lean
+  const marketConfig = em.market as Record<string, unknown> | undefined;
+  if (marketConfig?.commodities) {
+    const commodities = marketConfig.commodities as Array<Record<string, unknown>>;
+    shared.market = {
+      ...((shared.market || {}) as Record<string, unknown>),
+      prices: Object.fromEntries(commodities.map(c => [c.id || c.name, c.base_price || 1])),
+      commodities,
+    };
+  }
+
+  // Trading shared state (aaote) — not yet in Lean
+  if (config.mechanics?.includes('trading') || em.trade) {
+    shared.pendingTrades = shared.pendingTrades || [];
+  }
+
+  // SAS, PD, semi-cooperative — handled by Lean engine
+  // Lean-canonical state: sas_selections, pd_choices, pd_round, pd_resolved,
+  // collective_progress are all at the top level of shared (via extra RBMap)
+
+  // Apply personas and fill any uninitialized players
+  for (let i = 1; i <= playerCount; i++) {
+    const playerId = `player-${i}`;
+
+    // Assign persona if specified
+    const assignedPersona = options?.personas?.[playerId];
+    let persona: string | undefined;
+    if (assignedPersona === '') {
+      persona = '_none_';
+    } else if (assignedPersona && assignedPersona !== 'random') {
+      persona = assignedPersona;
+    }
+
+    if (!players[playerId]) {
+      // Fallback: create minimal player state if Lean didn't initialize
+      players[playerId] = {
+        state: 'start',
+        effects: [],
+        persona,
+        score: 0
+      } as PlayerState;
+    } else {
+      // Attach persona to Lean-initialized state
+      (players[playerId] as unknown as Record<string, unknown>).persona = persona;
+      // Ensure effects array exists
+      if (!players[playerId].effects) {
+        players[playerId].effects = [];
+      }
+    }
+  }
 
   const logPath = getLogPath(gameName, gameId);
 
@@ -850,6 +986,14 @@ function startGameUnsafe(gameName: string, instanceId?: string): void {
   state.currentPlayer = state.turnOrder[0];
   debug(`[STARTGAME DEBUG] First player: ${state.currentPlayer}`);
 
+  // Initialize first player's turn (refreshes AP, applies income, etc.)
+  if (isLeanEngineAvailable()) {
+    const startState = leanTurnStart(state, state.currentPlayer, true);
+    if (startState) {
+      mergeLeanPlayers(state, startState);
+    }
+  }
+
   saveStateUnsafe(state, instanceId);
   debug(`[STARTGAME DEBUG] State saved, game started`);
 
@@ -889,6 +1033,51 @@ export function getPlayerView(state: GameState, playerId: string): PlayerView {
     throw new Error(`Player ${playerId} not found`);
   }
 
+  // Use Lean engine for visibility-filtered view when available
+  if (isLeanEngineAvailable()) {
+    const leanView = leanGetPlayerView(state, playerId);
+    if (leanView) {
+      return {
+        gameId: leanView.gameId || state.gameId,
+        round: leanView.round,
+        turnNumber: leanView.turnNumber,
+        currentPlayer: leanView.currentPlayer,
+        myState: {
+          state: leanView.myState.state,
+          hand: (leanView.myState.hand ?? []) as Card[],
+          effects: (leanView.myState.effects ?? []) as PlayerState['effects'],
+          score: leanView.myState.score,
+          resources: leanView.myState.resources,
+          actionPoints: leanView.myState.actionPoints,
+          actionPointsUsed: leanView.myState.actionPointsUsed,
+          visitedLocations: leanView.myState.visitedLocations,
+          placedLocationCount: leanView.myState.placedLocationCount,
+          completedTrades: leanView.myState.completedTrades,
+        },
+        opponents: leanView.opponents.map(op => ({
+          playerId: op.playerId,
+          state: op.state,
+          handSize: op.handSize,
+          effects: (op.effects ?? []) as PlayerState['effects'],
+          score: op.score,
+          resources: op.resources,
+          placedLocationCount: op.placedLocationCount,
+          completedTrades: op.completedTrades,
+        })),
+        shared: {
+          ...state.shared,
+          // Override: hide deck contents, show size only
+          deck: undefined,
+          deckSize: leanView.shared.deckSize,
+          discard: leanView.shared.discard ?? state.shared.discard,
+          boardStates: leanView.shared.boardStates,
+          placedLocations: leanView.shared.placedLocations,
+        }
+      };
+    }
+  }
+
+  // Fallback: basic TS-side view
   const opponents: OpponentView[] = state.turnOrder
     .filter(pid => pid !== playerId)
     .map(pid => ({
@@ -924,15 +1113,24 @@ function endGameOnTimeout(state: GameState, endType: string): void {
     return;
   }
 
-  // Let mechanics determine timeout winner (timeout-winner mechanic handles role/condition logic)
-  const mechanicResult = mechanicRegistry.checkAllWinConditions(state, 'timeout');
+  // Let Lean engine determine timeout winner
+  let mechanicWinner: { winner: string; reason: string } | null = null;
+  if (isLeanEngineAvailable()) {
+    for (const pid of state.turnOrder) {
+      const result = leanCheckWin(state, pid, 'timeout');
+      if (result?.won) {
+        mechanicWinner = { winner: pid, reason: result.reason || 'Timeout win condition met' };
+        break;
+      }
+    }
+  }
 
   let winner: string | null;
   let reason: string;
 
-  if (mechanicResult) {
-    winner = mechanicResult.playerId;
-    reason = mechanicResult.reason;
+  if (mechanicWinner) {
+    winner = mechanicWinner.winner;
+    reason = mechanicWinner.reason;
   } else {
     // Fallback: highest score
     let highestScore = -Infinity;
@@ -989,23 +1187,25 @@ export function advanceTurn(state: GameState): void {
     }
   }
 
-  // At round start, let mechanics reorder turn order (e.g., turn-order-role, turn-order-stat-based)
-  if (isNewRound) {
-    applyDynamicTurnOrder(state, 'round_start');
+  // ============ Lean Engine: Turn lifecycle ============
+  // Route turn end/start through Lean engine for AP refresh, effect ticks, etc.
+  if (isLeanEngineAvailable()) {
+    // Turn end for previous player
+    const endState = leanTurnEnd(state, previousPlayer, state.turnOrder[nextIndex], isNewRound);
+    if (endState) {
+      mergeLeanPlayers(state, endState);
+    }
+
+    state.currentPlayer = state.turnOrder[nextIndex];
+
+    // Turn start for next player (refreshes AP, etc.)
+    const startState = leanTurnStart(state, state.currentPlayer, isNewRound);
+    if (startState) {
+      mergeLeanPlayers(state, startState);
+    }
+  } else {
+    state.currentPlayer = state.turnOrder[nextIndex];
   }
-
-  // ============ Mechanic Hooks: Turn end ============
-  // Run onTurnEnd hooks for the player whose turn just ended
-  // Effects mechanic decrements durations, fires onEffectRemoved hooks
-  const turnEndChanges = mechanicRegistry.onTurnEnd(state, previousPlayer, state.turnOrder[nextIndex], isNewRound);
-  applyStateChanges(state, turnEndChanges);
-
-  state.currentPlayer = state.turnOrder[nextIndex];
-
-  // ============ Mechanic Hooks: Turn start ============
-  // Run onTurnStart hooks for all enabled mechanics (e.g., refresh AP, income)
-  const turnStartChanges = mechanicRegistry.onTurnStart(state, state.currentPlayer, isNewRound);
-  applyStateChanges(state, turnStartChanges);
 
   saveState(state);
 }
@@ -1068,23 +1268,20 @@ function isMultiActionAllowed(state: GameState): boolean {
  * @param action - The action that was executed
  * @returns true if turn was advanced, false if player can continue
  */
-export function maybeAdvanceTurn(state: GameState, playerId: string, action: GameAction): boolean {
-  // Note: 'pass' is now handled by the pass mechanic via onExecuteAction
-  // which sets advanceTurn: true, so it's handled in executeAction's mechanic path
-
-  // Check if any mechanic wants to auto-end the turn (e.g., action points depleted)
-  const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
-
-  if (shouldEnd) {
+export function maybeAdvanceTurn(state: GameState, playerId: string, _action: GameAction): boolean {
+  // Auto-advance for single-action-per-round games (no action points).
+  if (!isMultiActionAllowed(state)) {
     advanceTurn(state);
     return true;
   }
 
-  // Auto-advance for single-action-per-round games (no action points).
-  // This function is only called after an action is executed, so always advance.
-  if (!isMultiActionAllowed(state)) {
-    advanceTurn(state);
-    return true;
+  // For multi-action games, check if AP depleted
+  const player = state.players[playerId];
+  if (player?.actionPoints !== undefined && player?.actionPointsUsed !== undefined) {
+    if (player.actionPointsUsed >= player.actionPoints) {
+      advanceTurn(state);
+      return true;
+    }
   }
 
   // Turn continues - save state but don't advance
@@ -1211,10 +1408,38 @@ export function roll(probability: number): { roll: number; success: boolean } {
  * are auto-derived from win_condition string during config normalization).
  */
 export function checkAllWinConditions(state: GameState): { winner: string; reason: string } | null {
-  const result = mechanicRegistry.checkAllWinConditions(state, 'action');
-  if (result) {
-    return { winner: result.playerId, reason: result.reason };
+  // Route through Lean engine for win condition checks
+  if (isLeanEngineAvailable()) {
+    for (const pid of state.turnOrder) {
+      const result = leanCheckWin(state, pid, 'action');
+      if (result?.won) {
+        return { winner: pid, reason: result.reason || 'Win condition met' };
+      }
+    }
   }
+
+  // Bridge-layer: highest_score win condition check
+  // Lean only checks this on round_end/turn_limit triggers, but
+  // games like council-of-whispers need it checked when PD completes
+  const wc = state.config.win_condition;
+  if (wc && (wc.includes('highest_score') || wc.includes('single_loser'))) {
+    // Check if game-end condition has been triggered (e.g., PD completed)
+    if (state.shared.gameOver) {
+      let maxScore = -Infinity;
+      let winner: string | null = null;
+      for (const [pid, player] of Object.entries(state.players)) {
+        const score = player.score ?? 0;
+        if (score > maxScore) {
+          maxScore = score;
+          winner = pid;
+        }
+      }
+      if (winner) {
+        return { winner, reason: `Highest score: ${maxScore}` };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -1224,36 +1449,27 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
 // drawCards moved to cards core mechanic (src/mechanics/core/cards.ts)
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  // Use core services for hand and discard operations (with playerId for hooks)
-  const card = removeFromHandByIndex(state, playerId, cardIndex);
-  if (!card) {
-    return null;
-  }
-
-  addToDiscard(state, [card], playerId);
+  const player = state.players[playerId];
+  if (!player || !player.hand || cardIndex < 0 || cardIndex >= player.hand.length) return null;
+  const [card] = player.hand.splice(cardIndex, 1);
+  const discard = (state.shared.discard || state.shared.discardPile || []) as Card[];
+  discard.push(card);
+  state.shared.discard = discard;
   saveState(state);
-
   return card;
 }
 
-export function playCardByName(state: GameState, playerId: string, cardName: string, declaredColor?: string): Card | null {
+export function playCardByName(state: GameState, playerId: string, cardName: string): Card | null {
   const player = state.players[playerId];
-  if (!player) {
-    throw new Error(`Player ${playerId} not found`);
-  }
-
-  // Use core service for card play (handles hand removal, discard, and onCardPlayed hook)
-  const playContext: Record<string, unknown> = {};
-  if (declaredColor) playContext.declaredColor = declaredColor;
-  const result = playCard(state, playerId, cardName, playContext);
-
-  if (!result.card) {
-    return null;
-  }
-
+  if (!player || !player.hand) return null;
+  const idx = player.hand.findIndex(c => c.name === cardName);
+  if (idx === -1) return null;
+  const [card] = player.hand.splice(idx, 1);
+  const discard = (state.shared.discard || state.shared.discardPile || []) as Card[];
+  discard.push(card);
+  state.shared.discard = discard;
   saveState(state);
-
-  return result.card;
+  return card;
 }
 
 // getPlacedCardsOnState and applyPlacedCardEffects moved to board-state mechanic
@@ -1267,8 +1483,8 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
 
 /**
  * Get all available actions for a player based on game rules and current state.
- * This function procedurally exposes what actions are possible, enabling
- * game-agnostic action discovery.
+ * Routes through the Lean engine for action discovery, with engine-level
+ * actions (pass, resign) always available.
  */
 export function getAvailableActions(state: GameState, playerId: string): AvailableActionsResult {
   const player = state.players[playerId];
@@ -1277,36 +1493,117 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
   }
 
   const isCurrentPlayer = state.currentPlayer === playerId;
-  const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
-  const isYourTurn = isCurrentPlayer || canActNow;
   const placedCards = (state.shared.placedCards || []) as PlacedCard[];
-
-  // Check for blocking effects using mechanic registry
-  const isBlocked = mechanicRegistry.isPlayerBlocked(state, playerId);
-
-  // Collect all mechanic-provided actions (move, play_card, draw, place_card, etc.)
-  const mechanicActions = mechanicRegistry.getAvailableActions(state, playerId);
-
   const actions: AvailableAction[] = [];
 
-  // === PASS action (only for currentPlayer) ===
-  // Serves as the dedup anchor — other mechanics may emit { type: 'pass' } but
-  // those are deduplicated against this base entry.
-  // Validation is handled by the pass mechanic's preValidateAction hook.
-  actions.push({
-    type: 'pass',
-    description: 'Skip your turn without taking an action',
-    enabled: isCurrentPlayer,
-    reason: !isCurrentPlayer ? 'Not your turn' : undefined,
-    required: {},
-    optional: { reasoning: 'Why you are passing' },
-    examples: [{ type: 'pass' }]
-  });
+  // === Lean Engine: get mechanic-provided actions ===
+  if (isLeanEngineAvailable() && isCurrentPlayer) {
+    const leanActions = leanGetAvailableActions(state, playerId);
+    for (const la of leanActions) {
+      let targets = la.targets;
+      let cards = la.cards;
 
-  // trade_offer, trade_respond, bid, spend, collect_set, roll, bank, draft
-  // actions are now provided by their respective mechanics (getAvailableActions)
+      const actionType = la.action.type;
 
-  // === RESIGN action (always available regardless of turn) ===
+      // Augment move actions with board targets if not provided by Lean
+      if (actionType === 'move' && !targets) {
+        const boardConfig = state.config.board || (state.config.engine_mechanics as Record<string, unknown>)?.board as typeof state.config.board;
+        if (boardConfig?.edges) {
+          const currentPos = player.state;
+          const edge = boardConfig.edges.find(e => {
+            const from = Array.isArray(e.from) ? e.from : [e.from];
+            return from.includes(currentPos);
+          });
+          if (edge) {
+            targets = Array.isArray(edge.to) ? edge.to : [edge.to];
+          }
+        }
+      }
+
+      actions.push({
+        type: actionType as GameAction['type'],
+        description: la.description || `${actionType}`,
+        enabled: la.enabled !== false,
+        required: {},
+        examples: [la.action as unknown as GameAction],
+        ...(targets ? { targets } : {}),
+        ...(cards ? { cards } : {}),
+      });
+    }
+  }
+
+  // === Out-of-turn actions (SAS/PD) for ALL players ===
+  // Lean-canonical state: sas_selections, pd_choices, pd_resolved at shared top level
+  {
+    const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
+
+    // Simultaneous Action Selection: show select_action if not already selected
+    if (em.simultaneous_action_selection || shared.sas_selections !== undefined) {
+      const selections = shared.sas_selections as Record<string, string> | undefined;
+      const alreadySelected = selections && typeof selections === 'object' && playerId in selections;
+      if (!alreadySelected && !actions.some(a => a.type === 'select_action')) {
+        actions.push({
+          type: 'select_action' as GameAction['type'],
+          description: 'Choose your action for this round',
+          enabled: true,
+          required: {},
+          examples: [{ type: 'select_action', selectedAction: 'Scheme' } as unknown as GameAction]
+        });
+      }
+    }
+
+    // Prisoner's Dilemma: show dilemma_choice if not already chosen
+    if (em.prisoners_dilemma || shared.pd_choices !== undefined) {
+      const choices = shared.pd_choices as Record<string, string> | undefined;
+      const resolved = shared.pd_resolved as boolean | undefined;
+      const alreadyChosen = choices && typeof choices === 'object' && playerId in choices;
+      if (!alreadyChosen && !resolved && !actions.some(a => a.type === 'dilemma_choice')) {
+        actions.push({
+          type: 'dilemma_choice' as GameAction['type'],
+          description: 'Choose cooperate or defect',
+          enabled: true,
+          required: {},
+          examples: [{ type: 'dilemma_choice', choice: 'cooperate' } as unknown as GameAction]
+        });
+      }
+    }
+  }
+
+  // === PASS action (if not already from Lean) ===
+  if (!actions.some(a => a.type === 'pass')) {
+    // For out-of-turn players in SAS/PD games, pass should be disabled
+    const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
+    const hasSasOrPd = em.simultaneous_action_selection || em.prisoners_dilemma ||
+      shared.sas_selections !== undefined || shared.pd_choices !== undefined;
+    const passEnabled = isCurrentPlayer || !hasSasOrPd;
+
+    actions.push({
+      type: 'pass',
+      description: 'Skip your turn without taking an action',
+      enabled: passEnabled,
+      reason: !passEnabled ? 'Not your turn' : undefined,
+      required: {},
+      optional: { reasoning: 'Why you are passing' },
+      examples: [{ type: 'pass' }]
+    });
+  } else if (!isCurrentPlayer) {
+    // Disable pass for non-current players in SAS/PD games
+    const em = (state.config.engine_mechanics || {}) as Record<string, unknown>;
+    const shared = state.shared as Record<string, unknown>;
+    const hasSasOrPd = em.simultaneous_action_selection || em.prisoners_dilemma ||
+      shared.sas_selections !== undefined || shared.pd_choices !== undefined;
+    if (hasSasOrPd) {
+      const passAction = actions.find(a => a.type === 'pass');
+      if (passAction) {
+        passAction.enabled = false;
+        passAction.reason = 'Not your turn';
+      }
+    }
+  }
+
+  // === RESIGN action (always available) ===
   actions.push({
     type: 'resign',
     description: 'Forfeit the game (requires gamemaster approval)',
@@ -1315,65 +1612,26 @@ export function getAvailableActions(state: GameState, playerId: string): Availab
     examples: [{ type: 'resign', reason: 'I cannot win from this position' }]
   });
 
-  // === MECHANIC HOOKS: Merge non-duplicate mechanic actions ===
-  // Skip mechanic actions that duplicate base actions (pass, resign)
-  // Keep mechanic actions with unique categories (e.g. "victory" pass is distinct from plain "pass")
-  const baseActionTypes = new Set(actions.map(a => a.type));
-  for (const mechanicAction of mechanicActions) {
-    // Skip mechanics that duplicate base actions already listed above
-    // Keep special categories like "victory" that add new functionality
-    if (baseActionTypes.has(mechanicAction.action.type) &&
-        !['victory', 'programming'].includes(mechanicAction.category || '')) continue;
-
-    // Let mechanics override enabled/reason; default to isYourTurn && !isBlocked
-    const defaultEnabled = isYourTurn && !isBlocked;
-    const enabled = mechanicAction.enabled !== undefined ? mechanicAction.enabled : defaultEnabled;
-    const reason = mechanicAction.reason !== undefined ? mechanicAction.reason :
-                   (!isYourTurn ? 'Not your turn' :
-                    isBlocked ? 'You are blocked this turn' :
-                    undefined);
-
-    // Use rich metadata from mechanic when available, fall back to extracted params
-    let required = mechanicAction.required;
-    if (!required) {
-      const { type, ...actionParams } = mechanicAction.action as unknown as Record<string, unknown>;
-      required = {};
-      for (const [key, val] of Object.entries(actionParams)) {
-        required[key] = String(val);
-      }
-    }
-
-    const actionEntry: AvailableAction = {
-      type: mechanicAction.action.type,
-      description: mechanicAction.description || `${mechanicAction.category || 'mechanic'}: ${mechanicAction.action.type}`,
-      enabled,
-      reason: !enabled ? reason : undefined,
-      required,
-      optional: mechanicAction.optional,
-      examples: mechanicAction.examples || [mechanicAction.action],
-      cards: mechanicAction.cards,
-      targets: mechanicAction.targets,
-    };
-
-    actions.push(actionEntry);
-  }
-
-  // Add resource and action point info to result
   const result: AvailableActionsResult = {
     playerId,
-    isYourTurn,
+    isYourTurn: isCurrentPlayer,
     currentState: player.state,
-    hand: [],  // Cards mechanic contributes hand via getPlayerView
+    hand: (player.hand ?? []).map(c => c.name),
     actions,
     placedCards,
     activeEffects: player.effects
   };
 
-  // Let mechanics contribute to player view
-  // resources (resources-mechanic), actionPoints (action-points), collectedSets (set-collection),
-  // power (variable-player-powers), rollAccumulator (push-your-luck), draftDisplay (open-drafting)
-  const mechanicView = mechanicRegistry.getPlayerView(state, playerId);
-  Object.assign(result, mechanicView);
+  // Add resource/AP info if present
+  if (player.actionPoints !== undefined) {
+    (result as Record<string, unknown>).actionPoints = player.actionPoints;
+  }
+  if (player.actionPointsUsed !== undefined) {
+    (result as Record<string, unknown>).actionPointsUsed = player.actionPointsUsed;
+  }
+  if (player.resources) {
+    (result as Record<string, unknown>).resources = player.resources;
+  }
 
   return result;
 }
@@ -1515,14 +1773,9 @@ export function validateActionSchema(action: unknown): ActionValidationResult {
   return { valid: true, errors: [] };
 }
 
-// Validate action against a mechanic-provided schema (called from validateAction with state)
-function validateMechanicSchema(state: GameState, action: GameAction): string[] {
-  const schema = mechanicRegistry.getActionSchema(state, action);
-  if (!schema) return []; // No mechanic claims this action type — skip schema validation
-  return validateAgainstSchema(action as unknown as Record<string, unknown>, schema);
-}
+// Schema validation now handled by Lean engine
 
-// Validate action against game rules (basic engine-level validation)
+// Validate action against game rules (basic engine-level + Lean engine validation)
 export function validateAction(state: GameState, playerId: string, action: GameAction): ActionValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -1532,14 +1785,9 @@ export function validateAction(state: GameState, playerId: string, action: GameA
     return { valid: false, errors: [`Player ${playerId} not found`] };
   }
 
-  // Check if it's the player's turn (or a mechanic grants out-of-turn access)
-  // Resign is always allowed regardless of turn order
-  const isOutOfTurnAction = state.currentPlayer !== playerId;
-  if (isOutOfTurnAction && action.type !== 'resign') {
-    const canActNow = mechanicRegistry.canPlayerActNow(state, playerId);
-    if (!canActNow) {
-      return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
-    }
+  // Check if it's the player's turn (with out-of-turn mechanics support)
+  if (state.currentPlayer !== playerId && !canPlayerActNow(state, playerId, action.type)) {
+    return { valid: false, errors: [`Not your turn. Current player: ${state.currentPlayer}`] };
   }
 
   // Check game status
@@ -1550,10 +1798,8 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   // Check for pending contest/resignation (with auto-adjudication timeout)
   const contestState = ensureContestState(state);
   if (contestState.pendingContest) {
-    // Check if contest has timed out and should be auto-adjudicated
     const wasAutoAdjudicated = checkAndAutoAdjudicateContest(state);
     if (!wasAutoAdjudicated) {
-      // Still pending - block the action
       const elapsed = Date.now() - new Date(contestState.pendingContest.timestamp).getTime();
       const remainingMs = AUTO_ADJUDICATION_TIMEOUT_MS - elapsed;
       const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
@@ -1562,43 +1808,29 @@ export function validateAction(state: GameState, playerId: string, action: GameA
         errors: [`Cannot act while a contest is pending. Wait for adjudication (auto-adjudication in ${remainingSec}s).`]
       };
     }
-    // Auto-adjudicated - continue with validation
   }
   if (contestState.pendingResignation) {
-    // Check if resignation has timed out and should be auto-adjudicated
     const wasAutoAdjudicated = checkAndAutoAdjudicateResignation(state);
     if (!wasAutoAdjudicated) {
       return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
     }
   }
 
-  // Note: Blocking effects check moved to lose-a-turn mechanic
-
   // Prevent multiple actions per round unless multi-action is allowed (e.g., action-points)
-  // Out-of-turn actions (granted by canPlayerActNow) bypass this — mechanics track their own submission state
-  if (!isOutOfTurnAction && !isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
+  if (state.currentPlayer === playerId && !isMultiActionAllowed(state) && player.lastActionRound === state.round && action.type !== 'pass') {
     return {
       valid: false,
       errors: ['You have already acted this round. Wait for your next turn.']
     };
   }
 
-  // ============ Mechanic Hooks: Pre-validation ============
-  // Run preValidateAction hooks for all enabled mechanics
-  const preValidationResult = mechanicRegistry.preValidateAction(state, playerId, action);
-  if (!preValidationResult.valid) {
-    return {
-      valid: false,
-      errors: [preValidationResult.error || 'Action blocked by mechanic']
-    };
+  // ============ Lean Engine Validation ============
+  if (isLeanEngineAvailable()) {
+    const leanResult = leanValidateAction(state, playerId, action);
+    if (leanResult && !leanResult.valid) {
+      return { valid: false, errors: [leanResult.error || 'Action blocked by Lean engine'] };
+    }
   }
-
-  // ============ Mechanic Schema Validation ============
-  // Validate action fields against mechanic-provided schemas
-  const schemaErrors = validateMechanicSchema(state, action);
-  errors.push(...schemaErrors);
-
-  // play_card and draw validation moved to cards core mechanic (preValidateAction)
 
   if (action.type === 'pass') {
     warnings.push('Pass action will be recorded. Other players may contest if rules require you to play.');
@@ -1611,7 +1843,7 @@ export function validateAction(state: GameState, playerId: string, action: GameA
   };
 }
 
-// Execute an action directly (the core of the contest system)
+// Execute an action directly (routes through Lean engine)
 export function executeAction(state: GameState, playerId: string, action: GameAction): {
   success: boolean;
   effect?: { type: string; details?: Record<string, unknown> };
@@ -1624,27 +1856,43 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
     return { success: false, error: `Player ${playerId} not found` };
   }
 
-  // Run mechanic pre-validation hooks (e.g., board-state edge checks)
-  const preValidation = mechanicRegistry.preValidateAction(state, playerId, action);
-  if (!preValidation.valid) {
-    return { success: false, error: preValidation.error || 'Action blocked by mechanic' };
-  }
-
   const contestState = ensureContestState(state);
 
-  // ============ Mechanic Delegation: Let mechanics handle actions first ============
-  // Try to execute via mechanic hooks before falling back to built-in handling
-  const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
+  // ============ Engine-level: resign (not a game mechanic) ============
+  if (action.type === 'resign') {
+    const resignAction = action as ResignAction;
+    contestState.pendingResignation = {
+      player: playerId,
+      reason: resignAction.reason,
+      timestamp: new Date().toISOString()
+    };
+    saveState(state);
 
-  if (mechanicResult?.handled) {
-    // Mechanic handled the action - apply its state changes
-    if (mechanicResult.stateChanges) {
-      applyStateChanges(state, mechanicResult.stateChanges);
+    logEvent(state, {
+      event: 'resignation_submitted',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      player: playerId,
+      data: { reason: resignAction.reason }
+    });
+
+    return {
+      success: true,
+      effect: { type: 'resignation_pending', details: { reason: resignAction.reason } }
+    };
+  }
+
+  // ============ Lean Engine Execution ============
+  if (isLeanEngineAvailable()) {
+    const leanResult = leanExecuteAction(state, playerId, action);
+    if (!leanResult.success) {
+      return { success: false, error: leanResult.error || 'Lean engine execution failed' };
     }
 
-    // Run postExecuteAction hooks (e.g., deduct AP)
-    const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
-    applyStateChanges(state, postExecuteChanges);
+    // Merge Lean state changes back (players + shared state)
+    if (leanResult.state) {
+      mergeLeanPlayers(state, leanResult.state);
+    }
 
     // Log the action
     logEvent(state, {
@@ -1654,12 +1902,12 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       player: playerId,
       data: {
         type: action.type,
-        ...mechanicResult.logData
+        message: leanResult.execution?.logMessage
       }
     });
 
-    // Check win condition if requested by a mechanic
-    if (mechanicResult.checkWin) {
+    // Check win conditions if requested
+    if (leanResult.execution?.checkWin) {
       const winCheck = checkAllWinConditions(state);
       if (winCheck) {
         state.status = 'pending_analysis';
@@ -1670,94 +1918,32 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
           success: true,
           gameOver: true,
           winner: winCheck.winner,
-          effect: { type: action.type, details: mechanicResult.logData }
+          effect: { type: action.type }
         };
       }
     }
 
-    // Mark that player has acted this round (prevents multiple actions without action points)
-    // Only set this if the turn will actually end or be kept within same-round continuation
-    if (mechanicResult.advanceTurn !== false) {
-      player.lastActionRound = state.round;
-    }
+    // Mark that player has acted this round
+    player.lastActionRound = state.round;
 
-    // Handle turn advancement — three-value semantics:
-    //   advanceTurn: true  → always advance (pass, bank, bust)
-    //   advanceTurn: false → never advance (play_card, roll — await pass or AP depletion)
-    //   advanceTurn: undefined → auto-detect (non-AP: advance; AP: let AP handle it)
-    const shouldEnd = mechanicRegistry.shouldAutoEndTurn(state, playerId);
-    if (shouldEnd) {
+    // Handle turn advancement
+    if (leanResult.execution?.advanceTurn) {
       advanceTurn(state);
-    } else if (mechanicResult.advanceTurn === false) {
-      saveState(state);
-    } else if (mechanicResult.advanceTurn === true) {
+    } else if (!isMultiActionAllowed(state)) {
+      // Single-action-per-round games always advance
       advanceTurn(state);
     } else {
-      // advanceTurn unset: auto-detect based on game type
-      if (!isMultiActionAllowed(state)) {
-        advanceTurn(state);
-      } else {
-        saveState(state);
-      }
+      saveState(state);
     }
 
     return {
       success: true,
-      effect: { type: action.type, details: mechanicResult.logData }
+      effect: { type: action.type, details: { message: leanResult.execution?.logMessage } }
     };
   }
 
-  // ============ Fallback: Built-in action handling ============
-  // Run postExecuteAction hooks for all enabled mechanics (e.g., deduct AP)
-  const postExecuteChanges = mechanicRegistry.postExecuteAction(state, playerId, action);
-  applyStateChanges(state, postExecuteChanges);
-
-  try {
-    switch (action.type) {
-      // play_card, draw handled by cards core mechanic (onExecuteAction)
-      // pass handled by pass core mechanic (onExecuteAction)
-
-      case 'resign': {
-        const resignAction = action as ResignAction;
-        // Queue resignation for gamemaster adjudication
-        contestState.pendingResignation = {
-          player: playerId,
-          reason: resignAction.reason,
-          timestamp: new Date().toISOString()
-        };
-        saveState(state);
-
-        logEvent(state, {
-          event: 'resignation_submitted',
-          round: state.round,
-        turnNumber: state.turnNumber,
-          player: playerId,
-          data: { reason: resignAction.reason }
-        });
-
-        return {
-          success: true,
-          effect: {
-            type: 'resignation_pending',
-            details: { reason: resignAction.reason }
-          }
-        };
-      }
-
-      // move handled by board-state/grid-movement mechanics (onExecuteAction)
-      // place_card and place_location handled by place-card mechanic (onExecuteAction)
-
-      // trade_offer, trade_respond handled by trading mechanic (onExecuteAction)
-      // bid handled by auction-english mechanic (onExecuteAction)
-      // spend handled by resources mechanic (onExecuteAction)
-      // collect_set, roll, bank, draft handled by their respective mechanics (onExecuteAction)
-
-      default:
-        return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
-    }
-  } catch (e) {
-    return { success: false, error: (e as Error).message };
-  }
+  // No Lean engine available
+  return { success: false, error: `Lean engine not available. Build with: cd lean && lake build lean-engine` };
 }
 
 // validateSet moved to set-collection mechanic
@@ -1983,7 +2169,10 @@ export function adjudicateVictory(
     });
   } else {
     // Rejected - ROLL BACK the move, then advance turn
-    setBoardState(state, claim.player, claim.fromState); // Roll back to previous state
+    // Roll back to previous state
+    if (state.players[claim.player]) {
+      state.players[claim.player].state = claim.fromState;
+    }
 
     logEvent(state, {
       event: 'victory_rejected',
@@ -2021,17 +2210,13 @@ export function adjudicateVictory(
 
 // Reverse a previous action (for rejected contests)
 function reverseAction(state: GameState, lastAction: LastAction): boolean {
-  const action = lastAction.action;
   const playerId = lastAction.player;
   const player = state.players[playerId];
 
   if (!player) return false;
 
   try {
-    // Delegate to mechanics for action-specific undo (e.g., cards reverses play_card)
-    mechanicRegistry.reverseAction(state, playerId, action);
-
-    // Always reverse turn and save (mechanics only undo state changes)
+    // Reverse turn and save (contest reversal is best-effort)
     reverseTurn(state);
     saveState(state);
     return true;
