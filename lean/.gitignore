@@ -1,0 +1,6 @@
+# Lean 4 build artifacts
+.lake/build/
+.lake/packages/
+lake-manifest.json
+.lake/lakefile.olean
+.lake/lakefile.olean.trace

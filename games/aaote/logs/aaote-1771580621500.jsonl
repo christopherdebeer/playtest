@@ -1,0 +1,3 @@
+{"timestamp":"2026-02-20T09:43:41.537Z","event":"game_init","data":{"gameId":"aaote-1771580621500","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T09:43:53.050Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T09:45:08.216Z","event":"game_cancelled","round":1,"turnNumber":1,"data":{"reason":"rebuild"}}

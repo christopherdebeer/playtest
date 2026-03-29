@@ -40,7 +40,7 @@ import {
   skipAnalysis,
   submitAnalysisMarkdown
 } from '../core/game.js';
-import type { PendingAction, GameAction, ContestState, OperatorHint } from '../types/game.js';
+import type { PendingAction, GameAction, ContestState, OperatorHint, Card, GameState } from '../types/game.js';
 import { waitForTurn } from '../core/turns.js';
 import {
   getCardDefinition,
@@ -57,9 +57,29 @@ import {
   getMechanicImplementationStatus
 } from '../core/rules.js';
 import { getRulesPath } from '../core/game.js';
-import { getCardsState } from '../mechanics/core/index.js';
-import { drawCards } from '../mechanics/core/cards.js';
 import { validateRules, formatValidationResult } from '../core/validate.js';
+/** Get cards shared state (deck/discard) from game state. */
+function getCardsState(state: GameState): { deck: Card[]; discardPile: Card[] } {
+  if (!state.shared.deck) state.shared.deck = [];
+  if (!state.shared.discardPile) state.shared.discardPile = [];
+  return state.shared as unknown as { deck: Card[]; discardPile: Card[] };
+}
+
+/** Draw cards from deck into a player's hand. */
+function drawCards(state: GameState, playerId: string, count: number): Card[] {
+  const player = state.players[playerId];
+  if (!player) throw new Error(`Player ${playerId} not found`);
+  const cards = getCardsState(state);
+  const drawn: Card[] = [];
+  for (let i = 0; i < count; i++) {
+    if (cards.deck.length === 0) break;
+    const card = cards.deck.shift();
+    if (card) drawn.push(card);
+  }
+  if (!player.hand) player.hand = [];
+  player.hand.push(...drawn);
+  return drawn;
+}
 
 const program = new Command();
 

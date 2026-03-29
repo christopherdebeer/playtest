@@ -46,15 +46,6 @@ import { parseRules, getPlayerCount } from './rules.js';
 import { mechanicRegistry, applyStateChanges } from '../mechanics/index.js';
 import type { ActionSchema } from '../mechanics/types.js';
 
-// Core services (trunk mechanics)
-import {
-  addToDiscard,
-  playCard,
-  removeFromHandByIndex,
-  applyDynamicTurnOrder,
-  setBoardState
-} from '../mechanics/core/index.js';
-
 // Find project root (parent of src directory)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
@@ -991,7 +982,11 @@ export function advanceTurn(state: GameState): void {
 
   // At round start, let mechanics reorder turn order (e.g., turn-order-role, turn-order-stat-based)
   if (isNewRound) {
-    applyDynamicTurnOrder(state, 'round_start');
+    // Let mechanics reorder turn order via hook
+    const turnOrderResult = mechanicRegistry.onDetermineTurnOrder(state, 'round_start');
+    if (turnOrderResult?.order) {
+      state.turnOrder = turnOrderResult.order;
+    }
   }
 
   // ============ Mechanic Hooks: Turn end ============
@@ -1224,15 +1219,18 @@ export function checkAllWinConditions(state: GameState): { winner: string; reaso
 // drawCards moved to cards core mechanic (src/mechanics/core/cards.ts)
 
 export function discardCard(state: GameState, playerId: string, cardIndex: number): Card | null {
-  // Use core services for hand and discard operations (with playerId for hooks)
-  const card = removeFromHandByIndex(state, playerId, cardIndex);
-  if (!card) {
-    return null;
-  }
+  const player = state.players[playerId];
+  if (!player) return null;
+  const hand = player.hand ?? [];
+  if (cardIndex < 0 || cardIndex >= hand.length) return null;
+  const [card] = hand.splice(cardIndex, 1);
 
-  addToDiscard(state, [card], playerId);
+  // Add to discard pile
+  if (!state.shared.discardPile) state.shared.discardPile = [];
+  (state.shared.discardPile as Card[]).push(card);
+  state.shared.topCard = card;
+
   saveState(state);
-
   return card;
 }
 
@@ -1242,18 +1240,19 @@ export function playCardByName(state: GameState, playerId: string, cardName: str
     throw new Error(`Player ${playerId} not found`);
   }
 
-  // Use core service for card play (handles hand removal, discard, and onCardPlayed hook)
-  const playContext: Record<string, unknown> = {};
-  if (declaredColor) playContext.declaredColor = declaredColor;
-  const result = playCard(state, playerId, cardName, playContext);
+  // Remove card from hand
+  const hand = player.hand ?? [];
+  const cardIndex = hand.findIndex(c => c.name === cardName);
+  if (cardIndex === -1) return null;
+  const [card] = hand.splice(cardIndex, 1);
 
-  if (!result.card) {
-    return null;
-  }
+  // Add to discard pile
+  if (!state.shared.discardPile) state.shared.discardPile = [];
+  (state.shared.discardPile as Card[]).push(card);
+  state.shared.topCard = card;
 
   saveState(state);
-
-  return result.card;
+  return card;
 }
 
 // getPlacedCardsOnState and applyPlacedCardEffects moved to board-state mechanic
@@ -1983,7 +1982,9 @@ export function adjudicateVictory(
     });
   } else {
     // Rejected - ROLL BACK the move, then advance turn
-    setBoardState(state, claim.player, claim.fromState); // Roll back to previous state
+    // Roll back to previous state
+    const claimPlayer = state.players[claim.player];
+    if (claimPlayer) claimPlayer.state = claim.fromState;
 
     logEvent(state, {
       event: 'victory_rejected',

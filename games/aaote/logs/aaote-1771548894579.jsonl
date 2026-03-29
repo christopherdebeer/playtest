@@ -1,0 +1,10 @@
+{"timestamp":"2026-02-20T00:54:54.620Z","event":"game_init","data":{"gameId":"aaote-1771548894579","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-20T00:55:08.569Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-20T00:55:31.381Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_location","leanTurnNumber":1,"leanRound":1,"leanAP":2,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:55:40.830Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","leanTurnNumber":1,"leanRound":1,"leanAP":1,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:55:50.549Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","leanTurnNumber":2,"leanRound":1,"leanAP":3,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:56:12.937Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_location","leanTurnNumber":2,"leanRound":1,"leanAP":2,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:56:25.668Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"pass","leanTurnNumber":3,"leanRound":1,"leanAP":3,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:57:30.869Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"play_card","leanTurnNumber":3,"leanRound":1,"leanAP":2,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:57:42.544Z","event":"action_executed","round":1,"turnNumber":3,"player":"player-3","data":{"type":"pass","leanTurnNumber":4,"leanRound":2,"leanAP":3,"leanGameOver":false}}
+{"timestamp":"2026-02-20T00:58:05.959Z","event":"game_cancelled","round":2,"turnNumber":4,"data":{"reason":"testing complete"}}
