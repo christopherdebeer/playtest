@@ -32,6 +32,8 @@ import type {
   PendingContest,
   PendingResignation,
   PendingVictoryClaim,
+  PendingIntervention,
+  InterventionHistoryEntry,
   ContestHistoryEntry,
   ResignationEntry,
   ContestState,
@@ -141,6 +143,24 @@ function processVictoryDeclarationIfPresent(state: GameState, originalAction: La
 
   const contestState = ensureContestState(state);
   const playerBoardState = state.players[originalAction.player]?.state ?? 'unknown';
+
+  // Do not overwrite an existing pending claim — first valid declaration takes precedence.
+  // The declaring player may try again once the current claim is adjudicated.
+  if (contestState.pendingVictoryClaim) {
+    const existing = contestState.pendingVictoryClaim;
+    logEvent(state, {
+      event: 'victory_claim_deferred',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      player: originalAction.player,
+      data: {
+        reason: action.victoryReason || 'Victory declared with action',
+        note: `Deferred: ${existing.player}'s victory claim from turn ${existing.timestamp} is still pending GM adjudication`
+      }
+    });
+    debug(`[VICTORY CLAIM] Deferred victory claim from ${originalAction.player} — ${existing.player}'s claim already pending`);
+    return;
+  }
 
   // Create pending victory claim for GM verification
   contestState.pendingVictoryClaim = {
@@ -690,7 +710,7 @@ export function initGame(gameName: string, playerCount: number, options?: InitGa
 // Accepts game name OR instance ID
 export function registerAgent(
   gameNameOrInstanceId: string,
-  role: 'gamemaster' | 'player',
+  role: 'gamemaster' | 'player' | 'mechanic',
   agentId: string,
   playerId?: string
 ): { registered: boolean; role: string; playerId?: string; persona?: string; rules: string; instanceId: string; config: object } {
@@ -735,6 +755,35 @@ export function registerAgent(
       return {
         registered: true,
         role: 'gamemaster',
+        rules: state.rulesMarkdown,
+        instanceId: state.gameId,
+        config: state.config
+      };
+    }
+
+    if (role === 'mechanic') {
+      debug(`[REGISTER DEBUG] Mechanic agent registration path`);
+      debug(`[REGISTER DEBUG] Before: mechanicAgentId = ${state.shared.mechanicAgentId || 'null'}`);
+
+      // Mechanic agent registration - store in shared state
+      state.shared.mechanicAgentId = agentId;
+      debug(`[REGISTER DEBUG] After assignment: mechanicAgentId = ${state.shared.mechanicAgentId}`);
+
+      saveStateUnsafe(state, instanceId);
+      debug(`[REGISTER DEBUG] State saved for mechanic agent`);
+
+      // Check if all players also registered - if so, auto-start
+      const allPlayersRegistered = state.turnOrder.every(pid => state.players[pid].agentId);
+      const gmRegistered = !!state.shared.gamemasterAgentId;
+      debug(`[REGISTER DEBUG] All players registered? ${allPlayersRegistered}, GM registered? ${gmRegistered}`);
+      if (allPlayersRegistered && gmRegistered) {
+        debug(`[REGISTER DEBUG] Starting game automatically...`);
+        startGameUnsafe(gameName, instanceId);
+      }
+
+      return {
+        registered: true,
+        role: 'mechanic',
         rules: state.rulesMarkdown,
         instanceId: state.gameId,
         config: state.config
@@ -1387,7 +1436,8 @@ export function ensureContestState(state: GameState): ContestState {
       actionHistory: [],
       contestHistory: [],
       resignations: [],
-      victoryHistory: []
+      victoryHistory: [],
+      interventionHistory: []
     };
   }
   // Ensure arrays exist for older game states
@@ -1397,6 +1447,9 @@ export function ensureContestState(state: GameState): ContestState {
   }
   if (!cs.actionHistory) {
     cs.actionHistory = [];
+  }
+  if (!cs.interventionHistory) {
+    cs.interventionHistory = [];
   }
   return cs;
 }
@@ -1412,6 +1465,172 @@ export function recordAction(contestState: ContestState, action: LastAction): vo
   if (contestState.actionHistory.length > MAX_ACTION_HISTORY) {
     contestState.actionHistory = contestState.actionHistory.slice(-MAX_ACTION_HISTORY);
   }
+}
+
+// ============ Mechanic Agent Intervention System ============
+
+let interventionCounter = 0;
+
+/**
+ * Create a pending intervention for an unhandled effect.
+ * Called by the effect dispatcher when no mechanic handles an effect type.
+ * Blocks the next player turn until the mechanic agent resolves it.
+ */
+export function createIntervention(
+  state: GameState,
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle',
+  effectType: string,
+  sourcePlayer: string,
+  targetPlayer: string,
+  options?: {
+    effectValue?: number;
+    effectDuration?: number;
+    cardName?: string;
+    cardDescription?: string;
+    actionData?: GameAction;
+    locationName?: string;
+    context?: string;
+  }
+): PendingIntervention {
+  const contestState = ensureContestState(state);
+
+  const defaultContexts: Record<string, string> = {
+    effect: `Effect "${effectType}" from ${sourcePlayer} targeting ${targetPlayer} has no engine handler`,
+    action: `Action "${effectType}" from ${sourcePlayer} has no engine handler`,
+    location: `Location entry effect "${effectType}" at "${options?.locationName}" for ${targetPlayer} has no engine handler`,
+    lifecycle: `Lifecycle effect "${effectType}" for ${targetPlayer} has no engine handler`,
+  };
+
+  const intervention: PendingIntervention = {
+    id: `intervention-${++interventionCounter}-${Date.now()}`,
+    triggerType,
+    effectType,
+    effectValue: options?.effectValue,
+    effectDuration: options?.effectDuration,
+    sourcePlayer,
+    targetPlayer,
+    cardName: options?.cardName,
+    cardDescription: options?.cardDescription,
+    actionData: options?.actionData,
+    locationName: options?.locationName,
+    context: options?.context || defaultContexts[triggerType],
+    gameState: {
+      round: state.round,
+      turnNumber: state.turnNumber,
+      currentPlayer: state.currentPlayer
+    },
+    timestamp: new Date().toISOString()
+  };
+
+  contestState.pendingIntervention = intervention;
+
+  logEvent(state, {
+    event: 'intervention_created',
+    round: state.round,
+    turnNumber: state.turnNumber,
+    player: sourcePlayer,
+    data: {
+      id: intervention.id,
+      triggerType,
+      effectType,
+      targetPlayer,
+      cardName: options?.cardName,
+      locationName: options?.locationName,
+      context: intervention.context
+    }
+  });
+
+  return intervention;
+}
+
+/**
+ * Resolve a pending intervention with state changes applied by the mechanic agent.
+ */
+export function resolveIntervention(
+  state: GameState,
+  resolution: 'applied' | 'skipped',
+  changes: string,
+  resolvedBy: string
+): { success: boolean; error?: string } {
+  const contestState = ensureContestState(state);
+
+  if (!contestState.pendingIntervention) {
+    return { success: false, error: 'No pending intervention to resolve' };
+  }
+
+  const intervention = contestState.pendingIntervention;
+
+  // Record in history
+  contestState.interventionHistory.push({
+    id: intervention.id,
+    effectType: intervention.effectType,
+    sourcePlayer: intervention.sourcePlayer,
+    targetPlayer: intervention.targetPlayer,
+    resolution,
+    changes,
+    resolvedBy,
+    timestamp: new Date().toISOString()
+  });
+
+  // Clear the pending intervention
+  delete contestState.pendingIntervention;
+
+  logEvent(state, {
+    event: 'intervention_resolved',
+    round: state.round,
+    turnNumber: state.turnNumber,
+    player: resolvedBy,
+    data: {
+      id: intervention.id,
+      effectType: intervention.effectType,
+      resolution,
+      changes
+    }
+  });
+
+  return { success: true };
+}
+
+const AUTO_INTERVENTION_TIMEOUT_MS = 240000; // 240 seconds (LLM agent needs 3-4 CLI roundtrips)
+
+/**
+ * Auto-resolve an intervention if the mechanic agent doesn't respond in time.
+ * Falls back to skipping the effect (same as old silent fallback behavior).
+ */
+export function checkAndAutoResolveIntervention(state: GameState): boolean {
+  const contestState = ensureContestState(state);
+  if (!contestState.pendingIntervention) return false;
+
+  const elapsed = Date.now() - new Date(contestState.pendingIntervention.timestamp).getTime();
+
+  if (elapsed >= AUTO_INTERVENTION_TIMEOUT_MS) {
+    contestState.interventionHistory.push({
+      id: contestState.pendingIntervention.id,
+      effectType: contestState.pendingIntervention.effectType,
+      sourcePlayer: contestState.pendingIntervention.sourcePlayer,
+      targetPlayer: contestState.pendingIntervention.targetPlayer,
+      resolution: 'skipped',
+      changes: '[AUTO-RESOLVED] Mechanic agent did not respond within 120s. Effect skipped.',
+      resolvedBy: 'engine',
+      timestamp: new Date().toISOString()
+    });
+
+    logEvent(state, {
+      event: 'intervention_auto_resolved',
+      round: state.round,
+      turnNumber: state.turnNumber,
+      data: {
+        id: contestState.pendingIntervention.id,
+        effectType: contestState.pendingIntervention.effectType,
+        elapsed
+      }
+    });
+
+    delete contestState.pendingIntervention;
+    saveState(state);
+    return true;
+  }
+  return false;
 }
 
 // Validate an action against an ActionSchema returned by a mechanic
@@ -1571,6 +1790,19 @@ export function validateAction(state: GameState, playerId: string, action: GameA
       return { valid: false, errors: ['Cannot act while a resignation is pending adjudication.'] };
     }
   }
+  if (contestState.pendingIntervention) {
+    // Check if intervention has timed out and should be auto-resolved
+    const wasAutoResolved = checkAndAutoResolveIntervention(state);
+    if (!wasAutoResolved) {
+      const elapsed = Date.now() - new Date(contestState.pendingIntervention.timestamp).getTime();
+      const remainingMs = AUTO_INTERVENTION_TIMEOUT_MS - elapsed;
+      const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+      return {
+        valid: false,
+        errors: [`Cannot act while a mechanic intervention is pending. Effect "${contestState.pendingIntervention.effectType}" needs resolution (auto-resolve in ${remainingSec}s).`]
+      };
+    }
+  }
 
   // Note: Blocking effects check moved to lose-a-turn mechanic
 
@@ -1637,7 +1869,32 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
   const mechanicResult = mechanicRegistry.executeAction(state, playerId, action);
 
   if (mechanicResult?.handled) {
-    // Mechanic handled the action - apply its state changes
+    // Detect failure: mechanics signal failure with logMessage ending in '_failed' or containing 'failed'
+    const isFailure = typeof mechanicResult.logMessage === 'string' &&
+      (mechanicResult.logMessage.endsWith('_failed') || mechanicResult.logMessage.includes('failed'));
+
+    if (isFailure) {
+      // Action failed: do NOT apply state changes, do NOT deduct AP, do NOT advance turn.
+      // Log the failure so the game record is accurate, then return an error to the caller.
+      logEvent(state, {
+        event: 'action_failed',
+        round: state.round,
+        turnNumber: state.turnNumber,
+        player: playerId,
+        data: {
+          type: action.type,
+          logMessage: mechanicResult.logMessage,
+          ...mechanicResult.logData
+        }
+      });
+      saveState(state);
+      const errorMsg = (mechanicResult.logData as { error?: string } | undefined)?.error
+        ?? mechanicResult.logMessage
+        ?? 'Action failed';
+      return { success: false, error: errorMsg };
+    }
+
+    // Mechanic handled the action successfully - apply its state changes
     if (mechanicResult.stateChanges) {
       applyStateChanges(state, mechanicResult.stateChanges);
     }
@@ -1752,8 +2009,35 @@ export function executeAction(state: GameState, playerId: string, action: GameAc
       // spend handled by resources mechanic (onExecuteAction)
       // collect_set, roll, bank, draft handled by their respective mechanics (onExecuteAction)
 
-      default:
+      default: {
+        // No mechanic handled this action type and it's not a built-in.
+        // If a mechanic agent is registered, create an intervention so the agent
+        // can interpret the action from RULES.md and apply state changes.
+        if (state.shared.mechanicAgentId) {
+          createIntervention(state, 'action', action.type, playerId, playerId, {
+            actionData: action,
+            context: `Player ${playerId} submitted action "${action.type}" which has no engine handler. The mechanic agent should read RULES.md to determine what this action does and apply state changes.`
+          });
+          saveState(state);
+
+          logEvent(state, {
+            event: 'action_deferred_to_mechanic',
+            round: state.round,
+            turnNumber: state.turnNumber,
+            player: playerId,
+            data: { actionType: action.type, action }
+          });
+
+          return {
+            success: true,
+            effect: {
+              type: 'intervention_pending',
+              details: { actionType: action.type, message: 'Action deferred to mechanic agent for interpretation' }
+            }
+          };
+        }
         return { success: false, error: `Unknown action type: ${(action as GameAction).type}` };
+      }
     }
   } catch (e) {
     return { success: false, error: (e as Error).message };

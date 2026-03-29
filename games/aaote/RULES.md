@@ -1,9 +1,9 @@
 ---
 name: "AAOTE: An Agent of the Enemy"
-version: "0.3"
+version: "0.4"
 players: 3-5
 win_condition: "objective_completed"
-max_turns: 40  # Proposal 012: Turn-based limit (40 turns, not rounds)
+max_turns: 30  # v0.4: Reduced from 40; tighter timer makes Enemy sabotage path more viable
 
 # Player Cards (dealt face-up, visible to all)
 player_cards:
@@ -18,8 +18,8 @@ objectives:
   # Regular objectives
   - { name: "The Collector", count: 1, type: "regular", condition: "Hold 4 different items simultaneously" }
   - { name: "The Explorer", count: 1, type: "regular", condition: "Visit 6 different locations" }
-  - { name: "The Builder", count: 1, type: "regular", condition: "Place 5 location cards" }
-  - { name: "The Trader", count: 1, type: "regular", condition: "Complete 4 trades" }
+  - { name: "The Builder", count: 1, type: "regular", condition: "Place 3 location cards" }  # v0.4: reduced from 5 (mathematically unachievable with 4 players in 30 turns)
+  - { name: "The Trader", count: 1, type: "regular", condition: "Complete 2 trades" }          # v0.4: reduced from 4 (zero trades completed across two playtests)
   # The Enemy objective
   - { name: "The Enemy", count: 1, type: "enemy", condition: "Prevent all other players from completing objectives OR collect the 3 Forbidden Items" }
 
@@ -94,23 +94,23 @@ mechanics:
     deck:
       # === LOCATIONS (placed on grid) ===
       # Basic locations
-      - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", effect: { type: "safe" } }
-      - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", effect: { type: "safe" } }
-      - { name: "River Crossing", count: 2, type: "location", terrain: "water", effect: { type: "safe" } }
-      - { name: "Village Square", count: 2, type: "location", terrain: "settlement", effect: { type: "trade_bonus" } }
-      - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", effect: { type: "draw_on_enter", value: 1 } }
-      - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, effect: { type: "safe" } }
+      - { name: "Forest Clearing", count: 3, type: "location", terrain: "forest", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "Mountain Pass", count: 2, type: "location", terrain: "mountain", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "River Crossing", count: 2, type: "location", terrain: "water", placeable_as_location: true, effect: { type: "safe" } }
+      - { name: "Village Square", count: 2, type: "location", terrain: "settlement", placeable_as_location: true, effect: { type: "trade_bonus" } }
+      - { name: "Ancient Ruins", count: 2, type: "location", terrain: "ruins", placeable_as_location: true, effect: { type: "draw_on_enter", value: 1, on_enter: true } }
+      - { name: "Crossroads", count: 2, type: "location", terrain: "road", connections: 4, placeable_as_location: true, effect: { type: "safe" } }
 
       # Special locations
-      - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", effect: { type: "hide", description: "Avatar cannot be seen by others" } }
-      - { name: "Watchtower", count: 1, type: "location", terrain: "tower", effect: { type: "reveal", description: "See all player positions" } }
-      - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
+      - { name: "Hidden Cave", count: 1, type: "location", terrain: "cave", placeable_as_location: true, effect: { type: "hide", description: "Avatar cannot be seen by others" } }
+      - { name: "Watchtower", count: 1, type: "location", terrain: "tower", placeable_as_location: true, effect: { type: "reveal", description: "See all player positions" } }
+      - { name: "Forbidden Temple", count: 1, type: "location", terrain: "temple", placeable_as_location: true, effect: { type: "enemy_only", description: "Only The Enemy may enter" } }
 
       # === ITEMS (held in hand, tradeable) ===
       # Common items
       - { name: "Lantern", count: 3, type: "item", effect: { type: "utility", description: "Required for cave locations" } }
       - { name: "Rope", count: 3, type: "item", effect: { type: "utility", description: "Required for mountain locations" } }
-      - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn" } }
+      - { name: "Compass", count: 2, type: "item", effect: { type: "movement_bonus", description: "Move costs 0 AP once per turn", passive: true } }
       - { name: "Map Fragment", count: 4, type: "item", effect: { type: "collectible", description: "Collect 3 to peek at any objective" } }
       - { name: "Supplies", count: 3, type: "item", effect: { type: "currency", description: "Used for certain events" } }
 
@@ -122,16 +122,16 @@ mechanics:
       # === EVENTS (played during turn) ===
       # Movement events
       - { name: "Swift Journey", count: 2, type: "event", effect: { type: "extra_movement", value: 2 } }
-      - { name: "Shortcut", count: 2, type: "event", effect: { type: "teleport_adjacent", description: "Move to any tile adjacent to any player" } }
+      - { name: "Shortcut", count: 2, type: "event", effect: { type: "teleport_adjacent", description: "Move to any tile adjacent to any player. MUST specify destination tile name when playing." } }
 
       # Information events
-      - { name: "Spy", count: 2, type: "event", effect: { type: "peek_hand", description: "Look at target player's hand" } }
-      - { name: "Interrogate", count: 1, type: "event", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective" } }
+      - { name: "Spy", count: 2, type: "event", targetMode: "opponents", effect: { type: "peek_hand", description: "Look at target player's hand. TARGET MUST BE AN OPPONENT — cannot target yourself." } }
+      - { name: "Interrogate", count: 1, type: "event", targetMode: "opponents", requires: ["Supplies"], effect: { type: "peek_objective", description: "Peek at target's objective. TARGET MUST BE AN OPPONENT — cannot target yourself. Discard one Supplies to use." } }
 
       # Interference events
-      - { name: "Roadblock", count: 2, type: "event", effect: { type: "block_tile", duration: 1, description: "Block a location for 1 round" } }
-      - { name: "Theft", count: 2, type: "event", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from adjacent player" } }
-      - { name: "Sabotage", count: 1, type: "event", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
+      - { name: "Roadblock", count: 2, type: "event", targetMode: "opponents", effect: { type: "block_tile", duration: 1, blocks_turn: true, description: "Block a location for 1 round. Specify which location tile to block." } }
+      - { name: "Theft", count: 2, type: "event", targetMode: "opponents", requires: ["adjacency"], effect: { type: "steal_item", description: "Steal random item from an adjacent player. TARGET MUST BE AN OPPONENT on the same or adjacent tile — cannot target yourself." } }
+      - { name: "Sabotage", count: 1, type: "event", targetMode: "opponents", effect: { type: "destroy_location", description: "Remove a non-occupied location from grid" } }
 
       # Defensive events
       - { name: "Evasion", count: 2, type: "event", effect: { type: "counter", description: "Cancel an event targeting you" } }
@@ -158,7 +158,7 @@ Players explore an ever-expanding world, placing locations, collecting items, an
 
 2. **Objectives**: Shuffle and deal one face-down to each player. Look at your objective secretly.
 
-3. **Starting Location**: Place the "Origin" tile in the center. All player tokens start here. **This is the ONLY tile on the grid initially — you must place location cards to create new destinations!**
+3. **Starting Location**: Place the "Origin" tile in the center. All player tokens start here. **Optionally, deal 3 location cards face-up and place them adjacent to Origin to seed the grid and reduce Round 1 confusion.** Additional location cards must still be placed from hand.
 
 4. **Starting Hand**: Deal 5 cards from the main deck to each player.
 
@@ -225,8 +225,8 @@ Each turn you have **3 Action Points (AP)** to spend:
 Each regular player has a unique goal:
 - **The Collector**: Hold 4 different items simultaneously
 - **The Explorer**: Visit 6 different locations
-- **The Builder**: Place 5 location cards
-- **The Trader**: Complete 4 successful trades
+- **The Builder**: Place 3 location cards *(reduced from 5 in v0.4)*
+- **The Trader**: Complete 2 successful trades *(reduced from 4 in v0.4)*
 
 ### The Enemy
 The Enemy wins by either:
@@ -237,7 +237,8 @@ The Enemy wins by either:
 
 - **Declare Victory**: When you believe you've completed your objective, declare it. The Gamemaster verifies.
 - **Enemy Reveal**: The Enemy may reveal at any time to claim victory via Forbidden Collection.
-- **Time Limit**: If turn 40 is reached with no winner, The Enemy wins by default.
+- **Time Limit**: If turn 30 is reached with no winner, The Enemy wins by default.
+- **Simultaneous Claims**: If two players declare victory on consecutive turns, the **first declaration takes precedence**. The second player's claim is deferred until the first is adjudicated. Turn order determines priority.
 
 ## Special Locations
 
@@ -266,11 +267,13 @@ The Enemy wins by either:
 ## Gamemaster Notes
 
 ### Adjudicating Victory Claims
-- Verify objective conditions are met
-- Track visited locations for Explorer
-- Track completed trades for Trader
-- Count held items for Collector
-- Count placed locations for Builder
+- Verify objective conditions are met against the **current game state**
+- Track visited locations for Explorer (use location visit history in game log)
+- Track completed trades for Trader (count `trade_completed` events in log)
+- Count held items for Collector (check player's hand for 4 distinct item names)
+- Count placed locations for Builder (count `place_location` events by that player)
+- **Sequential processing**: Only one victory claim can be pending at a time. The engine will defer later declarations — adjudicate the earliest claim first. Award victory to the player whose claim is pending, not to whoever declared last.
+- **Objective verification**: Always check the claimant's objective card (in game state) before accepting. A player claiming the wrong objective should be rejected.
 
 ### The Enemy Reveal
 - If The Enemy enters Forbidden Temple, they are revealed
@@ -290,13 +293,26 @@ The Enemy wins by either:
 - **Hand limits**: Maximum 7 cards (cannot draw at limit)
 - **Trade distance**: Can trade from anywhere
 - **Card types**: Items held/traded only, cannot be "played"
-- **Timeout winner**: The Enemy wins by default at turn 40
+- **Timeout winner**: The Enemy wins by default at max turns
 
-### Open Questions
+### Resolved in v0.3
+- **Action cost**: 3 AP per turn (balanced)
+- **Adjacency**: Orthogonal only (4 directions)
+- **place_location syntax**: `place_location {card_name} adjacentTo {existing_location}`
+
+### Resolved in v0.4
+- **Duplicate objectives**: Engine fix applied (unique dealing enforced)
+- **Victory claim racing**: Engine fix applied (first declaration takes precedence, later ones deferred)
+- **Builder difficulty**: Reduced from 5 to 3 locations (achievable solo)
+- **Trader difficulty**: Reduced from 4 to 2 trades (trading is high-risk, so lower bar)
+- **Game length**: max_turns reduced from 40 to 30 (Enemy timer becomes meaningful)
+- **Forbidden Item distribution**: Shuffled into main deck (current implementation retained; creates random distribution and information asymmetry)
+
+### Open Questions (v0.4)
 1. **Grid visibility**: Can players see the whole grid or only explored areas?
 2. **Item dropping**: Can items be dropped on locations for others to pick up?
 3. **Multiple enemies**: Scale to 2 enemies for 5+ players?
-4. **Forbidden Item distribution**: How do they enter the game? Shuffled in deck or placed on specific locations?
+4. **Starting grid seed**: Should 3 tiles be pre-placed to accelerate Round 1?
 
 ### Playtest Goals
 - Is 3 AP per turn enough? Too much?

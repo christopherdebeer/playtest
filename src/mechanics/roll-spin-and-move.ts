@@ -34,6 +34,10 @@ export interface RollSpinMoveConfig {
   jail_state?: string;
   linear_track?: string[];
   loop?: boolean;
+  /** Maximum consecutive doubles before consequence triggers (default: 3) */
+  max_consecutive_doubles?: number;
+  /** Consequence state when max consecutive doubles reached (default: 'jail') */
+  max_doubles_consequence?: string;
 }
 
 function getPlayerExtras(player: PlayerState): Record<string, unknown> {
@@ -128,8 +132,11 @@ export const rollSpinAndMoveMechanic: MechanicHooks & DiceHooks = {
         if (isDoubles && config?.doubles_again) {
           extras.doublesCount = currentDoublesCount + 1;
 
-          if (config.doubles_jail && currentDoublesCount + 1 >= 3) {
-            player.state = config.jail_state ?? 'Jail';
+          const maxConsecutiveDoubles = config.max_consecutive_doubles ?? 3;
+          const maxDoublesConsequence = config.max_doubles_consequence ?? 'jail';
+
+          if (config.doubles_jail && currentDoublesCount + 1 >= maxConsecutiveDoubles) {
+            player.state = maxDoublesConsequence;
             extras.pendingMovement = 0;
             extras.doublesCount = 0;
 
@@ -140,8 +147,9 @@ export const rollSpinAndMoveMechanic: MechanicHooks & DiceHooks = {
                 results: result.results,
                 total: result.total,
                 doubles: true,
-                tripleDoubles: true,
-                goToJail: true
+                consecutiveDoubles: currentDoublesCount + 1,
+                maxConsecutiveDoubles,
+                goTo: maxDoublesConsequence
               }
             };
           }
@@ -234,6 +242,16 @@ export const rollSpinAndMoveMechanic: MechanicHooks & DiceHooks = {
 
   configSchema: {
     type: 'object',
-    description: 'Classic board game movement where dice determine spaces moved.'
+    description: 'Classic board game movement where dice determine spaces moved.',
+    properties: {
+      max_consecutive_doubles: {
+        type: 'number',
+        description: 'Maximum consecutive doubles before consequence triggers (default: 3)'
+      },
+      max_doubles_consequence: {
+        type: 'string',
+        description: 'State to move player to when max consecutive doubles reached (default: jail)'
+      }
+    }
   }
 };

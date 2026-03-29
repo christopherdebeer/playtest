@@ -20,15 +20,6 @@ import {
 import type { CardsHooks, CardPlayedPayload } from './core/cards.js';
 import { getCardsState } from './core/index.js';
 
-/**
- * Effect types handled by this mechanic (placed card effects)
- */
-const PLACED_CARD_EFFECT_TYPES = [
-  'probability_boost',
-  'probability_penalty',
-  'force_discard'
-];
-
 export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
   slug: 'placed-card-effects',
   name: 'Placed Card Effects',
@@ -41,9 +32,16 @@ export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
   onCardPlayed(ctx: HookContext, { card, playContext }: CardPlayedPayload): StateChanges | null {
     if (!card.effect?.type) return null;
 
-    const effectType = card.effect.type.toLowerCase();
-    if (!PLACED_CARD_EFFECT_TYPES.includes(effectType)) return null;
+    // Only handle effects that are passive (always-on) or on_enter effects from played cards
+    if (card.effect.passive !== true && card.effect.on_enter !== true) {
+      // Fall back to checking effect type for backward compatibility
+      const effectType = card.effect.type.toLowerCase();
+      if (!['probability_boost', 'probability_penalty', 'force_discard'].includes(effectType)) {
+        return null;
+      }
+    }
 
+    const effectType = card.effect.type.toLowerCase();
     const targetId = (playContext?.actionTarget as string) || ctx.playerId;
     const target = ctx.state.players[targetId];
     if (!target) return null;
@@ -81,23 +79,26 @@ export const placedCardEffectsMechanic: MechanicHooks & CardsHooks = {
 
   /**
    * Apply placed card effects from non-card sources (locations, events).
-   * This handler remains for the applyEffect dispatch.
+   * Handles effects flagged with passive === true or on_enter === true.
    */
   applyEffect(ctx: EffectApplicationContext): EffectApplicationResult | null {
     const { state, playerId, effect } = ctx;
-    const effectType = effect.type.toLowerCase();
 
-    // Only handle placed card effect types
-    if (!PLACED_CARD_EFFECT_TYPES.includes(effectType)) {
-      return null;
+    // Handle effects flagged as passive (persistent/always-on) or on_enter
+    if (effect.passive !== true && effect.on_enter !== true) {
+      // Fall back to checking effect type for backward compatibility
+      const effectType = effect.type.toLowerCase();
+      if (!['probability_boost', 'probability_penalty', 'force_discard'].includes(effectType)) {
+        return null;
+      }
     }
 
+    const effectType = effect.type.toLowerCase();
     const player = state.players[playerId];
 
     switch (effectType) {
       case 'probability_boost': {
         // Positive probability modifier - adds to movement success chance
-        // Uses dynamic property since probabilityModifier is not in base PlayerState type
         const boostValue = effect.value ?? 0.1;
         const playerAny = player as unknown as Record<string, unknown>;
         const currentMod = (playerAny.probabilityModifier as number) ?? 0;

@@ -141,11 +141,15 @@ If your resignation is rejected, you must continue playing. The `--wait` flag en
 
 ## Handling Validation Errors
 
-If your action fails, the engine returns actionable error messages. READ THEM and fix your action:
+If your action fails, the engine returns `{"success": false, "error": "..."}`. READ the error and fix your action:
 
-- "Card not in hand" - Check the "hand" from the turn response
-- "Cannot be placed on states" - That card isn't placeable, use `play_card` instead
-- "Not your turn" - Wait for your turn first
+- `"Card not in hand"` — Check the `"hand"` field from the `turn` response; use the exact card name
+- `"Card is not a location card"` — Use `place_location` only for cards with type `"location"`
+- `"Cannot be placed on states"` — That card isn't placeable; use `play_card` instead
+- `"Not your turn"` — Wait for your turn using `player:turn`
+- `"Cannot act while a mechanic intervention is pending"` — An effect is being resolved; wait a moment then retry
+
+**Failed actions do NOT consume AP or advance the turn.** You may immediately retry with a corrected action.
 
 ## Strategy Tips
 

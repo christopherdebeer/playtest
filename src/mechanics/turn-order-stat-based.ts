@@ -19,14 +19,37 @@ import {
   TurnOrderResult,
   isMechanicEnabled
 } from './types.js';
-import { sortTurnOrderByProperty } from './core/turns.js';
+
+/**
+ * Resolve a dot-notation property path on an object.
+ * Examples:
+ *   getNestedValue(player, 'score')         => player.score
+ *   getNestedValue(player, 'resources.gold') => player.resources.gold
+ *   getNestedValue(player, 'hand.length')    => player.hand.length
+ */
+function getNestedValue(obj: unknown, path: string): number {
+  if (obj === null || obj === undefined) return 0;
+
+  const parts = path.split('.');
+  let current: unknown = obj;
+
+  for (const part of parts) {
+    if (current === null || current === undefined) return 0;
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  if (typeof current === 'number') return current;
+  if (Array.isArray(current)) return current.length;
+  return 0;
+}
 
 export const turnOrderStatBasedMechanic: MechanicHooks = {
   slug: 'turn-order-stat-based',
   name: 'Turn Order: Stat-Based',
 
   /**
-   * Determine turn order based on player stat
+   * Determine turn order based on player stat.
+   * Supports any property path (e.g., 'score', 'resources.gold', 'hand.length').
    */
   onDetermineTurnOrder(ctx: TurnOrderContext): TurnOrderResult | null {
     if (!isMechanicEnabled(ctx.config, 'turn-order-stat-based')) {
@@ -48,35 +71,13 @@ export const turnOrderStatBasedMechanic: MechanicHooks = {
       }
     }
 
-    // Sort the current turn order by the stat
+    // Sort the current turn order by the stat using the generic path resolver
     const sortedOrder = [...ctx.currentOrder].sort((a, b) => {
       const playerA = ctx.state.players[a];
       const playerB = ctx.state.players[b];
 
-      let valueA = 0;
-      let valueB = 0;
-
-      // Handle various stat types
-      if (stat === 'score') {
-        valueA = playerA?.score ?? 0;
-        valueB = playerB?.score ?? 0;
-      } else if (stat === 'actionPoints') {
-        valueA = playerA?.actionPoints ?? 0;
-        valueB = playerB?.actionPoints ?? 0;
-      } else if (stat === 'movementPoints') {
-        valueA = playerA?.movementPoints ?? 0;
-        valueB = playerB?.movementPoints ?? 0;
-      } else if (stat === 'tricksWon') {
-        valueA = playerA?.tricksWon ?? 0;
-        valueB = playerB?.tricksWon ?? 0;
-      } else if (stat === 'handSize') {
-        valueA = playerA?.hand?.length ?? 0;
-        valueB = playerB?.hand?.length ?? 0;
-      } else if (stat.startsWith('resources.')) {
-        const resourceName = stat.substring(10);
-        valueA = playerA?.resources?.[resourceName] ?? 0;
-        valueB = playerB?.resources?.[resourceName] ?? 0;
-      }
+      const valueA = getNestedValue(playerA, stat);
+      const valueB = getNestedValue(playerB, stat);
 
       return descending ? valueB - valueA : valueA - valueB;
     });
@@ -92,7 +93,7 @@ export const turnOrderStatBasedMechanic: MechanicHooks = {
     properties: {
       stat: {
         type: 'string',
-        description: 'The stat to sort by (score, resources.gold, handSize, etc.)',
+        description: 'The stat to sort by (score, resources.gold, hand.length, etc.)',
         default: 'score'
       },
       descending: {

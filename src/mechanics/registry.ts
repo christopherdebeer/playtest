@@ -39,6 +39,7 @@ import {
 } from './types.js';
 import { GameState, GameConfig, GameAction, PlayerState, Card, Effect } from '../types/game.js';
 import { logEvent } from '../core/game.js';
+import { isPlayerEliminated } from './core/turns.js';
 
 /**
  * Error returned when validating mechanic dependencies/conflicts
@@ -504,7 +505,7 @@ class MechanicRegistry {
    */
   checkAllWinConditions(state: GameState, trigger: string): { playerId: string; reason: string } | null {
     const activePlayers = Object.entries(state.players)
-      .filter(([_, p]) => p.state !== 'eliminated' && !p.effects?.some(e => e.type === 'eliminated'));
+      .filter(([_, p]) => !isPlayerEliminated(p, state.config));
 
     for (const [playerId] of activePlayers) {
       const result = this.onCheckWin(state, playerId, trigger);
@@ -596,6 +597,27 @@ class MechanicRegistry {
         actions.push(...mechanicActions);
       }
     }
+
+    // Deduplicate actions by type — multiple mechanics may emit the same action type
+    // (e.g., place-location and place-card both emit place_location). Merge their card
+    // lists and prefer enabled state; keep the first mechanic's description/examples.
+    const actionsByType = new Map<string, AvailableAction>();
+    for (const action of actions) {
+      const key = action.action.type;
+      const existing = actionsByType.get(key);
+      if (!existing) {
+        actionsByType.set(key, { ...action, cards: action.cards ? [...action.cards] : undefined });
+      } else {
+        if (action.enabled && !existing.enabled) {
+          existing.enabled = true;
+          delete existing.reason;
+        }
+        if (action.cards && action.cards.length > 0) {
+          existing.cards = Array.from(new Set([...(existing.cards ?? []), ...action.cards]));
+        }
+      }
+    }
+    actions.splice(0, actions.length, ...Array.from(actionsByType.values()));
 
     // Post-process: apply filterPlayableCards to play_card actions
     for (const action of actions) {

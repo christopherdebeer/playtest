@@ -33,16 +33,16 @@ mechanics:
     starting_hand: 5
     deck:
       # Boost cards (6 total - reduced from 8)
-      - { name: "Catalyst", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.2 } }
-      - { name: "Momentum", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.3 } }
+      - { name: "Catalyst", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.2, passive: true } }
+      - { name: "Momentum", count: 2, type: "boost", effect: { type: "probability_boost", value: 0.3, passive: true } }
       - { name: "Certainty", count: 2, type: "boost", effect: { type: "auto_success" } }
       # Interference cards (10 total)
-      - { name: "Friction", count: 4, type: "interference", effect: { type: "probability_penalty", value: -0.25 } }
-      - { name: "Block", count: 3, type: "interference", effect: { type: "block_turn", duration: 1 } }
-      - { name: "Sabotage", count: 3, type: "interference", effect: { type: "force_discard", value: 1 } }
+      - { name: "Friction", count: 4, type: "interference", targetMode: "opponents", effect: { type: "probability_penalty", value: -0.25, passive: true } }
+      - { name: "Block", count: 3, type: "interference", targetMode: "opponents", effect: { type: "block_turn", duration: 1, blocks_turn: true } }
+      - { name: "Sabotage", count: 3, type: "interference", targetMode: "opponents", effect: { type: "force_discard", value: 1 } }
       # State Cards - NEW in v2.3! (8 total) - Placeable on board states
-      - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20 } }
-      - { name: "Safe Haven", count: 3, type: "buff", placeable: true, targetMode: "owner", effect: { type: "probability_boost", value: 0.15 } }
+      - { name: "Hazard", count: 3, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "probability_penalty", value: -0.20, passive: true } }
+      - { name: "Safe Haven", count: 3, type: "buff", placeable: true, targetMode: "owner", effect: { type: "probability_boost", value: 0.15, passive: true } }
       - { name: "Toll Gate", count: 2, type: "trap", placeable: true, targetMode: "opponents", effect: { type: "force_discard", value: 1 } }
       # Utility cards (6 total - reduced from 8)
       - { name: "Redirect", count: 2, type: "utility", effect: { type: "force_retarget" } }

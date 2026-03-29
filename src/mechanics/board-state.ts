@@ -26,6 +26,7 @@ import {
 import { GameAction, MoveAction, EdgeConfig, GameState, PlacedCard, BoardConfig, GameConfig } from '../types/game.js';
 import { getCardsState } from './core/index.js';
 import { getBoardConfigFromConfig } from './core/board.js';
+import { createEffectIntervention, hasMechanicAgent } from './core/effect-dispatcher.js';
 
 /**
  * Get valid move targets from the player's current state
@@ -85,6 +86,8 @@ function applyPlacedCardEffects(
     if (!affectsPlayer) continue;
 
     // Apply effect based on type
+    // Only handle structural effects that map to engine primitives.
+    // All other placed card effects are deferred to the mechanic agent.
     switch (pc.effect.type) {
       case 'probability_boost':
         probabilityModifier += pc.effect.value ?? 0;
@@ -96,8 +99,8 @@ function applyPlacedCardEffects(
         effectsApplied.push(`${pc.cardName}: ${((pc.effect.value ?? 0) * 100).toFixed(0)}% probability (placed by ${pc.placedBy})`);
         break;
 
-      case 'force_discard':
-        // Force player to discard cards
+      case 'force_discard': {
+        // Force player to discard cards (structural: remove from hand, add to discard)
         const discardCount = Math.abs(pc.effect.value ?? 1);
         const player = state.players[playerId];
         const playerHand = player.hand ?? [];
@@ -110,18 +113,31 @@ function applyPlacedCardEffects(
           }
         }
         break;
+      }
 
-      default:
-        // Add effect to player's effect list for other effect types
-        const player2 = state.players[playerId];
-        player2.effects.push({
-          type: pc.effect.type,
-          value: pc.effect.value,
-          duration: pc.effect.duration ?? 1,
-          source: pc.placedBy
-        });
-        effectsApplied.push(`${pc.cardName}: Applied ${pc.effect.type} effect (placed by ${pc.placedBy})`);
+      default: {
+        // Game-specific placed card effect — defer to mechanic agent if registered
+        if (hasMechanicAgent(state)) {
+          createEffectIntervention(state, 'location', pc.effect.type, pc.placedBy, playerId, {
+            effectValue: pc.effect.value,
+            effectDuration: pc.effect.duration,
+            locationName: targetState,
+            cardName: pc.cardName,
+            context: `${playerId} entered state "${targetState}" where placed card "${pc.cardName}" (by ${pc.placedBy}) has effect "${pc.effect.type}". Mechanic agent should implement this effect.`
+          });
+        } else {
+          // Legacy fallback: add as status effect
+          const player2 = state.players[playerId];
+          player2.effects.push({
+            type: pc.effect.type,
+            value: pc.effect.value,
+            duration: pc.effect.duration ?? 1,
+            source: pc.placedBy
+          });
+          effectsApplied.push(`${pc.cardName}: Applied ${pc.effect.type} effect (placed by ${pc.placedBy})`);
+        }
         break;
+      }
     }
 
     // Decrement triggers remaining if applicable

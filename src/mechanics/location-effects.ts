@@ -17,28 +17,23 @@ import { drawFromDeck } from './core/card-piles.js';
 import { addToHand } from './core/hand.js';
 import { getCardsState } from './core/index.js';
 
-/**
- * Effect types handled by this mechanic
- */
-const LOCATION_EFFECT_TYPES = ['draw_on_enter', 'heal_on_enter', 'damage_on_enter'];
-
 export const locationEffectsMechanic: MechanicHooks = {
   slug: 'location-effects',
   name: 'Location Effects',
 
   /**
    * Apply location-specific effects.
-   * Handles draw_on_enter and other location-triggered effects.
+   * Handles effects flagged with on_enter === true.
    */
   applyEffect(ctx: EffectApplicationContext): EffectApplicationResult | null {
     const { state, playerId, effect, config } = ctx;
-    const effectType = effect.type.toLowerCase();
 
-    // Only handle location effect types
-    if (!LOCATION_EFFECT_TYPES.includes(effectType)) {
+    // Only handle effects that are flagged as on_enter effects
+    if (effect.on_enter !== true) {
       return null;
     }
 
+    const effectType = effect.type.toLowerCase();
     const player = state.players[playerId];
 
     switch (effectType) {

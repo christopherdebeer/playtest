@@ -16,7 +16,7 @@ This skill uses the TypeScript engine to manage game instances, with agents for 
 │                     Coordinator (this skill)                 │
 │  1. ./playtest init <game> --players <n>                  │
 │  2. Parse instanceId and spawnInstructions from output      │
-│  3. Spawn gamemaster + player agents with instance IDs      │
+│  3. Spawn mechanic + gamemaster + player agents             │
 └─────────────────────────────────────────────────────────────┘
           │
           ▼
@@ -27,14 +27,14 @@ This skill uses the TypeScript engine to manage game instances, with agents for 
 │  - Registration with rules (./playtest register)          │
 │  - Concurrent game support                                   │
 └─────────────────────────────────────────────────────────────┘
-          │                    │                    │
-          ▼                    ▼                    ▼
-    ┌───────────┐        ┌───────────┐        ┌───────────┐
-    │Gamemaster │        │ Player 1  │        │ Player 2  │
-    │  (Sonnet) │        │  (Haiku)  │        │  (Haiku)  │
-    │ Registers │        │ Registers │        │ Registers │
-    │ → Rules   │        │ → Rules   │        │ → Rules   │
-    └───────────┘        └───────────┘        └───────────┘
+    │              │              │              │
+    ▼              ▼              ▼              ▼
+┌─────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐
+│Mechanic │  │Gamemaster │  │ Player 1  │  │ Player 2  │
+│(Sonnet) │  │  (Sonnet) │  │  (Haiku)  │  │  (Haiku)  │
+│Implements│  │Adjudicates│  │ Registers │  │ Registers │
+│ effects │  │ disputes  │  │ → Rules   │  │ → Rules   │
+└─────────┘  └───────────┘  └───────────┘  └───────────┘
 ```
 
 ## Arguments
@@ -74,6 +74,15 @@ Extract the `instanceId` and `spawnInstructions` from the JSON output.
 const initResult = JSON.parse(initOutput);
 const { instanceId, spawnInstructions } = initResult;
 
+// Spawn mechanic agent FIRST (uses agents/mechanic.md definition)
+// The mechanic agent implements unhandled card effects by reasoning about rules
+Task({
+  subagent_type: "mechanic",
+  description: `Mechanic for ${instanceId}`,
+  prompt: `INSTANCE: ${instanceId}\nROLE: mechanic`,
+  run_in_background: true
+});
+
 // Spawn gamemaster agent (uses agents/gamemaster.md definition)
 Task({
   subagent_type: "gamemaster",
@@ -103,6 +112,7 @@ for (const player of spawnInstructions.players) {
 **Players**: {NUM_PLAYERS}
 
 **Agents spawned:**
+- Mechanic (will register and implement unhandled effects)
 - Gamemaster (will register and wait for adjudication requests)
 - player-1 through player-{NUM_PLAYERS} (will register and compete to win)
 

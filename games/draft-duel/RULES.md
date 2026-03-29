@@ -78,7 +78,7 @@ mechanics:
       - { name: "Power", count: 6, type: "special", element: "power", points: 2 }
 
       # Wild cards - can substitute in sets
-      - { name: "Wild", count: 4, type: "wild", element: "wild", points: 0 }
+      - { name: "Wild", count: 4, type: "wild", element: "wild", wild: true, points: 0 }
 
       # Bonus cards - valuable for type sets
       - { name: "Swift", count: 4, type: "bonus", element: "bonus", points: 1 }
@@ -86,7 +86,7 @@ mechanics:
 
       # Action cards - for variety
       - { name: "Trade", count: 3, type: "action", element: "action", points: 0 }
-      - { name: "Block", count: 3, type: "action", element: "action", points: 0 }
+      - { name: "Block", count: 3, type: "action", element: "action", targetMode: "opponents", points: 0, effect: { type: "skip", blocks_turn: true } }
 
   win_highest_lowest_scoring: { mode: "highest" }
 ---

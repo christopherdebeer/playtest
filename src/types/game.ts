@@ -1,7 +1,7 @@
 // Core game types
 
 export type GameStatus = 'initializing' | 'waiting_for_players' | 'in_progress' | 'pending_analysis' | 'completed' | 'cancelled';
-export type Role = 'gamemaster' | 'player';
+export type Role = 'gamemaster' | 'player' | 'mechanic';
 
 export interface Card {
   name: string;
@@ -13,12 +13,21 @@ export interface Card {
     duration?: number;
     target?: string;
     color?: string;  // For card games like UNO
+    passive?: boolean;   // Proposal 014: true = checked passively (always-on effect)
+    on_enter?: boolean;  // Proposal 014: true = trigger on location entry
   };
   placeable?: boolean;  // Can this card be placed on board states?
-  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  targetMode?: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner';  // Explicit targeting declaration (replaces old 'owner' | 'opponents' | 'all')
+  targetFilter?: { adjacency?: boolean };  // Conditional targeting constraints
   // Trick-taking card attributes
   suit?: string;  // Card suit (e.g., "hearts", "spades")
   value?: number | string;  // Card value (e.g., 1-13, "A", "K", "Q", "J")
+  // Proposal 014: Generic mechanics audit additions
+  wild?: boolean;                    // Replaces card.type === 'wild' checks
+  placeable_as_location?: boolean;  // Replaces card.type === 'location' checks
+  multi_use?: boolean;               // Card has multiple playable modes
+  effects?: Effect[];                // Compound effects (plural) — processed in order
+  modes?: Array<{ id: string; label: string; effect: Effect }>;  // Multi-mode card
 }
 
 export interface PlayerState {
@@ -237,6 +246,10 @@ export interface Effect {
   value?: number;
   duration: number;  // player turns remaining (decrements when effect holder's turn ends)
   source?: string;   // who applied it
+  // Proposal 014: Generic mechanics audit additions
+  blocks_turn?: boolean;   // Engine reads this to block player turn (replaces BLOCKING string set)
+  passive?: boolean;       // Engine reads this: false/undefined = needs lifecycle intervention; true = checked passively
+  on_enter?: boolean;      // Engine reads this: true = trigger on location entry
 }
 
 // Cards config (unified format: stored in engine_mechanics.cards)
@@ -473,6 +486,24 @@ export interface EngineMechanics {
   matching?: Record<string, unknown>;                  // Pair matching
   interrupts?: Record<string, unknown>;                // Out-of-turn reactions
   score_and_reset_game?: Record<string, unknown>;      // Multi-round scoring
+
+  // Proposal 014: Generic mechanics audit — typed config sub-objects
+  player_lifecycle?: {
+    eliminated_state?: string;       // Default: "eliminated"
+    eliminated_effect_type?: string; // Default: "eliminated"
+    victory_state?: string;          // Default: "Victory"
+  };
+  card_matching?: {
+    valid_colors?: string[];         // Default: ["Red", "Blue", "Green", "Yellow"]
+  };
+  freeplay?: {
+    interaction_actions?: string[];
+  };
+  roll_spin_and_move?: {
+    doubles_bonus?: boolean;
+    max_consecutive_doubles?: number;
+    max_doubles_consequence?: string;
+  };
 }
 
 // Proposal 007: Grid configuration
@@ -1101,7 +1132,9 @@ export interface GameConfig {
   mechanics?: string[];  // References to mechanic slugs (e.g., ['hand-management', 'set-collection'])
   engine_mechanics?: EngineMechanics;  // Enable/disable engine capabilities
   engine_debug?: {
-    hook_telemetry?: boolean;  // Enable hook telemetry logging
+    hook_telemetry?: boolean;                  // Enable hook telemetry logging
+    auto_adjudication_timeout_ms?: number;     // Proposal 014: Timeout for auto-adjudication
+    auto_intervention_timeout_ms?: number;     // Proposal 014: Timeout for auto-intervention
   };
   [key: string]: unknown;  // game-specific config
 }
@@ -1134,7 +1167,14 @@ export interface DeckConfig {
     color?: string;  // For card games like UNO
   };
   placeable?: boolean;  // Can this card be placed on board states?
-  targetMode?: 'owner' | 'opponents' | 'all';  // Who the placed card affects
+  targetMode?: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner';  // Explicit targeting declaration
+  targetFilter?: { adjacency?: boolean };  // Conditional targeting constraints
+  // Proposal 014: Generic mechanics audit additions
+  wild?: boolean;                    // Replaces card.type === 'wild' checks
+  placeable_as_location?: boolean;  // Replaces card.type === 'location' checks
+  multi_use?: boolean;               // Card has multiple playable modes
+  effects?: Effect[];                // Compound effects (plural) — processed in order
+  modes?: Array<{ id: string; label: string; effect: Effect }>;  // Multi-mode card
 }
 
 export interface BoardConfig {
@@ -1424,7 +1464,7 @@ export interface PlacedCard {
     value?: number;
     duration?: number;        // How long the effect lasts after triggering
   };
-  targetMode: 'owner' | 'opponents' | 'all';  // Who the effect applies to
+  targetMode: 'self' | 'opponents' | 'all_opponents' | 'any' | 'owner' | 'all';  // Who the effect applies to (Proposal 014: extended modes)
   triggersRemaining?: number; // How many times it can trigger (undefined = unlimited until removed)
 }
 
@@ -1859,6 +1899,50 @@ export interface OperatorHint {
   expiresAfterTurns?: number;   // Optional: expire after N turns
 }
 
+// Pending mechanic intervention (effect/action the engine can't handle mechanically)
+export interface PendingIntervention {
+  id: string;                      // Unique intervention ID
+  triggerType: 'effect' | 'action' | 'location' | 'lifecycle';  // What caused the intervention
+  effectType: string;              // The unhandled effect type or action type
+  effectValue?: number;            // Effect value if any
+  effectDuration?: number;         // Effect duration if any
+  sourcePlayer: string;            // Player who triggered the effect/action
+  targetPlayer: string;            // Player the effect targets
+  cardName?: string;               // Card that was played (if applicable)
+  cardDescription?: string;        // Card description from rules
+  targetMode?: string;             // Card's targetMode flag (e.g. "opponents" — use to validate target)
+  validTargets?: string[];         // Pre-computed list of valid target player IDs
+  actionData?: GameAction;         // Full action data (for action-type triggers)
+  locationName?: string;           // Location name (for location-entry triggers)
+  context: string;                 // Human-readable description of what happened
+  gameState: {                     // Snapshot of relevant state at time of intervention
+    round: number;
+    turnNumber: number;
+    currentPlayer: string | null;
+    turnOrder?: string[];          // Full turn order for context
+    players?: Record<string, {     // Player state snapshot for mechanic reasoning
+      state: string;
+      handSize: number;
+      effects: { type: string; duration?: number; source?: string }[];
+      score: number;
+      resources?: Record<string, number>;
+    }>;
+  };
+  timestamp: string;
+}
+
+// Intervention resolution history
+export interface InterventionHistoryEntry {
+  id: string;
+  effectType: string;
+  sourcePlayer: string;
+  targetPlayer: string;
+  resolution: 'applied' | 'skipped';  // Was the effect applied or skipped
+  changes: string;                     // Description of state changes made
+  resolvedBy: string;                  // Agent ID that resolved it
+  timestamp: string;
+}
+
 // Extended game state with contest system
 export interface ContestState {
   lastAction?: LastAction;
@@ -1866,9 +1950,11 @@ export interface ContestState {
   pendingContest?: PendingContest;
   pendingResignation?: PendingResignation;
   pendingVictoryClaim?: PendingVictoryClaim;
+  pendingIntervention?: PendingIntervention;  // Unhandled effect awaiting mechanic agent
   contestHistory: ContestHistoryEntry[];
   resignations: ResignationEntry[];
   victoryHistory: VictoryClaimEntry[];
+  interventionHistory: InterventionHistoryEntry[];  // Resolved interventions
   operatorHints?: OperatorHint[];  // Ephemeral hints from operator to help agents
 }
 

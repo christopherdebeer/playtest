@@ -10,8 +10,8 @@
  * ```
  *
  * A player is considered eliminated if:
- * - They have an effect with type "eliminated"
- * - Their state is "eliminated"
+ * - They have an effect with type "eliminated" (or the configured eliminated_state value)
+ * - Their state is "eliminated" (or the configured eliminated_state value)
  *
  * Can be composed with other win conditions.
  *
@@ -24,12 +24,7 @@ import {
   WinCheckContext,
   WinCheckResult
 } from '../types.js';
-
-function isPlayerEliminated(player: { effects?: Array<{ type: string }>; state?: string }): boolean {
-  const hasEliminatedEffect = player.effects?.some(e => e.type === 'eliminated') ?? false;
-  const inEliminatedState = player.state === 'eliminated';
-  return hasEliminatedEffect || inEliminatedState;
-}
+import { isPlayerEliminated } from '../core/turns.js';
 
 export const eliminationWinMechanic: MechanicHooks = {
   slug: 'win-elimination',
@@ -49,7 +44,7 @@ export const eliminationWinMechanic: MechanicHooks = {
     // Get active (non-eliminated) players
     const activePlayers = ctx.state.turnOrder.filter(pid => {
       const player = ctx.state.players[pid];
-      return player && !isPlayerEliminated(player);
+      return player && !isPlayerEliminated(player, ctx.config);
     });
 
     // Check if this player is the last one standing

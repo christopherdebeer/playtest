@@ -109,11 +109,13 @@ export const passMechanic: MechanicHooks = {
       const player = state.players[playerId];
 
       // Create pending victory claim for GM verification
+      const victoryState = (state.config as Record<string, unknown> & { engine_mechanics?: { player_lifecycle?: { victory_state?: string } } } | undefined)
+        ?.engine_mechanics?.player_lifecycle?.victory_state ?? 'Victory';
       contestState.pendingVictoryClaim = {
         player: playerId,
         reason: passAction.victoryReason || 'Victory declared',
         fromState: player.state,
-        toState: 'Victory',
+        toState: victoryState,
         timestamp: Date.now()
       };
 

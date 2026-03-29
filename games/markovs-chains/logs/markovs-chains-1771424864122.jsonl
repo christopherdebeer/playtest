@@ -1,0 +1,13 @@
+{"timestamp":"2026-02-18T14:27:44.134Z","event":"game_init","data":{"gameId":"markovs-chains-1771424864122","playerCount":4,"config":"Markov's Chains"}}
+{"timestamp":"2026-02-18T14:28:04.111Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3","player-4"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-18T14:28:22.581Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"A","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-18T14:28:36.784Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"Checkpoint-X","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-18T14:28:52.629Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-18T14:29:05.702Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"A","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-18T14:29:21.353Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"place_card","card":"Hazard","targetState":"Checkpoint-X","targetMode":"opponents","effect":{"type":"probability_penalty","value":-0.2,"passive":true}}}
+{"timestamp":"2026-02-18T14:29:36.675Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Checkpoint-Y","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-18T14:29:52.865Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Certainty","effect":{"type":"auto_success"},"handSize":3,"newTopCard":"Certainty"}}
+{"timestamp":"2026-02-18T14:30:08.504Z","event":"mechanic_state_update","round":1,"turnNumber":2,"player":"player-2","data":{"changes":["+effect: auto_success"]}}
+{"timestamp":"2026-02-18T14:30:17.456Z","event":"intervention_resolved","round":1,"turnNumber":2,"player":"agent-mechanic","data":{"id":"intervention-1-1771424992863","effectType":"auto_success","resolution":"applied","changes":"Applied Certainty card: added auto_success effect to player-2, guaranteeing their next move will succeed"}}
+{"timestamp":"2026-02-18T14:30:36.756Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"Victory","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-18T14:32:13.140Z","event":"analysis_submitted","round":1,"turnNumber":2,"data":{"file":"playtest-analysis-v2.3-1771424864122.md","version":"v2.3"}}
