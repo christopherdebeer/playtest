@@ -33,6 +33,7 @@ import {
   EffectApplicationContext,
   EffectApplicationResult,
   ActionSchema,
+  ConfigValidationIssue,
   isMechanicEnabled,
   hasExplicitConfig,
   setDependencyResolver
@@ -204,6 +205,115 @@ class MechanicRegistry {
     }
 
     return errors;
+  }
+
+  /**
+   * Validate config for all enabled mechanics using their configSchema and validateConfig hooks.
+   * Returns issues found, empty array if all valid.
+   */
+  validateAllConfigs(config: GameConfig): ConfigValidationIssue[] {
+    const enabled = this.getEnabledMechanics(config);
+    const issues: ConfigValidationIssue[] = [];
+    const engineMechanics = (config as unknown as Record<string, unknown>).engine_mechanics as Record<string, unknown> | undefined;
+    if (!engineMechanics) return issues;
+
+    for (const mechanic of enabled) {
+      const configKey = mechanic.slug.replace(/-/g, '_');
+      const mechanicConfig = engineMechanics[configKey];
+      const location = `config.engine_mechanics.${configKey}`;
+
+      // Skip mechanics that aren't configured or are just enabled (true → {})
+      if (mechanicConfig === undefined || mechanicConfig === true) continue;
+      if (typeof mechanicConfig === 'object' && mechanicConfig !== null && Object.keys(mechanicConfig).length === 0) continue;
+
+      // Schema-based validation
+      if (mechanic.configSchema?.properties && typeof mechanicConfig === 'object' && mechanicConfig !== null) {
+        const cfg = mechanicConfig as Record<string, unknown>;
+        for (const [propName, propSchema] of Object.entries(mechanic.configSchema.properties)) {
+          const value = cfg[propName];
+          const propLocation = `${location}.${propName}`;
+
+          // Required check
+          if (propSchema.required && (value === undefined || value === null)) {
+            issues.push({
+              code: `MISSING_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} is required`,
+              path: propLocation,
+              severity: 'error',
+            });
+            continue;
+          }
+
+          if (value === undefined) continue;
+
+          // Type check
+          if (propSchema.type === 'number' && typeof value !== 'number') {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be a number`,
+              path: propLocation,
+              severity: 'error',
+            });
+          } else if (propSchema.type === 'string' && typeof value !== 'string') {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be a string`,
+              path: propLocation,
+              severity: 'error',
+            });
+          } else if (propSchema.type === 'boolean' && typeof value !== 'boolean') {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be a boolean`,
+              path: propLocation,
+              severity: 'error',
+            });
+          } else if (propSchema.type === 'array' && !Array.isArray(value)) {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be an array`,
+              path: propLocation,
+              severity: 'error',
+            });
+          } else if (propSchema.type === 'object' && (typeof value !== 'object' || value === null)) {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be an object`,
+              path: propLocation,
+              severity: 'error',
+            });
+          }
+
+          // Enum check
+          if (propSchema.enum && !propSchema.enum.includes(value as string | number | boolean)) {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be one of: ${propSchema.enum.join(', ')}`,
+              path: propLocation,
+              severity: 'error',
+            });
+          }
+
+          // Minimum check
+          if (propSchema.minimum !== undefined && typeof value === 'number' && value < propSchema.minimum) {
+            issues.push({
+              code: `INVALID_${configKey.toUpperCase()}_${propName.toUpperCase()}`,
+              message: `${configKey}.${propName} must be >= ${propSchema.minimum}`,
+              path: propLocation,
+              severity: 'error',
+            });
+          }
+        }
+      }
+
+      // Custom validation hook
+      if (mechanic.validateConfig) {
+        const customIssues = mechanic.validateConfig(mechanicConfig, location);
+        issues.push(...customIssues);
+      }
+    }
+
+    return issues;
   }
 
   /**

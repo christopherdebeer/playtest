@@ -20,17 +20,9 @@ import type {
 import {
   SECTION_DEFINITIONS,
   VALID_EFFECT_TYPES,
-  VALID_ADJACENCY_TYPES,
-  VALID_GRID_TYPES,
-  VALID_AUCTION_TYPES,
-  VALID_TURN_ORDER_TYPES,
-  VALID_POWER_ASSIGNMENTS,
-  VALID_POWER_EFFECT_TYPES,
-  VALID_SET_SCORING,
-  VALID_HAND_LIMIT_POLICIES,
-  VALID_TIMEOUT_WINNER_TYPES,
   VALID_TARGET_MODES,
 } from './validate-schema.js';
+import { mechanicRegistry } from '../mechanics/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MECHANICS_DIR = join(__dirname, '../../mechanics');
@@ -154,7 +146,7 @@ function validateConfig(config: unknown, issues: ValidationIssue[]): config is G
 
   // Validate engine_mechanics
   if (cfg.engine_mechanics !== undefined) {
-    validateEngineMechanics(cfg.engine_mechanics as EngineMechanics, issues);
+    validateEngineMechanics(cfg.engine_mechanics as EngineMechanics, cfg as GameConfig, issues);
   }
 
   return issues.filter(i => i.severity === 'error').length === 0;
@@ -288,156 +280,27 @@ function validateMechanicsReferences(mechanics: unknown[], issues: ValidationIss
 
 /**
  * Validate engine_mechanics configuration.
+ * Delegates to mechanic registry for schema + custom validation.
+ * Only validates orphan config params (hand_limit, hand_limit_policy, cards, board)
+ * that don't map to a mechanic's config key.
  */
-function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationIssue[]): void {
+function validateEngineMechanics(mechanics: EngineMechanics, config: GameConfig, issues: ValidationIssue[]): void {
   const location = 'config.engine_mechanics';
-
-  // action_points
-  // Helper: skip validation for empty/no-config mechanic enablement (e.g., hand_management: true → {})
   const hasConfig = (m: unknown) => m !== undefined && typeof m === 'object' && m !== null && Object.keys(m as object).length > 0;
 
-  if (mechanics.action_points && hasConfig(mechanics.action_points)) {
-    const ap = mechanics.action_points;
-    if (typeof ap.points_per_turn !== 'number' || ap.points_per_turn < 1) {
-      issues.push(error('INVALID_ACTION_POINTS', 'action_points.points_per_turn must be a positive number', `${location}.action_points.points_per_turn`));
-    }
-    if (!ap.action_costs || typeof ap.action_costs !== 'object') {
-      issues.push(error('MISSING_ACTION_COSTS', 'action_points.action_costs is required', `${location}.action_points.action_costs`));
-    }
+  // Delegate mechanic-specific validation to the registry (schema + validateConfig hooks)
+  const registryIssues = mechanicRegistry.validateAllConfigs(config);
+  for (const ri of registryIssues) {
+    issues.push({
+      code: ri.code,
+      message: ri.message,
+      severity: ri.severity,
+      location: ri.path,
+      suggestion: ri.hint,
+    });
   }
 
-  // grid
-  if (mechanics.grid && hasConfig(mechanics.grid)) {
-    const grid = mechanics.grid;
-    if (!VALID_GRID_TYPES.includes(grid.type)) {
-      issues.push(error('INVALID_GRID_TYPE', `grid.type must be one of: ${VALID_GRID_TYPES.join(', ')}`, `${location}.grid.type`));
-    }
-    if (!grid.starting_tile || typeof grid.starting_tile !== 'string') {
-      issues.push(error('MISSING_STARTING_TILE', 'grid.starting_tile is required', `${location}.grid.starting_tile`));
-    }
-    if (!VALID_ADJACENCY_TYPES.includes(grid.adjacency)) {
-      issues.push(error('INVALID_ADJACENCY', `grid.adjacency must be one of: ${VALID_ADJACENCY_TYPES.join(', ')}`, `${location}.grid.adjacency`));
-    }
-    if (grid.type === 'bounded' && !grid.bounds) {
-      issues.push(error('MISSING_BOUNDS', 'grid.bounds is required for bounded grids', `${location}.grid.bounds`));
-    }
-  }
-
-  // resources
-  if (mechanics.resources !== undefined) {
-    if (!Array.isArray(mechanics.resources)) {
-      issues.push(error('INVALID_RESOURCES', 'resources must be an array', `${location}.resources`));
-    } else {
-      const names = new Set<string>();
-      mechanics.resources.forEach((res, i) => {
-        if (!res.name || typeof res.name !== 'string') {
-          issues.push(error('MISSING_RESOURCE_NAME', `Resource at index ${i} is missing name`, `${location}.resources[${i}].name`));
-        } else {
-          if (names.has(res.name)) {
-            issues.push(error('DUPLICATE_RESOURCE', `Duplicate resource name "${res.name}"`, `${location}.resources[${i}].name`));
-          }
-          names.add(res.name);
-        }
-        if (res.starting_amount === undefined || typeof res.starting_amount !== 'number') {
-          issues.push(error('MISSING_STARTING_AMOUNT', `Resource "${res.name || i}" is missing starting_amount`, `${location}.resources[${i}].starting_amount`));
-        }
-      });
-    }
-  }
-
-  // income
-  if (mechanics.income && hasConfig(mechanics.income)) {
-    if (!mechanics.income.per_turn || typeof mechanics.income.per_turn !== 'object') {
-      issues.push(error('MISSING_INCOME_PER_TURN', 'income.per_turn is required', `${location}.income.per_turn`));
-    }
-  }
-
-  // auction
-  if (mechanics.auction && hasConfig(mechanics.auction)) {
-    const auc = mechanics.auction;
-    if (!VALID_AUCTION_TYPES.includes(auc.type)) {
-      issues.push(error('INVALID_AUCTION_TYPE', `auction.type must be one of: ${VALID_AUCTION_TYPES.join(', ')}`, `${location}.auction.type`));
-    }
-    if (!auc.currency || typeof auc.currency !== 'string') {
-      issues.push(error('MISSING_AUCTION_CURRENCY', 'auction.currency is required', `${location}.auction.currency`));
-    }
-  }
-
-  // turn_order
-  if (mechanics.turn_order && hasConfig(mechanics.turn_order)) {
-    if (!VALID_TURN_ORDER_TYPES.includes(mechanics.turn_order.type)) {
-      issues.push(error('INVALID_TURN_ORDER', `turn_order.type must be one of: ${VALID_TURN_ORDER_TYPES.join(', ')}`, `${location}.turn_order.type`));
-    }
-  }
-
-  // set_collection (skip validation for empty/no-config enablement)
-  if (mechanics.set_collection !== undefined && Object.keys(mechanics.set_collection).length > 0) {
-    if (!Array.isArray(mechanics.set_collection.sets) || mechanics.set_collection.sets.length === 0) {
-      issues.push(error('MISSING_SETS', 'set_collection.sets must be a non-empty array', `${location}.set_collection.sets`));
-    }
-    if (!VALID_SET_SCORING.includes(mechanics.set_collection.scoring)) {
-      issues.push(error('INVALID_SET_SCORING', `set_collection.scoring must be one of: ${VALID_SET_SCORING.join(', ')}`, `${location}.set_collection.scoring`));
-    }
-  }
-
-  // push_your_luck
-  if (mechanics.push_your_luck && hasConfig(mechanics.push_your_luck)) {
-    const pyl = mechanics.push_your_luck;
-    if (typeof pyl.dice_sides !== 'number' || pyl.dice_sides < 2) {
-      issues.push(error('INVALID_DICE_SIDES', 'push_your_luck.dice_sides must be >= 2', `${location}.push_your_luck.dice_sides`));
-    }
-    if (typeof pyl.bust_threshold !== 'number' || pyl.bust_threshold < 1) {
-      issues.push(error('INVALID_BUST_THRESHOLD', 'push_your_luck.bust_threshold must be >= 1', `${location}.push_your_luck.bust_threshold`));
-    }
-    if (pyl.dice_sides && pyl.bust_threshold && pyl.bust_threshold >= pyl.dice_sides) {
-      issues.push(error('BUST_TOO_HIGH', 'push_your_luck.bust_threshold must be less than dice_sides', `${location}.push_your_luck`));
-    }
-  }
-
-  // variable_powers
-  if (mechanics.variable_powers && hasConfig(mechanics.variable_powers)) {
-    const vp = mechanics.variable_powers;
-    if (!Array.isArray(vp.powers) || vp.powers.length === 0) {
-      issues.push(error('MISSING_POWERS', 'variable_powers.powers must be a non-empty array', `${location}.variable_powers.powers`));
-    }
-    if (!VALID_POWER_ASSIGNMENTS.includes(vp.assignment)) {
-      issues.push(error('INVALID_POWER_ASSIGNMENT', `variable_powers.assignment must be one of: ${VALID_POWER_ASSIGNMENTS.join(', ')}`, `${location}.variable_powers.assignment`));
-    }
-  }
-
-  // hand_limit
-  if (mechanics.hand_limit !== undefined) {
-    if (typeof mechanics.hand_limit !== 'number' || mechanics.hand_limit < 1) {
-      issues.push(error('INVALID_HAND_LIMIT', 'hand_limit must be a positive number', `${location}.hand_limit`));
-    }
-  }
-
-  // hand_limit_policy
-  if (mechanics.hand_limit_policy !== undefined) {
-    if (!VALID_HAND_LIMIT_POLICIES.includes(mechanics.hand_limit_policy)) {
-      issues.push(error('INVALID_HAND_LIMIT_POLICY', `hand_limit_policy must be one of: ${VALID_HAND_LIMIT_POLICIES.join(', ')}`, `${location}.hand_limit_policy`));
-    }
-  }
-
-  // timeout_winner
-  if (mechanics.timeout_winner && hasConfig(mechanics.timeout_winner)) {
-    const tw = mechanics.timeout_winner;
-    if (!VALID_TIMEOUT_WINNER_TYPES.includes(tw.type)) {
-      issues.push(error('INVALID_TIMEOUT_WINNER', `timeout_winner.type must be one of: ${VALID_TIMEOUT_WINNER_TYPES.join(', ')}`, `${location}.timeout_winner.type`));
-    }
-    if (tw.type === 'role' && !tw.role && !tw.role_name) {
-      issues.push(error('MISSING_TIMEOUT_ROLE', 'timeout_winner requires "role" or "role_name" when type is "role"', `${location}.timeout_winner`));
-    }
-  }
-
-  // trade
-  if (mechanics.trade && hasConfig(mechanics.trade)) {
-    if (typeof mechanics.trade.enabled !== 'boolean') {
-      issues.push(error('MISSING_TRADE_ENABLED', 'trade.enabled is required and must be boolean', `${location}.trade.enabled`));
-    }
-  }
-
-  // cards (unified format: deck and starting_hand in engine_mechanics.cards)
+  // Pseudo-key: cards (deck + starting_hand)
   const cardsConfig = (mechanics as unknown as Record<string, unknown>).cards as { deck?: unknown[]; starting_hand?: number } | undefined;
   if (cardsConfig && hasConfig(cardsConfig)) {
     if (cardsConfig.deck !== undefined) {
@@ -452,7 +315,7 @@ function validateEngineMechanics(mechanics: EngineMechanics, issues: ValidationI
     }
   }
 
-  // board (unified format: in engine_mechanics.board)
+  // Pseudo-key: board
   const boardConfig = (mechanics as unknown as Record<string, unknown>).board;
   if (boardConfig && hasConfig(boardConfig)) {
     validateBoardInMechanics(boardConfig as BoardConfig, issues, `${location}.board`);

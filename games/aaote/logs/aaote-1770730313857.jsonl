@@ -1,0 +1,7 @@
+{"timestamp":"2026-02-10T13:31:53.869Z","event":"game_init","data":{"gameId":"aaote-1770730313857","playerCount":3,"config":"AAOTE: An Agent of the Enemy"}}
+{"timestamp":"2026-02-10T13:32:47.804Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2","player-3"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T13:34:57.695Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-10T13:35:08.363Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-10T13:35:18.701Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":8}}
+{"timestamp":"2026-02-10T13:38:09.535Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"draw","count":1,"handSize":6}}
+{"timestamp":"2026-02-10T13:38:30.883Z","event":"game_cancelled","round":1,"turnNumber":2,"data":{"reason":"Manual playtest complete - mechanic config validation finished"}}

@@ -45,7 +45,7 @@ export const locationEffectsMechanic: MechanicHooks = {
       case 'draw_on_enter': {
         // Draw cards when entering a location
         const drawCount = effect.value ?? 1;
-        const handLimit = config.engine_mechanics?.hand_limit ?? Infinity;
+        const handLimit = (config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit as number ?? Infinity;
 
         // Check if player can draw (hand limit)
         const playerHand = player.hand ?? [];

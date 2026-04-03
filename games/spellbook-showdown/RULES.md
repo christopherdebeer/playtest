@@ -36,11 +36,20 @@ mechanics:
 
   # Multi-use cards: each card has multiple modes
   multi_use_cards:
-    modes:
-      - { id: "attack", name: "Attack Mode", description: "Use card for its combat effect" }
-      - { id: "resource", name: "Resource Mode", description: "Discard for 2 mana" }
-      - { id: "enchant", name: "Enchant Mode", description: "Place as ongoing effect" }
-
+    cards: []
+    default_uses:
+      - type: "attack"
+        label: "Attack Mode"
+        description: "Use card for its combat effect"
+      - type: "resource"
+        label: "Resource Mode"
+        description: "Discard for 2 mana"
+        effect:
+          gain_resources:
+            mana: 2
+      - type: "enchant"
+        label: "Enchant Mode"
+        description: "Place as ongoing effect"
   # Melding and splaying card arrangements
   melding_and_splaying:
     meld_positions: ["left", "right", "up"]

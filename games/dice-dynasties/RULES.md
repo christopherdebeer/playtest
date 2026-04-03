@@ -17,7 +17,7 @@ mechanics:
       per_die_bonus: 0
     track_last_roll: true
 
-  rerolling:
+  re_rolling_and_locking:
     max_rerolls: 2
     dice_count: 3
     dice_sides: 6
@@ -70,7 +70,7 @@ mechanics:
     interest_rate: 0.5
     resource: "gold"
     repayment_deadline: 4
-    penalty: { type: "score", amount: -5 }
+    penalty: 5
 
   # Commodity speculation with fluctuating prices
   commodity_speculation:

@@ -46,7 +46,7 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
   },
 
   initPlayerState(ctx: PlayerInitContext): PlayerInitResult | null {
-    const powersConfig = ctx.config.engine_mechanics?.variable_powers as VariablePowersConfig | undefined;
+    const powersConfig = ctx.config.engine_mechanics?.variable_player_powers as VariablePowersConfig | undefined;
     if (!powersConfig) return null;
 
     const powers = powersConfig.powers;
@@ -79,7 +79,7 @@ export const variablePlayerPowersMechanic: MechanicHooks = {
   getPlayerView(ctx: HookContext): Record<string, unknown> | null {
     if (!isMechanicEnabled(ctx.config, 'variable-player-powers')) return null;
 
-    const powersConfig = ctx.config.engine_mechanics?.variable_powers as VariablePowersConfig | undefined;
+    const powersConfig = ctx.config.engine_mechanics?.variable_player_powers as VariablePowersConfig | undefined;
     if (!powersConfig) return null;
 
     const powerId = ctx.player.powerId as string | undefined;

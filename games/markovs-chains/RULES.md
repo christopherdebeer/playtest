@@ -7,9 +7,6 @@ max_rounds: 25
 
 mechanics:
   board_state: true
-  probability_movement: true
-  card_boosts: true
-  victory_declaration: true
 
   board:
     states: ["Start", "A", "B", "C", "Checkpoint-X", "Checkpoint-Y", "Victory"]

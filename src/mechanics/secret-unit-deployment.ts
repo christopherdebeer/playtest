@@ -77,7 +77,7 @@ export const secretUnitDeploymentMechanic: MechanicHooks = {
   preValidateAction(ctx: HookContext, action: GameAction): ValidationResult | null {
     if (action.type !== 'deploy_secret' && action.type !== 'reveal_unit') return null;
 
-    const config = ctx.config.engine_mechanics?.secret_deployment as SecretDeploymentConfig | undefined;
+    const config = ctx.config.engine_mechanics?.secret_unit_deployment as SecretDeploymentConfig | undefined;
     if (!config) return { valid: false, error: 'Secret deployment not enabled.' };
 
     if (action.type === 'deploy_secret') {
@@ -126,7 +126,7 @@ export const secretUnitDeploymentMechanic: MechanicHooks = {
   onExecuteAction(ctx: ActionExecutionContext): ActionExecutionResult | null {
     if (ctx.action.type !== 'deploy_secret' && ctx.action.type !== 'reveal_unit') return null;
 
-    const config = ctx.config.engine_mechanics?.secret_deployment as SecretDeploymentConfig;
+    const config = ctx.config.engine_mechanics?.secret_unit_deployment as SecretDeploymentConfig;
 
     if (ctx.action.type === 'deploy_secret') {
       const deployAction = ctx.action as unknown as DeploySecretAction;
@@ -191,7 +191,7 @@ export const secretUnitDeploymentMechanic: MechanicHooks = {
   },
 
   onCombatStart(ctx: CombatHookContext): StateChanges | null {
-    const config = ctx.config.engine_mechanics?.secret_deployment as SecretDeploymentConfig | undefined;
+    const config = ctx.config.engine_mechanics?.secret_unit_deployment as SecretDeploymentConfig | undefined;
     if (!config || !config.reveal_on_combat) return null;
 
     const secretUnits = [...((ctx.state.shared.secretUnits as SecretUnit[]) ?? [])];
@@ -216,7 +216,7 @@ export const secretUnitDeploymentMechanic: MechanicHooks = {
   },
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
-    const config = ctx.config.engine_mechanics?.secret_deployment as SecretDeploymentConfig | undefined;
+    const config = ctx.config.engine_mechanics?.secret_unit_deployment as SecretDeploymentConfig | undefined;
     if (!config) return [];
 
     const actions: AvailableAction[] = [];

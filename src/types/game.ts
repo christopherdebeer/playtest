@@ -266,19 +266,21 @@ export interface EngineMechanics {
 
   // Additional mechanics
   push_your_luck?: PushYourLuckConfig;  // Risk/reward dice rolling
-  variable_powers?: VariablePlayerPowersConfig;  // Asymmetric player abilities
+  variable_player_powers?: VariablePlayerPowersConfig;  // Asymmetric player abilities
   open_drafting?: OpenDraftingConfig;   // Draft from visible card pool
   simultaneous?: SimultaneousActionConfig;  // All players act at once
 
   // Proposal 007: Grid-based movement
-  grid?: GridConfig;                   // Grid configuration for tile-placement games
+  grid_movement?: GridConfig;          // Grid configuration for tile-placement games
 
   // Trading mechanic
-  trade?: TradeConfig;                 // Trading configuration
+  trading?: TradeConfig;               // Trading configuration
 
-  // Proposal 008: Hand limits and card type restrictions
-  hand_limit?: number;                 // Maximum cards in hand
-  hand_limit_policy?: 'cannot_draw' | 'discard_choice' | 'discard_oldest';  // What happens when limit exceeded
+  // Proposal 008: Hand management and card type restrictions
+  hand_management?: {
+    hand_limit?: number;
+    hand_limit_policy?: 'cannot_draw' | 'discard_choice' | 'discard_oldest';
+  };
   card_type_rules?: Record<string, CardTypeRules>;  // Per-type playability rules
 
   // Proposal 010: Configurable default winner on timeout
@@ -330,7 +332,7 @@ export interface EngineMechanics {
   hidden_victory_points?: HiddenVictoryPointsConfig;  // Hidden scores until end
 
   // Phase 2: Dice (extended)
-  rerolling?: RerollingConfig;                // Yahtzee-style re-roll and lock
+  re_rolling_and_locking?: RerollingConfig;   // Yahtzee-style re-roll and lock
 
   // Phase 5: Voting & Social
   voting?: VotingMechanicConfig;              // Democratic decision-making
@@ -365,13 +367,13 @@ export interface EngineMechanics {
   bribery?: BriberyConfig;                        // Bribery mechanics
 
   // Phase 6: Combat System
-  critical_hits?: CriticalHitsConfig;             // Critical hit/failure outcomes
+  critical_hits_and_failures?: CriticalHitsConfig; // Critical hit/failure outcomes
   zone_of_control?: ZoneOfControlConfig;          // Unit ZoC projection
   ratio_crt?: RatioCRTConfig;                     // Ratio-based combat resolution
   force_commitment?: ForceCommitmentConfig;       // Commit forces before resolution
   area_impulse?: AreaImpulseConfig;               // Impulse-based activation
   chit_pull?: ChitPullConfig;                     // Random chit activation
-  secret_deployment?: SecretDeploymentConfig;     // Face-down unit deployment
+  secret_unit_deployment?: SecretDeploymentConfig; // Face-down unit deployment
   kill_steal?: KillStealConfig;                   // Final blow rewards
 
   // Phase 7: Worker Placement System

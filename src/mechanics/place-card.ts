@@ -123,7 +123,7 @@ export const placeCardMechanic: MechanicHooks = {
       }
 
       // Check if grid config exists
-      const gridConfig = ctx.config.engine_mechanics?.grid as
+      const gridConfig = ctx.config.engine_mechanics?.grid_movement as
         { type?: string; starting_tile?: string; adjacency?: string } | undefined;
       if (!gridConfig) {
         return {
@@ -305,7 +305,7 @@ export const placeCardMechanic: MechanicHooks = {
     }
 
     // === PLACE_LOCATION actions (for location cards on grid games) ===
-    const gridConfig = ctx.config.engine_mechanics?.grid as
+    const gridConfig = ctx.config.engine_mechanics?.grid_movement as
       { type?: string; starting_tile?: string; adjacency?: string } | undefined;
     if (gridConfig) {
       const locationCards = hand.filter((c: Card) => c.type === 'location');

@@ -37,14 +37,10 @@ mechanics:
     rollover: false
 
   # Grid/board system - starts with single origin tile (Proposal 007: grid validation)
-  grid:
+  grid_movement:
     type: "infinite"
     starting_tile: "origin"
     adjacency: "orthogonal"  # 4 directions (N/S/E/W)
-
-  # Hand limits (Proposal 008)
-  hand_limit: 7
-  hand_limit_policy: "cannot_draw"  # Cannot draw if at limit
 
   # Card type restrictions (Proposal 008)
   card_type_rules:
@@ -62,13 +58,13 @@ mechanics:
       holdable: true
 
   # Default winner on timeout (Proposal 010)
-  timeout_winner:
+  win_timeout:
     type: "role"
     role: "enemy"
     reveal_role: true
 
   # Trading system (engine format)
-  trade:
+  trading:
     enabled: true
     item_types_only: true           # Only items can be traded
     require_same_location: false    # Can trade from anywhere (AAOTE rule: "Can trade from anywhere")
@@ -81,13 +77,12 @@ mechanics:
     deal_at_start: true
     reveal_on_completion: true
 
-  # Victory declaration - GM must verify objective completion
-  victory_declaration: true
   hidden_roles: true
   traitor_game: true
   place_location: true  # Fixed: was tile_placement (wrong mechanic slug)
-  trading: true
-  hand_management: true
+  hand_management:
+    hand_limit: 7
+    hand_limit_policy: "cannot_draw"  # Cannot draw if at limit
 
   cards:
     starting_hand: 5

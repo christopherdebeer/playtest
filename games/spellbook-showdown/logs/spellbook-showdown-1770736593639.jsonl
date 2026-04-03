@@ -1,0 +1,10 @@
+{"timestamp":"2026-02-10T15:16:33.646Z","event":"game_init","data":{"gameId":"spellbook-showdown-1770736593639","playerCount":2,"config":"Spellbook Showdown"}}
+{"timestamp":"2026-02-10T15:16:35.435Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:16:37.941Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":7}}
+{"timestamp":"2026-02-10T15:16:40.592Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":8}}
+{"timestamp":"2026-02-10T15:16:43.202Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"draw","count":1,"handSize":9}}
+{"timestamp":"2026-02-10T15:16:45.844Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Frost Bolt","effect":{"type":"freeze","duration":1},"handSize":5,"newTopCard":"Frost Bolt"}}
+{"timestamp":"2026-02-10T15:16:48.477Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Fireball","effect":{"type":"damage","amount":3},"handSize":4,"newTopCard":"Fireball"}}
+{"timestamp":"2026-02-10T15:16:51.090Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"play_card","card":"Heal","effect":{"type":"heal","amount":2},"handSize":3,"newTopCard":"Heal"}}
+{"timestamp":"2026-02-10T15:16:53.660Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-2","data":{"type":"play_card","card":"Inferno","effect":{"type":"damage","amount":5},"handSize":2,"newTopCard":"Inferno"}}
+{"timestamp":"2026-02-10T15:16:56.344Z","event":"action_executed","round":2,"turnNumber":3,"player":"player-2","data":{"type":"play_card","card":"Blizzard","effect":{"type":"freeze_all","duration":1},"handSize":1,"newTopCard":"Blizzard"}}

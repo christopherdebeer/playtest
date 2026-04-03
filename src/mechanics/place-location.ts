@@ -52,7 +52,7 @@ export const placeLocationMechanic: MechanicHooks = {
     }
 
     // Check if grid config exists
-    const gridConfig = ctx.config.engine_mechanics?.grid as GridConfig | undefined;
+    const gridConfig = ctx.config.engine_mechanics?.grid_movement as GridConfig | undefined;
     if (!gridConfig) {
       return {
         valid: false,
@@ -137,7 +137,7 @@ export const placeLocationMechanic: MechanicHooks = {
 
   getAvailableActions(ctx: HookContext): AvailableAction[] {
     // Check if grid config exists
-    const gridConfig = ctx.config.engine_mechanics?.grid as GridConfig | undefined;
+    const gridConfig = ctx.config.engine_mechanics?.grid_movement as GridConfig | undefined;
     if (!gridConfig) return [];
 
     // Get location cards from hand

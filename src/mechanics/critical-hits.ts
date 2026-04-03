@@ -58,7 +58,7 @@ export const criticalHitsMechanic: MechanicHooks = {
     attackValue: number,
     defenseValue: number
   ): CombatHookResult | null {
-    const config = ctx.config.engine_mechanics?.critical_hits as CriticalHitsConfig | undefined;
+    const config = ctx.config.engine_mechanics?.critical_hits_and_failures as CriticalHitsConfig | undefined;
     if (!config) return null;
 
     // Check if there's a combat roll in state

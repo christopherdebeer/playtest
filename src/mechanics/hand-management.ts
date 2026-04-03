@@ -45,10 +45,10 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
    * Fired by hand.ts via mechanicRegistry.fire('cards', 'onBeforeAddToHand', ...).
    */
   onBeforeAddToHand(ctx: HookContext, payload: BeforeAddToHandPayload): { blocked?: boolean; blockReason?: string; cards?: Card[] } | null {
-    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    const handLimit = (ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit as number | undefined;
     if (handLimit === undefined) return null;
 
-    const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+    const policy = ((ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit_policy as string) || 'cannot_draw';
 
     const currentHandSize = (ctx.player.hand ?? []).length;
     const cardsToAdd = payload.cards.length;
@@ -84,10 +84,10 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
    * Fired by card-piles.ts via mechanicRegistry.fire('cards', 'onBeforeCardDraw', ...).
    */
   onBeforeCardDraw(ctx: HookContext, { requestedCount }: BeforeCardDrawPayload): { blocked?: boolean; blockReason?: string; count?: number } | null {
-    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    const handLimit = (ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit as number | undefined;
     if (handLimit === undefined) return null;
 
-    const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+    const policy = ((ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit_policy as string) || 'cannot_draw';
     if (policy !== 'cannot_draw') return null;
 
     const currentHandSize = (ctx.player.hand ?? []).length;
@@ -119,10 +119,10 @@ export const handManagementMechanic: MechanicHooks & CardsHooks = {
     // Only run after draw actions
     if (action.type !== 'draw') return null;
 
-    const handLimit = ctx.config.engine_mechanics?.hand_limit as number | undefined;
+    const handLimit = (ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit as number | undefined;
     if (handLimit === undefined) return null;
 
-    const policy = (ctx.config.engine_mechanics?.hand_limit_policy as string) || 'cannot_draw';
+    const policy = ((ctx.config.engine_mechanics?.hand_management as Record<string, unknown>)?.hand_limit_policy as string) || 'cannot_draw';
     if (policy === 'cannot_draw') return null; // Already blocked before draw
 
     const playerHand = ctx.player.hand ?? [];

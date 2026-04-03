@@ -1,0 +1,5 @@
+{"timestamp":"2026-02-10T15:11:57.850Z","event":"game_init","data":{"gameId":"shadow-operations-1770736317834","playerCount":2,"config":"Shadow Operations"}}
+{"timestamp":"2026-02-10T15:12:14.021Z","event":"game_start","round":1,"turnNumber":1,"data":{"players":["player-1","player-2"],"firstPlayer":"player-1"}}
+{"timestamp":"2026-02-10T15:13:48.545Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"move","target":"north_district","placedCardEffects":[],"probabilityModifier":0}}
+{"timestamp":"2026-02-10T15:13:49.791Z","event":"action_executed","round":1,"turnNumber":1,"player":"player-1","data":{"type":"place_influence","player":"player-1","area":"north_district","areaName":"North District","amount":1}}
+{"timestamp":"2026-02-10T15:14:03.887Z","event":"action_executed","round":1,"turnNumber":2,"player":"player-2","data":{"type":"move","target":"east_district","placedCardEffects":[],"probabilityModifier":0}}
